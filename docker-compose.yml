@@ -1,0 +1,48 @@
+version: '3.8'
+
+# 这个文件用于在云服务器上一键启动所有需要的数据库
+# 使用方法：在云服务器上安装 docker 和 docker-compose 后，运行 `docker-compose up -d`
+
+services:
+  # MySQL - 存储业务数据
+  mysql:
+    image: mysql:8.0
+    container_name: course_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: course_recommend
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  # Neo4j - 存储知识图谱拓扑
+  neo4j:
+    image: neo4j:5.15.0
+    container_name: course_neo4j
+    environment:
+      NEO4J_AUTH: neo4j/secretpassword
+    ports:
+      - "7474:7474" # HTTP 浏览器界面
+      - "7687:7687" # Bolt 协议（代码连接用）
+    volumes:
+      - neo4j_data:/data
+    restart: unless-stopped
+
+  # Redis - 缓存和高频状态
+  redis:
+    image: redis:7.0-alpine
+    container_name: course_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  neo4j_data:
+  redis_data:
