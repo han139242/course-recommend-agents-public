@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "smoke:api": "node scripts/smoke-api.js"
+    "smoke:api": "node scripts/smoke-api.js",
+    "export:neo4j-seed": "node scripts/export-neo4j-seed.js"
   },
   "keywords": [],
   "author": "",

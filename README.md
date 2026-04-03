@@ -44,6 +44,49 @@ npm run dev
 
 参考 `pipelines/txt2neo4j/README.md` 使用 `txt2neo4j` 将课内知识导入 Neo4j。
 
+## 导出当前 Neo4j 图谱
+
+如果需要把你本机当前 Neo4j 里的知识图谱固化到仓库，便于队友直接复用：
+
+```bash
+cd backend
+npm run export:neo4j-seed
+```
+
+导出结果会写入：
+
+- `db/neo4j/bootstrap/knowledge_graph_seed.cypher`
+
+该文件是当前知识图谱的可重复导入种子。
+
+## 用 Docker 启动带种子数据的 Neo4j
+
+仓库已提供一个 Docker 方案，会在 Neo4j 启动后自动导入当前图谱种子：
+
+```bash
+cd docker/neo4j
+docker compose up -d
+```
+
+说明：
+
+- `docker/neo4j/docker-compose.yml`：启动 Neo4j 和自动导入服务
+- `docker/neo4j/import/import.sh`：等待 Neo4j 就绪后执行 `cypher-shell`
+- `db/neo4j/bootstrap/knowledge_graph_seed.cypher`：当前图谱导出的种子文件
+
+默认账号：
+
+- 用户名：`neo4j`
+- 密码：`please-change-me`
+
+如果要自定义，可在启动前设置：
+
+```bash
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your-password
+NEO4J_DATABASE=neo4j
+```
+
 ## 关键接口
 
 - `GET /api/health`
