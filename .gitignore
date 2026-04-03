@@ -1,16 +1,24 @@
-# 环境变量文件（绝对不能提交，包含数据库真实密码）
 .env
 .env.local
 
-# 操作系统文件
-.DS_Store
-Thumbs.db
-
-# 依赖和编译产物 (可以根据后续用 Go 还是 Python 再补充)
 node_modules/
+dist/
+coverage/
+
 __pycache__/
 *.pyc
-venv/
+.pytest_cache/
 .venv/
-bin/
-pkg/
+venv/
+
+pipelines/txt2neo4j/artifacts/
+pipelines/txt2neo4j/src/txt2neo4j.egg-info/
+backend/pipelines/txt2neo4j/artifacts/
+backend/pipelines/txt2neo4j/src/txt2neo4j.egg-info/
+
+db/neo4j/data/
+db/neo4j/logs/
+db/mysql/
+
+.DS_Store
+Thumbs.db

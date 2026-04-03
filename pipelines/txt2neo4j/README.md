@@ -22,6 +22,7 @@
 ## 目录结构
 
 - `config/pipeline_config.json`：抽取阈值、过滤规则、`RELATED_TO` 压缩配置
+- `config/frontier_ontology.json`：课内知识图谱与前沿论文知识域的分域建模方案
 - `dictionaries/term_dictionary.json`：专业术语词典
 - `dictionaries/synonym_map.json`：同义词归一表
 - `src/txt2neo4j/pipeline.py`：核心清洗、解析、抽取、导出逻辑
@@ -85,3 +86,17 @@ txt2neo4j \
 - 在正式环境里结合人工同义词表和审核流程
 - 如果扩展到多本教材，建议增加跨书归一词表和审核白名单
 - 可视化时优先查询 `MATCH (a:KnowledgeNode)-[r]->(b:KnowledgeNode) RETURN a,r,b LIMIT 50`
+
+## 前沿知识扩展
+
+当前已经补充第一版前沿知识域设计：
+
+- `config/frontier_ontology.json`：定义 `Paper`、`ResearchTopic`、`FrontierDigest` 等节点与关系
+- `../docs/frontier-knowledge-pipeline.md`：说明如何把论文元数据、摘要与课内知识点连接起来
+
+建议第二阶段按以下顺序扩展：
+
+1. 抓取论文元数据与摘要
+2. 清洗文本并抽取主题
+3. 将主题映射到 `KnowledgeNode`
+4. 生成面向学生的课后扩展摘要

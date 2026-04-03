@@ -1,0 +1,72 @@
+{
+  "source": "frontier_knowledge_ontology_v1",
+  "description": "课内知识图谱与前沿论文知识域的分域建模方案，用于支持论文持续抓取、知识点映射与课后扩展推荐。",
+  "node_types": [
+    {
+      "label": "Paper",
+      "fields": ["paper_id", "title", "abstract", "year", "venue", "url", "source", "updated_at"]
+    },
+    {
+      "label": "ResearchTopic",
+      "fields": ["topic_id", "name", "canonical_name", "keywords", "summary"]
+    },
+    {
+      "label": "Venue",
+      "fields": ["venue_id", "name", "type", "rank"]
+    },
+    {
+      "label": "Author",
+      "fields": ["author_id", "name", "affiliation"]
+    },
+    {
+      "label": "FrontierDigest",
+      "fields": ["digest_id", "knowledge_name", "summary", "generated_at"]
+    }
+  ],
+  "relations": [
+    {
+      "type": "MENTIONS_TOPIC",
+      "from": "Paper",
+      "to": "ResearchTopic",
+      "meaning": "论文显式涉及某研究主题"
+    },
+    {
+      "type": "PUBLISHED_IN",
+      "from": "Paper",
+      "to": "Venue",
+      "meaning": "论文发表在某会议或期刊"
+    },
+    {
+      "type": "AUTHORED_BY",
+      "from": "Paper",
+      "to": "Author",
+      "meaning": "论文作者关系"
+    },
+    {
+      "type": "EXTENDS_KNOWLEDGE",
+      "from": "ResearchTopic",
+      "to": "KnowledgeNode",
+      "meaning": "前沿主题对课内知识点的扩展关系"
+    },
+    {
+      "type": "CURATED_FOR",
+      "from": "FrontierDigest",
+      "to": "KnowledgeNode",
+      "meaning": "为某课内知识点生成的课后扩展摘要"
+    },
+    {
+      "type": "SUMMARIZES_PAPER",
+      "from": "FrontierDigest",
+      "to": "Paper",
+      "meaning": "课后扩展摘要引用的论文"
+    }
+  ],
+  "ingestion_stages": [
+    "crawl_metadata",
+    "clean_abstract",
+    "extract_topics",
+    "link_to_course_knowledge",
+    "generate_frontier_digest",
+    "merge_into_neo4j"
+  ]
+}
