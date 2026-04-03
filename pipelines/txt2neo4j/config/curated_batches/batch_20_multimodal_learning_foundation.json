@@ -1,0 +1,147 @@
+{
+  "source": "batch_20_multimodal_learning_foundation",
+  "nodes": [
+    {
+      "canonical_name": "多模态学习",
+      "entity_type": "topic",
+      "description": "联合建模文本、图像、语音、视频等多种模态信息的学习方向。"
+    },
+    {
+      "canonical_name": "跨模态表示学习",
+      "entity_type": "method",
+      "description": "学习不同模态共享语义空间表示以支持匹配、检索和理解的方法。"
+    },
+    {
+      "canonical_name": "模态对齐",
+      "entity_type": "method",
+      "description": "建立不同模态之间语义对应关系和结构映射的关键方法。"
+    },
+    {
+      "canonical_name": "模态融合",
+      "entity_type": "method",
+      "description": "将多个模态特征进行联合编码以提升整体理解能力的方法。"
+    },
+    {
+      "canonical_name": "视觉语言模型",
+      "entity_type": "algorithm",
+      "description": "联合处理视觉与语言信息并完成理解或生成任务的多模态模型。"
+    },
+    {
+      "canonical_name": "图文匹配",
+      "entity_type": "application",
+      "description": "判断图像与文本描述是否语义一致的多模态任务。"
+    },
+    {
+      "canonical_name": "图文检索",
+      "entity_type": "application",
+      "description": "根据文本检索图像或根据图像检索文本的跨模态检索任务。"
+    },
+    {
+      "canonical_name": "图像描述生成",
+      "entity_type": "application",
+      "description": "根据图像内容自动生成自然语言描述的多模态任务。"
+    },
+    {
+      "canonical_name": "视觉问答",
+      "entity_type": "application",
+      "description": "基于图像内容理解并回答自然语言问题的多模态任务。"
+    },
+    {
+      "canonical_name": "视频理解",
+      "entity_type": "application",
+      "description": "对视频中的时空事件、动作和语义内容进行建模与理解的任务。"
+    },
+    {
+      "canonical_name": "音视频联合建模",
+      "entity_type": "method",
+      "description": "联合利用声音与视觉线索进行表示学习和任务建模的方法。"
+    },
+    {
+      "canonical_name": "CLIP",
+      "entity_type": "algorithm",
+      "description": "通过图文对比学习实现视觉与语言统一表示的经典多模态模型。"
+    },
+    {
+      "canonical_name": "对比学习",
+      "entity_type": "method",
+      "description": "通过拉近正样本、拉远负样本表示距离学习判别性表征的方法。"
+    },
+    {
+      "canonical_name": "共享语义空间",
+      "entity_type": "concept",
+      "description": "用于承载不同模态统一语义表示的公共向量空间。"
+    },
+    {
+      "canonical_name": "模态缺失",
+      "entity_type": "concept",
+      "description": "多模态任务中部分模态不可用、缺失或质量不足的情况。"
+    },
+    {
+      "canonical_name": "多模态指令跟随",
+      "entity_type": "application",
+      "description": "模型依据跨模态输入和自然语言指令完成任务的能力。"
+    },
+    {
+      "canonical_name": "多模态提示",
+      "entity_type": "method",
+      "description": "通过组织图像、文本等多模态输入上下文来引导模型行为的方法。"
+    },
+    {
+      "canonical_name": "跨模态检索增强",
+      "entity_type": "method",
+      "description": "利用跨模态检索结果增强多模态问答和生成效果的方法。"
+    },
+    {
+      "canonical_name": "视觉编码器",
+      "entity_type": "concept",
+      "description": "将图像或视频内容编码为向量表示的模型组件。"
+    },
+    {
+      "canonical_name": "语言编码器",
+      "entity_type": "concept",
+      "description": "将文本输入编码为语义向量表示的模型组件。"
+    }
+  ],
+  "relations": [
+    ["多模态学习", "人工智能", "SUBTOPIC_OF"],
+    ["跨模态表示学习", "多模态学习", "SUBTOPIC_OF"],
+    ["模态对齐", "多模态学习", "SUBTOPIC_OF"],
+    ["模态融合", "多模态学习", "SUBTOPIC_OF"],
+    ["跨模态表示学习", "模态对齐", "RELATED_TO"],
+    ["模态融合", "视觉语言模型", "PREREQUISITE_OF"],
+    ["模态对齐", "视觉语言模型", "PREREQUISITE_OF"],
+    ["视觉语言模型", "多模态学习", "SUBTOPIC_OF"],
+    ["视觉编码器", "视觉语言模型", "PART_OF"],
+    ["语言编码器", "视觉语言模型", "PART_OF"],
+    ["视觉编码器", "计算机视觉", "RELATED_TO"],
+    ["语言编码器", "自然语言处理", "RELATED_TO"],
+    ["图文匹配", "多模态学习", "SUBTOPIC_OF"],
+    ["图文检索", "多模态学习", "SUBTOPIC_OF"],
+    ["图像描述生成", "多模态学习", "SUBTOPIC_OF"],
+    ["视觉问答", "多模态学习", "SUBTOPIC_OF"],
+    ["视频理解", "多模态学习", "SUBTOPIC_OF"],
+    ["音视频联合建模", "多模态学习", "SUBTOPIC_OF"],
+    ["音视频联合建模", "视频理解", "PREREQUISITE_OF"],
+    ["视觉语言模型", "图文匹配", "PREREQUISITE_OF"],
+    ["视觉语言模型", "图文检索", "PREREQUISITE_OF"],
+    ["视觉语言模型", "图像描述生成", "PREREQUISITE_OF"],
+    ["视觉语言模型", "视觉问答", "PREREQUISITE_OF"],
+    ["视觉语言模型", "多模态指令跟随", "PREREQUISITE_OF"],
+    ["CLIP", "视觉语言模型", "SUBTOPIC_OF"],
+    ["对比学习", "CLIP", "PREREQUISITE_OF"],
+    ["共享语义空间", "跨模态表示学习", "PREREQUISITE_OF"],
+    ["共享语义空间", "图文检索", "PREREQUISITE_OF"],
+    ["CLIP", "图文检索", "PREREQUISITE_OF"],
+    ["CLIP", "图文匹配", "PREREQUISITE_OF"],
+    ["模态缺失", "多模态学习", "RELATED_TO"],
+    ["模态缺失", "模态融合", "RELATED_TO"],
+    ["多模态指令跟随", "大语言模型", "RELATED_TO"],
+    ["多模态提示", "多模态指令跟随", "PREREQUISITE_OF"],
+    ["多模态提示", "提示工程", "RELATED_TO"],
+    ["跨模态检索增强", "检索增强生成", "RELATED_TO"],
+    ["跨模态检索增强", "视觉问答", "RELATED_TO"],
+    ["跨模态检索增强", "图文检索", "PREREQUISITE_OF"],
+    ["图像描述生成", "序列到序列模型", "RELATED_TO"],
+    ["视觉问答", "问答系统", "RELATED_TO"]
+  ]
+}

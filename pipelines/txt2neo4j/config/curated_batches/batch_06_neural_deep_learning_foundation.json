@@ -1,0 +1,147 @@
+{
+  "source": "batch_06_neural_deep_learning_foundation",
+  "nodes": [
+    {
+      "canonical_name": "前馈神经网络",
+      "entity_type": "algorithm",
+      "description": "信息从输入层经隐藏层逐层传递到输出层且无环反馈结构的神经网络模型。"
+    },
+    {
+      "canonical_name": "多层感知机",
+      "entity_type": "algorithm",
+      "description": "由多个全连接层堆叠而成并可拟合非线性映射的前馈神经网络。"
+    },
+    {
+      "canonical_name": "激活函数",
+      "entity_type": "concept",
+      "description": "为神经网络引入非线性表达能力的函数。"
+    },
+    {
+      "canonical_name": "Sigmoid函数",
+      "entity_type": "concept",
+      "description": "将实数映射到 0 到 1 区间的经典 S 形激活函数。"
+    },
+    {
+      "canonical_name": "Tanh函数",
+      "entity_type": "concept",
+      "description": "将实数映射到负 1 到 1 区间的双曲正切激活函数。"
+    },
+    {
+      "canonical_name": "ReLU函数",
+      "entity_type": "concept",
+      "description": "对正区间保持线性、负区间截断为零的常用激活函数。"
+    },
+    {
+      "canonical_name": "Softmax函数",
+      "entity_type": "concept",
+      "description": "将实值向量归一化为概率分布的输出层函数。"
+    },
+    {
+      "canonical_name": "前向传播",
+      "entity_type": "method",
+      "description": "按照网络拓扑从输入到输出逐层计算神经元响应的过程。"
+    },
+    {
+      "canonical_name": "反向传播",
+      "entity_type": "method",
+      "description": "利用链式法则将输出误差逐层传播并计算参数梯度的训练方法。"
+    },
+    {
+      "canonical_name": "参数初始化",
+      "entity_type": "method",
+      "description": "在训练开始前为网络权重和偏置设置初始值的方法。"
+    },
+    {
+      "canonical_name": "Xavier初始化",
+      "entity_type": "method",
+      "description": "根据输入输出维度缩放参数方差以稳定信号传播的初始化方法。"
+    },
+    {
+      "canonical_name": "He初始化",
+      "entity_type": "method",
+      "description": "针对 ReLU 类激活函数设计的参数初始化方法。"
+    },
+    {
+      "canonical_name": "梯度消失",
+      "entity_type": "concept",
+      "description": "在深层网络反向传播中梯度逐层衰减导致训练困难的现象。"
+    },
+    {
+      "canonical_name": "梯度爆炸",
+      "entity_type": "concept",
+      "description": "在深层网络训练中梯度值急剧增大并导致参数更新不稳定的现象。"
+    },
+    {
+      "canonical_name": "批量归一化",
+      "entity_type": "method",
+      "description": "对小批量特征进行标准化以稳定训练和加速收敛的方法。"
+    },
+    {
+      "canonical_name": "层归一化",
+      "entity_type": "method",
+      "description": "对单样本层内特征进行归一化的训练稳定化方法。"
+    },
+    {
+      "canonical_name": "Dropout",
+      "entity_type": "method",
+      "description": "在训练时随机失活部分神经元以降低过拟合风险的正则化方法。"
+    },
+    {
+      "canonical_name": "残差连接",
+      "entity_type": "method",
+      "description": "通过跨层恒等映射缓解深层网络退化并改善梯度传播的结构设计。"
+    },
+    {
+      "canonical_name": "自编码器",
+      "entity_type": "algorithm",
+      "description": "通过编码和解码重构输入数据以学习紧凑表示的神经网络模型。"
+    },
+    {
+      "canonical_name": "稀疏自编码器",
+      "entity_type": "algorithm",
+      "description": "通过稀疏性约束学习更具判别性和可解释性的自编码器变体。"
+    }
+  ],
+  "relations": [
+    ["前馈神经网络", "神经网络", "SUBTOPIC_OF"],
+    ["多层感知机", "前馈神经网络", "SUBTOPIC_OF"],
+    ["多层感知机", "BP神经网络", "RELATED_TO"],
+    ["多层感知机", "深度学习", "PREREQUISITE_OF"],
+    ["激活函数", "神经网络", "PREREQUISITE_OF"],
+    ["Sigmoid函数", "激活函数", "SUBTOPIC_OF"],
+    ["Tanh函数", "激活函数", "SUBTOPIC_OF"],
+    ["ReLU函数", "激活函数", "SUBTOPIC_OF"],
+    ["Softmax函数", "激活函数", "SUBTOPIC_OF"],
+    ["激活函数", "多层感知机", "PREREQUISITE_OF"],
+    ["前向传播", "前馈神经网络", "PREREQUISITE_OF"],
+    ["前向传播", "多层感知机", "PREREQUISITE_OF"],
+    ["反向传播", "BP神经网络", "PREREQUISITE_OF"],
+    ["反向传播", "深度学习", "PREREQUISITE_OF"],
+    ["前向传播", "反向传播", "RELATED_TO"],
+    ["参数初始化", "深度学习", "SUBTOPIC_OF"],
+    ["Xavier初始化", "参数初始化", "SUBTOPIC_OF"],
+    ["He初始化", "参数初始化", "SUBTOPIC_OF"],
+    ["He初始化", "ReLU函数", "RELATED_TO"],
+    ["Xavier初始化", "Sigmoid函数", "RELATED_TO"],
+    ["Xavier初始化", "Tanh函数", "RELATED_TO"],
+    ["梯度消失", "深度学习", "RELATED_TO"],
+    ["梯度爆炸", "深度学习", "RELATED_TO"],
+    ["梯度消失", "反向传播", "RELATED_TO"],
+    ["梯度爆炸", "反向传播", "RELATED_TO"],
+    ["Sigmoid函数", "梯度消失", "RELATED_TO"],
+    ["Tanh函数", "梯度消失", "RELATED_TO"],
+    ["ReLU函数", "梯度消失", "RELATED_TO"],
+    ["批量归一化", "深度学习", "SUBTOPIC_OF"],
+    ["层归一化", "深度学习", "SUBTOPIC_OF"],
+    ["Dropout", "深度学习", "SUBTOPIC_OF"],
+    ["残差连接", "深度学习", "SUBTOPIC_OF"],
+    ["批量归一化", "梯度消失", "RELATED_TO"],
+    ["层归一化", "Transformer", "RELATED_TO"],
+    ["Dropout", "过拟合", "RELATED_TO"],
+    ["残差连接", "梯度消失", "RELATED_TO"],
+    ["自编码器", "深度学习", "SUBTOPIC_OF"],
+    ["自编码器", "表示学习", "RELATED_TO"],
+    ["稀疏自编码器", "自编码器", "SUBTOPIC_OF"],
+    ["稀疏自编码器", "非监督学习", "RELATED_TO"]
+  ]
+}

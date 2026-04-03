@@ -1,0 +1,147 @@
+{
+  "source": "batch_17_knowledge_graph_graph_learning",
+  "nodes": [
+    {
+      "canonical_name": "实体链接",
+      "entity_type": "method",
+      "description": "将文本中的实体提及映射到知识库中标准实体的知识图谱构建方法。"
+    },
+    {
+      "canonical_name": "关系抽取",
+      "entity_type": "method",
+      "description": "从文本中识别实体之间语义关系的知识抽取方法。"
+    },
+    {
+      "canonical_name": "事件抽取",
+      "entity_type": "method",
+      "description": "从文本中识别事件触发词、事件类型及其参与角色的信息抽取方法。"
+    },
+    {
+      "canonical_name": "知识融合",
+      "entity_type": "method",
+      "description": "将多源异构知识进行对齐、消歧和合并以提升一致性的构建方法。"
+    },
+    {
+      "canonical_name": "实体对齐",
+      "entity_type": "method",
+      "description": "识别不同知识源中指向同一真实实体记录的对齐方法。"
+    },
+    {
+      "canonical_name": "模式层",
+      "entity_type": "concept",
+      "description": "定义知识图谱概念、关系、约束和类型结构的上层知识结构。"
+    },
+    {
+      "canonical_name": "数据层",
+      "entity_type": "concept",
+      "description": "承载具体实体、属性和值等实例化知识的知识图谱底层结构。"
+    },
+    {
+      "canonical_name": "三元组",
+      "entity_type": "concept",
+      "description": "由头实体、关系和尾实体组成的知识图谱基本表示单元。"
+    },
+    {
+      "canonical_name": "图嵌入",
+      "entity_type": "method",
+      "description": "将图中的节点、边或子图映射为低维向量表示的方法。"
+    },
+    {
+      "canonical_name": "知识图谱表示学习",
+      "entity_type": "topic",
+      "description": "针对知识图谱结构与语义学习实体和关系表示的研究方向。"
+    },
+    {
+      "canonical_name": "图表示学习",
+      "entity_type": "method",
+      "description": "针对图结构数据学习节点、边或整图向量表示的方法。"
+    },
+    {
+      "canonical_name": "图神经网络",
+      "entity_type": "algorithm",
+      "description": "在图结构上通过邻域聚合和消息传递学习表示的神经网络模型。"
+    },
+    {
+      "canonical_name": "消息传递机制",
+      "entity_type": "concept",
+      "description": "图神经网络中节点通过邻居信息聚合实现表示更新的基本机制。"
+    },
+    {
+      "canonical_name": "图卷积网络",
+      "entity_type": "algorithm",
+      "description": "通过图卷积操作对节点邻域特征进行聚合的经典图神经网络模型。"
+    },
+    {
+      "canonical_name": "GraphSAGE",
+      "entity_type": "algorithm",
+      "description": "通过采样邻域并聚合邻居特征实现归纳学习的图神经网络模型。"
+    },
+    {
+      "canonical_name": "图注意力网络",
+      "entity_type": "algorithm",
+      "description": "通过注意力机制自适应分配邻居权重的图神经网络模型。"
+    },
+    {
+      "canonical_name": "链接预测",
+      "entity_type": "application",
+      "description": "预测图中潜在边是否存在及其可能类型的图学习任务。"
+    },
+    {
+      "canonical_name": "节点分类",
+      "entity_type": "application",
+      "description": "根据节点属性和图结构为节点分配类别标签的图学习任务。"
+    },
+    {
+      "canonical_name": "子图表示",
+      "entity_type": "concept",
+      "description": "用于表达局部图结构模式和语义信息的子图级表示。"
+    },
+    {
+      "canonical_name": "知识补全",
+      "entity_type": "method",
+      "description": "通过推断缺失实体、关系或属性补全知识图谱内容的方法。"
+    }
+  ],
+  "relations": [
+    ["实体链接", "知识图谱", "PREREQUISITE_OF"],
+    ["关系抽取", "知识图谱", "PREREQUISITE_OF"],
+    ["事件抽取", "信息抽取", "SUBTOPIC_OF"],
+    ["关系抽取", "信息抽取", "SUBTOPIC_OF"],
+    ["实体链接", "命名实体识别", "PREREQUISITE_OF"],
+    ["关系抽取", "命名实体识别", "PREREQUISITE_OF"],
+    ["知识融合", "知识图谱", "SUBTOPIC_OF"],
+    ["实体对齐", "知识融合", "PREREQUISITE_OF"],
+    ["实体对齐", "实体链接", "RELATED_TO"],
+    ["模式层", "知识图谱", "PART_OF"],
+    ["数据层", "知识图谱", "PART_OF"],
+    ["本体", "模式层", "PREREQUISITE_OF"],
+    ["三元组", "数据层", "PART_OF"],
+    ["三元组", "知识图谱", "PREREQUISITE_OF"],
+    ["图嵌入", "图表示学习", "SUBTOPIC_OF"],
+    ["图表示学习", "知识图谱表示学习", "SUBTOPIC_OF"],
+    ["图表示学习", "知识图谱", "RELATED_TO"],
+    ["图神经网络", "图表示学习", "SUBTOPIC_OF"],
+    ["消息传递机制", "图神经网络", "PREREQUISITE_OF"],
+    ["图卷积网络", "图神经网络", "SUBTOPIC_OF"],
+    ["GraphSAGE", "图神经网络", "SUBTOPIC_OF"],
+    ["图注意力网络", "图神经网络", "SUBTOPIC_OF"],
+    ["注意力机制", "图注意力网络", "PREREQUISITE_OF"],
+    ["图卷积网络", "节点分类", "PREREQUISITE_OF"],
+    ["GraphSAGE", "节点分类", "PREREQUISITE_OF"],
+    ["图注意力网络", "节点分类", "PREREQUISITE_OF"],
+    ["图嵌入", "链接预测", "PREREQUISITE_OF"],
+    ["图神经网络", "链接预测", "PREREQUISITE_OF"],
+    ["图神经网络", "节点分类", "PREREQUISITE_OF"],
+    ["子图表示", "图表示学习", "RELATED_TO"],
+    ["子图表示", "图神经网络", "RELATED_TO"],
+    ["知识补全", "知识图谱", "SUBTOPIC_OF"],
+    ["知识补全", "链接预测", "RELATED_TO"],
+    ["知识补全", "图嵌入", "RELATED_TO"],
+    ["知识补全", "图神经网络", "RELATED_TO"],
+    ["知识融合", "知识补全", "RELATED_TO"],
+    ["语义网", "知识融合", "RELATED_TO"],
+    ["本体", "知识融合", "RELATED_TO"],
+    ["关系抽取", "知识融合", "PREREQUISITE_OF"],
+    ["实体链接", "知识融合", "PREREQUISITE_OF"]
+  ]
+}

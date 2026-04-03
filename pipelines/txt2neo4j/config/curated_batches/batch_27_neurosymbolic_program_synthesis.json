@@ -1,0 +1,149 @@
+{
+  "source": "batch_27_neurosymbolic_program_synthesis",
+  "nodes": [
+    {
+      "canonical_name": "神经符号人工智能",
+      "entity_type": "topic",
+      "description": "将神经网络表示学习与符号知识、规则与推理机制结合，以兼顾感知学习与可解释推理的人工智能范式。"
+    },
+    {
+      "canonical_name": "神经符号系统",
+      "entity_type": "concept",
+      "description": "在统一框架中同时包含可学习组件与显式符号结构的系统形态。"
+    },
+    {
+      "canonical_name": "逻辑神经网络",
+      "entity_type": "method",
+      "description": "将逻辑约束、可微松弛或神经模块嵌入到网络结构中以实现可学习推理的建模范式。"
+    },
+    {
+      "canonical_name": "可微分推理",
+      "entity_type": "method",
+      "description": "把推理过程表示为可反向传播的计算图，以用梯度方法优化推理参数或结构。"
+    },
+    {
+      "canonical_name": "归纳逻辑编程",
+      "entity_type": "method",
+      "description": "从样例与背景知识中搜索一阶逻辑程序或规则集合以完成关系与概念归纳的方法。"
+    },
+    {
+      "canonical_name": "程序合成",
+      "entity_type": "topic",
+      "description": "从规约、样例、自然语言或执行轨迹自动生成可执行程序或表达式的问题族与方法。"
+    },
+    {
+      "canonical_name": "神经程序合成",
+      "entity_type": "method",
+      "description": "用神经网络生成离散程序结构或操作序列，并结合执行器或约束进行训练与搜索的方法。"
+    },
+    {
+      "canonical_name": "组合泛化",
+      "entity_type": "concept",
+      "description": "将已见原子技能或规则组合推广到新任务与新输入上的泛化能力刻画。"
+    },
+    {
+      "canonical_name": "符号执行",
+      "entity_type": "method",
+      "description": "在抽象状态空间上跟踪程序路径约束以分析行为与生成测试输入的经典程序分析技术。"
+    },
+    {
+      "canonical_name": "抽象推理任务",
+      "entity_type": "application",
+      "description": "以规则矩阵、图像或符号序列评测组合泛化与类比推理能力的评测任务族。"
+    },
+    {
+      "canonical_name": "知识注入",
+      "entity_type": "method",
+      "description": "将先验知识以参数约束、额外头、记忆模块或蒸馏目标等形式嵌入模型的技术。"
+    },
+    {
+      "canonical_name": "规则蒸馏",
+      "entity_type": "method",
+      "description": "从神经网络行为中提取近似规则或决策树，或以规则形式监督模型学习的蒸馏策略。"
+    },
+    {
+      "canonical_name": "神经定理证明",
+      "entity_type": "application",
+      "description": "结合学习到的策略与符号证明引擎在证明搜索空间中进行引导的自动定理证明方向。"
+    },
+    {
+      "canonical_name": "程序草图",
+      "entity_type": "concept",
+      "description": "用部分占位符或未知表达式表示程序结构，由合成器填充细节的程序模板表示。"
+    },
+    {
+      "canonical_name": "语法引导生成",
+      "entity_type": "method",
+      "description": "在解码或搜索中施加语法约束或文法掩码以保证输出符合程序或逻辑结构的方法。"
+    },
+    {
+      "canonical_name": "语义解析",
+      "entity_type": "method",
+      "description": "将自然语言映射为可执行逻辑形式、查询或程序结构的结构化语义任务。"
+    },
+    {
+      "canonical_name": "神经引导搜索",
+      "entity_type": "method",
+      "description": "用神经网络价值函数或策略对大规模离散搜索空间进行剪枝与排序的混合搜索范式。"
+    },
+    {
+      "canonical_name": "混合推理",
+      "entity_type": "concept",
+      "description": "在同一流水线中交替或协同使用神经近似与符号演算以完成复杂推理任务的方式。"
+    },
+    {
+      "canonical_name": "代码生成",
+      "entity_type": "application",
+      "description": "根据自然语言描述或上下文自动生成源代码或补丁的任务。"
+    },
+    {
+      "canonical_name": "知识图谱推理",
+      "entity_type": "method",
+      "description": "在知识图谱上完成链接预测、规则挖掘或多跳问答等推理与查询任务的方法。"
+    }
+  ],
+  "relations": [
+    ["神经符号人工智能", "人工智能", "SUBTOPIC_OF"],
+    ["神经符号系统", "神经符号人工智能", "RELATED_TO"],
+    ["逻辑神经网络", "神经符号人工智能", "SUBTOPIC_OF"],
+    ["可微分推理", "逻辑神经网络", "RELATED_TO"],
+    ["归纳逻辑编程", "程序合成", "RELATED_TO"],
+    ["程序合成", "人工智能", "SUBTOPIC_OF"],
+    ["神经程序合成", "程序合成", "SUBTOPIC_OF"],
+    ["组合泛化", "深度学习", "RELATED_TO"],
+    ["符号执行", "程序合成", "RELATED_TO"],
+    ["抽象推理任务", "推理", "RELATED_TO"],
+    ["知识注入", "大语言模型", "RELATED_TO"],
+    ["规则蒸馏", "深度学习", "RELATED_TO"],
+    ["神经定理证明", "推理", "RELATED_TO"],
+    ["程序草图", "程序合成", "RELATED_TO"],
+    ["语法引导生成", "神经程序合成", "RELATED_TO"],
+    ["语义解析", "自然语言处理", "RELATED_TO"],
+    ["神经引导搜索", "搜索", "RELATED_TO"],
+    ["混合推理", "推理", "RELATED_TO"],
+    ["代码生成", "程序合成", "SUBTOPIC_OF"],
+    ["知识图谱推理", "知识图谱", "RELATED_TO"],
+    ["神经符号人工智能", "深度学习", "RELATED_TO"],
+    ["逻辑神经网络", "神经网络", "RELATED_TO"],
+    ["可微分推理", "深度学习", "RELATED_TO"],
+    ["归纳逻辑编程", "专家系统", "RELATED_TO"],
+    ["神经程序合成", "深度学习", "RELATED_TO"],
+    ["组合泛化", "神经网络", "RELATED_TO"],
+    ["知识注入", "检索增强生成", "RELATED_TO"],
+    ["规则蒸馏", "大语言模型", "RELATED_TO"],
+    ["神经定理证明", "命题逻辑", "RELATED_TO"],
+    ["语义解析", "代码生成", "RELATED_TO"],
+    ["混合推理", "一阶谓词逻辑表示法", "RELATED_TO"],
+    ["知识图谱推理", "图神经网络", "RELATED_TO"],
+    ["神经符号系统", "推理", "RELATED_TO"],
+    ["抽象推理任务", "组合泛化", "RELATED_TO"],
+    ["程序草图", "神经程序合成", "RELATED_TO"],
+    ["语法引导生成", "代码生成", "RELATED_TO"],
+    ["符号执行", "程序合成", "PREREQUISITE_OF"],
+    ["神经引导搜索", "深度学习", "RELATED_TO"],
+    ["知识图谱推理", "推理", "RELATED_TO"],
+    ["代码生成", "大语言模型", "RELATED_TO"],
+    ["可微分推理", "推理", "RELATED_TO"],
+    ["神经符号人工智能", "推理", "RELATED_TO"]
+  ]
+}

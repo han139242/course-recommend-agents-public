@@ -1,0 +1,148 @@
+{
+  "source": "batch_26_explainability_causal_robustness",
+  "nodes": [
+    {
+      "canonical_name": "可解释人工智能",
+      "entity_type": "topic",
+      "description": "围绕模型决策机制、证据与不确定性，为人类理解与审查提供系统化解释方法与评价标准的研究方向。"
+    },
+    {
+      "canonical_name": "特征归因",
+      "entity_type": "method",
+      "description": "将模型输出变化分配到输入特征或中间表示上，以说明哪些因素驱动了预测。"
+    },
+    {
+      "canonical_name": "SHAP值",
+      "entity_type": "concept",
+      "description": "基于合作博弈沙普利值思想，为特征或样本贡献提供可加性分解的解释量。"
+    },
+    {
+      "canonical_name": "LIME",
+      "entity_type": "concept",
+      "description": "在局部邻域内用可解释代理模型近似复杂模型行为以获得局部解释的方法。"
+    },
+    {
+      "canonical_name": "积分梯度",
+      "entity_type": "method",
+      "description": "沿从基线输入到当前输入的路径积分梯度以得到满足路径一致性的归因方法。"
+    },
+    {
+      "canonical_name": "Grad-CAM",
+      "entity_type": "method",
+      "description": "利用卷积网络梯度对特征图加权并上采样得到类判别区域热图的视觉解释方法。"
+    },
+    {
+      "canonical_name": "显著性图",
+      "entity_type": "method",
+      "description": "将输入维度上的敏感度或贡献可视化为热力图以突出对输出影响较大的区域。"
+    },
+    {
+      "canonical_name": "反事实解释",
+      "entity_type": "concept",
+      "description": "通过构造与预测结果改变相对应的最小输入改动，说明模型决策边界附近的反事实条件。"
+    },
+    {
+      "canonical_name": "概念激活向量",
+      "entity_type": "concept",
+      "description": "将人类可理解概念与网络内部表示方向对齐，以解释神经元群编码语义的方式。"
+    },
+    {
+      "canonical_name": "局部解释",
+      "entity_type": "concept",
+      "description": "针对单个样本或邻域给出的细粒度解释，强调在该输入附近的模型行为。"
+    },
+    {
+      "canonical_name": "全局解释",
+      "entity_type": "concept",
+      "description": "跨数据分布总结模型总体依赖模式与重要特征结构的解释类型。"
+    },
+    {
+      "canonical_name": "分布外泛化",
+      "entity_type": "concept",
+      "description": "在训练分布之外或协变量偏移条件下仍保持合理性能的能力刻画与目标。"
+    },
+    {
+      "canonical_name": "域偏移",
+      "entity_type": "concept",
+      "description": "训练与部署阶段数据分布不一致导致的性能退化现象。"
+    },
+    {
+      "canonical_name": "对抗样本",
+      "entity_type": "concept",
+      "description": "对人眼几乎不可辨但对模型输出产生大幅改变的刻意构造输入。"
+    },
+    {
+      "canonical_name": "自然扰动鲁棒性",
+      "entity_type": "concept",
+      "description": "在噪声、模糊、天气与成像变化等自然扰动下保持预测稳定性的能力。"
+    },
+    {
+      "canonical_name": "平滑梯度",
+      "entity_type": "method",
+      "description": "对输入加随机噪声多次计算梯度并平均，以减弱梯度噪声并获得更稳定归因的技术。"
+    },
+    {
+      "canonical_name": "可信机器学习",
+      "entity_type": "topic",
+      "description": "将可靠性、可审计性与风险约束纳入建模与部署全流程的机器学习方法论。"
+    },
+    {
+      "canonical_name": "因果可解释性",
+      "entity_type": "concept",
+      "description": "用因果语言描述模型所利用因素与结果之间的机制性联系，而非仅相关性归因。"
+    },
+    {
+      "canonical_name": "结构因果模型",
+      "entity_type": "concept",
+      "description": "用结构方程与有向图联合刻画变量生成机制以支持干预与反事实推理的模型类。"
+    },
+    {
+      "canonical_name": "后门调整",
+      "entity_type": "method",
+      "description": "在观测到后门路径上混杂时，通过对混杂变量分层或加权以识别因果效应的调整策略。"
+    }
+  ],
+  "relations": [
+    ["可解释人工智能", "人工智能", "SUBTOPIC_OF"],
+    ["特征归因", "可解释人工智能", "SUBTOPIC_OF"],
+    ["SHAP值", "特征归因", "RELATED_TO"],
+    ["LIME", "特征归因", "RELATED_TO"],
+    ["积分梯度", "特征归因", "RELATED_TO"],
+    ["Grad-CAM", "计算机视觉", "RELATED_TO"],
+    ["显著性图", "计算机视觉", "RELATED_TO"],
+    ["显著性图", "Grad-CAM", "RELATED_TO"],
+    ["反事实解释", "因果推断", "RELATED_TO"],
+    ["反事实解释", "反事实", "RELATED_TO"],
+    ["概念激活向量", "可解释人工智能", "RELATED_TO"],
+    ["局部解释", "可解释人工智能", "SUBTOPIC_OF"],
+    ["全局解释", "可解释人工智能", "SUBTOPIC_OF"],
+    ["分布外泛化", "机器学习", "RELATED_TO"],
+    ["域偏移", "分布外泛化", "RELATED_TO"],
+    ["对抗样本", "对抗攻击", "RELATED_TO"],
+    ["对抗样本", "深度学习", "RELATED_TO"],
+    ["自然扰动鲁棒性", "鲁棒性", "RELATED_TO"],
+    ["平滑梯度", "显著性图", "RELATED_TO"],
+    ["可信机器学习", "机器学习", "SUBTOPIC_OF"],
+    ["因果可解释性", "因果推断", "RELATED_TO"],
+    ["因果可解释性", "可解释人工智能", "RELATED_TO"],
+    ["结构因果模型", "因果图", "RELATED_TO"],
+    ["结构因果模型", "因果推断", "RELATED_TO"],
+    ["后门调整", "混杂变量", "RELATED_TO"],
+    ["后门调整", "因果推断", "RELATED_TO"],
+    ["可解释人工智能", "可解释性", "RELATED_TO"],
+    ["SHAP值", "模型评估", "RELATED_TO"],
+    ["LIME", "模型评估", "RELATED_TO"],
+    ["Grad-CAM", "深度学习", "RELATED_TO"],
+    ["积分梯度", "深度学习", "RELATED_TO"],
+    ["分布外泛化", "模型评估", "RELATED_TO"],
+    ["域偏移", "鲁棒性", "RELATED_TO"],
+    ["对抗样本", "对抗训练", "RELATED_TO"],
+    ["自然扰动鲁棒性", "模型评估", "RELATED_TO"],
+    ["可信机器学习", "模型审计", "RELATED_TO"],
+    ["因果可解释性", "因果图", "RELATED_TO"],
+    ["局部解释", "模型评估", "RELATED_TO"],
+    ["全局解释", "模型审计", "RELATED_TO"],
+    ["特征归因", "深度学习", "RELATED_TO"],
+    ["可解释人工智能", "深度学习", "RELATED_TO"]
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "source": "batch_03_knowledge_representation_logic",
+  "nodes": [
+    {
+      "canonical_name": "命题逻辑",
+      "entity_type": "concept",
+      "description": "以命题及逻辑联结词为基础描述真假关系的形式逻辑体系。"
+    },
+    {
+      "canonical_name": "合取范式",
+      "entity_type": "concept",
+      "description": "由若干析取子句进行合取得到的逻辑公式标准形式。"
+    },
+    {
+      "canonical_name": "析取范式",
+      "entity_type": "concept",
+      "description": "由若干合取项进行析取得到的逻辑公式标准形式。"
+    },
+    {
+      "canonical_name": "Horn子句",
+      "entity_type": "concept",
+      "description": "至多包含一个正文字的子句形式，是逻辑程序设计与规则推理的重要基础。"
+    },
+    {
+      "canonical_name": "归结原理",
+      "entity_type": "method",
+      "description": "通过对子句进行归结消解实现自动定理证明的经典推理方法。"
+    },
+    {
+      "canonical_name": "合一",
+      "entity_type": "method",
+      "description": "寻找使两个逻辑表达式一致的替换过程，是自动推理的重要步骤。"
+    },
+    {
+      "canonical_name": "前向链推理",
+      "entity_type": "algorithm",
+      "description": "从已知事实出发不断触发规则得到新结论的数据驱动推理策略。"
+    },
+    {
+      "canonical_name": "后向链推理",
+      "entity_type": "algorithm",
+      "description": "从目标结论反向搜索支持规则和事实的目标驱动推理策略。"
+    },
+    {
+      "canonical_name": "知识库",
+      "entity_type": "concept",
+      "description": "用于组织、存储和管理领域知识及规则的核心知识资源。"
+    },
+    {
+      "canonical_name": "事实",
+      "entity_type": "concept",
+      "description": "知识库中被视为已知为真的基本陈述。"
+    },
+    {
+      "canonical_name": "规则库",
+      "entity_type": "concept",
+      "description": "存放规则形式知识并支撑自动推理的规则集合。"
+    },
+    {
+      "canonical_name": "推理机",
+      "entity_type": "concept",
+      "description": "在知识库基础上执行规则匹配与推理控制的核心组件。"
+    },
+    {
+      "canonical_name": "可信度因子",
+      "entity_type": "concept",
+      "description": "用于刻画规则或结论可信程度的启发式不确定性表示方式。"
+    },
+    {
+      "canonical_name": "默认推理",
+      "entity_type": "method",
+      "description": "在缺乏反例时采用默认假设进行推理的常识推理方法。"
+    },
+    {
+      "canonical_name": "非单调推理",
+      "entity_type": "method",
+      "description": "允许在新知识出现后撤回先前结论的推理方式。"
+    },
+    {
+      "canonical_name": "常识推理",
+      "entity_type": "topic",
+      "description": "模拟人类常识知识使用与补全能力的推理研究方向。"
+    },
+    {
+      "canonical_name": "闭世界假设",
+      "entity_type": "concept",
+      "description": "若知识库中无法证明某命题为真则默认其为假的知识建模假设。"
+    },
+    {
+      "canonical_name": "开世界假设",
+      "entity_type": "concept",
+      "description": "若知识库中缺少相关陈述则不默认其真伪的知识建模假设。"
+    },
+    {
+      "canonical_name": "一致性检验",
+      "entity_type": "method",
+      "description": "检测知识库或逻辑理论是否包含矛盾的验证方法。"
+    },
+    {
+      "canonical_name": "实例推理",
+      "entity_type": "method",
+      "description": "基于类、属性和约束判断个体实例归属与关系的推理任务。"
+    },
+    {
+      "canonical_name": "分类推理",
+      "entity_type": "method",
+      "description": "依据概念定义和包含关系自动构建或验证概念层次结构的推理任务。"
+    }
+  ],
+  "relations": [
+    ["命题逻辑", "一阶谓词逻辑表示法", "PREREQUISITE_OF"],
+    ["命题逻辑", "知识表示", "SUBTOPIC_OF"],
+    ["合取范式", "命题逻辑", "SUBTOPIC_OF"],
+    ["析取范式", "命题逻辑", "SUBTOPIC_OF"],
+    ["Horn子句", "一阶谓词逻辑表示法", "RELATED_TO"],
+    ["Horn子句", "产生式表示法", "RELATED_TO"],
+    ["归结原理", "演绎推理", "SUBTOPIC_OF"],
+    ["合一", "归结原理", "PREREQUISITE_OF"],
+    ["合取范式", "归结原理", "PREREQUISITE_OF"],
+    ["Horn子句", "归结原理", "PREREQUISITE_OF"],
+    ["前向链推理", "演绎推理", "SUBTOPIC_OF"],
+    ["后向链推理", "演绎推理", "SUBTOPIC_OF"],
+    ["前向链推理", "产生式表示法", "RELATED_TO"],
+    ["后向链推理", "产生式表示法", "RELATED_TO"],
+    ["知识库", "知识表示", "RELATED_TO"],
+    ["事实", "知识库", "PART_OF"],
+    ["规则库", "知识库", "PART_OF"],
+    ["推理机", "专家系统", "PART_OF"],
+    ["知识库", "专家系统", "PART_OF"],
+    ["规则库", "专家系统", "PART_OF"],
+    ["事实", "前向链推理", "PREREQUISITE_OF"],
+    ["规则库", "前向链推理", "PREREQUISITE_OF"],
+    ["规则库", "后向链推理", "PREREQUISITE_OF"],
+    ["推理机", "前向链推理", "USES"],
+    ["推理机", "后向链推理", "USES"],
+    ["可信度因子", "不确定性推理", "RELATED_TO"],
+    ["可信度因子", "专家系统", "RELATED_TO"],
+    ["默认推理", "非单调推理", "SUBTOPIC_OF"],
+    ["常识推理", "非单调推理", "RELATED_TO"],
+    ["非单调推理", "推理", "SUBTOPIC_OF"],
+    ["常识推理", "推理", "SUBTOPIC_OF"],
+    ["闭世界假设", "默认推理", "PREREQUISITE_OF"],
+    ["开世界假设", "本体", "RELATED_TO"],
+    ["闭世界假设", "知识库", "RELATED_TO"],
+    ["开世界假设", "知识图谱", "RELATED_TO"],
+    ["一致性检验", "描述逻辑", "RELATED_TO"],
+    ["实例推理", "描述逻辑", "SUBTOPIC_OF"],
+    ["分类推理", "描述逻辑", "SUBTOPIC_OF"],
+    ["一致性检验", "本体", "RELATED_TO"],
+    ["实例推理", "本体", "RELATED_TO"],
+    ["分类推理", "本体", "RELATED_TO"]
+  ]
+}

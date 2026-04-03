@@ -1,0 +1,147 @@
+{
+  "source": "batch_12_robotics_embodied_ai_foundation",
+  "nodes": [
+    {
+      "canonical_name": "具身智能",
+      "entity_type": "topic",
+      "description": "强调智能体通过身体与环境交互形成认知、决策与学习能力的研究方向。"
+    },
+    {
+      "canonical_name": "移动机器人",
+      "entity_type": "application",
+      "description": "能够在环境中自主或半自主移动并执行任务的机器人系统。"
+    },
+    {
+      "canonical_name": "机械臂",
+      "entity_type": "application",
+      "description": "由多个关节和连杆组成、用于操作和装配任务的机器人装置。"
+    },
+    {
+      "canonical_name": "机器人感知",
+      "entity_type": "method",
+      "description": "利用传感器获取并理解环境、目标和自身状态信息的方法。"
+    },
+    {
+      "canonical_name": "传感器融合",
+      "entity_type": "method",
+      "description": "将多个传感器信息进行时空对齐和联合估计以提升感知可靠性的方法。"
+    },
+    {
+      "canonical_name": "同时定位与建图",
+      "entity_type": "method",
+      "description": "机器人在未知环境中同步估计自身位姿并构建环境地图的方法。"
+    },
+    {
+      "canonical_name": "位姿估计",
+      "entity_type": "method",
+      "description": "估计机器人或目标在空间中的位置与姿态的过程。"
+    },
+    {
+      "canonical_name": "地图表示",
+      "entity_type": "concept",
+      "description": "对环境空间结构、障碍物和可通行区域进行编码的表示方式。"
+    },
+    {
+      "canonical_name": "占据栅格地图",
+      "entity_type": "concept",
+      "description": "以栅格单元存储环境被占据概率的经典地图表示方法。"
+    },
+    {
+      "canonical_name": "机器人定位",
+      "entity_type": "method",
+      "description": "估计机器人在已知或部分已知环境中自身位置的过程。"
+    },
+    {
+      "canonical_name": "正运动学",
+      "entity_type": "method",
+      "description": "根据关节变量计算机器人末端执行器位姿的运动学分析方法。"
+    },
+    {
+      "canonical_name": "逆运动学",
+      "entity_type": "method",
+      "description": "根据目标位姿求解机器人关节变量的运动学分析方法。"
+    },
+    {
+      "canonical_name": "轨迹规划",
+      "entity_type": "method",
+      "description": "在满足动力学和运动学约束下生成连续时间运动轨迹的方法。"
+    },
+    {
+      "canonical_name": "运动控制",
+      "entity_type": "method",
+      "description": "使机器人按照期望轨迹或行为稳定执行动作的控制方法。"
+    },
+    {
+      "canonical_name": "闭环控制",
+      "entity_type": "method",
+      "description": "依据系统反馈误差实时调整控制输入以提高稳定性和精度的方法。"
+    },
+    {
+      "canonical_name": "路径跟踪",
+      "entity_type": "method",
+      "description": "使机器人沿给定路径稳定前进并减小偏差的控制任务。"
+    },
+    {
+      "canonical_name": "抓取",
+      "entity_type": "application",
+      "description": "机器人对目标物体进行接近、接触和稳定持握的操作任务。"
+    },
+    {
+      "canonical_name": "操作规划",
+      "entity_type": "method",
+      "description": "围绕抓取、放置和装配等操作任务生成动作序列的方法。"
+    },
+    {
+      "canonical_name": "末端执行器",
+      "entity_type": "concept",
+      "description": "位于机器人操作链末端、直接与环境交互的装置或工具。"
+    },
+    {
+      "canonical_name": "人机协作",
+      "entity_type": "application",
+      "description": "机器人与人类在共享环境中协同完成任务的工作模式。"
+    }
+  ],
+  "relations": [
+    ["具身智能", "人工智能", "SUBTOPIC_OF"],
+    ["具身智能", "机器人学", "RELATED_TO"],
+    ["移动机器人", "机器人学", "SUBTOPIC_OF"],
+    ["机械臂", "机器人学", "SUBTOPIC_OF"],
+    ["机器人感知", "机器人学", "SUBTOPIC_OF"],
+    ["机器人感知", "计算机视觉", "RELATED_TO"],
+    ["传感器融合", "机器人感知", "PREREQUISITE_OF"],
+    ["传感器融合", "同时定位与建图", "PREREQUISITE_OF"],
+    ["同时定位与建图", "机器人学", "SUBTOPIC_OF"],
+    ["位姿估计", "同时定位与建图", "PREREQUISITE_OF"],
+    ["地图表示", "同时定位与建图", "PREREQUISITE_OF"],
+    ["占据栅格地图", "地图表示", "SUBTOPIC_OF"],
+    ["机器人定位", "同时定位与建图", "RELATED_TO"],
+    ["位姿估计", "机器人定位", "PREREQUISITE_OF"],
+    ["正运动学", "机器人学", "SUBTOPIC_OF"],
+    ["逆运动学", "机器人学", "SUBTOPIC_OF"],
+    ["正运动学", "逆运动学", "RELATED_TO"],
+    ["逆运动学", "机械臂", "PREREQUISITE_OF"],
+    ["末端执行器", "机械臂", "PART_OF"],
+    ["正运动学", "末端执行器", "RELATED_TO"],
+    ["轨迹规划", "机器人学", "SUBTOPIC_OF"],
+    ["轨迹规划", "路径规划", "RELATED_TO"],
+    ["运动控制", "机器人学", "SUBTOPIC_OF"],
+    ["闭环控制", "运动控制", "SUBTOPIC_OF"],
+    ["路径跟踪", "运动控制", "SUBTOPIC_OF"],
+    ["轨迹规划", "路径跟踪", "PREREQUISITE_OF"],
+    ["闭环控制", "路径跟踪", "PREREQUISITE_OF"],
+    ["抓取", "机器人学", "SUBTOPIC_OF"],
+    ["操作规划", "机器人学", "SUBTOPIC_OF"],
+    ["操作规划", "抓取", "PREREQUISITE_OF"],
+    ["逆运动学", "操作规划", "PREREQUISITE_OF"],
+    ["末端执行器", "抓取", "PREREQUISITE_OF"],
+    ["强化学习", "抓取", "RELATED_TO"],
+    ["强化学习", "具身智能", "RELATED_TO"],
+    ["移动机器人", "路径跟踪", "PREREQUISITE_OF"],
+    ["移动机器人", "机器人定位", "PREREQUISITE_OF"],
+    ["人机协作", "机器人学", "SUBTOPIC_OF"],
+    ["人机协作", "具身智能", "RELATED_TO"],
+    ["人机协作", "移动机器人", "RELATED_TO"],
+    ["人机协作", "机械臂", "RELATED_TO"]
+  ]
+}

@@ -1,0 +1,491 @@
+{
+  "source": "curated_ai_professional_ontology",
+  "nodes": [
+    {
+      "canonical_name": "人工智能",
+      "entity_type": "topic",
+      "description": "研究使机器表现出感知、认知、学习、推理与决策能力的综合学科。"
+    },
+    {
+      "canonical_name": "知识表示",
+      "entity_type": "topic",
+      "description": "研究如何形式化表达知识并支持存储、推理与应用的人工智能核心方向。"
+    },
+    {
+      "canonical_name": "推理",
+      "entity_type": "topic",
+      "description": "基于已有知识和规则得到新结论或决策结果的过程。"
+    },
+    {
+      "canonical_name": "搜索",
+      "entity_type": "topic",
+      "description": "在状态空间或解空间中寻找满足目标条件解的方法体系。"
+    },
+    {
+      "canonical_name": "规划",
+      "entity_type": "topic",
+      "description": "为达到目标自动构造行动序列或策略的研究方向。"
+    },
+    {
+      "canonical_name": "机器学习",
+      "entity_type": "topic",
+      "description": "通过数据驱动方式学习模型、规律与决策函数的人工智能核心分支。"
+    },
+    {
+      "canonical_name": "神经网络",
+      "entity_type": "topic",
+      "description": "受生物神经系统启发构建的分布式并行计算模型。"
+    },
+    {
+      "canonical_name": "自然语言处理",
+      "entity_type": "topic",
+      "description": "研究计算机对自然语言进行理解、分析、生成与交互的方法。"
+    },
+    {
+      "canonical_name": "计算机视觉",
+      "entity_type": "topic",
+      "description": "研究使计算机获取、处理并理解图像与视频信息的方法。"
+    },
+    {
+      "canonical_name": "智能体",
+      "entity_type": "topic",
+      "description": "能够感知环境并采取行动以实现目标的自主实体。"
+    },
+    {
+      "canonical_name": "多智能体系统",
+      "entity_type": "topic",
+      "description": "由多个相互作用智能体构成的协同决策与协作系统。"
+    },
+    {
+      "canonical_name": "专家系统",
+      "entity_type": "topic",
+      "description": "模拟领域专家求解问题能力的知识密集型智能系统。"
+    },
+    {
+      "canonical_name": "机器人学",
+      "entity_type": "topic",
+      "description": "研究机器人感知、控制、规划与自主行为的交叉领域。"
+    },
+    {
+      "canonical_name": "一阶谓词逻辑表示法",
+      "entity_type": "method",
+      "description": "用谓词逻辑形式化表示对象、属性与关系的知识表示方法。"
+    },
+    {
+      "canonical_name": "产生式表示法",
+      "entity_type": "method",
+      "description": "使用 if-then 规则表示知识与推理过程的方法。"
+    },
+    {
+      "canonical_name": "框架表示法",
+      "entity_type": "method",
+      "description": "用槽和值组织概念结构与属性信息的知识表示方法。"
+    },
+    {
+      "canonical_name": "语义网络表示法",
+      "entity_type": "method",
+      "description": "用节点和边表示概念及语义关系的知识表示方法。"
+    },
+    {
+      "canonical_name": "描述逻辑",
+      "entity_type": "method",
+      "description": "用于形式化概念、角色与个体并支持可判定推理的逻辑体系。"
+    },
+    {
+      "canonical_name": "本体",
+      "entity_type": "concept",
+      "description": "对领域概念、关系与约束进行共享形式化描述的知识组织模型。"
+    },
+    {
+      "canonical_name": "语义网",
+      "entity_type": "topic",
+      "description": "以机器可理解方式组织网络知识资源的语义化体系。"
+    },
+    {
+      "canonical_name": "知识图谱",
+      "entity_type": "topic",
+      "description": "以图结构组织实体、概念及关系的知识表示与推理技术。"
+    },
+    {
+      "canonical_name": "演绎推理",
+      "entity_type": "method",
+      "description": "依据一般规则推出具体结论的推理方式。"
+    },
+    {
+      "canonical_name": "归纳推理",
+      "entity_type": "method",
+      "description": "从具体样本或事实总结一般规律的推理方式。"
+    },
+    {
+      "canonical_name": "概率推理",
+      "entity_type": "method",
+      "description": "在不确定条件下基于概率模型进行推断的方法。"
+    },
+    {
+      "canonical_name": "模糊推理",
+      "entity_type": "method",
+      "description": "基于模糊集合和模糊规则进行近似推断的方法。"
+    },
+    {
+      "canonical_name": "启发式搜索",
+      "entity_type": "method",
+      "description": "利用启发信息降低搜索空间并提高求解效率的搜索方法。"
+    },
+    {
+      "canonical_name": "A*搜索算法",
+      "entity_type": "algorithm",
+      "description": "结合路径代价与启发估价函数的经典最优启发式搜索算法。"
+    },
+    {
+      "canonical_name": "博弈搜索",
+      "entity_type": "method",
+      "description": "在对抗环境中基于博弈树进行决策求解的方法。"
+    },
+    {
+      "canonical_name": "Alpha-Beta剪枝",
+      "entity_type": "algorithm",
+      "description": "通过剪除不可能影响最优决策分支来加速极大极小搜索的算法。"
+    },
+    {
+      "canonical_name": "蒙特卡洛树搜索",
+      "entity_type": "algorithm",
+      "description": "通过随机模拟与搜索树扩展进行决策的启发式搜索算法。"
+    },
+    {
+      "canonical_name": "路径规划",
+      "entity_type": "method",
+      "description": "为智能体或机器人寻找满足约束条件的可行路径的方法。"
+    },
+    {
+      "canonical_name": "监督学习",
+      "entity_type": "method",
+      "description": "利用带标注样本学习输入到输出映射的机器学习范式。"
+    },
+    {
+      "canonical_name": "非监督学习",
+      "entity_type": "method",
+      "description": "从未标注数据中发现结构、模式或潜在表示的机器学习范式。"
+    },
+    {
+      "canonical_name": "强化学习",
+      "entity_type": "method",
+      "description": "通过智能体与环境交互并依据奖励信号优化决策策略的学习范式。"
+    },
+    {
+      "canonical_name": "自监督学习",
+      "entity_type": "method",
+      "description": "从数据自身构造监督信号进行表示学习的机器学习范式。"
+    },
+    {
+      "canonical_name": "迁移学习",
+      "entity_type": "method",
+      "description": "将源任务或源领域知识迁移到目标任务的学习方法。"
+    },
+    {
+      "canonical_name": "表示学习",
+      "entity_type": "method",
+      "description": "自动学习适合下游任务的特征表示的方法体系。"
+    },
+    {
+      "canonical_name": "深度学习",
+      "entity_type": "topic",
+      "description": "基于多层神经网络进行表示学习与任务建模的方法体系。"
+    },
+    {
+      "canonical_name": "概率图模型",
+      "entity_type": "topic",
+      "description": "用图结构表达随机变量依赖关系的概率建模框架。"
+    },
+    {
+      "canonical_name": "生成式模型",
+      "entity_type": "topic",
+      "description": "学习数据生成过程或联合分布以产生新样本的模型类别。"
+    },
+    {
+      "canonical_name": "判别式模型",
+      "entity_type": "topic",
+      "description": "直接学习条件分布或决策边界以进行预测的模型类别。"
+    },
+    {
+      "canonical_name": "分类",
+      "entity_type": "method",
+      "description": "将样本判定到有限类别集合中的监督学习任务。"
+    },
+    {
+      "canonical_name": "回归",
+      "entity_type": "method",
+      "description": "预测连续数值输出的监督学习任务。"
+    },
+    {
+      "canonical_name": "聚类",
+      "entity_type": "method",
+      "description": "按照样本相似性自动形成分组的无监督学习任务。"
+    },
+    {
+      "canonical_name": "降维",
+      "entity_type": "method",
+      "description": "在保留主要信息的前提下降低特征维数的方法。"
+    },
+    {
+      "canonical_name": "决策树",
+      "entity_type": "algorithm",
+      "description": "以树形判定结构进行分类或回归的经典学习模型。"
+    },
+    {
+      "canonical_name": "支持向量机",
+      "entity_type": "algorithm",
+      "description": "通过最大间隔超平面进行分类或回归的经典学习算法。"
+    },
+    {
+      "canonical_name": "朴素贝叶斯",
+      "entity_type": "algorithm",
+      "description": "基于条件独立假设和贝叶斯定理的概率分类算法。"
+    },
+    {
+      "canonical_name": "K近邻",
+      "entity_type": "algorithm",
+      "description": "依据邻域样本标签或数值进行预测的实例学习算法。"
+    },
+    {
+      "canonical_name": "逻辑回归",
+      "entity_type": "algorithm",
+      "description": "基于对数几率函数建模条件概率的线性分类模型。"
+    },
+    {
+      "canonical_name": "线性回归",
+      "entity_type": "algorithm",
+      "description": "用线性函数拟合输入与连续输出关系的回归模型。"
+    },
+    {
+      "canonical_name": "K均值",
+      "entity_type": "algorithm",
+      "description": "以最小化类内平方误差为目标的经典聚类算法。"
+    },
+    {
+      "canonical_name": "主成分分析",
+      "entity_type": "algorithm",
+      "description": "通过正交变换提取主要方差方向的经典降维方法。"
+    },
+    {
+      "canonical_name": "贝叶斯网络",
+      "entity_type": "algorithm",
+      "description": "以有向无环图表示随机变量条件依赖关系的概率图模型。"
+    },
+    {
+      "canonical_name": "感知机",
+      "entity_type": "algorithm",
+      "description": "基于线性判别函数的早期神经网络分类模型。"
+    },
+    {
+      "canonical_name": "BP神经网络",
+      "entity_type": "algorithm",
+      "description": "使用误差反向传播算法训练的前馈神经网络。"
+    },
+    {
+      "canonical_name": "卷积神经网络",
+      "entity_type": "algorithm",
+      "description": "擅长处理图像等网格结构数据的深度神经网络模型。"
+    },
+    {
+      "canonical_name": "循环神经网络",
+      "entity_type": "algorithm",
+      "description": "适合处理序列数据的递归式神经网络模型。"
+    },
+    {
+      "canonical_name": "注意力机制",
+      "entity_type": "concept",
+      "description": "根据输入不同部分的重要性进行加权建模的机制。"
+    },
+    {
+      "canonical_name": "Transformer",
+      "entity_type": "algorithm",
+      "description": "基于自注意力机制的序列建模架构。"
+    },
+    {
+      "canonical_name": "BERT",
+      "entity_type": "algorithm",
+      "description": "基于双向 Transformer 编码器的预训练语言模型。"
+    },
+    {
+      "canonical_name": "大语言模型",
+      "entity_type": "topic",
+      "description": "以海量语料预训练形成通用语言理解与生成能力的大规模模型。"
+    },
+    {
+      "canonical_name": "马尔可夫决策过程",
+      "entity_type": "concept",
+      "description": "强化学习中描述状态、动作、转移与奖励的经典数学模型。"
+    },
+    {
+      "canonical_name": "Q学习",
+      "entity_type": "algorithm",
+      "description": "通过学习动作价值函数求解最优策略的经典强化学习算法。"
+    },
+    {
+      "canonical_name": "策略梯度",
+      "entity_type": "algorithm",
+      "description": "直接优化策略参数以最大化期望回报的强化学习算法族。"
+    },
+    {
+      "canonical_name": "词嵌入",
+      "entity_type": "method",
+      "description": "将词语映射为连续向量表示的自然语言处理方法。"
+    },
+    {
+      "canonical_name": "序列到序列模型",
+      "entity_type": "algorithm",
+      "description": "将输入序列映射为输出序列的通用神经网络建模框架。"
+    },
+    {
+      "canonical_name": "机器翻译",
+      "entity_type": "application",
+      "description": "自动将一种自然语言转换为另一种自然语言的任务。"
+    },
+    {
+      "canonical_name": "问答系统",
+      "entity_type": "application",
+      "description": "根据用户问题自动返回答案的智能系统。"
+    },
+    {
+      "canonical_name": "信息抽取",
+      "entity_type": "application",
+      "description": "从非结构化文本中抽取实体、关系与事件等结构化信息的任务。"
+    },
+    {
+      "canonical_name": "命名实体识别",
+      "entity_type": "application",
+      "description": "识别文本中人名、地名、机构名等实体边界与类别的任务。"
+    },
+    {
+      "canonical_name": "语音识别",
+      "entity_type": "application",
+      "description": "将语音信号转换为文本或符号序列的任务。"
+    },
+    {
+      "canonical_name": "图像分类",
+      "entity_type": "application",
+      "description": "识别图像所属类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "目标检测",
+      "entity_type": "application",
+      "description": "在图像中定位并识别目标类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "图像分割",
+      "entity_type": "application",
+      "description": "对图像像素进行语义或实例级划分的计算机视觉任务。"
+    }
+  ],
+  "relations": [
+    ["知识表示", "人工智能", "SUBTOPIC_OF"],
+    ["推理", "人工智能", "SUBTOPIC_OF"],
+    ["搜索", "人工智能", "SUBTOPIC_OF"],
+    ["规划", "人工智能", "SUBTOPIC_OF"],
+    ["机器学习", "人工智能", "SUBTOPIC_OF"],
+    ["神经网络", "人工智能", "SUBTOPIC_OF"],
+    ["自然语言处理", "人工智能", "SUBTOPIC_OF"],
+    ["计算机视觉", "人工智能", "SUBTOPIC_OF"],
+    ["智能体", "人工智能", "SUBTOPIC_OF"],
+    ["多智能体系统", "人工智能", "SUBTOPIC_OF"],
+    ["专家系统", "人工智能", "SUBTOPIC_OF"],
+    ["机器人学", "人工智能", "SUBTOPIC_OF"],
+
+    ["一阶谓词逻辑表示法", "知识表示", "SUBTOPIC_OF"],
+    ["产生式表示法", "知识表示", "SUBTOPIC_OF"],
+    ["框架表示法", "知识表示", "SUBTOPIC_OF"],
+    ["语义网络表示法", "知识表示", "SUBTOPIC_OF"],
+    ["描述逻辑", "知识表示", "SUBTOPIC_OF"],
+    ["本体", "知识表示", "SUBTOPIC_OF"],
+    ["语义网", "知识表示", "SUBTOPIC_OF"],
+    ["知识图谱", "知识表示", "SUBTOPIC_OF"],
+
+    ["演绎推理", "推理", "SUBTOPIC_OF"],
+    ["归纳推理", "推理", "SUBTOPIC_OF"],
+    ["概率推理", "推理", "SUBTOPIC_OF"],
+    ["模糊推理", "推理", "SUBTOPIC_OF"],
+
+    ["启发式搜索", "搜索", "SUBTOPIC_OF"],
+    ["A*搜索算法", "启发式搜索", "SUBTOPIC_OF"],
+    ["博弈搜索", "搜索", "SUBTOPIC_OF"],
+    ["Alpha-Beta剪枝", "博弈搜索", "SUBTOPIC_OF"],
+    ["蒙特卡洛树搜索", "搜索", "SUBTOPIC_OF"],
+    ["路径规划", "规划", "SUBTOPIC_OF"],
+
+    ["监督学习", "机器学习", "SUBTOPIC_OF"],
+    ["非监督学习", "机器学习", "SUBTOPIC_OF"],
+    ["强化学习", "机器学习", "SUBTOPIC_OF"],
+    ["自监督学习", "机器学习", "SUBTOPIC_OF"],
+    ["迁移学习", "机器学习", "SUBTOPIC_OF"],
+    ["表示学习", "机器学习", "SUBTOPIC_OF"],
+    ["深度学习", "机器学习", "SUBTOPIC_OF"],
+    ["概率图模型", "机器学习", "SUBTOPIC_OF"],
+    ["生成式模型", "机器学习", "SUBTOPIC_OF"],
+    ["判别式模型", "机器学习", "SUBTOPIC_OF"],
+
+    ["分类", "监督学习", "SUBTOPIC_OF"],
+    ["回归", "监督学习", "SUBTOPIC_OF"],
+    ["决策树", "监督学习", "SUBTOPIC_OF"],
+    ["支持向量机", "监督学习", "SUBTOPIC_OF"],
+    ["朴素贝叶斯", "监督学习", "SUBTOPIC_OF"],
+    ["K近邻", "监督学习", "SUBTOPIC_OF"],
+    ["逻辑回归", "监督学习", "SUBTOPIC_OF"],
+    ["线性回归", "监督学习", "SUBTOPIC_OF"],
+
+    ["聚类", "非监督学习", "SUBTOPIC_OF"],
+    ["降维", "非监督学习", "SUBTOPIC_OF"],
+    ["K均值", "聚类", "SUBTOPIC_OF"],
+    ["主成分分析", "降维", "SUBTOPIC_OF"],
+
+    ["马尔可夫决策过程", "强化学习", "PREREQUISITE_OF"],
+    ["Q学习", "强化学习", "SUBTOPIC_OF"],
+    ["策略梯度", "强化学习", "SUBTOPIC_OF"],
+
+    ["感知机", "神经网络", "SUBTOPIC_OF"],
+    ["BP神经网络", "神经网络", "SUBTOPIC_OF"],
+    ["神经网络", "深度学习", "PREREQUISITE_OF"],
+    ["表示学习", "深度学习", "PREREQUISITE_OF"],
+    ["卷积神经网络", "深度学习", "SUBTOPIC_OF"],
+    ["循环神经网络", "深度学习", "SUBTOPIC_OF"],
+    ["注意力机制", "深度学习", "SUBTOPIC_OF"],
+    ["Transformer", "深度学习", "SUBTOPIC_OF"],
+    ["BERT", "Transformer", "SUBTOPIC_OF"],
+    ["Transformer", "大语言模型", "PREREQUISITE_OF"],
+    ["大语言模型", "自然语言处理", "SUBTOPIC_OF"],
+    ["生成式模型", "大语言模型", "PREREQUISITE_OF"],
+
+    ["贝叶斯网络", "概率图模型", "SUBTOPIC_OF"],
+    ["概率图模型", "概率推理", "RELATED_TO"],
+
+    ["词嵌入", "自然语言处理", "SUBTOPIC_OF"],
+    ["序列到序列模型", "自然语言处理", "SUBTOPIC_OF"],
+    ["机器翻译", "自然语言处理", "SUBTOPIC_OF"],
+    ["问答系统", "自然语言处理", "SUBTOPIC_OF"],
+    ["信息抽取", "自然语言处理", "SUBTOPIC_OF"],
+    ["命名实体识别", "信息抽取", "SUBTOPIC_OF"],
+    ["语音识别", "自然语言处理", "SUBTOPIC_OF"],
+    ["词嵌入", "序列到序列模型", "PREREQUISITE_OF"],
+    ["序列到序列模型", "机器翻译", "PREREQUISITE_OF"],
+    ["Transformer", "机器翻译", "PREREQUISITE_OF"],
+    ["Transformer", "问答系统", "PREREQUISITE_OF"],
+    ["Transformer", "信息抽取", "PREREQUISITE_OF"],
+
+    ["图像分类", "计算机视觉", "SUBTOPIC_OF"],
+    ["目标检测", "计算机视觉", "SUBTOPIC_OF"],
+    ["图像分割", "计算机视觉", "SUBTOPIC_OF"],
+    ["卷积神经网络", "图像分类", "PREREQUISITE_OF"],
+    ["卷积神经网络", "目标检测", "PREREQUISITE_OF"],
+    ["卷积神经网络", "图像分割", "PREREQUISITE_OF"],
+
+    ["智能体", "多智能体系统", "PREREQUISITE_OF"],
+    ["知识表示", "专家系统", "PREREQUISITE_OF"],
+    ["推理", "专家系统", "PREREQUISITE_OF"],
+    ["规划", "机器人学", "PREREQUISITE_OF"],
+    ["路径规划", "机器人学", "PREREQUISITE_OF"],
+    ["强化学习", "机器人学", "RELATED_TO"],
+
+    ["本体", "知识图谱", "RELATED_TO"],
+    ["知识图谱", "语义网", "RELATED_TO"],
+    ["语义网络表示法", "知识图谱", "RELATED_TO"]
+  ]
+}

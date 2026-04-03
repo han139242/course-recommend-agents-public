@@ -1,0 +1,147 @@
+{
+  "source": "batch_16_recommender_ir_foundation",
+  "nodes": [
+    {
+      "canonical_name": "推荐系统",
+      "entity_type": "topic",
+      "description": "根据用户兴趣、上下文和目标对候选内容进行筛选与排序的智能系统。"
+    },
+    {
+      "canonical_name": "信息检索",
+      "entity_type": "topic",
+      "description": "从大规模文档或内容集合中高效查找相关结果的方法体系。"
+    },
+    {
+      "canonical_name": "用户画像",
+      "entity_type": "concept",
+      "description": "对用户兴趣、偏好、能力和行为特征进行结构化表示的模型。"
+    },
+    {
+      "canonical_name": "用户行为",
+      "entity_type": "concept",
+      "description": "用户在浏览、点击、收藏、学习和反馈过程中产生的交互记录。"
+    },
+    {
+      "canonical_name": "协同过滤",
+      "entity_type": "method",
+      "description": "基于用户或物品相似性挖掘偏好并生成推荐结果的方法。"
+    },
+    {
+      "canonical_name": "基于内容的推荐",
+      "entity_type": "method",
+      "description": "根据用户历史偏好与内容特征相似性进行推荐的方法。"
+    },
+    {
+      "canonical_name": "召回阶段",
+      "entity_type": "method",
+      "description": "从海量候选中快速筛出较小高相关候选集合的推荐阶段。"
+    },
+    {
+      "canonical_name": "排序阶段",
+      "entity_type": "method",
+      "description": "对召回候选进行精细打分并生成最终展示顺序的推荐阶段。"
+    },
+    {
+      "canonical_name": "粗排",
+      "entity_type": "method",
+      "description": "在召回之后对候选进行快速打分压缩规模的中间排序阶段。"
+    },
+    {
+      "canonical_name": "精排",
+      "entity_type": "method",
+      "description": "使用更复杂特征和模型对少量候选进行精细排序的阶段。"
+    },
+    {
+      "canonical_name": "点击率预估",
+      "entity_type": "method",
+      "description": "预测用户点击某个候选内容概率的推荐建模任务。"
+    },
+    {
+      "canonical_name": "倒排索引",
+      "entity_type": "concept",
+      "description": "记录词项到文档映射关系以支持高效检索的经典索引结构。"
+    },
+    {
+      "canonical_name": "BM25",
+      "entity_type": "algorithm",
+      "description": "结合词频、逆文档频率和长度归一化的经典文本检索排序算法。"
+    },
+    {
+      "canonical_name": "向量检索",
+      "entity_type": "method",
+      "description": "基于向量表示和相似度计算从候选集合中检索相关内容的方法。"
+    },
+    {
+      "canonical_name": "语义检索",
+      "entity_type": "method",
+      "description": "利用语义表示而非仅依赖词面匹配进行内容检索的方法。"
+    },
+    {
+      "canonical_name": "双塔模型",
+      "entity_type": "algorithm",
+      "description": "分别编码查询与候选并在向量空间中计算匹配分数的检索模型。"
+    },
+    {
+      "canonical_name": "学习排序",
+      "entity_type": "method",
+      "description": "通过机器学习方法直接学习候选排序函数的建模范式。"
+    },
+    {
+      "canonical_name": "冷启动",
+      "entity_type": "concept",
+      "description": "新用户、新物品或缺少交互数据时推荐效果下降的问题。"
+    },
+    {
+      "canonical_name": "曝光偏差",
+      "entity_type": "concept",
+      "description": "训练数据只反映历史曝光策略从而导致学习偏差的现象。"
+    },
+    {
+      "canonical_name": "A/B测试",
+      "entity_type": "method",
+      "description": "通过在线对照实验比较不同推荐或检索策略实际效果的方法。"
+    }
+  ],
+  "relations": [
+    ["推荐系统", "人工智能", "SUBTOPIC_OF"],
+    ["信息检索", "人工智能", "SUBTOPIC_OF"],
+    ["用户画像", "推荐系统", "PREREQUISITE_OF"],
+    ["用户行为", "推荐系统", "PREREQUISITE_OF"],
+    ["用户行为", "用户画像", "PREREQUISITE_OF"],
+    ["协同过滤", "推荐系统", "SUBTOPIC_OF"],
+    ["基于内容的推荐", "推荐系统", "SUBTOPIC_OF"],
+    ["协同过滤", "用户行为", "PREREQUISITE_OF"],
+    ["基于内容的推荐", "特征工程", "RELATED_TO"],
+    ["基于内容的推荐", "知识图谱", "RELATED_TO"],
+    ["召回阶段", "推荐系统", "SUBTOPIC_OF"],
+    ["排序阶段", "推荐系统", "SUBTOPIC_OF"],
+    ["召回阶段", "排序阶段", "PREREQUISITE_OF"],
+    ["粗排", "排序阶段", "SUBTOPIC_OF"],
+    ["精排", "排序阶段", "SUBTOPIC_OF"],
+    ["粗排", "精排", "PREREQUISITE_OF"],
+    ["点击率预估", "排序阶段", "RELATED_TO"],
+    ["点击率预估", "精排", "RELATED_TO"],
+    ["学习排序", "排序阶段", "PREREQUISITE_OF"],
+    ["学习排序", "点击率预估", "RELATED_TO"],
+    ["倒排索引", "信息检索", "PREREQUISITE_OF"],
+    ["BM25", "信息检索", "SUBTOPIC_OF"],
+    ["倒排索引", "BM25", "PREREQUISITE_OF"],
+    ["向量检索", "信息检索", "SUBTOPIC_OF"],
+    ["语义检索", "信息检索", "SUBTOPIC_OF"],
+    ["向量检索", "语义检索", "PREREQUISITE_OF"],
+    ["词嵌入", "向量检索", "PREREQUISITE_OF"],
+    ["双塔模型", "向量检索", "SUBTOPIC_OF"],
+    ["双塔模型", "语义检索", "RELATED_TO"],
+    ["双塔模型", "召回阶段", "RELATED_TO"],
+    ["语义检索", "问答系统", "RELATED_TO"],
+    ["语义检索", "大语言模型", "RELATED_TO"],
+    ["冷启动", "推荐系统", "RELATED_TO"],
+    ["冷启动", "协同过滤", "RELATED_TO"],
+    ["冷启动", "基于内容的推荐", "RELATED_TO"],
+    ["曝光偏差", "推荐系统", "RELATED_TO"],
+    ["曝光偏差", "点击率预估", "RELATED_TO"],
+    ["A/B测试", "推荐系统", "RELATED_TO"],
+    ["A/B测试", "模型评估", "RELATED_TO"],
+    ["A/B测试", "在线推理", "RELATED_TO"]
+  ]
+}

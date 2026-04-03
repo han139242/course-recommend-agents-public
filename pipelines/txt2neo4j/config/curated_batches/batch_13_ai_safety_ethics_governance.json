@@ -1,0 +1,147 @@
+{
+  "source": "batch_13_ai_safety_ethics_governance",
+  "nodes": [
+    {
+      "canonical_name": "AI安全",
+      "entity_type": "topic",
+      "description": "研究如何降低人工智能系统失效、被攻击或产生有害行为风险的方向。"
+    },
+    {
+      "canonical_name": "AI伦理",
+      "entity_type": "topic",
+      "description": "研究人工智能系统在设计、部署和使用过程中应遵循的价值与责任原则。"
+    },
+    {
+      "canonical_name": "AI治理",
+      "entity_type": "topic",
+      "description": "围绕人工智能系统监管、标准、责任与风险控制建立制度和流程的方法体系。"
+    },
+    {
+      "canonical_name": "公平性",
+      "entity_type": "concept",
+      "description": "人工智能系统在不同群体和个体之间避免不合理差别影响的性质。"
+    },
+    {
+      "canonical_name": "偏见",
+      "entity_type": "concept",
+      "description": "数据、模型或决策过程中对特定群体产生系统性不公影响的现象。"
+    },
+    {
+      "canonical_name": "可解释性",
+      "entity_type": "concept",
+      "description": "人工智能系统能够向人类说明其决策依据和行为机制的性质。"
+    },
+    {
+      "canonical_name": "可追溯性",
+      "entity_type": "concept",
+      "description": "能够追踪模型训练、数据来源、参数变更和决策过程的能力。"
+    },
+    {
+      "canonical_name": "隐私保护",
+      "entity_type": "topic",
+      "description": "在数据采集、训练和推理过程中保护个人和敏感信息不被滥用的方法体系。"
+    },
+    {
+      "canonical_name": "差分隐私",
+      "entity_type": "method",
+      "description": "通过引入受控随机扰动来限制个体数据泄露风险的隐私保护方法。"
+    },
+    {
+      "canonical_name": "联邦学习",
+      "entity_type": "method",
+      "description": "在数据不出本地前提下通过参数或梯度协同训练模型的方法。"
+    },
+    {
+      "canonical_name": "鲁棒性",
+      "entity_type": "concept",
+      "description": "模型在输入扰动、噪声或分布变化下维持稳定性能的能力。"
+    },
+    {
+      "canonical_name": "对抗攻击",
+      "entity_type": "method",
+      "description": "通过构造微小但恶意的输入扰动诱导模型输出错误结果的方法。"
+    },
+    {
+      "canonical_name": "对抗训练",
+      "entity_type": "method",
+      "description": "将对抗样本纳入训练过程以提升模型鲁棒性的防御方法。"
+    },
+    {
+      "canonical_name": "价值对齐",
+      "entity_type": "concept",
+      "description": "使人工智能系统目标与人类意图、价值和规范保持一致的性质。"
+    },
+    {
+      "canonical_name": "幻觉",
+      "entity_type": "concept",
+      "description": "生成式模型输出看似合理但事实错误或无依据内容的现象。"
+    },
+    {
+      "canonical_name": "模型审计",
+      "entity_type": "method",
+      "description": "系统评估模型性能、风险、偏差、合规性和可解释性的检查过程。"
+    },
+    {
+      "canonical_name": "风险评估",
+      "entity_type": "method",
+      "description": "识别、分析和分级人工智能系统潜在危害与失效场景的方法。"
+    },
+    {
+      "canonical_name": "合规性",
+      "entity_type": "concept",
+      "description": "人工智能系统满足法律法规、标准和组织规范要求的性质。"
+    },
+    {
+      "canonical_name": "安全护栏",
+      "entity_type": "method",
+      "description": "通过规则、过滤和控制机制约束模型输出与行为边界的方法。"
+    },
+    {
+      "canonical_name": "红队测试",
+      "entity_type": "method",
+      "description": "通过模拟恶意使用和极端场景主动发现人工智能系统薄弱点的测试方法。"
+    }
+  ],
+  "relations": [
+    ["AI安全", "人工智能", "SUBTOPIC_OF"],
+    ["AI伦理", "人工智能", "SUBTOPIC_OF"],
+    ["AI治理", "人工智能", "SUBTOPIC_OF"],
+    ["公平性", "AI伦理", "RELATED_TO"],
+    ["偏见", "公平性", "RELATED_TO"],
+    ["偏见", "机器学习", "RELATED_TO"],
+    ["可解释性", "AI伦理", "RELATED_TO"],
+    ["可解释性", "模型审计", "PREREQUISITE_OF"],
+    ["可追溯性", "AI治理", "RELATED_TO"],
+    ["可追溯性", "模型审计", "PREREQUISITE_OF"],
+    ["隐私保护", "AI安全", "RELATED_TO"],
+    ["隐私保护", "AI治理", "RELATED_TO"],
+    ["差分隐私", "隐私保护", "SUBTOPIC_OF"],
+    ["联邦学习", "隐私保护", "SUBTOPIC_OF"],
+    ["联邦学习", "机器学习", "RELATED_TO"],
+    ["鲁棒性", "AI安全", "RELATED_TO"],
+    ["对抗攻击", "AI安全", "SUBTOPIC_OF"],
+    ["对抗训练", "AI安全", "SUBTOPIC_OF"],
+    ["对抗攻击", "鲁棒性", "RELATED_TO"],
+    ["对抗训练", "对抗攻击", "RELATED_TO"],
+    ["对抗训练", "鲁棒性", "RELATED_TO"],
+    ["价值对齐", "AI安全", "RELATED_TO"],
+    ["价值对齐", "AI伦理", "RELATED_TO"],
+    ["价值对齐", "大语言模型", "RELATED_TO"],
+    ["幻觉", "大语言模型", "RELATED_TO"],
+    ["幻觉", "价值对齐", "RELATED_TO"],
+    ["模型审计", "AI治理", "SUBTOPIC_OF"],
+    ["模型审计", "风险评估", "RELATED_TO"],
+    ["风险评估", "AI治理", "SUBTOPIC_OF"],
+    ["合规性", "AI治理", "RELATED_TO"],
+    ["合规性", "风险评估", "RELATED_TO"],
+    ["安全护栏", "AI安全", "SUBTOPIC_OF"],
+    ["安全护栏", "大语言模型", "RELATED_TO"],
+    ["红队测试", "AI安全", "SUBTOPIC_OF"],
+    ["红队测试", "模型审计", "RELATED_TO"],
+    ["红队测试", "风险评估", "RELATED_TO"],
+    ["公平性", "模型审计", "RELATED_TO"],
+    ["偏见", "模型审计", "RELATED_TO"],
+    ["隐私保护", "合规性", "RELATED_TO"],
+    ["安全护栏", "红队测试", "RELATED_TO"]
+  ]
+}

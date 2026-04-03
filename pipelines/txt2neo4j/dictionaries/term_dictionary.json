@@ -1,0 +1,182 @@
+[
+  {
+    "canonical_name": "人工智能",
+    "entity_type": "topic",
+    "aliases": ["AI", "Artificial Intelligence", "机器智能"]
+  },
+  {
+    "canonical_name": "知识表示",
+    "entity_type": "topic",
+    "aliases": ["知识表示方法", "知识表示法"]
+  },
+  {
+    "canonical_name": "一阶谓词逻辑表示法",
+    "entity_type": "method",
+    "aliases": ["谓词逻辑表示法", "一阶谓词逻辑知识表示方法"]
+  },
+  {
+    "canonical_name": "产生式表示法",
+    "entity_type": "method",
+    "aliases": ["产生式系统", "产生式规则表示"]
+  },
+  {
+    "canonical_name": "框架表示法",
+    "entity_type": "method",
+    "aliases": ["框架知识表示法"]
+  },
+  {
+    "canonical_name": "自然演绎推理",
+    "entity_type": "method",
+    "aliases": ["演绎推理"]
+  },
+  {
+    "canonical_name": "鲁宾孙归结原理",
+    "entity_type": "method",
+    "aliases": ["归结原理", "Robinson归结原理"]
+  },
+  {
+    "canonical_name": "可信度方法",
+    "entity_type": "method",
+    "aliases": ["可信度推理"]
+  },
+  {
+    "canonical_name": "证据理论",
+    "entity_type": "method",
+    "aliases": ["D-S证据理论", "Dempster-Shafer证据理论"]
+  },
+  {
+    "canonical_name": "模糊推理",
+    "entity_type": "method",
+    "aliases": ["模糊推理方法"]
+  },
+  {
+    "canonical_name": "A*搜索算法",
+    "entity_type": "algorithm",
+    "aliases": ["A*搜索", "A＊搜索算法", "A星搜索算法"]
+  },
+  {
+    "canonical_name": "遗传算法",
+    "entity_type": "algorithm",
+    "aliases": ["基本遗传算法"]
+  },
+  {
+    "canonical_name": "粒子群优化算法",
+    "entity_type": "algorithm",
+    "aliases": ["粒子群算法", "PSO"]
+  },
+  {
+    "canonical_name": "蚁群算法",
+    "entity_type": "algorithm",
+    "aliases": ["基本蚁群算法", "ACO"]
+  },
+  {
+    "canonical_name": "专家系统",
+    "entity_type": "topic",
+    "aliases": ["专家系统技术"]
+  },
+  {
+    "canonical_name": "机器学习",
+    "entity_type": "topic",
+    "aliases": ["机器学习方法"]
+  },
+  {
+    "canonical_name": "监督学习",
+    "entity_type": "method",
+    "aliases": ["有教师学习", "Supervised Learning"]
+  },
+  {
+    "canonical_name": "非监督学习",
+    "entity_type": "method",
+    "aliases": ["无监督学习", "无教师学习", "Unsupervised Learning"]
+  },
+  {
+    "canonical_name": "强化学习",
+    "entity_type": "method",
+    "aliases": ["激励学习", "Reinforcement Learning"]
+  },
+  {
+    "canonical_name": "深度学习",
+    "entity_type": "topic",
+    "aliases": ["Deep Learning"]
+  },
+  {
+    "canonical_name": "计算机视觉",
+    "entity_type": "topic",
+    "aliases": ["机器视觉", "Computer Vision"]
+  },
+  {
+    "canonical_name": "决策树",
+    "entity_type": "algorithm",
+    "aliases": ["Decision Tree"]
+  },
+  {
+    "canonical_name": "语义网络表示法",
+    "entity_type": "method",
+    "aliases": ["语义网络", "语义网络知识表示法"]
+  },
+  {
+    "canonical_name": "知识图谱",
+    "entity_type": "topic",
+    "aliases": ["Knowledge Graph"]
+  },
+  {
+    "canonical_name": "卷积神经网络",
+    "entity_type": "algorithm",
+    "aliases": ["CNN", "Convolutional Neural Network"]
+  },
+  {
+    "canonical_name": "循环神经网络",
+    "entity_type": "algorithm",
+    "aliases": ["RNN", "Recurrent Neural Network"]
+  },
+  {
+    "canonical_name": "Transformer",
+    "entity_type": "algorithm",
+    "aliases": ["变换器模型"]
+  },
+  {
+    "canonical_name": "Q学习",
+    "entity_type": "algorithm",
+    "aliases": ["Q-learning", "Q Learning"]
+  },
+  {
+    "canonical_name": "BP神经网络",
+    "entity_type": "algorithm",
+    "aliases": ["BP网络", "BP神经网络学习算法", "BP学习算法"]
+  },
+  {
+    "canonical_name": "Hopfield神经网络",
+    "entity_type": "algorithm",
+    "aliases": ["Hopfield 神经网络", "离散型Hopfield神经网络"]
+  },
+  {
+    "canonical_name": "智能体",
+    "entity_type": "topic",
+    "aliases": ["Agent", "智能体的概念与结构"]
+  },
+  {
+    "canonical_name": "多智能体系统",
+    "entity_type": "topic",
+    "aliases": ["MAS", "多Agent系统"]
+  },
+  {
+    "canonical_name": "自然语言处理",
+    "entity_type": "topic",
+    "aliases": ["NLP", "自然语言处理技术"]
+  },
+  {
+    "canonical_name": "机器翻译",
+    "entity_type": "application",
+    "aliases": ["自动翻译"]
+  },
+  {
+    "canonical_name": "语音识别",
+    "entity_type": "application",
+    "aliases": ["自动语音识别"]
+  },
+  {
+    "canonical_name": "智能搜索引擎",
+    "entity_type": "application",
+    "aliases": ["搜索引擎"]
+  }
+]

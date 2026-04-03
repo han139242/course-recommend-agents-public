@@ -1,0 +1,147 @@
+{
+  "source": "batch_22_automl_compression_edge_ai",
+  "nodes": [
+    {
+      "canonical_name": "自动机器学习",
+      "entity_type": "topic",
+      "description": "自动完成模型选择、特征处理、超参数优化和训练流程配置的方法体系。"
+    },
+    {
+      "canonical_name": "神经架构搜索",
+      "entity_type": "method",
+      "description": "通过搜索策略自动发现高性能神经网络结构的方法。"
+    },
+    {
+      "canonical_name": "搜索空间设计",
+      "entity_type": "concept",
+      "description": "定义可被搜索的模型结构、操作类型和组合范围的设计空间。"
+    },
+    {
+      "canonical_name": "代理模型",
+      "entity_type": "concept",
+      "description": "用于近似评估候选配置性能并减少搜索成本的辅助模型。"
+    },
+    {
+      "canonical_name": "贝叶斯优化",
+      "entity_type": "method",
+      "description": "基于概率代理模型和采集函数高效搜索最优超参数的方法。"
+    },
+    {
+      "canonical_name": "模型压缩",
+      "entity_type": "topic",
+      "description": "在尽量保持性能的前提下减小模型参数量、计算量和存储开销的方法体系。"
+    },
+    {
+      "canonical_name": "结构化剪枝",
+      "entity_type": "method",
+      "description": "按通道、层或卷积核等结构单元移除参数以压缩模型的方法。"
+    },
+    {
+      "canonical_name": "非结构化剪枝",
+      "entity_type": "method",
+      "description": "按单个权重粒度移除低重要性参数以获得稀疏模型的方法。"
+    },
+    {
+      "canonical_name": "量化感知训练",
+      "entity_type": "method",
+      "description": "在训练阶段模拟量化误差以提升低比特部署性能的方法。"
+    },
+    {
+      "canonical_name": "训练后量化",
+      "entity_type": "method",
+      "description": "在模型训练完成后直接降低参数和激活精度的压缩方法。"
+    },
+    {
+      "canonical_name": "知识蒸馏",
+      "entity_type": "method",
+      "description": "通过教师模型软目标或中间表示指导学生模型学习的压缩方法。"
+    },
+    {
+      "canonical_name": "教师模型",
+      "entity_type": "concept",
+      "description": "在蒸馏过程中提供知识迁移信号的性能较强模型。"
+    },
+    {
+      "canonical_name": "学生模型",
+      "entity_type": "concept",
+      "description": "在蒸馏过程中接收知识并追求轻量化部署的目标模型。"
+    },
+    {
+      "canonical_name": "低秩分解压缩",
+      "entity_type": "method",
+      "description": "通过低秩矩阵或张量分解近似原模型参数以减少计算的方法。"
+    },
+    {
+      "canonical_name": "边缘智能",
+      "entity_type": "topic",
+      "description": "在终端或边缘侧完成模型推理、学习和决策的智能计算范式。"
+    },
+    {
+      "canonical_name": "边缘推理",
+      "entity_type": "application",
+      "description": "在边缘设备本地执行模型预测以降低时延和带宽消耗的部署方式。"
+    },
+    {
+      "canonical_name": "边缘设备约束",
+      "entity_type": "concept",
+      "description": "边缘设备在算力、内存、功耗和时延方面对模型部署提出的限制。"
+    },
+    {
+      "canonical_name": "模型编译优化",
+      "entity_type": "method",
+      "description": "针对目标硬件平台对模型计算图和算子执行进行优化的方法。"
+    },
+    {
+      "canonical_name": "算子融合",
+      "entity_type": "method",
+      "description": "将多个相邻算子合并执行以减少访存和调度开销的优化方法。"
+    },
+    {
+      "canonical_name": "早退机制",
+      "entity_type": "method",
+      "description": "允许模型在中间层提前输出结果以降低平均推理成本的方法。"
+    }
+  ],
+  "relations": [
+    ["自动机器学习", "机器学习", "SUBTOPIC_OF"],
+    ["自动机器学习", "模型选择", "RELATED_TO"],
+    ["自动机器学习", "超参数调优", "RELATED_TO"],
+    ["神经架构搜索", "自动机器学习", "SUBTOPIC_OF"],
+    ["搜索空间设计", "神经架构搜索", "PREREQUISITE_OF"],
+    ["代理模型", "神经架构搜索", "RELATED_TO"],
+    ["贝叶斯优化", "自动机器学习", "SUBTOPIC_OF"],
+    ["贝叶斯优化", "超参数调优", "PREREQUISITE_OF"],
+    ["代理模型", "贝叶斯优化", "PREREQUISITE_OF"],
+    ["模型压缩", "深度学习", "RELATED_TO"],
+    ["结构化剪枝", "模型压缩", "SUBTOPIC_OF"],
+    ["非结构化剪枝", "模型压缩", "SUBTOPIC_OF"],
+    ["量化感知训练", "模型压缩", "SUBTOPIC_OF"],
+    ["训练后量化", "模型压缩", "SUBTOPIC_OF"],
+    ["知识蒸馏", "模型压缩", "SUBTOPIC_OF"],
+    ["教师模型", "知识蒸馏", "PREREQUISITE_OF"],
+    ["学生模型", "知识蒸馏", "PREREQUISITE_OF"],
+    ["量化感知训练", "训练后量化", "RELATED_TO"],
+    ["低秩分解压缩", "模型压缩", "SUBTOPIC_OF"],
+    ["矩阵分解", "低秩分解压缩", "PREREQUISITE_OF"],
+    ["知识蒸馏", "边缘推理", "RELATED_TO"],
+    ["训练后量化", "边缘推理", "RELATED_TO"],
+    ["结构化剪枝", "边缘推理", "RELATED_TO"],
+    ["边缘智能", "人工智能", "SUBTOPIC_OF"],
+    ["边缘推理", "边缘智能", "SUBTOPIC_OF"],
+    ["边缘推理", "模型部署", "RELATED_TO"],
+    ["边缘设备约束", "边缘智能", "PREREQUISITE_OF"],
+    ["边缘设备约束", "边缘推理", "PREREQUISITE_OF"],
+    ["模型编译优化", "边缘智能", "SUBTOPIC_OF"],
+    ["算子融合", "模型编译优化", "PREREQUISITE_OF"],
+    ["模型编译优化", "边缘推理", "PREREQUISITE_OF"],
+    ["算子融合", "在线推理", "RELATED_TO"],
+    ["早退机制", "边缘推理", "RELATED_TO"],
+    ["早退机制", "模型压缩", "RELATED_TO"],
+    ["边缘设备约束", "通信开销", "RELATED_TO"],
+    ["边缘智能", "MLOps", "RELATED_TO"],
+    ["神经架构搜索", "深度学习", "RELATED_TO"],
+    ["贝叶斯优化", "模型选择", "RELATED_TO"],
+    ["学生模型", "边缘推理", "RELATED_TO"],
+    ["教师模型", "深度学习", "RELATED_TO"]
+  ]
+}

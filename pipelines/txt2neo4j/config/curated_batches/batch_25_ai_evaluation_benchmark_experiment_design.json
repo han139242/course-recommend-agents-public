@@ -1,0 +1,148 @@
+{
+  "source": "batch_25_ai_evaluation_benchmark_experiment_design",
+  "nodes": [
+    {
+      "canonical_name": "AI评测",
+      "entity_type": "topic",
+      "description": "围绕任务定义、指标选择、数据划分与报告规范，对人工智能系统能力进行系统衡量与比较的活动与方法论。"
+    },
+    {
+      "canonical_name": "基准测试",
+      "entity_type": "method",
+      "description": "在公开或约定数据集与协议上，对模型或系统进行可复现对比测试以衡量相对强弱的方法。"
+    },
+    {
+      "canonical_name": "基准数据集",
+      "entity_type": "concept",
+      "description": "为评测目的而标准化构建或广泛采用的参考数据集，通常伴随划分与许可说明。"
+    },
+    {
+      "canonical_name": "排行榜",
+      "entity_type": "application",
+      "description": "在统一协议下汇总模型在基准上的成绩并进行排序展示的公开比较机制。"
+    },
+    {
+      "canonical_name": "消融实验",
+      "entity_type": "method",
+      "description": "通过逐项移除或替换模型组件以量化其对性能贡献的受控对比实验。"
+    },
+    {
+      "canonical_name": "对照实验",
+      "entity_type": "method",
+      "description": "设置对照组与实验组，在除关键变量外尽量一致的条件下比较效应差异的实验设计。"
+    },
+    {
+      "canonical_name": "实验可重复性",
+      "entity_type": "concept",
+      "description": "他人使用相同数据、代码与随机种子等条件能够复现主要结果的程度。"
+    },
+    {
+      "canonical_name": "统计假设检验",
+      "entity_type": "method",
+      "description": "在随机性与样本量约束下判断观测差异是否超出偶然波动范围的统计推断方法。"
+    },
+    {
+      "canonical_name": "置信区间",
+      "entity_type": "concept",
+      "description": "以给定置信水平给出的参数或指标估计不确定范围，用于表达估计精度。"
+    },
+    {
+      "canonical_name": "p值",
+      "entity_type": "concept",
+      "description": "在零假设成立前提下观测到当前或更极端结果的概率，常用于假设检验报告。"
+    },
+    {
+      "canonical_name": "人类评估",
+      "entity_type": "method",
+      "description": "由标注者依据量表或偏好对模型输出进行主观质量或安全性判断的评测方式。"
+    },
+    {
+      "canonical_name": "BLEU",
+      "entity_type": "concept",
+      "description": "基于 n 元组精确匹配与长度惩罚衡量机器译文与参考译文重叠度的自动指标。"
+    },
+    {
+      "canonical_name": "ROUGE",
+      "entity_type": "concept",
+      "description": "基于召回的 n 元组重叠等指标衡量摘要或生成文本与参考文本相似度的自动指标族。"
+    },
+    {
+      "canonical_name": "困惑度",
+      "entity_type": "concept",
+      "description": "语言模型在给定测试语料上的平均不确定性度量，数值越低通常表示拟合越好。"
+    },
+    {
+      "canonical_name": "误差分析",
+      "entity_type": "method",
+      "description": "对错误案例按类型、子群体或输入特征进行归纳以定位模型薄弱环节的诊断过程。"
+    },
+    {
+      "canonical_name": "数据划分一致性",
+      "entity_type": "concept",
+      "description": "训练、验证与测试集划分在时序、用户或域上的一致规则，以避免信息泄漏与乐观偏差。"
+    },
+    {
+      "canonical_name": "评估协议",
+      "entity_type": "concept",
+      "description": "规定预处理、推理设置、指标计算与报告格式的成文约定，用于保证结果可比。"
+    },
+    {
+      "canonical_name": "基线模型",
+      "entity_type": "concept",
+      "description": "作为比较参照的简单或已有方法实现，用于判断新方法的实际增益。"
+    },
+    {
+      "canonical_name": "零样本评估",
+      "entity_type": "method",
+      "description": "在目标域或任务上不提供标注示例而直接评测模型泛化能力的设定。"
+    },
+    {
+      "canonical_name": "少样本评估",
+      "entity_type": "method",
+      "description": "仅提供少量标注或示例即在目标任务上评测模型适应与学习能力的设定。"
+    }
+  ],
+  "relations": [
+    ["AI评测", "人工智能", "SUBTOPIC_OF"],
+    ["基准测试", "模型评估", "RELATED_TO"],
+    ["基准数据集", "基准测试", "RELATED_TO"],
+    ["排行榜", "基准测试", "RELATED_TO"],
+    ["消融实验", "模型评估", "SUBTOPIC_OF"],
+    ["对照实验", "消融实验", "RELATED_TO"],
+    ["实验可重复性", "实验跟踪", "RELATED_TO"],
+    ["统计假设检验", "交叉验证", "RELATED_TO"],
+    ["置信区间", "统计假设检验", "RELATED_TO"],
+    ["p值", "统计假设检验", "RELATED_TO"],
+    ["人类评估", "模型评估", "SUBTOPIC_OF"],
+    ["BLEU", "自然语言处理", "SUBTOPIC_OF"],
+    ["ROUGE", "自然语言处理", "SUBTOPIC_OF"],
+    ["困惑度", "自然语言处理", "RELATED_TO"],
+    ["误差分析", "模型评估", "RELATED_TO"],
+    ["数据划分一致性", "交叉验证", "RELATED_TO"],
+    ["评估协议", "AI评测", "RELATED_TO"],
+    ["基线模型", "模型评估", "RELATED_TO"],
+    ["零样本评估", "模型评估", "RELATED_TO"],
+    ["少样本评估", "模型评估", "RELATED_TO"],
+    ["AI评测", "模型评估", "RELATED_TO"],
+    ["基准测试", "深度学习", "RELATED_TO"],
+    ["基准数据集", "模型评估", "RELATED_TO"],
+    ["排行榜", "基准数据集", "RELATED_TO"],
+    ["消融实验", "深度学习", "RELATED_TO"],
+    ["对照实验", "实验跟踪", "RELATED_TO"],
+    ["统计假设检验", "模型评估", "RELATED_TO"],
+    ["置信区间", "模型评估", "RELATED_TO"],
+    ["p值", "模型评估", "RELATED_TO"],
+    ["人类评估", "BLEU", "RELATED_TO"],
+    ["BLEU", "模型评估", "RELATED_TO"],
+    ["ROUGE", "模型评估", "RELATED_TO"],
+    ["困惑度", "深度学习", "RELATED_TO"],
+    ["误差分析", "消融实验", "RELATED_TO"],
+    ["数据划分一致性", "模型评估", "RELATED_TO"],
+    ["评估协议", "基准测试", "RELATED_TO"],
+    ["基线模型", "少样本评估", "RELATED_TO"],
+    ["零样本评估", "深度学习", "RELATED_TO"],
+    ["少样本评估", "交叉验证", "RELATED_TO"],
+    ["排行榜", "基准数据集", "APPLIES_TO"],
+    ["评估协议", "测试集", "RELATED_TO"]
+  ]
+}

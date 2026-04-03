@@ -1,0 +1,147 @@
+{
+  "source": "batch_23_decision_optimization_game_solving",
+  "nodes": [
+    {
+      "canonical_name": "智能决策",
+      "entity_type": "topic",
+      "description": "在不确定环境与复杂约束下综合信息、目标和偏好进行最优行动选择的方向。"
+    },
+    {
+      "canonical_name": "决策理论",
+      "entity_type": "topic",
+      "description": "研究主体在风险、不确定性和多目标条件下进行选择的理论体系。"
+    },
+    {
+      "canonical_name": "效用函数",
+      "entity_type": "concept",
+      "description": "用于刻画决策主体偏好和收益大小的函数表示。"
+    },
+    {
+      "canonical_name": "决策空间",
+      "entity_type": "concept",
+      "description": "一个决策问题中所有可行方案构成的候选集合。"
+    },
+    {
+      "canonical_name": "线性规划",
+      "entity_type": "method",
+      "description": "在线性目标函数和线性约束条件下求解最优解的经典优化方法。"
+    },
+    {
+      "canonical_name": "整数规划",
+      "entity_type": "method",
+      "description": "要求部分或全部决策变量取整数值的优化方法。"
+    },
+    {
+      "canonical_name": "动态规划",
+      "entity_type": "method",
+      "description": "通过分阶段决策和子问题最优性递推求解复杂问题的方法。"
+    },
+    {
+      "canonical_name": "最优子结构",
+      "entity_type": "concept",
+      "description": "一个问题的最优解可由其子问题最优解组合得到的性质。"
+    },
+    {
+      "canonical_name": "重叠子问题",
+      "entity_type": "concept",
+      "description": "问题递归分解后会反复遇到相同子问题的性质。"
+    },
+    {
+      "canonical_name": "贝尔曼最优性原理",
+      "entity_type": "concept",
+      "description": "一个最优策略的任意后续决策仍应构成相应子问题最优策略的原则。"
+    },
+    {
+      "canonical_name": "分支定界法",
+      "entity_type": "algorithm",
+      "description": "通过搜索树分支和上下界剪枝求解组合优化问题的经典算法。"
+    },
+    {
+      "canonical_name": "单纯形法",
+      "entity_type": "algorithm",
+      "description": "沿可行域顶点搜索线性规划最优解的经典算法。"
+    },
+    {
+      "canonical_name": "多目标优化",
+      "entity_type": "method",
+      "description": "同时考虑多个相互冲突目标并寻求平衡解的优化方法。"
+    },
+    {
+      "canonical_name": "帕累托最优",
+      "entity_type": "concept",
+      "description": "在不使任一目标变差的前提下无法进一步改善其他目标的解。"
+    },
+    {
+      "canonical_name": "极小极大算法",
+      "entity_type": "algorithm",
+      "description": "在对抗决策中通过交替最大化和最小化收益估计选择行动的算法。"
+    },
+    {
+      "canonical_name": "博弈树",
+      "entity_type": "concept",
+      "description": "用于表示对抗博弈中状态转移和玩家行动分支的树结构。"
+    },
+    {
+      "canonical_name": "启发式评估函数",
+      "entity_type": "concept",
+      "description": "在博弈搜索中用于近似估计局面优劣的函数。"
+    },
+    {
+      "canonical_name": "对策规划",
+      "entity_type": "method",
+      "description": "在多方对抗或竞争环境中结合博弈分析与规划进行行动设计的方法。"
+    },
+    {
+      "canonical_name": "资源分配优化",
+      "entity_type": "application",
+      "description": "在资源有限和约束存在条件下对任务、时间或成本进行最优配置的任务。"
+    },
+    {
+      "canonical_name": "调度优化",
+      "entity_type": "application",
+      "description": "对作业、任务或设备执行顺序进行优化以提升系统效率的任务。"
+    }
+  ],
+  "relations": [
+    ["智能决策", "人工智能", "SUBTOPIC_OF"],
+    ["决策理论", "智能决策", "SUBTOPIC_OF"],
+    ["效用函数", "决策理论", "PREREQUISITE_OF"],
+    ["决策空间", "决策理论", "PREREQUISITE_OF"],
+    ["效用函数", "智能决策", "RELATED_TO"],
+    ["线性规划", "智能决策", "SUBTOPIC_OF"],
+    ["整数规划", "智能决策", "SUBTOPIC_OF"],
+    ["线性规划", "资源分配优化", "PREREQUISITE_OF"],
+    ["整数规划", "调度优化", "PREREQUISITE_OF"],
+    ["单纯形法", "线性规划", "PREREQUISITE_OF"],
+    ["分支定界法", "整数规划", "PREREQUISITE_OF"],
+    ["分支定界法", "资源分配优化", "RELATED_TO"],
+    ["动态规划", "智能决策", "SUBTOPIC_OF"],
+    ["最优子结构", "动态规划", "PREREQUISITE_OF"],
+    ["重叠子问题", "动态规划", "PREREQUISITE_OF"],
+    ["贝尔曼最优性原理", "动态规划", "PREREQUISITE_OF"],
+    ["贝尔曼最优性原理", "强化学习", "RELATED_TO"],
+    ["动态规划", "路径规划", "RELATED_TO"],
+    ["动态规划", "调度优化", "RELATED_TO"],
+    ["多目标优化", "智能决策", "SUBTOPIC_OF"],
+    ["帕累托最优", "多目标优化", "PREREQUISITE_OF"],
+    ["多目标优化", "资源分配优化", "RELATED_TO"],
+    ["多目标优化", "调度优化", "RELATED_TO"],
+    ["博弈树", "博弈搜索", "PREREQUISITE_OF"],
+    ["极小极大算法", "博弈搜索", "SUBTOPIC_OF"],
+    ["博弈树", "极小极大算法", "PREREQUISITE_OF"],
+    ["启发式评估函数", "极小极大算法", "PREREQUISITE_OF"],
+    ["极小极大算法", "Alpha-Beta剪枝", "PREREQUISITE_OF"],
+    ["蒙特卡洛树搜索", "博弈树", "RELATED_TO"],
+    ["启发式评估函数", "Alpha-Beta剪枝", "RELATED_TO"],
+    ["对策规划", "智能决策", "SUBTOPIC_OF"],
+    ["对策规划", "博弈论", "RELATED_TO"],
+    ["对策规划", "规划", "RELATED_TO"],
+    ["对策规划", "博弈搜索", "RELATED_TO"],
+    ["纳什均衡", "对策规划", "RELATED_TO"],
+    ["资源分配优化", "智能决策", "SUBTOPIC_OF"],
+    ["调度优化", "智能决策", "SUBTOPIC_OF"],
+    ["资源分配优化", "线性规划", "RELATED_TO"],
+    ["调度优化", "整数规划", "RELATED_TO"],
+    ["调度优化", "约束满足问题", "RELATED_TO"]
+  ]
+}

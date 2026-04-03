@@ -1,0 +1,147 @@
+{
+  "source": "batch_10_generative_ai_foundation",
+  "nodes": [
+    {
+      "canonical_name": "生成对抗网络",
+      "entity_type": "algorithm",
+      "description": "通过生成器与判别器对抗训练学习数据分布的经典生成模型。"
+    },
+    {
+      "canonical_name": "生成器",
+      "entity_type": "concept",
+      "description": "在生成模型中负责从潜变量或条件信息产生样本的模型组件。"
+    },
+    {
+      "canonical_name": "判别器",
+      "entity_type": "concept",
+      "description": "在对抗生成框架中用于判断样本真伪或来源的模型组件。"
+    },
+    {
+      "canonical_name": "变分自编码器",
+      "entity_type": "algorithm",
+      "description": "结合变分推断与自编码器结构学习潜变量生成模型的方法。"
+    },
+    {
+      "canonical_name": "潜变量模型",
+      "entity_type": "concept",
+      "description": "通过不可直接观测的潜在变量解释数据生成过程的模型范式。"
+    },
+    {
+      "canonical_name": "重参数化技巧",
+      "entity_type": "method",
+      "description": "将随机采样过程改写为可微形式以支持梯度优化的方法。"
+    },
+    {
+      "canonical_name": "证据下界",
+      "entity_type": "concept",
+      "description": "变分推断中用于近似最大化对数似然的优化目标。"
+    },
+    {
+      "canonical_name": "扩散模型",
+      "entity_type": "algorithm",
+      "description": "通过逐步加噪与反向去噪过程生成高质量样本的生成模型。"
+    },
+    {
+      "canonical_name": "前向扩散过程",
+      "entity_type": "method",
+      "description": "在扩散模型中逐步向数据添加噪声的过程。"
+    },
+    {
+      "canonical_name": "反向去噪过程",
+      "entity_type": "method",
+      "description": "在扩散模型中从噪声逐步恢复样本的生成过程。"
+    },
+    {
+      "canonical_name": "噪声预测",
+      "entity_type": "method",
+      "description": "在扩散模型训练中预测加入噪声成分以实现去噪生成的方法。"
+    },
+    {
+      "canonical_name": "自回归生成",
+      "entity_type": "method",
+      "description": "按照序列顺序逐步预测下一个元素完成生成的建模方式。"
+    },
+    {
+      "canonical_name": "束搜索",
+      "entity_type": "algorithm",
+      "description": "在序列生成中保留多个高分候选以近似搜索最优输出的解码算法。"
+    },
+    {
+      "canonical_name": "温度采样",
+      "entity_type": "method",
+      "description": "通过调节概率分布平滑程度控制生成随机性的采样方法。"
+    },
+    {
+      "canonical_name": "top-k采样",
+      "entity_type": "method",
+      "description": "仅在概率最高的前 k 个候选中进行随机采样的解码方法。"
+    },
+    {
+      "canonical_name": "top-p采样",
+      "entity_type": "method",
+      "description": "在累计概率达到阈值 p 的候选集合中进行随机采样的解码方法。"
+    },
+    {
+      "canonical_name": "提示工程",
+      "entity_type": "method",
+      "description": "通过设计输入提示来稳定提升生成模型输出质量和任务表现的方法。"
+    },
+    {
+      "canonical_name": "指令对齐",
+      "entity_type": "method",
+      "description": "使模型输出更符合人类指令意图和偏好的训练过程。"
+    },
+    {
+      "canonical_name": "人类反馈强化学习",
+      "entity_type": "method",
+      "description": "利用人类偏好反馈优化生成模型行为和输出质量的方法。"
+    },
+    {
+      "canonical_name": "多模态生成",
+      "entity_type": "topic",
+      "description": "联合建模文本、图像、语音等多种模态并进行生成的研究方向。"
+    }
+  ],
+  "relations": [
+    ["生成对抗网络", "生成式模型", "SUBTOPIC_OF"],
+    ["生成器", "生成对抗网络", "PART_OF"],
+    ["判别器", "生成对抗网络", "PART_OF"],
+    ["判别器", "判别式模型", "RELATED_TO"],
+    ["变分自编码器", "生成式模型", "SUBTOPIC_OF"],
+    ["潜变量模型", "变分自编码器", "PREREQUISITE_OF"],
+    ["重参数化技巧", "变分自编码器", "PREREQUISITE_OF"],
+    ["证据下界", "变分自编码器", "PREREQUISITE_OF"],
+    ["潜变量模型", "生成式模型", "RELATED_TO"],
+    ["扩散模型", "生成式模型", "SUBTOPIC_OF"],
+    ["前向扩散过程", "扩散模型", "PART_OF"],
+    ["反向去噪过程", "扩散模型", "PART_OF"],
+    ["噪声预测", "扩散模型", "PREREQUISITE_OF"],
+    ["前向扩散过程", "反向去噪过程", "RELATED_TO"],
+    ["噪声预测", "反向去噪过程", "PREREQUISITE_OF"],
+    ["自回归生成", "生成式模型", "SUBTOPIC_OF"],
+    ["自回归生成", "因果语言模型", "RELATED_TO"],
+    ["束搜索", "自回归生成", "PREREQUISITE_OF"],
+    ["温度采样", "自回归生成", "PREREQUISITE_OF"],
+    ["top-k采样", "自回归生成", "PREREQUISITE_OF"],
+    ["top-p采样", "自回归生成", "PREREQUISITE_OF"],
+    ["束搜索", "机器翻译", "RELATED_TO"],
+    ["温度采样", "大语言模型", "RELATED_TO"],
+    ["top-k采样", "大语言模型", "RELATED_TO"],
+    ["top-p采样", "大语言模型", "RELATED_TO"],
+    ["提示工程", "大语言模型", "RELATED_TO"],
+    ["提示工程", "提示学习", "RELATED_TO"],
+    ["指令对齐", "大语言模型", "RELATED_TO"],
+    ["指令对齐", "指令微调", "RELATED_TO"],
+    ["人类反馈强化学习", "指令对齐", "PREREQUISITE_OF"],
+    ["人类反馈强化学习", "强化学习", "RELATED_TO"],
+    ["人类反馈强化学习", "大语言模型", "RELATED_TO"],
+    ["多模态生成", "生成式模型", "SUBTOPIC_OF"],
+    ["多模态生成", "大语言模型", "RELATED_TO"],
+    ["视觉 Transformer", "多模态生成", "PREREQUISITE_OF"],
+    ["Transformer", "自回归生成", "PREREQUISITE_OF"],
+    ["深度学习", "扩散模型", "PREREQUISITE_OF"],
+    ["深度学习", "生成对抗网络", "PREREQUISITE_OF"],
+    ["自编码器", "变分自编码器", "PREREQUISITE_OF"],
+    ["生成器", "多模态生成", "RELATED_TO"]
+  ]
+}

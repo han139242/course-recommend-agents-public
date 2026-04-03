@@ -1,0 +1,147 @@
+{
+  "source": "batch_07_nlp_foundation",
+  "nodes": [
+    {
+      "canonical_name": "分词",
+      "entity_type": "method",
+      "description": "将连续文本切分为词或子词单元的基础自然语言处理方法。"
+    },
+    {
+      "canonical_name": "分词歧义",
+      "entity_type": "concept",
+      "description": "同一文本片段存在多种合理切分结果的语言分析现象。"
+    },
+    {
+      "canonical_name": "子词表示",
+      "entity_type": "method",
+      "description": "以子词单元而非完整词语构建文本表示的方法。"
+    },
+    {
+      "canonical_name": "Word2Vec",
+      "entity_type": "algorithm",
+      "description": "通过局部上下文预测或目标词预测学习稠密词向量的经典算法。"
+    },
+    {
+      "canonical_name": "GloVe",
+      "entity_type": "algorithm",
+      "description": "结合全局词共现统计学习词向量表示的经典算法。"
+    },
+    {
+      "canonical_name": "上下文词向量",
+      "entity_type": "concept",
+      "description": "会随上下文变化而动态调整的词语向量表示。"
+    },
+    {
+      "canonical_name": "语言模型",
+      "entity_type": "topic",
+      "description": "对词序列出现概率进行建模并支撑语言理解与生成的核心任务。"
+    },
+    {
+      "canonical_name": "n-gram模型",
+      "entity_type": "algorithm",
+      "description": "基于有限历史上下文估计词序列概率的统计语言模型。"
+    },
+    {
+      "canonical_name": "掩码语言模型",
+      "entity_type": "method",
+      "description": "通过预测被遮盖词元来学习双向上下文表示的预训练任务。"
+    },
+    {
+      "canonical_name": "因果语言模型",
+      "entity_type": "method",
+      "description": "按照从左到右的自回归方式预测下一个词元的语言建模任务。"
+    },
+    {
+      "canonical_name": "词性标注",
+      "entity_type": "method",
+      "description": "为文本中的词语标注语法词类的基础语言分析任务。"
+    },
+    {
+      "canonical_name": "句法分析",
+      "entity_type": "method",
+      "description": "分析句子内部成分结构与依赖关系的语言理解方法。"
+    },
+    {
+      "canonical_name": "依存句法分析",
+      "entity_type": "method",
+      "description": "以词与词之间依赖关系表示句法结构的分析方法。"
+    },
+    {
+      "canonical_name": "成分句法分析",
+      "entity_type": "method",
+      "description": "以短语层级结构表示句法树的分析方法。"
+    },
+    {
+      "canonical_name": "语义角色标注",
+      "entity_type": "method",
+      "description": "识别谓词与其论元语义关系的语义分析任务。"
+    },
+    {
+      "canonical_name": "共指消解",
+      "entity_type": "method",
+      "description": "识别文本中指向同一实体的不同提及表达的语言理解任务。"
+    },
+    {
+      "canonical_name": "文本分类",
+      "entity_type": "application",
+      "description": "将文本映射到预定义类别集合的自然语言处理应用任务。"
+    },
+    {
+      "canonical_name": "情感分析",
+      "entity_type": "application",
+      "description": "识别文本中主观情绪、极性或态度倾向的应用任务。"
+    },
+    {
+      "canonical_name": "提示学习",
+      "entity_type": "method",
+      "description": "通过设计输入提示来激发预训练语言模型完成下游任务的方法。"
+    },
+    {
+      "canonical_name": "指令微调",
+      "entity_type": "method",
+      "description": "利用指令数据对预训练语言模型进行任务泛化能力增强的微调方法。"
+    }
+  ],
+  "relations": [
+    ["分词", "自然语言处理", "SUBTOPIC_OF"],
+    ["分词歧义", "分词", "RELATED_TO"],
+    ["子词表示", "分词", "RELATED_TO"],
+    ["子词表示", "词嵌入", "RELATED_TO"],
+    ["Word2Vec", "词嵌入", "SUBTOPIC_OF"],
+    ["GloVe", "词嵌入", "SUBTOPIC_OF"],
+    ["上下文词向量", "词嵌入", "SUBTOPIC_OF"],
+    ["上下文词向量", "BERT", "RELATED_TO"],
+    ["语言模型", "自然语言处理", "SUBTOPIC_OF"],
+    ["n-gram模型", "语言模型", "SUBTOPIC_OF"],
+    ["掩码语言模型", "语言模型", "SUBTOPIC_OF"],
+    ["因果语言模型", "语言模型", "SUBTOPIC_OF"],
+    ["掩码语言模型", "BERT", "PREREQUISITE_OF"],
+    ["因果语言模型", "大语言模型", "PREREQUISITE_OF"],
+    ["Transformer", "掩码语言模型", "PREREQUISITE_OF"],
+    ["Transformer", "因果语言模型", "PREREQUISITE_OF"],
+    ["词性标注", "自然语言处理", "SUBTOPIC_OF"],
+    ["句法分析", "自然语言处理", "SUBTOPIC_OF"],
+    ["依存句法分析", "句法分析", "SUBTOPIC_OF"],
+    ["成分句法分析", "句法分析", "SUBTOPIC_OF"],
+    ["词性标注", "句法分析", "PREREQUISITE_OF"],
+    ["句法分析", "信息抽取", "PREREQUISITE_OF"],
+    ["语义角色标注", "自然语言处理", "SUBTOPIC_OF"],
+    ["句法分析", "语义角色标注", "PREREQUISITE_OF"],
+    ["语义角色标注", "信息抽取", "RELATED_TO"],
+    ["共指消解", "自然语言处理", "SUBTOPIC_OF"],
+    ["共指消解", "信息抽取", "RELATED_TO"],
+    ["共指消解", "问答系统", "RELATED_TO"],
+    ["文本分类", "自然语言处理", "SUBTOPIC_OF"],
+    ["情感分析", "文本分类", "SUBTOPIC_OF"],
+    ["词嵌入", "文本分类", "PREREQUISITE_OF"],
+    ["Transformer", "文本分类", "PREREQUISITE_OF"],
+    ["文本分类", "情感分析", "PREREQUISITE_OF"],
+    ["提示学习", "自然语言处理", "RELATED_TO"],
+    ["提示学习", "大语言模型", "RELATED_TO"],
+    ["提示学习", "BERT", "RELATED_TO"],
+    ["指令微调", "大语言模型", "RELATED_TO"],
+    ["指令微调", "提示学习", "RELATED_TO"],
+    ["因果语言模型", "指令微调", "PREREQUISITE_OF"],
+    ["上下文词向量", "问答系统", "RELATED_TO"]
+  ]
+}

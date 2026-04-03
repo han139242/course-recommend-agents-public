@@ -1,0 +1,147 @@
+{
+  "source": "batch_21_federated_learning_privacy_computing",
+  "nodes": [
+    {
+      "canonical_name": "隐私计算",
+      "entity_type": "topic",
+      "description": "在保护数据隐私和合规前提下实现联合建模、分析与协作计算的方法体系。"
+    },
+    {
+      "canonical_name": "横向联邦学习",
+      "entity_type": "method",
+      "description": "参与方特征空间相同而样本不同条件下进行联合训练的联邦学习方式。"
+    },
+    {
+      "canonical_name": "纵向联邦学习",
+      "entity_type": "method",
+      "description": "参与方样本重叠而特征空间不同条件下进行联合训练的联邦学习方式。"
+    },
+    {
+      "canonical_name": "联邦迁移学习",
+      "entity_type": "method",
+      "description": "在参与方样本和特征均差异较大场景下结合迁移学习开展联邦建模的方法。"
+    },
+    {
+      "canonical_name": "联邦平均算法",
+      "entity_type": "algorithm",
+      "description": "通过聚合各客户端本地模型参数更新实现全局模型训练的经典联邦算法。"
+    },
+    {
+      "canonical_name": "参数服务器",
+      "entity_type": "concept",
+      "description": "负责收集、聚合和下发模型参数的中心协调组件。"
+    },
+    {
+      "canonical_name": "客户端采样",
+      "entity_type": "method",
+      "description": "在每轮联邦训练中选择部分参与客户端加入更新过程的策略。"
+    },
+    {
+      "canonical_name": "安全聚合",
+      "entity_type": "method",
+      "description": "在不暴露单个参与方参数更新明文的情况下完成模型聚合的方法。"
+    },
+    {
+      "canonical_name": "安全多方计算",
+      "entity_type": "method",
+      "description": "让多方在不泄露各自私有输入的前提下联合完成计算的密码学方法。"
+    },
+    {
+      "canonical_name": "同态加密",
+      "entity_type": "method",
+      "description": "允许在密文上直接执行运算并在解密后得到正确明文结果的加密方法。"
+    },
+    {
+      "canonical_name": "可信执行环境",
+      "entity_type": "concept",
+      "description": "在受保护硬件隔离环境中执行敏感计算以降低泄露风险的安全机制。"
+    },
+    {
+      "canonical_name": "本地差分隐私",
+      "entity_type": "method",
+      "description": "在数据上传前于本地端直接加入扰动以保护个体隐私的方法。"
+    },
+    {
+      "canonical_name": "隐私预算",
+      "entity_type": "concept",
+      "description": "差分隐私框架中用于量化隐私泄露程度的控制参数。"
+    },
+    {
+      "canonical_name": "梯度泄露",
+      "entity_type": "concept",
+      "description": "攻击者通过梯度或参数更新反推训练样本信息的隐私风险。"
+    },
+    {
+      "canonical_name": "成员推断攻击",
+      "entity_type": "method",
+      "description": "判断某条样本是否参与模型训练的隐私攻击方法。"
+    },
+    {
+      "canonical_name": "模型反演攻击",
+      "entity_type": "method",
+      "description": "利用模型输出或参数恢复训练数据特征或样本的隐私攻击方法。"
+    },
+    {
+      "canonical_name": "非独立同分布数据",
+      "entity_type": "concept",
+      "description": "不同客户端本地数据分布存在明显差异的联邦学习数据条件。"
+    },
+    {
+      "canonical_name": "通信开销",
+      "entity_type": "concept",
+      "description": "分布式训练过程中模型更新传输所消耗的带宽与时延成本。"
+    },
+    {
+      "canonical_name": "个性化联邦学习",
+      "entity_type": "method",
+      "description": "在全局共享基础上为不同客户端学习个性化模型参数的联邦方法。"
+    },
+    {
+      "canonical_name": "联邦评估",
+      "entity_type": "method",
+      "description": "在不集中收集原始数据前提下评估联邦模型效果的过程。"
+    }
+  ],
+  "relations": [
+    ["隐私计算", "人工智能", "RELATED_TO"],
+    ["隐私计算", "隐私保护", "RELATED_TO"],
+    ["横向联邦学习", "联邦学习", "SUBTOPIC_OF"],
+    ["纵向联邦学习", "联邦学习", "SUBTOPIC_OF"],
+    ["联邦迁移学习", "联邦学习", "SUBTOPIC_OF"],
+    ["联邦迁移学习", "迁移学习", "RELATED_TO"],
+    ["联邦平均算法", "联邦学习", "PREREQUISITE_OF"],
+    ["参数服务器", "联邦平均算法", "PREREQUISITE_OF"],
+    ["客户端采样", "联邦平均算法", "PREREQUISITE_OF"],
+    ["安全聚合", "联邦学习", "SUBTOPIC_OF"],
+    ["安全聚合", "安全多方计算", "RELATED_TO"],
+    ["安全多方计算", "隐私计算", "SUBTOPIC_OF"],
+    ["同态加密", "隐私计算", "SUBTOPIC_OF"],
+    ["可信执行环境", "隐私计算", "SUBTOPIC_OF"],
+    ["同态加密", "安全聚合", "RELATED_TO"],
+    ["可信执行环境", "安全聚合", "RELATED_TO"],
+    ["本地差分隐私", "差分隐私", "SUBTOPIC_OF"],
+    ["隐私预算", "差分隐私", "PREREQUISITE_OF"],
+    ["隐私预算", "本地差分隐私", "PREREQUISITE_OF"],
+    ["本地差分隐私", "联邦学习", "RELATED_TO"],
+    ["梯度泄露", "联邦学习", "RELATED_TO"],
+    ["成员推断攻击", "AI安全", "RELATED_TO"],
+    ["模型反演攻击", "AI安全", "RELATED_TO"],
+    ["成员推断攻击", "隐私计算", "RELATED_TO"],
+    ["模型反演攻击", "隐私计算", "RELATED_TO"],
+    ["梯度泄露", "模型反演攻击", "RELATED_TO"],
+    ["梯度泄露", "安全聚合", "RELATED_TO"],
+    ["非独立同分布数据", "联邦学习", "RELATED_TO"],
+    ["非独立同分布数据", "个性化联邦学习", "RELATED_TO"],
+    ["通信开销", "联邦学习", "RELATED_TO"],
+    ["通信开销", "客户端采样", "RELATED_TO"],
+    ["通信开销", "联邦平均算法", "RELATED_TO"],
+    ["个性化联邦学习", "联邦学习", "SUBTOPIC_OF"],
+    ["个性化联邦学习", "横向联邦学习", "RELATED_TO"],
+    ["联邦评估", "联邦学习", "SUBTOPIC_OF"],
+    ["联邦评估", "模型评估", "RELATED_TO"],
+    ["联邦评估", "合规性", "RELATED_TO"],
+    ["安全多方计算", "纵向联邦学习", "RELATED_TO"],
+    ["参数服务器", "联邦评估", "RELATED_TO"],
+    ["隐私计算", "AI治理", "RELATED_TO"]
+  ]
+}

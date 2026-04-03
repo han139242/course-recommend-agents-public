@@ -1,0 +1,147 @@
+{
+  "source": "batch_18_llm_app_rag_foundation",
+  "nodes": [
+    {
+      "canonical_name": "检索增强生成",
+      "entity_type": "topic",
+      "description": "通过外部知识检索增强大模型生成质量与事实性的应用范式。"
+    },
+    {
+      "canonical_name": "知识库问答",
+      "entity_type": "application",
+      "description": "基于文档或知识库检索并结合生成模型回答问题的应用任务。"
+    },
+    {
+      "canonical_name": "文本嵌入模型",
+      "entity_type": "algorithm",
+      "description": "将文本编码为稠密向量表示以支持检索、匹配和聚类的模型。"
+    },
+    {
+      "canonical_name": "向量数据库",
+      "entity_type": "concept",
+      "description": "用于存储向量表示并支持高效近邻搜索和过滤查询的数据系统。"
+    },
+    {
+      "canonical_name": "文档切分",
+      "entity_type": "method",
+      "description": "将长文档切分为适合索引和检索的小片段的预处理方法。"
+    },
+    {
+      "canonical_name": "分块策略",
+      "entity_type": "concept",
+      "description": "定义文档切分粒度、重叠长度和边界规则的策略。"
+    },
+    {
+      "canonical_name": "查询重写",
+      "entity_type": "method",
+      "description": "对用户原始查询进行改写以提升检索匹配效果的方法。"
+    },
+    {
+      "canonical_name": "查询扩展",
+      "entity_type": "method",
+      "description": "向原始查询补充同义词、上下位词或相关表达以扩大召回的方法。"
+    },
+    {
+      "canonical_name": "混合检索",
+      "entity_type": "method",
+      "description": "结合关键词检索与向量检索结果提高覆盖率和相关性的检索方法。"
+    },
+    {
+      "canonical_name": "重排序模型",
+      "entity_type": "algorithm",
+      "description": "对初次检索候选进行更精细相关性排序的模型。"
+    },
+    {
+      "canonical_name": "上下文窗口",
+      "entity_type": "concept",
+      "description": "大模型一次可接收并处理的输入上下文长度范围。"
+    },
+    {
+      "canonical_name": "上下文压缩",
+      "entity_type": "method",
+      "description": "在保留关键信息前提下缩减上下文长度的处理方法。"
+    },
+    {
+      "canonical_name": "引用溯源",
+      "entity_type": "method",
+      "description": "为生成答案提供来源片段或证据链接以支持可验证性的机制。"
+    },
+    {
+      "canonical_name": "函数调用",
+      "entity_type": "method",
+      "description": "让大模型按结构化参数调用外部函数或 API 的交互方式。"
+    },
+    {
+      "canonical_name": "工具调用",
+      "entity_type": "method",
+      "description": "让大模型在推理过程中使用搜索、计算、数据库等外部工具的方法。"
+    },
+    {
+      "canonical_name": "工作流编排",
+      "entity_type": "method",
+      "description": "将检索、生成、校验和工具调用组织为多步骤执行流程的方法。"
+    },
+    {
+      "canonical_name": "提示模板",
+      "entity_type": "concept",
+      "description": "用于规范输入结构、角色设定和输出格式的提示组织模板。"
+    },
+    {
+      "canonical_name": "会话记忆",
+      "entity_type": "concept",
+      "description": "在多轮交互中保留历史上下文和用户偏好的记忆机制。"
+    },
+    {
+      "canonical_name": "长上下文建模",
+      "entity_type": "method",
+      "description": "提升模型处理长文本和长时依赖能力的建模与工程方法。"
+    },
+    {
+      "canonical_name": "答案生成",
+      "entity_type": "method",
+      "description": "基于输入上下文、检索结果和任务约束生成最终回答的过程。"
+    }
+  ],
+  "relations": [
+    ["检索增强生成", "大语言模型", "RELATED_TO"],
+    ["检索增强生成", "问答系统", "RELATED_TO"],
+    ["知识库问答", "检索增强生成", "SUBTOPIC_OF"],
+    ["知识库问答", "问答系统", "RELATED_TO"],
+    ["文本嵌入模型", "向量检索", "PREREQUISITE_OF"],
+    ["文本嵌入模型", "语义检索", "PREREQUISITE_OF"],
+    ["文本嵌入模型", "知识库问答", "PREREQUISITE_OF"],
+    ["向量数据库", "向量检索", "PREREQUISITE_OF"],
+    ["向量数据库", "检索增强生成", "PREREQUISITE_OF"],
+    ["文档切分", "检索增强生成", "PREREQUISITE_OF"],
+    ["分块策略", "文档切分", "PREREQUISITE_OF"],
+    ["文档切分", "文本嵌入模型", "PREREQUISITE_OF"],
+    ["查询重写", "检索增强生成", "SUBTOPIC_OF"],
+    ["查询扩展", "检索增强生成", "SUBTOPIC_OF"],
+    ["查询扩展", "语义检索", "RELATED_TO"],
+    ["查询重写", "查询扩展", "RELATED_TO"],
+    ["混合检索", "检索增强生成", "SUBTOPIC_OF"],
+    ["混合检索", "向量检索", "RELATED_TO"],
+    ["混合检索", "BM25", "RELATED_TO"],
+    ["重排序模型", "检索增强生成", "SUBTOPIC_OF"],
+    ["重排序模型", "学习排序", "RELATED_TO"],
+    ["重排序模型", "混合检索", "PREREQUISITE_OF"],
+    ["上下文窗口", "大语言模型", "PREREQUISITE_OF"],
+    ["上下文压缩", "检索增强生成", "SUBTOPIC_OF"],
+    ["上下文压缩", "上下文窗口", "RELATED_TO"],
+    ["上下文压缩", "长上下文建模", "RELATED_TO"],
+    ["引用溯源", "检索增强生成", "SUBTOPIC_OF"],
+    ["引用溯源", "知识库问答", "PREREQUISITE_OF"],
+    ["引用溯源", "可追溯性", "RELATED_TO"],
+    ["函数调用", "工具调用", "RELATED_TO"],
+    ["工具调用", "大语言模型", "RELATED_TO"],
+    ["工具调用", "工作流编排", "PREREQUISITE_OF"],
+    ["函数调用", "工作流编排", "PREREQUISITE_OF"],
+    ["工作流编排", "检索增强生成", "RELATED_TO"],
+    ["提示模板", "提示工程", "RELATED_TO"],
+    ["提示模板", "答案生成", "PREREQUISITE_OF"],
+    ["会话记忆", "知识库问答", "RELATED_TO"],
+    ["长上下文建模", "大语言模型", "RELATED_TO"],
+    ["答案生成", "检索增强生成", "PART_OF"],
+    ["答案生成", "大语言模型", "PREREQUISITE_OF"]
+  ]
+}

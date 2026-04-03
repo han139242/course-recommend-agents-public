@@ -1,0 +1,155 @@
+{
+  "source": "batch_02_reasoning_uncertainty",
+  "nodes": [
+    {
+      "canonical_name": "不确定性推理",
+      "entity_type": "topic",
+      "description": "在信息不完备或存在噪声条件下进行结论推断的方法体系。"
+    },
+    {
+      "canonical_name": "随机变量",
+      "entity_type": "concept",
+      "description": "用于描述随机试验结果数值化表示的基本概率论概念。"
+    },
+    {
+      "canonical_name": "概率分布",
+      "entity_type": "concept",
+      "description": "描述随机变量可能取值及其概率规律的数学对象。"
+    },
+    {
+      "canonical_name": "条件概率",
+      "entity_type": "concept",
+      "description": "在已知某事件发生条件下另一事件发生的概率。"
+    },
+    {
+      "canonical_name": "联合概率",
+      "entity_type": "concept",
+      "description": "多个事件同时发生的概率。"
+    },
+    {
+      "canonical_name": "边缘概率",
+      "entity_type": "concept",
+      "description": "对联合分布中部分变量求和或积分得到的单变量概率。"
+    },
+    {
+      "canonical_name": "先验概率",
+      "entity_type": "concept",
+      "description": "在观察数据之前对事件或假设成立概率的先验判断。"
+    },
+    {
+      "canonical_name": "后验概率",
+      "entity_type": "concept",
+      "description": "结合观测数据后更新得到的事件或假设概率。"
+    },
+    {
+      "canonical_name": "似然",
+      "entity_type": "concept",
+      "description": "在给定参数条件下观测数据出现可能性的度量。"
+    },
+    {
+      "canonical_name": "贝叶斯定理",
+      "entity_type": "concept",
+      "description": "描述先验概率、似然与后验概率之间关系的基本公式。"
+    },
+    {
+      "canonical_name": "条件独立性",
+      "entity_type": "concept",
+      "description": "在给定条件变量后两个变量相互独立的性质。"
+    },
+    {
+      "canonical_name": "最大似然估计",
+      "entity_type": "method",
+      "description": "通过最大化观测数据似然函数估计模型参数的方法。"
+    },
+    {
+      "canonical_name": "最大后验估计",
+      "entity_type": "method",
+      "description": "在结合先验分布基础上最大化后验概率估计参数的方法。"
+    },
+    {
+      "canonical_name": "隐变量",
+      "entity_type": "concept",
+      "description": "在模型中存在但不能直接观测的潜在变量。"
+    },
+    {
+      "canonical_name": "隐马尔可夫模型",
+      "entity_type": "algorithm",
+      "description": "由隐状态和观测序列构成的经典时序概率模型。"
+    },
+    {
+      "canonical_name": "马尔可夫网络",
+      "entity_type": "algorithm",
+      "description": "以无向图表达变量依赖关系的概率图模型。"
+    },
+    {
+      "canonical_name": "置信传播",
+      "entity_type": "algorithm",
+      "description": "在图模型中通过消息传递进行边缘概率近似或精确推断的算法。"
+    },
+    {
+      "canonical_name": "模糊集合",
+      "entity_type": "concept",
+      "description": "允许元素以不同隶属度属于集合的扩展集合概念。"
+    },
+    {
+      "canonical_name": "隶属函数",
+      "entity_type": "concept",
+      "description": "刻画元素属于模糊集合程度的函数。"
+    },
+    {
+      "canonical_name": "模糊规则",
+      "entity_type": "method",
+      "description": "以模糊条件和模糊结论构造的 if-then 规则表示方式。"
+    },
+    {
+      "canonical_name": "概率校准",
+      "entity_type": "method",
+      "description": "将模型输出分数映射为更可靠概率估计的方法。"
+    },
+    {
+      "canonical_name": "熵",
+      "entity_type": "concept",
+      "description": "度量随机变量不确定性程度的经典信息论指标。"
+    }
+  ],
+  "relations": [
+    ["不确定性推理", "推理", "SUBTOPIC_OF"],
+    ["概率推理", "不确定性推理", "SUBTOPIC_OF"],
+    ["模糊推理", "不确定性推理", "SUBTOPIC_OF"],
+    ["证据理论", "不确定性推理", "SUBTOPIC_OF"],
+    ["随机变量", "概率推理", "PREREQUISITE_OF"],
+    ["概率分布", "概率推理", "PREREQUISITE_OF"],
+    ["条件概率", "概率推理", "PREREQUISITE_OF"],
+    ["联合概率", "概率分布", "SUBTOPIC_OF"],
+    ["边缘概率", "概率分布", "SUBTOPIC_OF"],
+    ["先验概率", "概率推理", "SUBTOPIC_OF"],
+    ["后验概率", "概率推理", "SUBTOPIC_OF"],
+    ["似然", "概率推理", "SUBTOPIC_OF"],
+    ["贝叶斯定理", "概率推理", "SUBTOPIC_OF"],
+    ["条件概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["先验概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["后验概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["似然", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["条件独立性", "概率图模型", "PREREQUISITE_OF"],
+    ["最大似然估计", "机器学习", "SUBTOPIC_OF"],
+    ["最大后验估计", "机器学习", "SUBTOPIC_OF"],
+    ["似然", "最大似然估计", "PREREQUISITE_OF"],
+    ["后验概率", "最大后验估计", "PREREQUISITE_OF"],
+    ["先验概率", "最大后验估计", "PREREQUISITE_OF"],
+    ["隐变量", "隐马尔可夫模型", "PREREQUISITE_OF"],
+    ["概率分布", "隐马尔可夫模型", "PREREQUISITE_OF"],
+    ["隐马尔可夫模型", "概率图模型", "SUBTOPIC_OF"],
+    ["马尔可夫网络", "概率图模型", "SUBTOPIC_OF"],
+    ["置信传播", "概率图模型", "SUBTOPIC_OF"],
+    ["条件独立性", "贝叶斯网络", "PREREQUISITE_OF"],
+    ["条件独立性", "马尔可夫网络", "PREREQUISITE_OF"],
+    ["模糊集合", "模糊推理", "PREREQUISITE_OF"],
+    ["隶属函数", "模糊集合", "PREREQUISITE_OF"],
+    ["模糊规则", "模糊推理", "SUBTOPIC_OF"],
+    ["隶属函数", "模糊规则", "PREREQUISITE_OF"],
+    ["概率校准", "模型评估", "RELATED_TO"],
+    ["概率校准", "概率推理", "RELATED_TO"],
+    ["熵", "概率推理", "SUBTOPIC_OF"],
+    ["熵", "决策树", "RELATED_TO"]
+  ]
+}

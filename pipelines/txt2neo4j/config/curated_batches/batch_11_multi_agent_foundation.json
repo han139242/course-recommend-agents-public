@@ -1,0 +1,147 @@
+{
+  "source": "batch_11_multi_agent_foundation",
+  "nodes": [
+    {
+      "canonical_name": "自主性",
+      "entity_type": "concept",
+      "description": "智能体无需持续外部干预即可自主感知、决策和行动的能力。"
+    },
+    {
+      "canonical_name": "反应性",
+      "entity_type": "concept",
+      "description": "智能体能够及时感知环境变化并做出响应的特性。"
+    },
+    {
+      "canonical_name": "社会性",
+      "entity_type": "concept",
+      "description": "智能体能够与其他智能体或人类进行交互协作的特性。"
+    },
+    {
+      "canonical_name": "协作",
+      "entity_type": "concept",
+      "description": "多个智能体通过共享信息和协调行动共同完成任务的行为模式。"
+    },
+    {
+      "canonical_name": "竞争",
+      "entity_type": "concept",
+      "description": "多个智能体在资源、目标或收益上存在冲突时的对抗行为模式。"
+    },
+    {
+      "canonical_name": "通信协议",
+      "entity_type": "method",
+      "description": "规定多智能体之间消息交换格式、时序和语义的交互规则。"
+    },
+    {
+      "canonical_name": "分布式决策",
+      "entity_type": "method",
+      "description": "由多个智能体在局部信息条件下共同完成决策的求解方式。"
+    },
+    {
+      "canonical_name": "协同规划",
+      "entity_type": "method",
+      "description": "多个智能体联合构造行动方案以满足整体目标的规划方法。"
+    },
+    {
+      "canonical_name": "任务分配",
+      "entity_type": "method",
+      "description": "将整体任务合理分解并分派给不同智能体执行的方法。"
+    },
+    {
+      "canonical_name": "协调机制",
+      "entity_type": "method",
+      "description": "用于解决多智能体行动冲突、资源竞争和目标耦合的协调方法。"
+    },
+    {
+      "canonical_name": "联盟形成",
+      "entity_type": "method",
+      "description": "多个智能体根据收益和目标构建稳定合作联盟的过程。"
+    },
+    {
+      "canonical_name": "博弈论",
+      "entity_type": "topic",
+      "description": "研究多个决策主体在相互影响条件下策略选择与收益关系的理论。"
+    },
+    {
+      "canonical_name": "协作博弈",
+      "entity_type": "method",
+      "description": "研究智能体如何通过合作和收益分配获得整体优势的博弈模型。"
+    },
+    {
+      "canonical_name": "非合作博弈",
+      "entity_type": "method",
+      "description": "研究各参与方独立优化自身收益时策略互动关系的博弈模型。"
+    },
+    {
+      "canonical_name": "纳什均衡",
+      "entity_type": "concept",
+      "description": "在其他参与方策略固定时任一主体都无利可图单独改变策略的稳定状态。"
+    },
+    {
+      "canonical_name": "机制设计",
+      "entity_type": "method",
+      "description": "通过规则设计引导多主体行为实现期望系统目标的方法。"
+    },
+    {
+      "canonical_name": "一致性算法",
+      "entity_type": "algorithm",
+      "description": "使多个智能体状态或估计逐步趋于一致的分布式协调算法。"
+    },
+    {
+      "canonical_name": "多智能体强化学习",
+      "entity_type": "method",
+      "description": "研究多个相互作用智能体通过试错学习策略的强化学习方法。"
+    },
+    {
+      "canonical_name": "集中训练分散执行",
+      "entity_type": "method",
+      "description": "训练阶段共享更多信息、执行阶段各智能体独立决策的多智能体学习范式。"
+    },
+    {
+      "canonical_name": "信用分配",
+      "entity_type": "concept",
+      "description": "在团队回报条件下判定各智能体对整体结果贡献程度的问题。"
+    }
+  ],
+  "relations": [
+    ["自主性", "智能体", "PREREQUISITE_OF"],
+    ["反应性", "智能体", "PREREQUISITE_OF"],
+    ["社会性", "智能体", "PREREQUISITE_OF"],
+    ["协作", "多智能体系统", "RELATED_TO"],
+    ["竞争", "多智能体系统", "RELATED_TO"],
+    ["通信协议", "多智能体系统", "SUBTOPIC_OF"],
+    ["社会性", "通信协议", "PREREQUISITE_OF"],
+    ["分布式决策", "多智能体系统", "SUBTOPIC_OF"],
+    ["协同规划", "多智能体系统", "SUBTOPIC_OF"],
+    ["协同规划", "规划", "RELATED_TO"],
+    ["任务分配", "协同规划", "PREREQUISITE_OF"],
+    ["任务分配", "多智能体系统", "SUBTOPIC_OF"],
+    ["协调机制", "多智能体系统", "SUBTOPIC_OF"],
+    ["协调机制", "协作", "RELATED_TO"],
+    ["协调机制", "竞争", "RELATED_TO"],
+    ["联盟形成", "协作", "RELATED_TO"],
+    ["联盟形成", "多智能体系统", "SUBTOPIC_OF"],
+    ["博弈论", "多智能体系统", "RELATED_TO"],
+    ["协作博弈", "博弈论", "SUBTOPIC_OF"],
+    ["非合作博弈", "博弈论", "SUBTOPIC_OF"],
+    ["纳什均衡", "非合作博弈", "PREREQUISITE_OF"],
+    ["机制设计", "博弈论", "SUBTOPIC_OF"],
+    ["机制设计", "任务分配", "RELATED_TO"],
+    ["协作博弈", "联盟形成", "RELATED_TO"],
+    ["非合作博弈", "竞争", "RELATED_TO"],
+    ["一致性算法", "分布式决策", "SUBTOPIC_OF"],
+    ["一致性算法", "协调机制", "RELATED_TO"],
+    ["多智能体强化学习", "多智能体系统", "SUBTOPIC_OF"],
+    ["多智能体强化学习", "强化学习", "RELATED_TO"],
+    ["多智能体强化学习", "协作", "RELATED_TO"],
+    ["多智能体强化学习", "竞争", "RELATED_TO"],
+    ["集中训练分散执行", "多智能体强化学习", "SUBTOPIC_OF"],
+    ["集中训练分散执行", "分布式决策", "RELATED_TO"],
+    ["信用分配", "多智能体强化学习", "RELATED_TO"],
+    ["信用分配", "协作", "RELATED_TO"],
+    ["任务分配", "信用分配", "RELATED_TO"],
+    ["通信协议", "协调机制", "PREREQUISITE_OF"],
+    ["分布式决策", "协同规划", "RELATED_TO"],
+    ["智能体", "多智能体强化学习", "PREREQUISITE_OF"],
+    ["自主性", "多智能体系统", "RELATED_TO"]
+  ]
+}

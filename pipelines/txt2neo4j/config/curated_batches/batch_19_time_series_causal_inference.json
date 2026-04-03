@@ -1,0 +1,146 @@
+{
+  "source": "batch_19_time_series_causal_inference",
+  "nodes": [
+    {
+      "canonical_name": "时间序列分析",
+      "entity_type": "topic",
+      "description": "研究按时间顺序观测数据的结构、规律与建模方法的方向。"
+    },
+    {
+      "canonical_name": "时间序列预测",
+      "entity_type": "application",
+      "description": "基于历史时间序列数据预测未来趋势或取值的任务。"
+    },
+    {
+      "canonical_name": "平稳性",
+      "entity_type": "concept",
+      "description": "时间序列统计性质在时间推移下保持不变的特性。"
+    },
+    {
+      "canonical_name": "趋势项",
+      "entity_type": "concept",
+      "description": "时间序列在较长时期内呈现出的整体变化方向。"
+    },
+    {
+      "canonical_name": "季节性",
+      "entity_type": "concept",
+      "description": "时间序列中按固定周期重复出现的模式。"
+    },
+    {
+      "canonical_name": "自相关",
+      "entity_type": "concept",
+      "description": "时间序列与其滞后版本之间相关程度的度量。"
+    },
+    {
+      "canonical_name": "偏自相关",
+      "entity_type": "concept",
+      "description": "控制中间滞后影响后某一滞后项与当前值之间的相关程度。"
+    },
+    {
+      "canonical_name": "AR模型",
+      "entity_type": "algorithm",
+      "description": "利用过去若干时刻观测值线性组合预测当前值的自回归模型。"
+    },
+    {
+      "canonical_name": "MA模型",
+      "entity_type": "algorithm",
+      "description": "利用过去误差项线性组合建模当前值的移动平均模型。"
+    },
+    {
+      "canonical_name": "ARMA模型",
+      "entity_type": "algorithm",
+      "description": "结合自回归与移动平均部分建模平稳时间序列的经典模型。"
+    },
+    {
+      "canonical_name": "ARIMA模型",
+      "entity_type": "algorithm",
+      "description": "通过差分结合自回归与移动平均处理非平稳时间序列的经典模型。"
+    },
+    {
+      "canonical_name": "状态空间模型",
+      "entity_type": "algorithm",
+      "description": "通过隐状态和观测方程描述动态系统演化与观测过程的模型。"
+    },
+    {
+      "canonical_name": "卡尔曼滤波",
+      "entity_type": "algorithm",
+      "description": "在线估计线性高斯动态系统隐状态的经典递推算法。"
+    },
+    {
+      "canonical_name": "时间序列异常检测",
+      "entity_type": "application",
+      "description": "识别时间序列中异常波动、突变或罕见模式的任务。"
+    },
+    {
+      "canonical_name": "因果推断",
+      "entity_type": "topic",
+      "description": "研究变量之间因果关系识别、估计和解释的方法体系。"
+    },
+    {
+      "canonical_name": "因果图",
+      "entity_type": "concept",
+      "description": "用有向图表示变量因果结构与依赖关系的图模型。"
+    },
+    {
+      "canonical_name": "混杂变量",
+      "entity_type": "concept",
+      "description": "同时影响处理变量和结果变量并引入偏差的变量。"
+    },
+    {
+      "canonical_name": "反事实",
+      "entity_type": "concept",
+      "description": "描述同一对象在未实际发生的另一种处理条件下可能结果的概念。"
+    },
+    {
+      "canonical_name": "平均处理效应",
+      "entity_type": "concept",
+      "description": "处理组与对照组在总体层面结果差异的平均因果效应。"
+    },
+    {
+      "canonical_name": "格兰杰因果",
+      "entity_type": "method",
+      "description": "通过过去信息是否提升预测能力来检验时序变量因果先后关系的方法。"
+    }
+  ],
+  "relations": [
+    ["时间序列分析", "机器学习", "RELATED_TO"],
+    ["时间序列预测", "时间序列分析", "SUBTOPIC_OF"],
+    ["平稳性", "时间序列分析", "PREREQUISITE_OF"],
+    ["趋势项", "时间序列分析", "SUBTOPIC_OF"],
+    ["季节性", "时间序列分析", "SUBTOPIC_OF"],
+    ["趋势项", "时间序列预测", "RELATED_TO"],
+    ["季节性", "时间序列预测", "RELATED_TO"],
+    ["自相关", "时间序列分析", "SUBTOPIC_OF"],
+    ["偏自相关", "时间序列分析", "SUBTOPIC_OF"],
+    ["自相关", "AR模型", "PREREQUISITE_OF"],
+    ["偏自相关", "AR模型", "PREREQUISITE_OF"],
+    ["自相关", "MA模型", "PREREQUISITE_OF"],
+    ["AR模型", "时间序列分析", "SUBTOPIC_OF"],
+    ["MA模型", "时间序列分析", "SUBTOPIC_OF"],
+    ["ARMA模型", "时间序列分析", "SUBTOPIC_OF"],
+    ["AR模型", "ARMA模型", "PREREQUISITE_OF"],
+    ["MA模型", "ARMA模型", "PREREQUISITE_OF"],
+    ["ARIMA模型", "时间序列分析", "SUBTOPIC_OF"],
+    ["ARMA模型", "ARIMA模型", "PREREQUISITE_OF"],
+    ["平稳性", "ARIMA模型", "RELATED_TO"],
+    ["ARIMA模型", "时间序列预测", "PREREQUISITE_OF"],
+    ["状态空间模型", "时间序列分析", "SUBTOPIC_OF"],
+    ["卡尔曼滤波", "状态空间模型", "PREREQUISITE_OF"],
+    ["卡尔曼滤波", "时间序列预测", "RELATED_TO"],
+    ["卡尔曼滤波", "机器人定位", "RELATED_TO"],
+    ["时间序列异常检测", "时间序列分析", "SUBTOPIC_OF"],
+    ["时间序列异常检测", "模型监控", "RELATED_TO"],
+    ["因果推断", "机器学习", "RELATED_TO"],
+    ["因果图", "因果推断", "PREREQUISITE_OF"],
+    ["混杂变量", "因果推断", "PREREQUISITE_OF"],
+    ["反事实", "因果推断", "SUBTOPIC_OF"],
+    ["平均处理效应", "因果推断", "SUBTOPIC_OF"],
+    ["混杂变量", "平均处理效应", "RELATED_TO"],
+    ["反事实", "平均处理效应", "PREREQUISITE_OF"],
+    ["格兰杰因果", "因果推断", "SUBTOPIC_OF"],
+    ["格兰杰因果", "时间序列分析", "RELATED_TO"],
+    ["格兰杰因果", "时间序列预测", "RELATED_TO"],
+    ["因果图", "贝叶斯网络", "RELATED_TO"],
+    ["因果推断", "风险评估", "RELATED_TO"]
+  ]
+}

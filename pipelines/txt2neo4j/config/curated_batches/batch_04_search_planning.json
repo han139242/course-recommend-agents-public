@@ -1,0 +1,152 @@
+{
+  "source": "batch_04_search_planning",
+  "nodes": [
+    {
+      "canonical_name": "状态空间搜索",
+      "entity_type": "method",
+      "description": "将问题表示为状态及状态转移图并在其中寻找目标状态的经典求解方法。"
+    },
+    {
+      "canonical_name": "盲目搜索",
+      "entity_type": "method",
+      "description": "不利用领域启发信息，仅依据问题定义展开搜索的基本策略。"
+    },
+    {
+      "canonical_name": "宽度优先搜索",
+      "entity_type": "algorithm",
+      "description": "按搜索树层次逐层扩展节点并保证最浅解优先发现的图搜索算法。"
+    },
+    {
+      "canonical_name": "深度优先搜索",
+      "entity_type": "algorithm",
+      "description": "沿单条路径尽可能深入再回溯的经典图搜索算法。"
+    },
+    {
+      "canonical_name": "一致代价搜索",
+      "entity_type": "algorithm",
+      "description": "总是扩展当前路径代价最小节点并能求得最优解的搜索算法。"
+    },
+    {
+      "canonical_name": "迭代加深搜索",
+      "entity_type": "algorithm",
+      "description": "通过逐步增加深度限制兼顾深度优先低空间占用与广度优先完备性的搜索算法。"
+    },
+    {
+      "canonical_name": "最佳优先搜索",
+      "entity_type": "algorithm",
+      "description": "基于评估函数优先扩展最有希望节点的启发式搜索框架。"
+    },
+    {
+      "canonical_name": "启发函数",
+      "entity_type": "concept",
+      "description": "用于估计当前状态到目标状态代价或距离的函数。"
+    },
+    {
+      "canonical_name": "可采纳启发式",
+      "entity_type": "concept",
+      "description": "永不高估到目标最优代价的启发函数性质。"
+    },
+    {
+      "canonical_name": "一致启发式",
+      "entity_type": "concept",
+      "description": "满足三角不等式并保证评估函数单调性的启发函数性质。"
+    },
+    {
+      "canonical_name": "约束满足问题",
+      "entity_type": "topic",
+      "description": "在变量、取值域和约束条件下寻找满足全部约束赋值的求解问题。"
+    },
+    {
+      "canonical_name": "回溯搜索",
+      "entity_type": "algorithm",
+      "description": "在约束满足或组合搜索中逐步试探并在冲突时撤销选择的系统搜索算法。"
+    },
+    {
+      "canonical_name": "局部搜索",
+      "entity_type": "method",
+      "description": "通过在当前候选解邻域内不断改进来寻找满意解的搜索方法。"
+    },
+    {
+      "canonical_name": "爬山算法",
+      "entity_type": "algorithm",
+      "description": "每一步都朝评价更优邻域状态移动的贪心局部搜索算法。"
+    },
+    {
+      "canonical_name": "模拟退火",
+      "entity_type": "algorithm",
+      "description": "通过以一定概率接受较差解来跳出局部最优的随机优化搜索算法。"
+    },
+    {
+      "canonical_name": "状态表示",
+      "entity_type": "concept",
+      "description": "对问题求解过程中系统所处情形进行形式化描述的表示方式。"
+    },
+    {
+      "canonical_name": "动作表示",
+      "entity_type": "concept",
+      "description": "对动作前提条件、执行效果和代价进行结构化表达的表示方式。"
+    },
+    {
+      "canonical_name": "STRIPS表示",
+      "entity_type": "method",
+      "description": "用前提、增加表和删除表描述动作与状态变化的经典规划表示方法。"
+    },
+    {
+      "canonical_name": "前向规划",
+      "entity_type": "algorithm",
+      "description": "从初始状态出发不断应用动作生成后继状态直到达到目标的规划策略。"
+    },
+    {
+      "canonical_name": "后向规划",
+      "entity_type": "algorithm",
+      "description": "从目标条件反向回推所需前提并逐步构造计划的规划策略。"
+    },
+    {
+      "canonical_name": "部分序规划",
+      "entity_type": "algorithm",
+      "description": "允许动作仅保持必要先后约束而不完全线性排序的规划方法。"
+    }
+  ],
+  "relations": [
+    ["状态空间搜索", "搜索", "SUBTOPIC_OF"],
+    ["盲目搜索", "状态空间搜索", "SUBTOPIC_OF"],
+    ["宽度优先搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["深度优先搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["一致代价搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["迭代加深搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["最佳优先搜索", "启发式搜索", "SUBTOPIC_OF"],
+    ["启发函数", "启发式搜索", "PREREQUISITE_OF"],
+    ["启发函数", "A*搜索算法", "PREREQUISITE_OF"],
+    ["可采纳启发式", "启发函数", "SUBTOPIC_OF"],
+    ["一致启发式", "启发函数", "SUBTOPIC_OF"],
+    ["可采纳启发式", "A*搜索算法", "PREREQUISITE_OF"],
+    ["一致启发式", "A*搜索算法", "PREREQUISITE_OF"],
+    ["最佳优先搜索", "A*搜索算法", "PREREQUISITE_OF"],
+    ["一致代价搜索", "A*搜索算法", "RELATED_TO"],
+    ["状态表示", "状态空间搜索", "PREREQUISITE_OF"],
+    ["状态表示", "规划", "PREREQUISITE_OF"],
+    ["约束满足问题", "搜索", "SUBTOPIC_OF"],
+    ["回溯搜索", "约束满足问题", "SUBTOPIC_OF"],
+    ["回溯搜索", "深度优先搜索", "RELATED_TO"],
+    ["局部搜索", "搜索", "SUBTOPIC_OF"],
+    ["爬山算法", "局部搜索", "SUBTOPIC_OF"],
+    ["模拟退火", "局部搜索", "SUBTOPIC_OF"],
+    ["爬山算法", "模拟退火", "RELATED_TO"],
+    ["局部搜索", "路径规划", "RELATED_TO"],
+    ["动作表示", "规划", "PREREQUISITE_OF"],
+    ["STRIPS表示", "规划", "SUBTOPIC_OF"],
+    ["状态表示", "STRIPS表示", "PREREQUISITE_OF"],
+    ["动作表示", "STRIPS表示", "PREREQUISITE_OF"],
+    ["前向规划", "规划", "SUBTOPIC_OF"],
+    ["后向规划", "规划", "SUBTOPIC_OF"],
+    ["部分序规划", "规划", "SUBTOPIC_OF"],
+    ["STRIPS表示", "前向规划", "PREREQUISITE_OF"],
+    ["STRIPS表示", "后向规划", "PREREQUISITE_OF"],
+    ["动作表示", "前向规划", "PREREQUISITE_OF"],
+    ["动作表示", "后向规划", "PREREQUISITE_OF"],
+    ["前向规划", "路径规划", "RELATED_TO"],
+    ["后向规划", "路径规划", "RELATED_TO"],
+    ["部分序规划", "前向规划", "RELATED_TO"],
+    ["部分序规划", "后向规划", "RELATED_TO"]
+  ]
+}

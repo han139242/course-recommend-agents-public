@@ -1,0 +1,147 @@
+{
+  "source": "batch_14_ai_math_optimization_foundation",
+  "nodes": [
+    {
+      "canonical_name": "线性代数基础",
+      "entity_type": "topic",
+      "description": "支撑人工智能中表示学习、优化与模型构建的核心线性代数知识体系。"
+    },
+    {
+      "canonical_name": "微积分基础",
+      "entity_type": "topic",
+      "description": "支撑人工智能模型分析与优化求解的微积分基础知识体系。"
+    },
+    {
+      "canonical_name": "向量",
+      "entity_type": "concept",
+      "description": "表示大小和方向或多维数值特征的基本数学对象。"
+    },
+    {
+      "canonical_name": "矩阵",
+      "entity_type": "concept",
+      "description": "按行列组织数值并用于表达线性变换和数据表示的基本数学对象。"
+    },
+    {
+      "canonical_name": "矩阵乘法",
+      "entity_type": "concept",
+      "description": "用于组合线性变换和执行特征映射计算的基本矩阵运算。"
+    },
+    {
+      "canonical_name": "特征值",
+      "entity_type": "concept",
+      "description": "描述线性变换在特定方向上缩放性质的重要量。"
+    },
+    {
+      "canonical_name": "特征向量",
+      "entity_type": "concept",
+      "description": "在线性变换下方向保持不变的非零向量。"
+    },
+    {
+      "canonical_name": "矩阵分解",
+      "entity_type": "method",
+      "description": "将矩阵拆解为多个具有特定性质矩阵乘积的数学方法。"
+    },
+    {
+      "canonical_name": "奇异值分解",
+      "entity_type": "method",
+      "description": "将任意矩阵分解为正交矩阵与对角矩阵乘积的经典方法。"
+    },
+    {
+      "canonical_name": "范数",
+      "entity_type": "concept",
+      "description": "用于度量向量或矩阵大小的数学函数。"
+    },
+    {
+      "canonical_name": "导数",
+      "entity_type": "concept",
+      "description": "描述函数在某一点附近变化率的基本微积分概念。"
+    },
+    {
+      "canonical_name": "偏导数",
+      "entity_type": "concept",
+      "description": "多元函数对某一变量单独变化率的度量。"
+    },
+    {
+      "canonical_name": "梯度",
+      "entity_type": "concept",
+      "description": "由多元函数各偏导数组成并指向函数增长最快方向的向量。"
+    },
+    {
+      "canonical_name": "Hessian矩阵",
+      "entity_type": "concept",
+      "description": "由二阶偏导数组成并描述函数局部曲率性质的矩阵。"
+    },
+    {
+      "canonical_name": "最优化问题",
+      "entity_type": "concept",
+      "description": "在可行域内寻找目标函数最优取值的数学问题。"
+    },
+    {
+      "canonical_name": "凸优化",
+      "entity_type": "method",
+      "description": "在凸目标和凸约束条件下求解全局最优解的优化方法体系。"
+    },
+    {
+      "canonical_name": "约束优化",
+      "entity_type": "method",
+      "description": "在满足等式或不等式约束条件下求解最优解的优化方法。"
+    },
+    {
+      "canonical_name": "拉格朗日乘子法",
+      "entity_type": "method",
+      "description": "将约束条件并入目标函数以求解约束优化问题的经典方法。"
+    },
+    {
+      "canonical_name": "交叉熵",
+      "entity_type": "concept",
+      "description": "衡量两个概率分布差异并常作为分类任务损失函数的指标。"
+    },
+    {
+      "canonical_name": "KL散度",
+      "entity_type": "concept",
+      "description": "衡量一个概率分布相对于另一个概率分布信息差异的指标。"
+    }
+  ],
+  "relations": [
+    ["线性代数基础", "机器学习", "PREREQUISITE_OF"],
+    ["微积分基础", "机器学习", "PREREQUISITE_OF"],
+    ["线性代数基础", "深度学习", "PREREQUISITE_OF"],
+    ["微积分基础", "深度学习", "PREREQUISITE_OF"],
+    ["向量", "线性代数基础", "SUBTOPIC_OF"],
+    ["矩阵", "线性代数基础", "SUBTOPIC_OF"],
+    ["矩阵乘法", "矩阵", "PREREQUISITE_OF"],
+    ["向量", "矩阵乘法", "PREREQUISITE_OF"],
+    ["特征值", "线性代数基础", "SUBTOPIC_OF"],
+    ["特征向量", "线性代数基础", "SUBTOPIC_OF"],
+    ["特征向量", "特征值", "RELATED_TO"],
+    ["矩阵分解", "线性代数基础", "SUBTOPIC_OF"],
+    ["奇异值分解", "矩阵分解", "SUBTOPIC_OF"],
+    ["奇异值分解", "主成分分析", "PREREQUISITE_OF"],
+    ["范数", "线性代数基础", "SUBTOPIC_OF"],
+    ["范数", "正则化", "PREREQUISITE_OF"],
+    ["导数", "微积分基础", "SUBTOPIC_OF"],
+    ["偏导数", "微积分基础", "SUBTOPIC_OF"],
+    ["偏导数", "导数", "RELATED_TO"],
+    ["梯度", "微积分基础", "SUBTOPIC_OF"],
+    ["偏导数", "梯度", "PREREQUISITE_OF"],
+    ["梯度", "梯度下降", "PREREQUISITE_OF"],
+    ["Hessian矩阵", "微积分基础", "SUBTOPIC_OF"],
+    ["Hessian矩阵", "凸优化", "PREREQUISITE_OF"],
+    ["最优化问题", "机器学习", "RELATED_TO"],
+    ["最优化问题", "梯度下降", "PREREQUISITE_OF"],
+    ["凸优化", "最优化问题", "SUBTOPIC_OF"],
+    ["约束优化", "最优化问题", "SUBTOPIC_OF"],
+    ["拉格朗日乘子法", "约束优化", "PREREQUISITE_OF"],
+    ["拉格朗日乘子法", "支持向量机", "PREREQUISITE_OF"],
+    ["凸优化", "支持向量机", "PREREQUISITE_OF"],
+    ["交叉熵", "损失函数", "RELATED_TO"],
+    ["交叉熵", "Softmax函数", "RELATED_TO"],
+    ["交叉熵", "分类", "RELATED_TO"],
+    ["KL散度", "概率分布", "RELATED_TO"],
+    ["KL散度", "交叉熵", "RELATED_TO"],
+    ["KL散度", "变分自编码器", "PREREQUISITE_OF"],
+    ["矩阵", "神经网络", "PREREQUISITE_OF"],
+    ["向量", "词嵌入", "PREREQUISITE_OF"],
+    ["矩阵分解", "表示学习", "RELATED_TO"]
+  ]
+}

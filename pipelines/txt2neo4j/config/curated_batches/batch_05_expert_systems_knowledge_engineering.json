@@ -1,0 +1,147 @@
+{
+  "source": "batch_05_expert_systems_knowledge_engineering",
+  "nodes": [
+    {
+      "canonical_name": "知识工程",
+      "entity_type": "topic",
+      "description": "围绕知识获取、表示、组织、验证、维护与应用构建智能系统的工程方法体系。"
+    },
+    {
+      "canonical_name": "知识获取",
+      "entity_type": "method",
+      "description": "从领域专家、文档或数据中提炼并结构化领域知识的方法。"
+    },
+    {
+      "canonical_name": "知识获取瓶颈",
+      "entity_type": "concept",
+      "description": "专家知识难以完整、准确、高效转化为机器可用知识的核心难题。"
+    },
+    {
+      "canonical_name": "领域专家",
+      "entity_type": "concept",
+      "description": "在特定领域拥有丰富经验和判断能力的人类知识来源。"
+    },
+    {
+      "canonical_name": "知识建模",
+      "entity_type": "method",
+      "description": "将领域概念、关系、规则和约束抽象为可计算知识结构的方法。"
+    },
+    {
+      "canonical_name": "知识验证",
+      "entity_type": "method",
+      "description": "检验知识库中规则、事实和结构是否正确、完整与一致的方法。"
+    },
+    {
+      "canonical_name": "知识维护",
+      "entity_type": "method",
+      "description": "对知识库进行更新、修订、扩充与版本管理的方法。"
+    },
+    {
+      "canonical_name": "知识编辑器",
+      "entity_type": "concept",
+      "description": "用于录入、编辑、组织和管理知识条目或规则的工具组件。"
+    },
+    {
+      "canonical_name": "解释机制",
+      "entity_type": "concept",
+      "description": "向用户说明推理过程、依据和结论来源的系统能力。"
+    },
+    {
+      "canonical_name": "工作记忆",
+      "entity_type": "concept",
+      "description": "在推理过程中临时保存当前事实、目标和中间结果的动态存储区。"
+    },
+    {
+      "canonical_name": "规则匹配",
+      "entity_type": "method",
+      "description": "将当前事实状态与规则前提条件进行匹配的推理过程。"
+    },
+    {
+      "canonical_name": "冲突消解",
+      "entity_type": "method",
+      "description": "当多条规则同时可触发时选择执行顺序或优先级的控制方法。"
+    },
+    {
+      "canonical_name": "案例推理",
+      "entity_type": "method",
+      "description": "通过检索和复用历史相似案例解决新问题的知识推理方法。"
+    },
+    {
+      "canonical_name": "案例库",
+      "entity_type": "concept",
+      "description": "存放历史案例及其问题描述、解决方案和结果的知识资源。"
+    },
+    {
+      "canonical_name": "案例检索",
+      "entity_type": "method",
+      "description": "依据相似性度量从案例库中查找相关历史案例的方法。"
+    },
+    {
+      "canonical_name": "案例复用",
+      "entity_type": "method",
+      "description": "将已有案例的解决方案迁移到当前问题并加以适配的方法。"
+    },
+    {
+      "canonical_name": "案例修正",
+      "entity_type": "method",
+      "description": "根据新问题反馈调整已复用案例解答的修订过程。"
+    },
+    {
+      "canonical_name": "案例保存",
+      "entity_type": "method",
+      "description": "将新问题及其有效解答存入案例库以支持后续复用的方法。"
+    },
+    {
+      "canonical_name": "元知识",
+      "entity_type": "concept",
+      "description": "关于知识来源、适用条件、可信度和使用策略的知识。"
+    },
+    {
+      "canonical_name": "黑板模型",
+      "entity_type": "method",
+      "description": "由多个知识源围绕共享黑板协同求解复杂问题的系统组织模式。"
+    }
+  ],
+  "relations": [
+    ["知识工程", "人工智能", "SUBTOPIC_OF"],
+    ["知识工程", "专家系统", "RELATED_TO"],
+    ["知识获取", "知识工程", "SUBTOPIC_OF"],
+    ["知识建模", "知识工程", "SUBTOPIC_OF"],
+    ["知识验证", "知识工程", "SUBTOPIC_OF"],
+    ["知识维护", "知识工程", "SUBTOPIC_OF"],
+    ["知识获取瓶颈", "知识获取", "RELATED_TO"],
+    ["领域专家", "知识获取", "PREREQUISITE_OF"],
+    ["领域专家", "知识工程", "RELATED_TO"],
+    ["知识建模", "知识表示", "RELATED_TO"],
+    ["知识验证", "一致性检验", "RELATED_TO"],
+    ["知识维护", "知识库", "RELATED_TO"],
+    ["知识编辑器", "知识工程", "PART_OF"],
+    ["知识编辑器", "知识库", "RELATED_TO"],
+    ["解释机制", "专家系统", "PART_OF"],
+    ["工作记忆", "专家系统", "PART_OF"],
+    ["工作记忆", "前向链推理", "PREREQUISITE_OF"],
+    ["工作记忆", "后向链推理", "PREREQUISITE_OF"],
+    ["规则匹配", "推理机", "RELATED_TO"],
+    ["冲突消解", "推理机", "RELATED_TO"],
+    ["规则匹配", "前向链推理", "PREREQUISITE_OF"],
+    ["规则匹配", "后向链推理", "PREREQUISITE_OF"],
+    ["冲突消解", "前向链推理", "PREREQUISITE_OF"],
+    ["冲突消解", "后向链推理", "PREREQUISITE_OF"],
+    ["案例推理", "推理", "SUBTOPIC_OF"],
+    ["案例推理", "知识工程", "RELATED_TO"],
+    ["案例库", "案例推理", "PREREQUISITE_OF"],
+    ["案例检索", "案例推理", "SUBTOPIC_OF"],
+    ["案例复用", "案例推理", "SUBTOPIC_OF"],
+    ["案例修正", "案例推理", "SUBTOPIC_OF"],
+    ["案例保存", "案例推理", "SUBTOPIC_OF"],
+    ["案例检索", "案例库", "PREREQUISITE_OF"],
+    ["案例复用", "案例检索", "PREREQUISITE_OF"],
+    ["案例修正", "案例复用", "PREREQUISITE_OF"],
+    ["案例保存", "案例修正", "PREREQUISITE_OF"],
+    ["元知识", "知识工程", "RELATED_TO"],
+    ["元知识", "冲突消解", "RELATED_TO"],
+    ["元知识", "解释机制", "RELATED_TO"],
+    ["黑板模型", "专家系统", "RELATED_TO"],
+    ["黑板模型", "知识工程", "SUBTOPIC_OF"]
+  ]
+}

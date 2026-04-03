@@ -1,0 +1,147 @@
+{
+  "source": "batch_09_reinforcement_learning_foundation",
+  "nodes": [
+    {
+      "canonical_name": "智能体-环境交互",
+      "entity_type": "concept",
+      "description": "强化学习中智能体根据环境反馈持续采取动作并更新策略的交互过程。"
+    },
+    {
+      "canonical_name": "状态",
+      "entity_type": "concept",
+      "description": "刻画环境在某一时刻可供决策使用信息的表示。"
+    },
+    {
+      "canonical_name": "动作",
+      "entity_type": "concept",
+      "description": "智能体在给定状态下可执行的决策选择。"
+    },
+    {
+      "canonical_name": "奖励",
+      "entity_type": "concept",
+      "description": "环境在动作执行后返回给智能体的即时反馈信号。"
+    },
+    {
+      "canonical_name": "回报",
+      "entity_type": "concept",
+      "description": "从某时刻开始未来奖励按折扣累计得到的长期收益量。"
+    },
+    {
+      "canonical_name": "折扣因子",
+      "entity_type": "concept",
+      "description": "用于控制未来奖励相对当前奖励重要程度的系数。"
+    },
+    {
+      "canonical_name": "策略",
+      "entity_type": "concept",
+      "description": "描述智能体在各状态下如何选择动作的决策规则。"
+    },
+    {
+      "canonical_name": "状态价值函数",
+      "entity_type": "concept",
+      "description": "衡量在给定策略下从某状态开始能获得期望回报的函数。"
+    },
+    {
+      "canonical_name": "动作价值函数",
+      "entity_type": "concept",
+      "description": "衡量在给定状态采取某动作后能获得期望回报的函数。"
+    },
+    {
+      "canonical_name": "贝尔曼方程",
+      "entity_type": "concept",
+      "description": "刻画价值函数递归关系的强化学习核心方程。"
+    },
+    {
+      "canonical_name": "策略评估",
+      "entity_type": "method",
+      "description": "在给定策略下估计状态价值或动作价值的过程。"
+    },
+    {
+      "canonical_name": "策略改进",
+      "entity_type": "method",
+      "description": "依据已有价值估计生成更优策略的过程。"
+    },
+    {
+      "canonical_name": "探索与利用",
+      "entity_type": "concept",
+      "description": "在尝试新动作和利用已知高回报动作之间进行权衡的问题。"
+    },
+    {
+      "canonical_name": "epsilon-贪心策略",
+      "entity_type": "method",
+      "description": "以小概率随机探索、其余情况下选择当前最优动作的策略。"
+    },
+    {
+      "canonical_name": "蒙特卡洛强化学习",
+      "entity_type": "method",
+      "description": "通过完整回合采样回报估计价值函数的强化学习方法。"
+    },
+    {
+      "canonical_name": "时序差分学习",
+      "entity_type": "method",
+      "description": "结合自举思想与采样更新价值估计的强化学习方法。"
+    },
+    {
+      "canonical_name": "模型自由强化学习",
+      "entity_type": "method",
+      "description": "不显式学习环境转移模型而直接从交互经验中学习策略或价值的方法。"
+    },
+    {
+      "canonical_name": "基于模型的强化学习",
+      "entity_type": "method",
+      "description": "显式利用或学习环境模型并结合规划求解策略的方法。"
+    },
+    {
+      "canonical_name": "On-policy学习",
+      "entity_type": "method",
+      "description": "使用当前行为策略采样的数据来学习同一策略的方法。"
+    },
+    {
+      "canonical_name": "Off-policy学习",
+      "entity_type": "method",
+      "description": "使用与目标策略不同的行为策略生成的数据来学习目标策略的方法。"
+    }
+  ],
+  "relations": [
+    ["智能体-环境交互", "强化学习", "PREREQUISITE_OF"],
+    ["状态", "马尔可夫决策过程", "PREREQUISITE_OF"],
+    ["动作", "马尔可夫决策过程", "PREREQUISITE_OF"],
+    ["奖励", "马尔可夫决策过程", "PREREQUISITE_OF"],
+    ["回报", "强化学习", "PREREQUISITE_OF"],
+    ["折扣因子", "回报", "PREREQUISITE_OF"],
+    ["策略", "强化学习", "PREREQUISITE_OF"],
+    ["状态价值函数", "强化学习", "SUBTOPIC_OF"],
+    ["动作价值函数", "强化学习", "SUBTOPIC_OF"],
+    ["状态价值函数", "贝尔曼方程", "PREREQUISITE_OF"],
+    ["动作价值函数", "贝尔曼方程", "PREREQUISITE_OF"],
+    ["回报", "贝尔曼方程", "PREREQUISITE_OF"],
+    ["贝尔曼方程", "强化学习", "SUBTOPIC_OF"],
+    ["策略评估", "强化学习", "SUBTOPIC_OF"],
+    ["策略改进", "强化学习", "SUBTOPIC_OF"],
+    ["策略", "策略评估", "PREREQUISITE_OF"],
+    ["状态价值函数", "策略评估", "PREREQUISITE_OF"],
+    ["策略评估", "策略改进", "PREREQUISITE_OF"],
+    ["策略改进", "策略梯度", "RELATED_TO"],
+    ["探索与利用", "强化学习", "RELATED_TO"],
+    ["epsilon-贪心策略", "探索与利用", "SUBTOPIC_OF"],
+    ["epsilon-贪心策略", "Q学习", "RELATED_TO"],
+    ["蒙特卡洛强化学习", "强化学习", "SUBTOPIC_OF"],
+    ["时序差分学习", "强化学习", "SUBTOPIC_OF"],
+    ["蒙特卡洛强化学习", "策略评估", "RELATED_TO"],
+    ["时序差分学习", "策略评估", "RELATED_TO"],
+    ["时序差分学习", "Q学习", "PREREQUISITE_OF"],
+    ["模型自由强化学习", "强化学习", "SUBTOPIC_OF"],
+    ["基于模型的强化学习", "强化学习", "SUBTOPIC_OF"],
+    ["模型自由强化学习", "Q学习", "PREREQUISITE_OF"],
+    ["基于模型的强化学习", "规划", "RELATED_TO"],
+    ["基于模型的强化学习", "马尔可夫决策过程", "RELATED_TO"],
+    ["On-policy学习", "策略梯度", "RELATED_TO"],
+    ["Off-policy学习", "Q学习", "RELATED_TO"],
+    ["On-policy学习", "模型自由强化学习", "SUBTOPIC_OF"],
+    ["Off-policy学习", "模型自由强化学习", "SUBTOPIC_OF"],
+    ["状态", "状态价值函数", "PREREQUISITE_OF"],
+    ["状态", "动作价值函数", "PREREQUISITE_OF"],
+    ["动作", "动作价值函数", "PREREQUISITE_OF"],
+    ["奖励", "回报", "PREREQUISITE_OF"]
+  ]
+}

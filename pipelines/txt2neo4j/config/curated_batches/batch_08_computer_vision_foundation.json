@@ -1,0 +1,147 @@
+{
+  "source": "batch_08_computer_vision_foundation",
+  "nodes": [
+    {
+      "canonical_name": "图像预处理",
+      "entity_type": "method",
+      "description": "在视觉任务前对图像进行去噪、归一化、裁剪和尺度调整等处理的方法。"
+    },
+    {
+      "canonical_name": "图像增强",
+      "entity_type": "method",
+      "description": "通过变换训练图像提升模型泛化能力和数据多样性的方法。"
+    },
+    {
+      "canonical_name": "边缘检测",
+      "entity_type": "method",
+      "description": "识别图像中灰度或颜色突变边界的经典视觉分析方法。"
+    },
+    {
+      "canonical_name": "角点检测",
+      "entity_type": "method",
+      "description": "检测图像中局部显著变化点以支持匹配和跟踪的方法。"
+    },
+    {
+      "canonical_name": "特征提取",
+      "entity_type": "method",
+      "description": "从图像中提炼可区分表示以支撑识别、匹配和分析的方法。"
+    },
+    {
+      "canonical_name": "局部特征描述子",
+      "entity_type": "concept",
+      "description": "用于编码图像局部区域纹理和结构信息的特征表示。"
+    },
+    {
+      "canonical_name": "SIFT",
+      "entity_type": "algorithm",
+      "description": "对尺度和旋转具有较强鲁棒性的经典局部特征检测与描述算法。"
+    },
+    {
+      "canonical_name": "SURF",
+      "entity_type": "algorithm",
+      "description": "在速度和鲁棒性之间取得平衡的经典局部特征算法。"
+    },
+    {
+      "canonical_name": "ORB",
+      "entity_type": "algorithm",
+      "description": "结合 FAST 角点与 BRIEF 描述子的高效局部特征算法。"
+    },
+    {
+      "canonical_name": "非极大值抑制",
+      "entity_type": "method",
+      "description": "在候选结果中保留局部最优响应并去除冗余响应的方法。"
+    },
+    {
+      "canonical_name": "交并比",
+      "entity_type": "concept",
+      "description": "衡量预测区域与真实区域重叠程度的常用视觉评价指标。"
+    },
+    {
+      "canonical_name": "平均精度均值",
+      "entity_type": "concept",
+      "description": "综合评估目标检测模型在多类别上性能的指标。"
+    },
+    {
+      "canonical_name": "候选区域",
+      "entity_type": "concept",
+      "description": "用于目标检测中缩小搜索范围的潜在目标区域集合。"
+    },
+    {
+      "canonical_name": "特征金字塔",
+      "entity_type": "concept",
+      "description": "在多尺度层次上组织特征以增强目标检测和分割能力的表示结构。"
+    },
+    {
+      "canonical_name": "语义分割",
+      "entity_type": "application",
+      "description": "为图像中每个像素分配语义类别标签的视觉任务。"
+    },
+    {
+      "canonical_name": "实例分割",
+      "entity_type": "application",
+      "description": "同时区分类别并区分同类不同个体像素区域的视觉任务。"
+    },
+    {
+      "canonical_name": "全景分割",
+      "entity_type": "application",
+      "description": "统一建模语义分割和实例分割结果的综合像素级视觉任务。"
+    },
+    {
+      "canonical_name": "目标跟踪",
+      "entity_type": "application",
+      "description": "在视频序列中持续定位并关联目标轨迹的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "光流",
+      "entity_type": "concept",
+      "description": "描述图像序列中像素或区域运动模式的视觉表示。"
+    },
+    {
+      "canonical_name": "视觉 Transformer",
+      "entity_type": "algorithm",
+      "description": "将 Transformer 架构应用于图像表示学习与视觉任务建模的方法。"
+    }
+  ],
+  "relations": [
+    ["图像预处理", "计算机视觉", "SUBTOPIC_OF"],
+    ["图像增强", "图像预处理", "SUBTOPIC_OF"],
+    ["图像增强", "图像分类", "RELATED_TO"],
+    ["图像增强", "目标检测", "RELATED_TO"],
+    ["图像增强", "图像分割", "RELATED_TO"],
+    ["边缘检测", "计算机视觉", "SUBTOPIC_OF"],
+    ["角点检测", "计算机视觉", "SUBTOPIC_OF"],
+    ["特征提取", "计算机视觉", "SUBTOPIC_OF"],
+    ["边缘检测", "特征提取", "PREREQUISITE_OF"],
+    ["角点检测", "特征提取", "PREREQUISITE_OF"],
+    ["局部特征描述子", "特征提取", "RELATED_TO"],
+    ["SIFT", "特征提取", "SUBTOPIC_OF"],
+    ["SURF", "特征提取", "SUBTOPIC_OF"],
+    ["ORB", "特征提取", "SUBTOPIC_OF"],
+    ["局部特征描述子", "SIFT", "PREREQUISITE_OF"],
+    ["局部特征描述子", "SURF", "PREREQUISITE_OF"],
+    ["局部特征描述子", "ORB", "PREREQUISITE_OF"],
+    ["角点检测", "ORB", "PREREQUISITE_OF"],
+    ["非极大值抑制", "目标检测", "PREREQUISITE_OF"],
+    ["候选区域", "目标检测", "PREREQUISITE_OF"],
+    ["交并比", "目标检测", "PREREQUISITE_OF"],
+    ["平均精度均值", "目标检测", "RELATED_TO"],
+    ["交并比", "平均精度均值", "PREREQUISITE_OF"],
+    ["候选区域", "非极大值抑制", "RELATED_TO"],
+    ["特征金字塔", "目标检测", "RELATED_TO"],
+    ["特征金字塔", "图像分割", "RELATED_TO"],
+    ["语义分割", "图像分割", "SUBTOPIC_OF"],
+    ["实例分割", "图像分割", "SUBTOPIC_OF"],
+    ["全景分割", "图像分割", "SUBTOPIC_OF"],
+    ["语义分割", "全景分割", "PREREQUISITE_OF"],
+    ["实例分割", "全景分割", "PREREQUISITE_OF"],
+    ["目标跟踪", "计算机视觉", "SUBTOPIC_OF"],
+    ["光流", "目标跟踪", "PREREQUISITE_OF"],
+    ["光流", "计算机视觉", "RELATED_TO"],
+    ["视觉 Transformer", "Transformer", "RELATED_TO"],
+    ["视觉 Transformer", "计算机视觉", "SUBTOPIC_OF"],
+    ["视觉 Transformer", "图像分类", "RELATED_TO"],
+    ["视觉 Transformer", "目标检测", "RELATED_TO"],
+    ["视觉 Transformer", "图像分割", "RELATED_TO"],
+    ["卷积神经网络", "特征金字塔", "PREREQUISITE_OF"]
+  ]
+}

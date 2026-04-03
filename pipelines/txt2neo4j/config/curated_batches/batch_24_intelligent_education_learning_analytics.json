@@ -1,0 +1,147 @@
+{
+  "source": "batch_24_intelligent_education_learning_analytics",
+  "nodes": [
+    {
+      "canonical_name": "智能教育",
+      "entity_type": "topic",
+      "description": "将人工智能技术应用于教学、学习支持、评价与教育管理的研究与实践方向。"
+    },
+    {
+      "canonical_name": "学习分析",
+      "entity_type": "method",
+      "description": "对学习过程数据进行采集、分析和解释以支持学习优化的方法。"
+    },
+    {
+      "canonical_name": "教育数据挖掘",
+      "entity_type": "method",
+      "description": "从教育场景数据中挖掘模式、规律和预测信号的方法。"
+    },
+    {
+      "canonical_name": "学习者画像",
+      "entity_type": "concept",
+      "description": "对学习者能力、兴趣、行为特征和学习状态进行结构化表示的模型。"
+    },
+    {
+      "canonical_name": "能力建模",
+      "entity_type": "method",
+      "description": "对学习者在不同知识点和能力维度上的水平进行建模的方法。"
+    },
+    {
+      "canonical_name": "知识追踪",
+      "entity_type": "method",
+      "description": "根据学习者交互历史动态估计其知识掌握状态的建模方法。"
+    },
+    {
+      "canonical_name": "掌握度估计",
+      "entity_type": "concept",
+      "description": "对学习者在某一知识点上掌握概率或掌握水平的量化估计。"
+    },
+    {
+      "canonical_name": "认知诊断",
+      "entity_type": "method",
+      "description": "分析学习者在细粒度知识属性上的掌握缺陷与能力差异的方法。"
+    },
+    {
+      "canonical_name": "知识点推荐",
+      "entity_type": "application",
+      "description": "根据学习状态和目标为学习者推荐下一步应学习知识点的任务。"
+    },
+    {
+      "canonical_name": "题目推荐",
+      "entity_type": "application",
+      "description": "根据学习者当前水平和目标推荐适合练习题目的任务。"
+    },
+    {
+      "canonical_name": "学习路径规划",
+      "entity_type": "method",
+      "description": "根据知识依赖关系和学习者状态生成个性化学习顺序的方法。"
+    },
+    {
+      "canonical_name": "自适应学习",
+      "entity_type": "topic",
+      "description": "根据学习者差异动态调整内容、难度、节奏和反馈的学习支持方式。"
+    },
+    {
+      "canonical_name": "个性化反馈",
+      "entity_type": "application",
+      "description": "根据学习者表现自动生成针对性解释、建议和纠错信息的任务。"
+    },
+    {
+      "canonical_name": "学习资源排序",
+      "entity_type": "method",
+      "description": "对候选教学资源按学习收益、难度匹配和时效性进行排序的方法。"
+    },
+    {
+      "canonical_name": "学习动机识别",
+      "entity_type": "application",
+      "description": "从学习行为和文本反馈中识别学习者动机水平与变化的任务。"
+    },
+    {
+      "canonical_name": "学习风险预警",
+      "entity_type": "application",
+      "description": "提前识别学习掉队、流失或成绩异常风险的教育分析任务。"
+    },
+    {
+      "canonical_name": "学习行为序列",
+      "entity_type": "concept",
+      "description": "按时间顺序记录学习者浏览、作答、复习和反馈等交互轨迹的数据表示。"
+    },
+    {
+      "canonical_name": "先修关系建模",
+      "entity_type": "method",
+      "description": "对知识点之间前置依赖关系进行表示和推断的方法。"
+    },
+    {
+      "canonical_name": "知识状态可视化",
+      "entity_type": "application",
+      "description": "以图表或知识图谱形式展示学习者当前知识掌握状态的任务。"
+    },
+    {
+      "canonical_name": "学习成效评估",
+      "entity_type": "method",
+      "description": "从知识掌握、迁移应用和行为变化等方面综合评估学习效果的方法。"
+    }
+  ],
+  "relations": [
+    ["智能教育", "人工智能", "SUBTOPIC_OF"],
+    ["学习分析", "智能教育", "SUBTOPIC_OF"],
+    ["教育数据挖掘", "智能教育", "SUBTOPIC_OF"],
+    ["学习分析", "教育数据挖掘", "RELATED_TO"],
+    ["学习者画像", "智能教育", "PREREQUISITE_OF"],
+    ["学习者画像", "推荐系统", "RELATED_TO"],
+    ["能力建模", "学习者画像", "PREREQUISITE_OF"],
+    ["知识追踪", "能力建模", "SUBTOPIC_OF"],
+    ["掌握度估计", "知识追踪", "PREREQUISITE_OF"],
+    ["掌握度估计", "认知诊断", "RELATED_TO"],
+    ["认知诊断", "能力建模", "SUBTOPIC_OF"],
+    ["知识点推荐", "自适应学习", "SUBTOPIC_OF"],
+    ["题目推荐", "自适应学习", "SUBTOPIC_OF"],
+    ["学习路径规划", "自适应学习", "SUBTOPIC_OF"],
+    ["自适应学习", "智能教育", "SUBTOPIC_OF"],
+    ["知识追踪", "知识点推荐", "PREREQUISITE_OF"],
+    ["知识追踪", "题目推荐", "PREREQUISITE_OF"],
+    ["先修关系建模", "学习路径规划", "PREREQUISITE_OF"],
+    ["知识图谱", "先修关系建模", "RELATED_TO"],
+    ["路径规划", "学习路径规划", "RELATED_TO"],
+    ["学习资源排序", "知识点推荐", "RELATED_TO"],
+    ["学习资源排序", "题目推荐", "RELATED_TO"],
+    ["学习资源排序", "学习排序", "RELATED_TO"],
+    ["个性化反馈", "自适应学习", "SUBTOPIC_OF"],
+    ["大语言模型", "个性化反馈", "RELATED_TO"],
+    ["知识追踪", "个性化反馈", "RELATED_TO"],
+    ["学习动机识别", "学习分析", "RELATED_TO"],
+    ["学习动机识别", "情感分析", "RELATED_TO"],
+    ["学习风险预警", "学习分析", "SUBTOPIC_OF"],
+    ["学习风险预警", "时间序列预测", "RELATED_TO"],
+    ["学习行为序列", "学习分析", "PREREQUISITE_OF"],
+    ["学习行为序列", "知识追踪", "PREREQUISITE_OF"],
+    ["学习行为序列", "学习风险预警", "PREREQUISITE_OF"],
+    ["知识状态可视化", "自适应学习", "RELATED_TO"],
+    ["知识状态可视化", "知识图谱", "RELATED_TO"],
+    ["掌握度估计", "知识状态可视化", "PREREQUISITE_OF"],
+    ["学习成效评估", "智能教育", "SUBTOPIC_OF"],
+    ["学习成效评估", "模型评估", "RELATED_TO"],
+    ["学习成效评估", "学习分析", "RELATED_TO"],
+    ["认知诊断", "知识点推荐", "RELATED_TO"]
+  ]
+}

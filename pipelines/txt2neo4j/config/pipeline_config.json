@@ -1,0 +1,34 @@
+{
+  "quality": {
+    "max_name_length": 24,
+    "review_export_limit": 300
+  },
+  "related_to": {
+    "min_shared_mentions": 4,
+    "min_confidence": 0.84,
+    "require_same_chapter": true,
+    "require_overlap_or_same_type": true
+  },
+  "filters": {
+    "drop_titles": [
+      "绪论",
+      "人工智能的发展简史",
+      "人工智能研究的基本内容",
+      "人工智能的主要研究领域"
+    ],
+    "drop_prefixes": [
+      "什么是",
+      "请",
+      "试",
+      "简述",
+      "说明",
+      "如何",
+      "为什么",
+      "哪些",
+      "写出",
+      "构造",
+      "给出",
+      "指出"
+    ]
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "source": "batch_01_machine_learning_foundation",
+  "nodes": [
+    {
+      "canonical_name": "特征工程",
+      "entity_type": "method",
+      "description": "围绕特征构造、变换、选择与标准化开展的数据表示优化方法。"
+    },
+    {
+      "canonical_name": "特征选择",
+      "entity_type": "method",
+      "description": "从原始特征集合中挑选对任务最有用特征子集的方法。"
+    },
+    {
+      "canonical_name": "模型评估",
+      "entity_type": "method",
+      "description": "通过指标与实验设计评估学习模型泛化性能的方法体系。"
+    },
+    {
+      "canonical_name": "模型选择",
+      "entity_type": "method",
+      "description": "在候选模型或超参数配置中选择最优方案的方法。"
+    },
+    {
+      "canonical_name": "交叉验证",
+      "entity_type": "method",
+      "description": "通过重复划分训练集与验证集估计模型泛化性能的评估方法。"
+    },
+    {
+      "canonical_name": "正则化",
+      "entity_type": "method",
+      "description": "通过约束模型复杂度抑制过拟合并提升泛化能力的方法。"
+    },
+    {
+      "canonical_name": "损失函数",
+      "entity_type": "concept",
+      "description": "用于度量模型预测结果与真实目标之间偏差的函数。"
+    },
+    {
+      "canonical_name": "经验风险最小化",
+      "entity_type": "concept",
+      "description": "通过最小化训练样本平均损失学习模型参数的基本原则。"
+    },
+    {
+      "canonical_name": "梯度下降",
+      "entity_type": "algorithm",
+      "description": "沿目标函数负梯度方向迭代更新参数的优化算法。"
+    },
+    {
+      "canonical_name": "随机梯度下降",
+      "entity_type": "algorithm",
+      "description": "基于单样本或小批量样本近似梯度进行参数更新的优化算法。"
+    },
+    {
+      "canonical_name": "过拟合",
+      "entity_type": "concept",
+      "description": "模型过度拟合训练数据而导致泛化性能下降的现象。"
+    },
+    {
+      "canonical_name": "欠拟合",
+      "entity_type": "concept",
+      "description": "模型表达能力不足而无法充分学习数据规律的现象。"
+    },
+    {
+      "canonical_name": "偏差-方差权衡",
+      "entity_type": "concept",
+      "description": "描述模型偏差与方差之间平衡关系的机器学习核心观点。"
+    },
+    {
+      "canonical_name": "混淆矩阵",
+      "entity_type": "concept",
+      "description": "用于统计分类模型预测类别与真实类别对应关系的矩阵。"
+    },
+    {
+      "canonical_name": "准确率",
+      "entity_type": "concept",
+      "description": "分类任务中预测正确样本数占总样本数比例的评估指标。"
+    },
+    {
+      "canonical_name": "精确率",
+      "entity_type": "concept",
+      "description": "预测为正的样本中真正为正的比例。"
+    },
+    {
+      "canonical_name": "召回率",
+      "entity_type": "concept",
+      "description": "真实为正的样本中被正确预测为正的比例。"
+    },
+    {
+      "canonical_name": "F1值",
+      "entity_type": "concept",
+      "description": "精确率与召回率调和平均得到的分类综合评估指标。"
+    },
+    {
+      "canonical_name": "ROC曲线",
+      "entity_type": "concept",
+      "description": "刻画分类器在不同阈值下真正例率与假正例率关系的曲线。"
+    },
+    {
+      "canonical_name": "AUC",
+      "entity_type": "concept",
+      "description": "ROC 曲线下的面积，用于衡量二分类模型排序能力。"
+    },
+    {
+      "canonical_name": "集成学习",
+      "entity_type": "method",
+      "description": "通过组合多个基学习器提升预测性能与稳健性的方法。"
+    },
+    {
+      "canonical_name": "随机森林",
+      "entity_type": "algorithm",
+      "description": "基于多棵决策树和随机子空间构建的集成学习算法。"
+    },
+    {
+      "canonical_name": "Boosting",
+      "entity_type": "method",
+      "description": "通过逐步关注难样本并串行组合弱学习器提升性能的集成学习方法。"
+    },
+    {
+      "canonical_name": "AdaBoost",
+      "entity_type": "algorithm",
+      "description": "通过调整样本权重迭代组合弱分类器的经典 Boosting 算法。"
+    },
+    {
+      "canonical_name": "梯度提升树",
+      "entity_type": "algorithm",
+      "description": "通过拟合残差逐步提升预测能力的树模型集成算法。"
+    }
+  ],
+  "relations": [
+    ["特征工程", "机器学习", "SUBTOPIC_OF"],
+    ["特征选择", "特征工程", "SUBTOPIC_OF"],
+    ["模型评估", "机器学习", "SUBTOPIC_OF"],
+    ["模型选择", "机器学习", "SUBTOPIC_OF"],
+    ["交叉验证", "模型评估", "SUBTOPIC_OF"],
+    ["交叉验证", "模型选择", "RELATED_TO"],
+    ["正则化", "机器学习", "SUBTOPIC_OF"],
+    ["损失函数", "机器学习", "SUBTOPIC_OF"],
+    ["经验风险最小化", "机器学习", "SUBTOPIC_OF"],
+    ["损失函数", "经验风险最小化", "PREREQUISITE_OF"],
+    ["梯度下降", "机器学习", "SUBTOPIC_OF"],
+    ["随机梯度下降", "梯度下降", "SUBTOPIC_OF"],
+    ["梯度下降", "逻辑回归", "PREREQUISITE_OF"],
+    ["梯度下降", "线性回归", "PREREQUISITE_OF"],
+    ["随机梯度下降", "深度学习", "PREREQUISITE_OF"],
+    ["过拟合", "机器学习", "SUBTOPIC_OF"],
+    ["欠拟合", "机器学习", "SUBTOPIC_OF"],
+    ["偏差-方差权衡", "机器学习", "SUBTOPIC_OF"],
+    ["正则化", "过拟合", "RELATED_TO"],
+    ["偏差-方差权衡", "过拟合", "RELATED_TO"],
+    ["偏差-方差权衡", "欠拟合", "RELATED_TO"],
+    ["混淆矩阵", "模型评估", "SUBTOPIC_OF"],
+    ["准确率", "模型评估", "SUBTOPIC_OF"],
+    ["精确率", "模型评估", "SUBTOPIC_OF"],
+    ["召回率", "模型评估", "SUBTOPIC_OF"],
+    ["F1值", "模型评估", "SUBTOPIC_OF"],
+    ["ROC曲线", "模型评估", "SUBTOPIC_OF"],
+    ["AUC", "模型评估", "SUBTOPIC_OF"],
+    ["混淆矩阵", "准确率", "PREREQUISITE_OF"],
+    ["混淆矩阵", "精确率", "PREREQUISITE_OF"],
+    ["混淆矩阵", "召回率", "PREREQUISITE_OF"],
+    ["精确率", "F1值", "PREREQUISITE_OF"],
+    ["召回率", "F1值", "PREREQUISITE_OF"],
+    ["ROC曲线", "AUC", "PREREQUISITE_OF"],
+    ["集成学习", "机器学习", "SUBTOPIC_OF"],
+    ["随机森林", "集成学习", "SUBTOPIC_OF"],
+    ["Boosting", "集成学习", "SUBTOPIC_OF"],
+    ["AdaBoost", "Boosting", "SUBTOPIC_OF"],
+    ["梯度提升树", "Boosting", "SUBTOPIC_OF"],
+    ["决策树", "随机森林", "PREREQUISITE_OF"],
+    ["决策树", "梯度提升树", "PREREQUISITE_OF"],
+    ["决策树", "AdaBoost", "RELATED_TO"]
+  ]
+}
