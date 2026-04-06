@@ -67,6 +67,10 @@ func (c Config) Validate() error {
 		return fmt.Errorf("HTTP_PORT 不能为空")
 	}
 
+	if c.Auth.JWTSecret == "" {
+		return fmt.Errorf("JWT_SECRET 不能为空")
+	}
+
 	return nil
 }
 
