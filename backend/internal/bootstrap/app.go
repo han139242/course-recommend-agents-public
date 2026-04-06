@@ -48,7 +48,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("初始化 Neo4j 失败: %w", err)
 	}
 
-	r := NewRouter()
+	r := NewRouter(logger)
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port),
 		Handler:      r,

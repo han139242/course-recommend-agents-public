@@ -6,8 +6,8 @@
 
 # 当前执行阶段
 
-- 当前里程碑：`M1 工程骨架与基础设施接入`
-- 当前目标：建立可启动的 Go 服务骨架，补齐配置、日志、MySQL、Redis、Neo4j 初始化入口，以及健康检查与优雅停机能力。
+- 当前里程碑：`M2 认证、统一响应、日志、错误、健康检查增强`
+- 当前目标：补齐统一响应结构、应用错误模型、trace_id/request_id 注入中间件、请求日志中间件与恢复中间件，夯实后续认证与业务模块的公共底座。
 
 ---
 
@@ -66,3 +66,9 @@
 - 根据仓库远程地址，统一将 Go module 与内部 import 路径调整为 GitHub 格式：`github.com/han139242/course-recommend-agents/backend/...`。
 - 日志底层实现从 `slog` 切换为 `zap`，但对外接口保持统一，继续使用 `logger.WithCtx(ctx).Info(...)` 形式。
 - 日志字段构造方式统一收口到日志包，继续隐藏底层实现细节，便于后续替换实现而不影响业务层。
+- 建立统一响应结构 `pkg/result`，统一返回 `code`、`message`、`data`、`trace_id`、`timestamp`。
+- 建立统一应用错误模型 `pkg/apperr`，为后续 handler 与 service 层错误映射提供稳定边界。
+- 建立 `RequestID`、`RealIP`、请求日志、恢复中间件，并接入 Gin 全局路由链。
+- 请求进入后会由后端自动生成 `request_id` 与 `trace_id`，不再依赖前端透传，也不再通过响应头回写给客户端。
+- 前端如果需要链路追踪标识，统一从 JSON 响应体中的 `trace_id` 字段获取。
+- 路由层改为使用统一响应封装，基础接口已支持走公共中间件链与 panic 恢复链路。
