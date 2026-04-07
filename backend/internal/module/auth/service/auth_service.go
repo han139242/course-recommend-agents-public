@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"strings"
 	"time"
@@ -24,17 +25,24 @@ func NewAuthService(repo repository.UserRepository, jwtService *JWTService, pass
 }
 
 // Login 执行登录逻辑。
-func (s *AuthService) Login(email string, password string) (*dto.LoginResponse, error) {
-	user, err := s.repo.GetByEmail(strings.TrimSpace(email))
+func (s *AuthService) Login(ctx context.Context, email string, password string) (*dto.LoginResponse, error) {
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	user, err := s.repo.GetByEmail(ctx, normalizedEmail)
 	if err != nil {
-		return nil, apperr.ErrUnauthorized.WithCause(err)
+		if errors.Is(err, repository.ErrUserNotFound) {
+			return nil, apperr.ErrUnauthorized.WithCause(err)
+		}
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 
-	if err := s.passwordService.Verify(password, user.Password); err != nil {
-		return nil, apperr.ErrUnauthorized.WithCause(errors.New("password not match"))
+	if err := s.passwordService.Verify(password, user.PasswordHash); err != nil {
+		if errors.Is(err, ErrPasswordMismatch) {
+			return nil, apperr.ErrUnauthorized.WithCause(err)
+		}
+		return nil, apperr.ErrInternal.WithCause(err)
 	}
 
-	if user.Status != "active" {
+	if user.Status != repository.UserStatusActive {
 		return nil, apperr.ErrForbidden.WithCause(errors.New("user disabled"))
 	}
 
@@ -52,13 +60,16 @@ func (s *AuthService) Login(email string, password string) (*dto.LoginResponse, 
 }
 
 // GetCurrentUser 根据用户 ID 获取当前登录用户。
-func (s *AuthService) GetCurrentUser(userID int64) (*dto.AuthUserView, error) {
-	user, err := s.repo.GetByID(userID)
+func (s *AuthService) GetCurrentUser(ctx context.Context, userID int64) (*dto.AuthUserView, error) {
+	user, err := s.repo.GetByID(ctx, userID)
 	if err != nil {
-		return nil, apperr.ErrNotFound.WithCause(err)
+		if errors.Is(err, repository.ErrUserNotFound) {
+			return nil, apperr.ErrNotFound.WithCause(err)
+		}
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 
-	if user.Status != "active" {
+	if user.Status != repository.UserStatusActive {
 		return nil, apperr.ErrForbidden.WithCause(errors.New("user disabled"))
 	}
 
@@ -67,27 +78,24 @@ func (s *AuthService) GetCurrentUser(userID int64) (*dto.AuthUserView, error) {
 }
 
 func buildUserView(user *entity.User) dto.AuthUserView {
-	var studentNo *string
-	if user.StudentNo != "" {
-		studentNo = &user.StudentNo
-	}
-
-	var className *string
-	if user.ClassName != "" {
-		className = &user.ClassName
-	}
-
 	return dto.AuthUserView{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
 		Role:      user.Role,
-		Title:     user.Title,
-		StudentNo: studentNo,
+		Title:     stringValueOrEmpty(user.Title),
+		StudentNo: user.StudentNo,
 		ClassID:   user.ClassID,
-		ClassName: className,
+		ClassName: user.ClassName,
 		Target:    user.Target,
 		Status:    user.Status,
-		CreatedAt: user.CreatedAtISO,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
 	}
+}
+
+func stringValueOrEmpty(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }

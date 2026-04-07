@@ -6,8 +6,8 @@
 
 # 当前执行阶段
 
-- 当前里程碑：`M2 认证、统一响应、日志、错误、健康检查增强`
-- 当前目标：补齐统一响应结构、应用错误模型、trace_id/request_id 注入中间件、请求日志中间件与恢复中间件，夯实后续认证与业务模块的公共底座。
+- 当前里程碑：`M3 教师端基础主数据管理`
+- 当前目标：先把 M3 第一步做干净，正式落地 `users/classrooms` 主数据模型与 migration，移除认证模块中的隐式建表与隐式 seed，为后续教师端业务接口做好正式数据层准备。
 
 ---
 
@@ -77,3 +77,18 @@
 - 当前阶段使用内存用户数据打通认证主链路，后续在 M3 阶段切换到 MySQL 用户表实现。
 - 路由结构正式收敛为 `public` 与 `auth` 两类：公开接口不校验 JWT，受保护接口统一挂载 Auth 中间件。
 - 配置校验补充 `JWT_SECRET` 必填约束，避免在生产环境因缺失密钥导致认证能力异常。
+- 删除重复的 `auth/model/user.go`，统一仅保留 `internal/module/user/model/user.go` 作为 users 表持久化模型。
+- 将 `users` 主数据模型从 `auth/model` 抽离到更中性的 `internal/module/user/model`，避免主数据长期挂靠认证模块。
+- 增加 `classrooms` 主数据模型，并补齐正式 migration：`000001_create_users_and_classrooms.sql`。
+- 调整 migration 外键创建顺序，改为先建表、后补外键，避免 MySQL 在被引用表尚未创建时建约束失败。
+- 移除 Auth 模块初始化中的 `AutoMigrate` 与 `SeedDemoUsers`，避免模块装配过程夹带数据库结构与演示数据副作用。
+- 新增独立开发环境 seed 入口 `cmd/seed`，把演示数据初始化与应用启动过程解耦。
+- Auth 仓储层补充稳定语义错误 `ErrUserNotFound`，服务层开始基于仓储语义错误做业务错误映射。
+- 将 MySQL 从“伪降级依赖”改为认证场景下的显式硬依赖，避免启动策略不一致。
+- Seed 命令改为独立最小配置加载，只要求 `MYSQL_DSN`，不再依赖完整应用配置。
+- 仓储接口补充 `context.Context`，GORM 查询统一接入 `WithContext(ctx)`，为超时、取消和追踪透传做准备。
+- 修正密码校验语义，区分“密码不匹配”和“哈希异常”。
+- 统一用户实体语义：`Password` 更名为 `PasswordHash`，`CreatedAtISO` 改回 `time.Time`，避免表现层格式侵入领域层。
+- 修正 MySQL 仓储与内存仓储错误语义不一致问题，并补齐 `className` 联表查询。
+- 统一 seed 幂等策略为按业务唯一键查找/创建，不再硬编码依赖固定主键关系。
+- migration 补充基础外键约束，减少主数据脏写风险。

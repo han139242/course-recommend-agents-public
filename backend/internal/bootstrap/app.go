@@ -32,11 +32,15 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	logger := NewLogger(cfg)
-	authModule := NewAuthModule(cfg, logger)
 
 	mysqlDB, err := NewMySQL(cfg, logger)
 	if err != nil {
 		return nil, fmt.Errorf("初始化 MySQL 失败: %w", err)
+	}
+
+	authModule, err := NewAuthModule(cfg, mysqlDB, logger)
+	if err != nil {
+		return nil, err
 	}
 
 	redisClient, err := NewRedis(ctx, cfg, logger)

@@ -1,12 +1,15 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	"github.com/han139242/course-recommend-agents/backend/internal/module/auth/handler"
 	"github.com/han139242/course-recommend-agents/backend/internal/module/auth/repository"
 	"github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
+	"gorm.io/gorm"
 )
 
 // Module 聚合认证模块运行期依赖。
@@ -16,15 +19,19 @@ type Module struct {
 }
 
 // New 创建认证模块。
-func New(cfg config.AuthConfig, _ *applogger.Logger) *Module {
-	repo := repository.NewMemoryUserRepository()
+func New(cfg config.AuthConfig, db *gorm.DB, _ *applogger.Logger) (*Module, error) {
+	if db == nil {
+		return nil, fmt.Errorf("认证模块初始化失败：MySQL 未连接")
+	}
+
 	jwtService := service.NewJWTService(cfg)
 	passwordService := service.NewPasswordService()
-	authService := service.NewAuthService(repo, jwtService, passwordService)
+	userRepo := repository.NewMySQLUserRepository(db)
+	authService := service.NewAuthService(userRepo, jwtService, passwordService)
 	return &Module{
 		Handler:    handler.New(authService),
 		JWTService: jwtService,
-	}
+	}, nil
 }
 
 // RegisterPublicRoutes 注册公开认证路由。

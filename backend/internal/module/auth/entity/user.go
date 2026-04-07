@@ -1,17 +1,19 @@
 package entity
 
-// User 表示当前阶段认证模块使用的用户模型。
+import "time"
+
+// User 表示当前阶段认证模块使用的用户领域实体。
 type User struct {
 	ID           int64
 	Name         string
 	Email        string
-	Password     string
+	PasswordHash string
 	Role         string
 	Status       string
-	Title        string
-	StudentNo    string
+	Title        *string
+	StudentNo    *string
 	ClassID      *int64
-	ClassName    string
+	ClassName    *string
 	Target       string
-	CreatedAtISO string
+	CreatedAt    time.Time
 }
