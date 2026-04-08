@@ -14,6 +14,7 @@ const (
 )
 
 // Error 定义应用统一错误模型。
+// 该结构体同时承载对外响应语义与内部原因链路，便于分层传递。
 type Error struct {
 	HTTPStatus int
 	Code       int
@@ -21,11 +22,13 @@ type Error struct {
 	Cause      error
 }
 
+// Error 返回错误对外展示文案。
 func (e *Error) Error() string {
 	return e.Message
 }
 
 // WithCause 为应用错误补充底层原因。
+// 该方法返回拷贝副本，避免复用全局错误模板时发生共享状态污染。
 func (e *Error) WithCause(err error) *Error {
 	copied := *e
 	copied.Cause = err
@@ -44,6 +47,7 @@ var (
 )
 
 // AsAppError 将任意错误转换为应用错误。
+// 非框架内错误统一收敛为内部错误，避免把原始实现细节直接暴露给上层调用方。
 func AsAppError(err error) *Error {
 	if err == nil {
 		return nil

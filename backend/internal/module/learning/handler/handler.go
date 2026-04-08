@@ -59,6 +59,7 @@ func (h *Handler) GetQuestionDetail(ctx *gin.Context) {
 }
 
 // ListStudentQuestions 处理学生拉题请求。
+// 处理器层仅负责分页与筛选参数绑定，题目可见性与正确答案脱敏由 service 层统一控制。
 func (h *Handler) ListStudentQuestions(ctx *gin.Context) {
 	var query learningdto.StudentQuestionsQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {

@@ -61,6 +61,7 @@ func (r *MySQLRepository) CreateClassroom(ctx context.Context, teacherID int64, 
 }
 
 // ListClassrooms 查询班级列表。
+// 先统计总数再分页拉取明细，保证前端分页器可直接使用 total；排序追加主键是为了在同秒创建数据下保持稳定顺序。
 func (r *MySQLRepository) ListClassrooms(ctx context.Context, teacherID int64, pagination teacherentity.Pagination) ([]teacherentity.Classroom, int64, error) {
 	var total int64
 	baseQuery := r.classroomsQuery(ctx, teacherID)
@@ -114,6 +115,7 @@ func (r *MySQLRepository) GetClassroomByID(ctx context.Context, teacherID int64,
 }
 
 // BatchCreateStudents 批量创建学生。
+// 该方法在单个事务内先校验班级归属，再分批写入用户表；任一学生违反唯一约束都会整体回滚，保证导入原子性。
 func (r *MySQLRepository) BatchCreateStudents(ctx context.Context, teacherID int64, classID int64, items []teacherentity.CreateStudentInput) (int, error) {
 	createdCount := 0
 	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -153,6 +155,7 @@ func (r *MySQLRepository) BatchCreateStudents(ctx context.Context, teacherID int
 }
 
 // ListStudents 查询班级学生列表。
+// 先验证班级确实属于当前教师，再按学生创建时间倒序分页，避免越权通过 classID 探测其他教师班级是否存在。
 func (r *MySQLRepository) ListStudents(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) {
 	var classroom teachermodel.Classroom
 	if err := r.db.WithContext(ctx).Where("id = ? AND teacher_id = ? AND status = ?", classID, teacherID, StatusActive).Take(&classroom).Error; err != nil {
@@ -204,6 +207,8 @@ func (r *MySQLRepository) GetStudentByID(ctx context.Context, teacherID int64, s
 	return &student, nil
 }
 
+// classroomsQuery 复用班级列表查询骨架。
+// 通过 LEFT JOIN 统计启用中的学生数量，并按班级主键分组，避免一个班级映射出多行记录。
 func (r *MySQLRepository) classroomsQuery(ctx context.Context, teacherID int64) *gorm.DB {
 	return r.db.WithContext(ctx).
 		Table("classrooms").
@@ -234,6 +239,8 @@ func (r *MySQLRepository) IsActiveTeacher(ctx context.Context, userID int64) (bo
 	return count > 0, nil
 }
 
+// translateWriteError 将底层数据库唯一键错误转换为领域语义错误。
+// 这样 service 层可以稳定映射冲突语义，而不必依赖具体数据库错误码与索引名称。
 func translateWriteError(err error) error {
 	var mysqlErr *mysqlDriver.MySQLError
 	if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {

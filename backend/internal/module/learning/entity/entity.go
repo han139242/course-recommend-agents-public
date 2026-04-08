@@ -79,6 +79,7 @@ type SubmitAnswerResult struct {
 }
 
 // Pagination 定义分页参数。
+// 该结构只表达最终分页决策，默认值修正与上限裁剪应在 DTO 层完成。
 type Pagination struct {
 	Page     int
 	PageSize int

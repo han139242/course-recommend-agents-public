@@ -68,6 +68,7 @@ func TestImportQuestionsRejectsInvalidType(t *testing.T) {
 	}
 }
 
+// TestImportQuestionsRejectsDuplicateQuestionIDInRequest 验证批量导题会在请求内先做去重。
 func TestImportQuestionsRejectsDuplicateQuestionIDInRequest(t *testing.T) {
 	repo := &learningRepoStub{isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return true, nil }}
 	service := New(repo, nil)
@@ -157,6 +158,7 @@ func TestImportQuestionsRejectsBlankFieldsAfterTrim(t *testing.T) {
 	}
 }
 
+// TestListStudentQuestionsDoesNotLeakCorrectAnswer 验证学生拉题响应不会暴露正确答案与解析字段。
 func TestListStudentQuestionsDoesNotLeakCorrectAnswer(t *testing.T) {
 	repo := &learningRepoStub{
 		isActiveStudent: func(ctx context.Context, userID int64) (bool, error) { return true, nil },
@@ -177,6 +179,7 @@ func TestListStudentQuestionsDoesNotLeakCorrectAnswer(t *testing.T) {
 	}
 }
 
+// TestTeacherListQuestionsRequiresRealtimeTeacherCheck 验证教师访问也依赖数据库实时权限结果。
 func TestTeacherListQuestionsRequiresRealtimeTeacherCheck(t *testing.T) {
 	repo := &learningRepoStub{isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return false, nil }}
 	service := New(repo, nil)

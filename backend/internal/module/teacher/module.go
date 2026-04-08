@@ -24,6 +24,8 @@ func New(db *gorm.DB) *Module {
 }
 
 // RegisterRoutes 注册教师端路由。
+// 该分组默认运行在教师鉴权中间件之后，因此这里只暴露教师可见的班级与学生管理接口，
+// 不在路由层重复声明角色判断，统一交由 service 层做实时权限校验。
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/classes", m.Handler.CreateClassroom)
 	group.GET("/classes", m.Handler.ListClassrooms)

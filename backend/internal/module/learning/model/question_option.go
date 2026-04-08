@@ -12,6 +12,8 @@ type QuestionOption struct {
 	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime"`
 }
 
+// TableName 指定 question_options 表名。
+// 选项表通过固定表名承接唯一索引约束，避免自动复数化规则变化带来风险。
 func (QuestionOption) TableName() string {
 	return "question_options"
 }

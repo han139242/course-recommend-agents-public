@@ -14,6 +14,7 @@ type Classroom struct {
 }
 
 // TableName 指定 classrooms 表名。
+// 单独声明表名可避免后续模型重命名影响既有迁移与 SQL 约定。
 func (Classroom) TableName() string {
 	return "classrooms"
 }

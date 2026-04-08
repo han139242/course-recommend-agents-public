@@ -11,6 +11,8 @@ import (
 )
 
 // NewMySQL 初始化 MySQL 连接。
+// MySQL 是当前服务的核心依赖，缺失配置时直接返回错误并阻止启动，
+// 避免服务在核心存储不可用时进入半可用状态。
 func NewMySQL(cfg config.Config, logger *applogger.Logger) (*gorm.DB, error) {
 	if cfg.MySQL.DSN == "" {
 		logger.WithCtx(context.Background()).Error("MySQL 未配置，服务无法启动")

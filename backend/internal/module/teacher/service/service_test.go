@@ -107,6 +107,7 @@ func TestCreateClassroomDuplicate(t *testing.T) {
 	}
 }
 
+// TestBatchCreateStudentsRejectDuplicateInRequest 验证请求内重复数据会在进入仓储前被拒绝。
 func TestBatchCreateStudentsRejectDuplicateInRequest(t *testing.T) {
 	repo := &teacherRepoStub{
 		isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return true, nil },
@@ -148,6 +149,7 @@ func TestGetStudentDetailSuccess(t *testing.T) {
 	}
 }
 
+// TestRequireTeacherForbiddenWhenRoleChanged 验证服务层会以数据库实时角色为准，而不是仅信任 token 快照。
 func TestRequireTeacherForbiddenWhenRoleChanged(t *testing.T) {
 	repo := &teacherRepoStub{
 		isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return false, nil },

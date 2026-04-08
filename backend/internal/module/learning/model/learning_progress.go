@@ -17,6 +17,8 @@ type LearningProgress struct {
 	UpdatedAt      time.Time  `gorm:"column:updated_at;autoUpdateTime"`
 }
 
+// TableName 指定 learning_progress 表名。
+// 学习进度表依赖唯一键维护每个学生在每个知识点上的单行聚合记录。
 func (LearningProgress) TableName() string {
 	return "learning_progress"
 }

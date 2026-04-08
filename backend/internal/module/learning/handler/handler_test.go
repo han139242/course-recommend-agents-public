@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TestImportQuestionsBadRequest 验证导题接口对非法请求体返回 400。
 func TestImportQuestionsBadRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	h := &Handler{}

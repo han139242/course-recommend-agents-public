@@ -26,6 +26,7 @@ func New(repo learningrepo.Repository, redisClient *redis.Client) *Service {
 }
 
 // ImportQuestions 教师批量导题。
+// 请求会先完成题型、知识点、选项与正确答案的一致性校验，再交给仓储层按事务批量落库，避免题干与选项半写入。
 func (s *Service) ImportQuestions(ctx context.Context, request learningdto.ImportQuestionsRequest) (*learningdto.ImportQuestionsResponse, error) {
 	teacherID, err := s.requireTeacher(ctx)
 	if err != nil {
@@ -46,6 +47,7 @@ func (s *Service) ImportQuestions(ctx context.Context, request learningdto.Impor
 }
 
 // ListQuestions 教师查询题目列表。
+// 关键字、题型、知识点筛选都会先裁剪空白字符，避免因为前端拼接空格导致查询条件失真。
 func (s *Service) ListQuestions(ctx context.Context, query learningdto.ListQuestionsQuery) (*learningdto.TeacherListQuestionsResponse, error) {
 	if _, err := s.requireTeacher(ctx); err != nil {
 		return nil, err
@@ -75,6 +77,7 @@ func (s *Service) GetQuestionDetail(ctx context.Context, questionID string) (*le
 }
 
 // ListStudentQuestions 学生查询练习题目。
+// 学生视图会主动剔除正确答案与解析，仅返回作答所需字段，防止题库数据在练习接口泄露。
 func (s *Service) ListStudentQuestions(ctx context.Context, query learningdto.StudentQuestionsQuery) (*learningdto.StudentListQuestionsResponse, error) {
 	studentID, err := s.requireStudent(ctx)
 	if err != nil {
@@ -94,6 +97,7 @@ func (s *Service) ListStudentQuestions(ctx context.Context, query learningdto.St
 }
 
 // SubmitAnswer 学生提交答题结果。
+// 服务层负责把时间字符串解析为统一时间格式，并把题目不存在、题目参数不一致、越权访问映射成明确的业务错误。
 func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAnswerRequest) (*learningdto.SubmitAnswerResponse, error) {
 	studentID, err := s.requireStudent(ctx)
 	if err != nil {
@@ -120,6 +124,8 @@ func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAn
 	return response, nil
 }
 
+// requireStudent 校验当前请求是否来自启用中的学生。
+// 这里以数据库实时状态为准，避免学生被移出班级或停用后仍凭旧 token 继续答题。
 func (s *Service) requireStudent(ctx context.Context) (int64, error) {
 	userID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {
@@ -135,6 +141,8 @@ func (s *Service) requireStudent(ctx context.Context) (int64, error) {
 	return userID, nil
 }
 
+// requireTeacher 校验当前请求是否来自启用中的教师。
+// 与教师模块保持一致，权限判断不直接信任上下文角色快照，而是回查数据库最新状态。
 func (s *Service) requireTeacher(ctx context.Context) (int64, error) {
 	userID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {
@@ -150,6 +158,8 @@ func (s *Service) requireTeacher(ctx context.Context) (int64, error) {
 	return userID, nil
 }
 
+// normalizeImportQuestionItems 规范化导题请求。
+// 一次批量导入内 questionId 只要出现重复就直接拒绝，保证仓储层事务不会因为局部脏数据反复回滚。
 func normalizeImportQuestionItems(items []learningdto.ImportQuestionItem, teacherID int64) ([]learningentity.ImportQuestionInput, error) {
 	normalized := make([]learningentity.ImportQuestionInput, 0, len(items))
 	questionIDSeen := make(map[string]struct{}, len(items))
@@ -193,6 +203,8 @@ func normalizeImportQuestionItems(items []learningdto.ImportQuestionItem, teache
 	return normalized, nil
 }
 
+// normalizeQuestionOptions 规范化题目选项。
+// 选项键必须唯一且内容非空，防止前端重复 key 导致正确答案映射到多个候选项。
 func normalizeQuestionOptions(items []learningdto.QuestionOptionDTO) ([]learningentity.QuestionOption, error) {
 	optionSeen := make(map[string]struct{}, len(items))
 	options := make([]learningentity.QuestionOption, 0, len(items))

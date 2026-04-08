@@ -9,6 +9,8 @@ import (
 )
 
 // NewRedis 初始化 Redis 客户端。
+// Redis 当前作为可降级依赖处理：连接探测失败时不终止启动，
+// 由上层模块根据空客户端决定是否关闭缓存能力。
 func NewRedis(ctx context.Context, cfg config.Config, logger *applogger.Logger) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Redis.Addr,

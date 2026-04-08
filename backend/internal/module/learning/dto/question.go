@@ -7,6 +7,7 @@ type PaginationQuery struct {
 }
 
 // Normalize 补齐默认分页参数。
+// 题库与学生拉题共用同一分页策略，单页上限固定为 100，避免批量导出式请求冲击数据库。
 func (q PaginationQuery) Normalize() PaginationQuery {
 	if q.Page <= 0 {
 		q.Page = 1

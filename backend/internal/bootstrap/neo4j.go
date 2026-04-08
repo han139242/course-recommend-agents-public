@@ -8,7 +8,9 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-// NewNeo4j 初始化 Neo4j Driver；认证信息缺失时跳过。
+// NewNeo4j 初始化 Neo4j Driver。
+// Neo4j 在当前阶段属于可选依赖：认证信息缺失或连通性校验失败时，
+// 启动流程会记录告警并返回 nil，让服务以降级模式继续运行。
 func NewNeo4j(ctx context.Context, cfg config.Config, logger *applogger.Logger) (neo4j.DriverWithContext, error) {
 	if cfg.Neo4j.Password == "" {
 		logger.WithCtx(ctx).Warn("Neo4j 密码未配置，跳过连接初始化")

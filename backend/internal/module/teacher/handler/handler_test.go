@@ -10,6 +10,7 @@ import (
 	"github.com/han139242/course-recommend-agents/backend/pkg/apperr"
 )
 
+// TestGetStudentDetailBadRequest 验证非法学生编号会被立即拦截。
 func TestGetStudentDetailBadRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	h := &Handler{}
@@ -37,6 +38,7 @@ func TestBatchCreateStudentsBadRequest(t *testing.T) {
 	}
 }
 
+// TestWriteErrorUsesAppError 验证处理器会复用统一应用错误输出协议。
 func TestWriteErrorUsesAppError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()

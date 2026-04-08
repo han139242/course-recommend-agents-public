@@ -8,6 +8,7 @@ import (
 )
 
 // Response 定义统一响应结构。
+// 统一响应体便于前后端约定稳定字段，并让链路追踪信息固定可见。
 type Response struct {
 	Code      int         `json:"code"`
 	Message   string      `json:"message"`

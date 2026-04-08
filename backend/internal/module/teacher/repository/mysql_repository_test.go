@@ -2,6 +2,7 @@ package repository
 
 import "testing"
 
+// TestTranslateWriteErrorFallbackKeepsOriginalError 验证未知错误不会被误翻译成领域冲突。
 func TestTranslateWriteErrorFallbackKeepsOriginalError(t *testing.T) {
 	err := translateWriteError(assertError("other"))
 	if err == nil {

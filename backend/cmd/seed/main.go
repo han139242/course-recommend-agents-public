@@ -12,6 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// main 是开发演示数据初始化入口。
+// 该命令只面向本地或受控环境，用于快速准备最小可运行数据集。
 func main() {
 	cfg, err := config.LoadSeedConfig()
 	if err != nil {
@@ -31,6 +33,8 @@ func main() {
 	fmt.Println("开发环境演示数据已初始化完成")
 }
 
+// seedDemoData 幂等写入演示账号与班级数据。
+// 通过先查后建的方式重复执行命令时不会制造重复记录。
 func seedDemoData(db *gorm.DB, passwordService *service.PasswordService) error {
 	teacherEmail := "teacher@example.com"
 	studentEmail := "student@example.com"

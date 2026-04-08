@@ -12,6 +12,7 @@ var (
 )
 
 // Service 负责密码哈希与校验。
+// 该服务屏蔽底层加密实现，便于业务层只依赖稳定接口。
 type Service struct{}
 
 // NewService 创建密码服务。
@@ -20,6 +21,7 @@ func NewService() *Service {
 }
 
 // Verify 校验明文密码与哈希密码是否匹配。
+// 对 bcrypt 的不匹配错误做显式归一化，方便上层统一分支处理。
 func (s *Service) Verify(password string, hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err == nil {

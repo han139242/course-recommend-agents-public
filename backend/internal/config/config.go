@@ -8,6 +8,7 @@ import (
 )
 
 // Config 聚合应用运行所需的全部配置。
+// 不同子配置按基础设施和运行阶段拆分，便于启动时集中校验。
 type Config struct {
 	App   AppConfig
 	HTTP  HTTPConfig
@@ -19,6 +20,9 @@ type Config struct {
 }
 
 // Load 从环境变量加载配置，并补齐开发环境默认值。
+//
+// 对可选基础设施使用偏宽松的默认策略，对核心安全配置保持强校验，
+// 以便本地开发可快速启动，同时避免生产环境在关键项缺失时静默运行。
 func Load() (Config, error) {
 	cfg := Config{
 		App: AppConfig{
@@ -62,6 +66,9 @@ func Load() (Config, error) {
 }
 
 // Validate 校验关键配置是否完整。
+//
+// 这里仅校验会直接影响服务可用性或安全边界的必填项，
+// 其余可降级依赖交由各自 bootstrap 阶段按需判断。
 func (c Config) Validate() error {
 	if c.HTTP.Port == "" {
 		return fmt.Errorf("HTTP_PORT 不能为空")
@@ -74,6 +81,7 @@ func (c Config) Validate() error {
 	return nil
 }
 
+// getEnv 读取字符串环境变量，缺失时返回回退值。
 func getEnv(key string, fallback string) string {
 	value := os.Getenv(key)
 	if value == "" {
@@ -83,6 +91,7 @@ func getEnv(key string, fallback string) string {
 	return value
 }
 
+// getIntEnv 读取整型环境变量，解析失败时回退到默认值。
 func getIntEnv(key string, fallback int) int {
 	value := os.Getenv(key)
 	if value == "" {
@@ -97,6 +106,7 @@ func getIntEnv(key string, fallback int) int {
 	return parsed
 }
 
+// getDurationEnv 读取时长环境变量，格式非法时回退到默认值。
 func getDurationEnv(key string, fallback time.Duration) time.Duration {
 	value := os.Getenv(key)
 	if value == "" {

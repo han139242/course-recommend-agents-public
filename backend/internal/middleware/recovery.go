@@ -10,6 +10,9 @@ import (
 )
 
 // Recovery 捕获 panic 并返回统一错误响应。
+//
+// 该中间件的职责是兜底保护请求生命周期，防止单次 panic 直接打断进程；
+// 对外仅暴露统一错误，避免把内部实现细节泄露给客户端。
 func Recovery(logger *applogger.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		defer func() {

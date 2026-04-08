@@ -25,6 +25,7 @@ func New(repo teacherrepo.TeacherRepository, passwordService *sharedpassword.Ser
 }
 
 // CreateClassroom 创建班级。
+// 班级名称唯一性按“同一教师作用域”约束，跨教师允许重名；真正的唯一性由仓储层依赖数据库索引保障。
 func (s *TeacherService) CreateClassroom(ctx context.Context, request teacherdto.CreateClassroomRequest) (*teacherdto.CreateClassroomResponse, error) {
 	teacherID, err := s.requireTeacher(ctx)
 	if err != nil {
@@ -43,6 +44,7 @@ func (s *TeacherService) CreateClassroom(ctx context.Context, request teacherdto
 }
 
 // ListClassrooms 查询班级列表。
+// 分页参数会先归一化后再下沉到仓储层，确保接口返回的 page/pageSize 与实际 SQL 偏移量保持一致。
 func (s *TeacherService) ListClassrooms(ctx context.Context, query teacherdto.PaginationQuery) (*teacherdto.ListClassroomsResponse, error) {
 	teacherID, err := s.requireTeacher(ctx)
 	if err != nil {
@@ -64,6 +66,7 @@ func (s *TeacherService) ListClassrooms(ctx context.Context, query teacherdto.Pa
 }
 
 // BatchCreateStudents 批量创建学生。
+// 该流程会先在请求内做邮箱与学号去重，再交给仓储层开启事务批量写入，避免部分成功导致班级名册不一致。
 func (s *TeacherService) BatchCreateStudents(ctx context.Context, classID int64, request teacherdto.BatchCreateStudentsRequest) (*teacherdto.BatchCreateStudentsResponse, error) {
 	teacherID, err := s.requireTeacher(ctx)
 	if err != nil {
@@ -150,6 +153,8 @@ func (s *TeacherService) requireTeacher(ctx context.Context) (int64, error) {
 	return userID, nil
 }
 
+// buildCreateStudentInputs 归一化批量建学生输入并生成密码哈希。
+// 这里不保留明文密码，所有记录在进入仓储层前都必须转换为哈希值，降低日志和链路泄露风险。
 func (s *TeacherService) buildCreateStudentInputs(items []teacherdto.CreateStudentItem, classID int64, teacherID int64) ([]teacherentity.CreateStudentInput, error) {
 	normalizedItems, err := normalizeCreateStudentItems(items)
 	if err != nil {
@@ -175,6 +180,8 @@ func (s *TeacherService) buildCreateStudentInputs(items []teacherdto.CreateStude
 	return inputs, nil
 }
 
+// normalizeCreateStudentItems 规范化批量创建学生请求。
+// 去重规则大小写不敏感地比较邮箱，并对学号按裁剪后的字符串比较，确保一次请求内不会因为脏数据导致事务回滚。
 func normalizeCreateStudentItems(items []teacherdto.CreateStudentItem) ([]teacherdto.CreateStudentItem, error) {
 	normalized := make([]teacherdto.CreateStudentItem, 0, len(items))
 	emailSeen := make(map[string]struct{}, len(items))

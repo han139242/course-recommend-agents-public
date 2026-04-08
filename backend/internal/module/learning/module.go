@@ -22,6 +22,7 @@ func New(db *gorm.DB, redisClient *redis.Client) *Module {
 }
 
 // RegisterTeacherRoutes 注册教师题库路由。
+// 该分组只暴露题库维护能力，具体的教师身份与启用状态仍由 service 层做数据库实时校验。
 func (m *Module) RegisterTeacherRoutes(group *gin.RouterGroup) {
 	group.POST("/questions/batch", m.Handler.ImportQuestions)
 	group.GET("/questions", m.Handler.ListQuestions)
@@ -29,6 +30,7 @@ func (m *Module) RegisterTeacherRoutes(group *gin.RouterGroup) {
 }
 
 // RegisterStudentRoutes 注册学生学习路由。
+// 学生侧接口只暴露拉题与答题提交，不返回题目答案等教师可见信息，避免路由层误共享视图模型。
 func (m *Module) RegisterStudentRoutes(group *gin.RouterGroup) {
 	group.GET("/questions", m.Handler.ListStudentQuestions)
 	group.POST("/answers", m.Handler.SubmitAnswer)

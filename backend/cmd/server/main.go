@@ -15,6 +15,8 @@ import (
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 )
 
+// main 是后端服务入口。
+// 启动流程负责完成依赖装配、HTTP 服务启动以及优雅停机控制。
 func main() {
 	ctx := context.Background()
 
@@ -34,6 +36,7 @@ func main() {
 		}
 	}()
 
+	// 主协程只负责等待系统信号，并驱动统一停机流程。
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh

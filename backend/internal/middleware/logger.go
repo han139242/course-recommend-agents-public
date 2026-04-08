@@ -8,6 +8,9 @@ import (
 )
 
 // Logger 输出单条聚合访问日志。
+//
+// 该中间件在请求结束后统一记录路径、状态码与耗时，
+// 便于排查链路问题，同时避免在处理过程中产生重复访问日志。
 func Logger(logger *applogger.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		startedAt := time.Now()

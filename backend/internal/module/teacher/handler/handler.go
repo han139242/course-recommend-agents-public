@@ -21,6 +21,7 @@ func New(service *teacherservice.TeacherService) *Handler {
 }
 
 // CreateClassroom 创建班级。
+// 处理器层只负责参数绑定与错误映射，班级重名、教师权限等业务约束由 service 层统一兜底。
 func (h *Handler) CreateClassroom(ctx *gin.Context) {
 	var request teacherdto.CreateClassroomRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -75,6 +76,7 @@ func (h *Handler) BatchCreateStudents(ctx *gin.Context) {
 }
 
 // ListStudents 查询班级学生列表。
+// 路径参数中的班级标识与分页参数分开校验，避免把非法班级编号误当成空结果返回。
 func (h *Handler) ListStudents(ctx *gin.Context) {
 	classID, err := parseClassID(ctx.Param("classId"))
 	if err != nil {

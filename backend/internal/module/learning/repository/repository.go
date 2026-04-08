@@ -7,6 +7,7 @@ import (
 )
 
 // Repository 定义学习模块仓储接口。
+// 该接口同时承载教师题库维护与学生学习流程，因此权限边界需要通过不同方法签名显式区分。
 type Repository interface {
 	BatchCreateQuestions(ctx context.Context, items []learningentity.ImportQuestionInput) (int, error)
 	ListQuestions(ctx context.Context, filter learningentity.QuestionFilter) ([]learningentity.Question, int64, error)

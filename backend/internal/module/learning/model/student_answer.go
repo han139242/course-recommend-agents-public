@@ -15,6 +15,8 @@ type StudentAnswer struct {
 	CreatedAt      time.Time `gorm:"column:created_at;autoCreateTime"`
 }
 
+// TableName 指定 student_answers 表名。
+// 答题日志表会被分析查询直接引用，因此表名保持显式稳定。
 func (StudentAnswer) TableName() string {
 	return "student_answers"
 }

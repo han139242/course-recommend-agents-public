@@ -29,6 +29,7 @@ func NewMySQLRepository(db *gorm.DB) *MySQLRepository {
 }
 
 // BatchCreateQuestions 批量创建题目。
+// 每道题与其选项在同一事务中顺序写入；若调用方未提供 questionId，会即时生成一个仅用于落库的唯一编码。
 func (r *MySQLRepository) BatchCreateQuestions(ctx context.Context, items []learningentity.ImportQuestionInput) (int, error) {
 	if len(items) == 0 {
 		return 0, nil
@@ -77,6 +78,7 @@ func (r *MySQLRepository) BatchCreateQuestions(ctx context.Context, items []lear
 }
 
 // ListQuestions 查询教师端题目列表。
+// 计数时对 questions.id 做 distinct，避免后续附加选项查询或潜在 join 扩展时把一题多选项误计为多条。
 func (r *MySQLRepository) ListQuestions(ctx context.Context, filter learningentity.QuestionFilter) ([]learningentity.Question, int64, error) {
 	baseQuery := r.questionQuery(ctx)
 	if filter.KnowledgeID != "" {
@@ -131,6 +133,7 @@ func (r *MySQLRepository) GetQuestionByQuestionID(ctx context.Context, questionI
 }
 
 // ListStudentQuestions 查询学生可见题目列表。
+// 当前实现仅返回启用中的题目，并沿用稳定排序与分页策略，确保学生端翻页时结果不会频繁抖动。
 func (r *MySQLRepository) ListStudentQuestions(ctx context.Context, filter learningentity.StudentQuestionFilter) ([]learningentity.Question, int64, error) {
 	baseQuery := r.questionQuery(ctx)
 	if filter.KnowledgeID != "" {
@@ -156,6 +159,7 @@ func (r *MySQLRepository) ListStudentQuestions(ctx context.Context, filter learn
 }
 
 // SubmitAnswer 提交学生答题结果。
+// 该方法在单个事务内同时写入答题日志并更新知识点掌握度，保证进度聚合与原始答案记录具备一致的提交语义。
 func (r *MySQLRepository) SubmitAnswer(ctx context.Context, input learningentity.SubmitAnswerInput) (*learningentity.SubmitAnswerResult, error) {
 	question, err := r.GetQuestionByQuestionID(ctx, input.QuestionID)
 	if err != nil {
@@ -237,12 +241,16 @@ func (r *MySQLRepository) IsActiveTeacher(ctx context.Context, userID int64) (bo
 	return count > 0, nil
 }
 
+// questionQuery 复用题目基础查询条件。
+// 统一在这里过滤启用状态，避免教师端和学生端各自拼接条件时出现口径漂移。
 func (r *MySQLRepository) questionQuery(ctx context.Context) *gorm.DB {
 	return r.db.WithContext(ctx).
 		Model(&learningmodel.Question{}).
 		Where("questions.status = ?", learningentity.QuestionStatusActive)
 }
 
+// attachOptions 为题目批量挂载选项。
+// 这里先收集题目主键后一次性查询所有选项，避免按题逐条查询产生 N+1 问题。
 func (r *MySQLRepository) attachOptions(ctx context.Context, questions []learningmodel.Question) ([]learningentity.Question, error) {
 	if len(questions) == 0 {
 		return []learningentity.Question{}, nil
@@ -293,6 +301,8 @@ func translateWriteError(err error) error {
 	return err
 }
 
+// getOrCreateLearningProgress 获取或创建学习进度聚合记录。
+// 每个学生在每个知识点下只维护一条进度记录，新纪录首次创建时会继承本次答题时间作为最后作答时间。
 func getOrCreateLearningProgress(_ context.Context, tx *gorm.DB, studentID int64, knowledgeID string, answeredAt time.Time) (*learningmodel.LearningProgress, error) {
 	var progress learningmodel.LearningProgress
 	if err := tx.Where("student_id = ? AND knowledge_id = ?", studentID, knowledgeID).Take(&progress).Error; err != nil {
@@ -316,6 +326,8 @@ func getOrCreateLearningProgress(_ context.Context, tx *gorm.DB, studentID int64
 	return &progress, nil
 }
 
+// learningProgressStatus 根据掌握度分数推导学习状态。
+// 当前阈值较简单：80 分及以上视为 solid，其余已答题但未达标视为 progressing。
 func learningProgressStatus(masteryScore float64) string {
 	if masteryScore >= 80 {
 		return "solid"

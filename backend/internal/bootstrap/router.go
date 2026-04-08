@@ -10,6 +10,7 @@ import (
 )
 
 // NewRouter 初始化路由。
+// bootstrap 层通过该函数屏蔽具体路由实现，保持入口装配代码只关注依赖拼装。
 func NewRouter(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module) *gin.Engine {
 	return router.New(logger, authModule, teacherModule, learningModule)
 }

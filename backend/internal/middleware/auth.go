@@ -11,7 +11,8 @@ import (
 	"github.com/han139242/course-recommend-agents/backend/pkg/result"
 )
 
-// Auth 校验 Bearer Token 并注入用户身份。
+// Auth 校验 Bearer Token 并向请求上下文注入身份信息。
+//
 // 这里注入的是 token 中的身份快照，不会回源确认用户最新状态；
 // 对权限敏感的接口仍应在业务层基于 userID 做二次校验。
 func Auth(jwtService *service.JWTService) gin.HandlerFunc {
@@ -46,6 +47,7 @@ func Auth(jwtService *service.JWTService) gin.HandlerFunc {
 	}
 }
 
+// formatUserID 将用户 ID 转为上下文中统一使用的字符串表示。
 func formatUserID(userID int64) string {
 	return strconv.FormatInt(userID, 10)
 }

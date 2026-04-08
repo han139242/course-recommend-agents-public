@@ -40,6 +40,7 @@ type CreateStudentInput struct {
 }
 
 // Pagination 定义分页参数。
+// 该结构仅在仓储层使用，调用方需先完成默认值与上限归一化，避免仓储层承担策略判断。
 type Pagination struct {
 	Page     int
 	PageSize int

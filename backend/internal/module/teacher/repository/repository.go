@@ -8,6 +8,7 @@ import (
 )
 
 // TeacherRepository 定义教师端主数据仓储接口。
+// 所有读取方法都必须显式带上教师作用域参数，避免仓储层遗漏租户边界导致越权读取。
 type TeacherRepository interface {
 	CreateClassroom(ctx context.Context, teacherID int64, name string, grade string) (*entity.Classroom, error)
 	ListClassrooms(ctx context.Context, teacherID int64, pagination entity.Pagination) ([]entity.Classroom, int64, error)

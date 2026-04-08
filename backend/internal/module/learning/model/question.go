@@ -18,6 +18,8 @@ type Question struct {
 	UpdatedAt     time.Time `gorm:"column:updated_at;autoUpdateTime"`
 }
 
+// TableName 指定 questions 表名。
+// 显式声明表名可保证模型命名调整时不影响已存在的迁移和查询语句。
 func (Question) TableName() string {
 	return "questions"
 }

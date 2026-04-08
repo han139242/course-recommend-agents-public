@@ -7,6 +7,7 @@ type PaginationQuery struct {
 }
 
 // Normalize 补齐默认分页参数。
+// 教师端列表统一限制单页最大 100 条，避免误传超大页大小时放大数据库扫描成本。
 func (q PaginationQuery) Normalize() PaginationQuery {
 	if q.Page <= 0 {
 		q.Page = 1

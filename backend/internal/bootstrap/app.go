@@ -13,6 +13,9 @@ import (
 )
 
 // App 聚合应用运行期依赖。
+//
+// 该结构体只负责承载启动阶段已经准备好的基础设施对象，
+// 便于入口层统一管理生命周期与停机顺序。
 type App struct {
 	Config       config.Config
 	Logger       *applogger.Logger
