@@ -2,9 +2,10 @@ import { computed, reactive } from 'vue'
 
 const AUTH_STORAGE_KEY = 'course-recommend-auth'
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+/** 开发环境优先走同源 /api，由 Vite 代理到后端，避免 CORS 与直连失败 */
 const API_BASE_URL_CANDIDATES = ENV_API_BASE_URL
   ? [ENV_API_BASE_URL]
-  : ['http://localhost:3000/api', 'http://localhost:3002/api', 'http://localhost:3001/api']
+  : ['/api', 'http://localhost:3000/api', 'http://localhost:3002/api', 'http://localhost:3001/api']
 
 export const authState = reactive({
   token: '',
@@ -88,7 +89,14 @@ async function apiRequest(path, options = {}) {
       resolvedApiBaseUrl = baseUrl
       return payload.data ?? {}
     } catch (error) {
-      lastError = error
+      const msg = error?.message || ''
+      if (msg === 'Failed to fetch' || error?.name === 'TypeError') {
+        lastError = new Error(
+          '无法连接后端（Failed to fetch）。请确认已启动 API 服务（默认端口 3000），开发前端请使用 npm run dev 以启用 /api 代理。',
+        )
+      } else {
+        lastError = error
+      }
     }
   }
 
@@ -169,9 +177,16 @@ export async function refreshCurrentUser() {
 }
 
 export async function fetchDashboardSummary() {
-  return apiRequest('/dashboard/summary', {
+  const data = await apiRequest('/dashboard/summary', {
     method: 'GET',
   })
+  return {
+    ...data,
+    quickStats: data.quickStats || data.stats || [],
+    stats: data.stats || data.quickStats || [],
+    recommendedPath: data.recommendedPath || data.path || [],
+    knowledgeCards: data.knowledgeCards || [],
+  }
 }
 
 export async function fetchGraphSubgraph(root = '', limit = 12) {
@@ -198,9 +213,13 @@ export async function fetchCompetencyProfile() {
 }
 
 export async function fetchRecommendedPath() {
-  return apiRequest('/recommend/path', {
+  const data = await apiRequest('/recommend/path', {
     method: 'GET',
   })
+  return {
+    ...data,
+    path: data.path || data.recommendedPath || [],
+  }
 }
 
 export async function fetchFrontierBriefing(knowledge = '') {

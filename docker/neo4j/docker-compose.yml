@@ -1,6 +1,6 @@
 services:
   neo4j:
-    image: neo4j:5.28.1
+    image: neo4j:5.26-community
     container_name: course-recommend-neo4j
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-please-change-me}
@@ -16,7 +16,7 @@ services:
       retries: 20
 
   neo4j-import:
-    image: neo4j:5.28.1
+    image: neo4j:5.26-community
     depends_on:
       neo4j:
         condition: service_healthy

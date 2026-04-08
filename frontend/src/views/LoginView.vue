@@ -73,10 +73,9 @@ async function handleSubmit() {
 
       <aside class="auth-side">
         <div class="detail-side-card">
-          <span class="section-tag">新用户</span>
-          <h3>还没有账号？</h3>
-          <p class="auth-side-copy">注册后就能把姓名、目标方向和学习档案保存到数据库里。</p>
-          <RouterLink to="/register" class="auth-secondary-link">去注册</RouterLink>
+          <span class="section-tag">账号开通</span>
+          <h3>当前阶段不开放自主注册</h3>
+          <p class="auth-side-copy">请联系教师或管理员统一创建学生账号。创建完成后，直接使用邮箱和密码登录即可。</p>
         </div>
       </aside>
     </div>
