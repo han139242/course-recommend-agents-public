@@ -29,4 +29,5 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/classes", m.Handler.ListClassrooms)
 	group.POST("/classes/:classId/students", m.Handler.BatchCreateStudents)
 	group.GET("/classes/:classId/students", m.Handler.ListStudents)
+	group.GET("/students/:studentId", m.Handler.GetStudentDetail)
 }

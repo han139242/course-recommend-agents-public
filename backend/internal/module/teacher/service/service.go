@@ -114,6 +114,25 @@ func (s *TeacherService) ListStudents(ctx context.Context, classID int64, query 
 	return &teacherdto.ListStudentsResponse{List: list, Total: total, Page: normalized.Page, PageSize: normalized.PageSize}, nil
 }
 
+// GetStudentDetail 查询单个学生档案。
+func (s *TeacherService) GetStudentDetail(ctx context.Context, studentID int64) (*teacherdto.StudentDetailView, error) {
+	teacherID, err := s.requireTeacher(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	student, err := s.repo.GetStudentByID(ctx, teacherID, studentID)
+	if err != nil {
+		if errors.Is(err, teacherrepo.ErrStudentNotFound) {
+			return nil, apperr.ErrNotFound.WithCause(err)
+		}
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	view := toStudentDetailView(*student)
+	return &view, nil
+}
+
 // requireTeacher 统一收口教师端接口的身份校验。
 // 中间件写入的 role 是 token 签发时的快照，这里会按 userID 回查数据库中的当前角色与状态，避免旧 token 延迟生效。
 func (s *TeacherService) requireTeacher(ctx context.Context) (int64, error) {
@@ -201,6 +220,22 @@ func toStudentView(item teacherentity.Student) teacherdto.StudentView {
 		StudentNo: item.StudentNo,
 		Email:     item.Email,
 		Target:    item.Target,
+		CreatedAt: item.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func toStudentDetailView(item teacherentity.Student) teacherdto.StudentDetailView {
+	return teacherdto.StudentDetailView{
+		ID:        item.ID,
+		Name:      item.Name,
+		Email:     item.Email,
+		Role:      item.Role,
+		Title:     item.Title,
+		StudentNo: item.StudentNo,
+		ClassID:   item.ClassID,
+		ClassName: item.ClassName,
+		Target:    item.Target,
+		Status:    item.Status,
 		CreatedAt: item.CreatedAt.Format(time.RFC3339),
 	}
 }

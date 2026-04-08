@@ -96,6 +96,22 @@ func (h *Handler) ListStudents(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// GetStudentDetail 查询单个学生档案。
+func (h *Handler) GetStudentDetail(ctx *gin.Context) {
+	studentID, err := parseClassID(ctx.Param("studentId"))
+	if err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+
+	response, err := h.service.GetStudentDetail(ctx.Request.Context(), studentID)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func parseClassID(raw string) (int64, error) {
 	return strconv.ParseInt(raw, 10, 64)
 }

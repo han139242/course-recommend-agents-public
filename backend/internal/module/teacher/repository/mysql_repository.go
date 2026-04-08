@@ -30,6 +30,7 @@ type classroomRecord struct {
 
 type studentRecord struct {
 	usermodel.User
+	ClassName *string `gorm:"column:class_name"`
 }
 
 // CreateClassroom 创建班级。
@@ -161,9 +162,7 @@ func (r *MySQLRepository) ListStudents(ctx context.Context, teacherID int64, cla
 		return nil, 0, err
 	}
 
-	baseQuery := r.db.WithContext(ctx).
-		Model(&usermodel.User{}).
-		Where("class_id = ? AND role = ? AND status = ?", classID, RoleStudent, StatusActive)
+	baseQuery := r.studentsQuery(ctx, classID)
 
 	var total int64
 	if err := baseQuery.Count(&total).Error; err != nil {
@@ -172,26 +171,37 @@ func (r *MySQLRepository) ListStudents(ctx context.Context, teacherID int64, cla
 
 	var records []studentRecord
 	if err := baseQuery.
-		Order("created_at DESC, id DESC").
+		Order("users.created_at DESC, users.id DESC").
 		Offset(pagination.Offset()).
 		Limit(pagination.PageSize).
-		Find(&records).Error; err != nil {
+		Scan(&records).Error; err != nil {
 		return nil, 0, err
 	}
 
 	items := make([]teacherentity.Student, 0, len(records))
 	for _, record := range records {
-		items = append(items, teacherentity.Student{
-			ID:        record.ID,
-			Name:      record.Name,
-			StudentNo: stringPointerValue(record.StudentNo),
-			Email:     record.Email,
-			Target:    record.Target,
-			ClassID:   classID,
-			CreatedAt: record.CreatedAt,
-		})
+		items = append(items, toStudentEntity(record))
 	}
 	return items, total, nil
+}
+
+// GetStudentByID 查询单个学生档案。
+func (r *MySQLRepository) GetStudentByID(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) {
+	var record studentRecord
+	if err := r.db.WithContext(ctx).
+		Table("users").
+		Select("users.*, classrooms.name AS class_name").
+		Joins("INNER JOIN classrooms ON classrooms.id = users.class_id").
+		Where("users.id = ? AND users.role = ? AND users.status = ?", studentID, RoleStudent, StatusActive).
+		Where("classrooms.teacher_id = ? AND classrooms.status = ?", teacherID, StatusActive).
+		Take(&record).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrStudentNotFound
+		}
+		return nil, err
+	}
+	student := toStudentEntity(record)
+	return &student, nil
 }
 
 func (r *MySQLRepository) classroomsQuery(ctx context.Context, teacherID int64) *gorm.DB {
@@ -201,6 +211,14 @@ func (r *MySQLRepository) classroomsQuery(ctx context.Context, teacherID int64) 
 		Joins("LEFT JOIN users ON users.class_id = classrooms.id AND users.role = ? AND users.status = ?", RoleStudent, StatusActive).
 		Where("classrooms.teacher_id = ? AND classrooms.status = ?", teacherID, StatusActive).
 		Group("classrooms.id")
+}
+
+func (r *MySQLRepository) studentsQuery(ctx context.Context, classID int64) *gorm.DB {
+	return r.db.WithContext(ctx).
+		Table("users").
+		Select("users.*, classrooms.name AS class_name").
+		Joins("INNER JOIN classrooms ON classrooms.id = users.class_id").
+		Where("users.class_id = ? AND users.role = ? AND users.status = ?", classID, RoleStudent, StatusActive)
 }
 
 // IsActiveTeacher 校验用户当前是否仍为启用中的教师。
@@ -232,6 +250,29 @@ func translateWriteError(err error) error {
 		}
 	}
 	return err
+}
+
+func toStudentEntity(record studentRecord) teacherentity.Student {
+	return teacherentity.Student{
+		ID:        record.ID,
+		Name:      record.Name,
+		Email:     record.Email,
+		Role:      record.Role,
+		Title:     record.Title,
+		StudentNo: stringPointerValue(record.StudentNo),
+		ClassID:   int64PointerValue(record.ClassID),
+		ClassName: stringPointerValue(record.ClassName),
+		Target:    record.Target,
+		Status:    record.Status,
+		CreatedAt: record.CreatedAt,
+	}
+}
+
+func int64PointerValue(value *int64) int64 {
+	if value == nil {
+		return 0
+	}
+	return *value
 }
 
 func stringPointerValue(value *string) string {

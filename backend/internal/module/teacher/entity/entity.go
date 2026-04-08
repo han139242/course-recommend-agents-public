@@ -17,10 +17,14 @@ type Classroom struct {
 type Student struct {
 	ID        int64
 	Name      string
-	StudentNo string
 	Email     string
-	Target    string
+	Role      string
+	Title     *string
+	StudentNo string
 	ClassID   int64
+	ClassName string
+	Target    string
+	Status    string
 	CreatedAt time.Time
 }
 

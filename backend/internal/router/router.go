@@ -4,13 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/han139242/course-recommend-agents/backend/internal/middleware"
 	authmodule "github.com/han139242/course-recommend-agents/backend/internal/module/auth"
+	learningmodule "github.com/han139242/course-recommend-agents/backend/internal/module/learning"
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/han139242/course-recommend-agents/backend/pkg/result"
 )
 
 // New 创建 Gin 路由实例。
-func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -50,6 +51,9 @@ func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule 
 	authModule.RegisterAuthRoutes(protectedAuthGroup)
 	teacherGroup := authGroup.Group("/teacher")
 	teacherModule.RegisterRoutes(teacherGroup)
+	learningModule.RegisterTeacherRoutes(teacherGroup)
+	learningGroup := authGroup.Group("/learning")
+	learningModule.RegisterStudentRoutes(learningGroup)
 
 	return engine
 }

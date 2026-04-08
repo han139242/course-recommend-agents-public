@@ -14,6 +14,7 @@ type TeacherRepository interface {
 	GetClassroomByID(ctx context.Context, teacherID int64, classID int64) (*entity.Classroom, error)
 	BatchCreateStudents(ctx context.Context, teacherID int64, classID int64, items []entity.CreateStudentInput) (int, error)
 	ListStudents(ctx context.Context, teacherID int64, classID int64, pagination entity.Pagination) ([]entity.Student, int64, error)
+	GetStudentByID(ctx context.Context, teacherID int64, studentID int64) (*entity.Student, error)
 	IsActiveTeacher(ctx context.Context, userID int64) (bool, error)
 }
 

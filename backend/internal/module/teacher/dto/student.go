@@ -24,6 +24,21 @@ type StudentView struct {
 	CreatedAt string `json:"createdAt"`
 }
 
+// StudentDetailView 定义单个学生档案视图。
+type StudentDetailView struct {
+	ID        int64   `json:"id"`
+	Name      string  `json:"name"`
+	Email     string  `json:"email"`
+	Role      string  `json:"role"`
+	Title     *string `json:"title"`
+	StudentNo string  `json:"studentNo"`
+	ClassID   int64   `json:"classId"`
+	ClassName string  `json:"className"`
+	Target    string  `json:"target"`
+	Status    string  `json:"status"`
+	CreatedAt string  `json:"createdAt"`
+}
+
 // ListStudentsResponse 定义学生列表响应。
 type ListStudentsResponse struct {
 	List     []StudentView `json:"list"`

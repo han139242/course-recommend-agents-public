@@ -55,8 +55,9 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("初始化 Neo4j 失败: %w", err)
 	}
+	learningModule := NewLearningModule(mysqlDB, redisClient)
 
-	r := NewRouter(logger, authModule, teacherModule)
+	r := NewRouter(logger, authModule, teacherModule, learningModule)
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port),
 		Handler:      r,
