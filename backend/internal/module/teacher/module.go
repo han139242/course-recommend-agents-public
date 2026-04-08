@@ -2,10 +2,13 @@ package teacher
 
 import (
 	"github.com/gin-gonic/gin"
+	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
+	learningservice "github.com/han139242/course-recommend-agents/backend/internal/module/learning/service"
 	teacherhandler "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/handler"
 	teacherrepo "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/repository"
 	teacherservice "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/service"
 	sharedpassword "github.com/han139242/course-recommend-agents/backend/pkg/password"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -16,10 +19,11 @@ type Module struct {
 
 // New 创建教师端模块。
 // 教师模块通过共享密码组件生成学生初始密码，避免依赖认证模块内部实现。
-func New(db *gorm.DB) *Module {
+func New(db *gorm.DB, redisClient *redis.Client) *Module {
 	repo := teacherrepo.NewMySQLRepository(db)
 	passwordService := sharedpassword.NewService()
-	service := teacherservice.New(repo, passwordService)
+	stateReader := learningservice.NewStateService(learningrepo.NewRedisRepository(redisClient), learningrepo.NewStateMySQLRepository(db))
+	service := teacherservice.New(repo, passwordService, stateReader)
 	return &Module{Handler: teacherhandler.New(service)}
 }
 
@@ -32,4 +36,5 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/classes/:classId/students", m.Handler.BatchCreateStudents)
 	group.GET("/classes/:classId/students", m.Handler.ListStudents)
 	group.GET("/students/:studentId", m.Handler.GetStudentDetail)
+	group.GET("/students/:studentId/knowledge-status", m.Handler.GetStudentKnowledgeStatus)
 }

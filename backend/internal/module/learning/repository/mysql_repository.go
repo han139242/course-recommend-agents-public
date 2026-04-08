@@ -28,6 +28,11 @@ func NewMySQLRepository(db *gorm.DB) *MySQLRepository {
 	return &MySQLRepository{db: db}
 }
 
+// DB 暴露底层 GORM 连接，供状态快照等子能力复用。
+func (r *MySQLRepository) DB() *gorm.DB {
+	return r.db
+}
+
 // BatchCreateQuestions 批量创建题目。
 // 每道题与其选项在同一事务中顺序写入；若调用方未提供 questionId，会即时生成一个仅用于落库的唯一编码。
 func (r *MySQLRepository) BatchCreateQuestions(ctx context.Context, items []learningentity.ImportQuestionInput) (int, error) {
@@ -159,7 +164,7 @@ func (r *MySQLRepository) ListStudentQuestions(ctx context.Context, filter learn
 }
 
 // SubmitAnswer 提交学生答题结果。
-// 该方法在单个事务内同时写入答题日志并更新知识点掌握度，保证进度聚合与原始答案记录具备一致的提交语义。
+// 该方法只负责落原始答题记录，不直接维护 learning_progress；知识点状态快照由独立状态服务统一生成与刷新。
 func (r *MySQLRepository) SubmitAnswer(ctx context.Context, input learningentity.SubmitAnswerInput) (*learningentity.SubmitAnswerResult, error) {
 	question, err := r.GetQuestionByQuestionID(ctx, input.QuestionID)
 	if err != nil {
@@ -172,7 +177,7 @@ func (r *MySQLRepository) SubmitAnswer(ctx context.Context, input learningentity
 		return nil, ErrInvalidQuestion
 	}
 	isCorrect := question.CorrectOption == input.SelectedOption
-	result := &learningentity.SubmitAnswerResult{Accepted: true, QuestionID: input.QuestionID, KnowledgeID: input.KnowledgeID, Degraded: false}
+	result := &learningentity.SubmitAnswerResult{Accepted: true, QuestionID: input.QuestionID, KnowledgeID: input.KnowledgeID, Correct: isCorrect, Degraded: false}
 	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		answer := learningmodel.StudentAnswer{
 			StudentID:      input.StudentID,
@@ -184,28 +189,6 @@ func (r *MySQLRepository) SubmitAnswer(ctx context.Context, input learningentity
 			AnsweredAt:     input.AnsweredAt,
 		}
 		if err := tx.Create(&answer).Error; err != nil {
-			return err
-		}
-
-		progress, err := getOrCreateLearningProgress(ctx, tx, input.StudentID, input.KnowledgeID, input.AnsweredAt)
-		if err != nil {
-			return err
-		}
-		progress.AnsweredCount++
-		if isCorrect {
-			progress.CorrectRate = ((progress.CorrectRate * float64(progress.AnsweredCount-1)) + 1) / float64(progress.AnsweredCount)
-		} else {
-			progress.CorrectRate = (progress.CorrectRate * float64(progress.AnsweredCount-1)) / float64(progress.AnsweredCount)
-		}
-		progress.MasteryScore = progress.CorrectRate * 100
-		progress.LastAnsweredAt = &input.AnsweredAt
-		progress.UpdatedAt = time.Now()
-		if progress.AnsweredCount == 0 {
-			progress.Status = learningentity.LearningStatusNotStarted
-		} else {
-			progress.Status = learningProgressStatus(progress.MasteryScore)
-		}
-		if err := tx.Save(progress).Error; err != nil {
 			return err
 		}
 		return nil

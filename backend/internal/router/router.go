@@ -4,7 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/han139242/course-recommend-agents/backend/internal/middleware"
 	authmodule "github.com/han139242/course-recommend-agents/backend/internal/module/auth"
+	competencymodule "github.com/han139242/course-recommend-agents/backend/internal/module/competency"
+	dashboardmodule "github.com/han139242/course-recommend-agents/backend/internal/module/dashboard"
+	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
 	learningmodule "github.com/han139242/course-recommend-agents/backend/internal/module/learning"
+	recommendmodule "github.com/han139242/course-recommend-agents/backend/internal/module/recommend"
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/han139242/course-recommend-agents/backend/pkg/result"
@@ -14,7 +18,7 @@ import (
 //
 // 路由层只负责统一挂载中间件、健康检查与模块路由，
 // 不在此处处理业务编排，避免入口层承担过多职责。
-func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -42,9 +46,6 @@ func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule 
 			"message": "pong",
 		})
 	})
-	publicGroup.GET("/panic", func(ctx *gin.Context) {
-		panic("模拟 panic")
-	})
 	publicAuthGroup := publicGroup.Group("/auth")
 	authModule.RegisterPublicRoutes(publicAuthGroup)
 
@@ -58,6 +59,16 @@ func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule 
 	learningModule.RegisterTeacherRoutes(teacherGroup)
 	learningGroup := authGroup.Group("/learning")
 	learningModule.RegisterStudentRoutes(learningGroup)
+	competencyGroup := authGroup.Group("/competency")
+	competencyModule.RegisterRoutes(competencyGroup)
+	recommendGroup := authGroup.Group("/recommend")
+	recommendModule.RegisterRoutes(recommendGroup)
+	dashboardGroup := authGroup.Group("/dashboard")
+	dashboardModule.RegisterRoutes(dashboardGroup)
+	graphGroup := api.Group("/graph")
+	graphModule.RegisterRoutes(graphGroup)
+	knowledgeGroup := api.Group("/knowledge")
+	graphModule.RegisterKnowledgeRoutes(knowledgeGroup)
 
 	return engine
 }

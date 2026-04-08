@@ -75,6 +75,7 @@ type SubmitAnswerResult struct {
 	Accepted    bool
 	QuestionID  string
 	KnowledgeID string
+	Correct     bool
 	Degraded    bool
 }
 

@@ -17,8 +17,9 @@ import (
 // 该结构体用于把路由层和鉴权基础能力一起注册到应用中，
 // 这样上层只需要依赖模块本身，而不需要了解仓储、密码校验、JWT 等内部装配细节。
 type Module struct {
-	Handler    *handler.Handler
-	JWTService *service.JWTService
+	Handler     *handler.Handler
+	JWTService  *service.JWTService
+	AuthService *service.AuthService
 }
 
 // New 创建认证模块。
@@ -35,8 +36,9 @@ func New(appCfg config.AppConfig, cfg config.AuthConfig, db *gorm.DB, _ *applogg
 	userRepo := repository.NewMySQLUserRepository(db)
 	authService := service.NewAuthService(userRepo, jwtService, passwordService)
 	return &Module{
-		Handler:    handler.New(authService),
-		JWTService: jwtService,
+		Handler:     handler.New(authService),
+		JWTService:  jwtService,
+		AuthService: authService,
 	}, nil
 }
 

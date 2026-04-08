@@ -89,6 +89,19 @@ func (h *Handler) SubmitAnswer(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// GetLearningProgress 处理学生学习进度查询请求。
+func (h *Handler) GetLearningProgress(ctx *gin.Context) {
+	response, degraded, err := h.service.GetLearningProgress(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, gin.H{
+		"degraded": degraded,
+		"list":     response.List,
+	})
+}
+
 func writeError(ctx *gin.Context, err error) {
 	appErr := apperr.AsAppError(err)
 	result.Error(ctx, appErr.HTTPStatus, appErr.Code, appErr.Message)

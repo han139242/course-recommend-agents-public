@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	learningdto "github.com/han139242/course-recommend-agents/backend/internal/module/learning/dto"
 	teacherdto "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/dto"
 	teacherentity "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/entity"
 	teacherrepo "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/repository"
@@ -21,6 +22,19 @@ type teacherRepoStub struct {
 	batchStudents   func(ctx context.Context, teacherID int64, classID int64, items []teacherentity.CreateStudentInput) (int, error)
 	listStudents    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error)
 	getStudentByID  func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error)
+}
+
+type stateReaderStub struct {
+	getStudentKnowledgeStatus func(ctx context.Context, studentID int64, knowledgeID string, page int, pageSize int) (map[string]any, error)
+	getLearningProgress       func(ctx context.Context, studentID int64) (*learningdto.LearningProgressResponse, bool, error)
+}
+
+func (s *stateReaderStub) GetStudentKnowledgeStatus(ctx context.Context, studentID int64, knowledgeID string, page int, pageSize int) (map[string]any, error) {
+	return s.getStudentKnowledgeStatus(ctx, studentID, knowledgeID, page, pageSize)
+}
+
+func (s *stateReaderStub) GetLearningProgress(ctx context.Context, studentID int64) (*learningdto.LearningProgressResponse, bool, error) {
+	return s.getLearningProgress(ctx, studentID)
 }
 
 func (s *teacherRepoStub) CreateClassroom(ctx context.Context, teacherID int64, name string, grade string) (*teacherentity.Classroom, error) {
@@ -79,7 +93,7 @@ func TestCreateClassroomSuccess(t *testing.T) {
 		listStudents:   func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID: func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, nil },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	resp, err := service.CreateClassroom(newTeacherContext(1), teacherdto.CreateClassroomRequest{Name: "AI 一班", Grade: "2026 春"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -100,7 +114,7 @@ func TestCreateClassroomDuplicate(t *testing.T) {
 		listStudents:   func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID: func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, nil },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	_, err := service.CreateClassroom(newTeacherContext(1), teacherdto.CreateClassroomRequest{Name: "AI 一班"})
 	if err == nil || apperr.AsAppError(err).HTTPStatus != 409 {
 		t.Fatalf("expected conflict error, got %v", err)
@@ -120,7 +134,7 @@ func TestBatchCreateStudentsRejectDuplicateInRequest(t *testing.T) {
 		listStudents:   func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID: func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, nil },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	_, err := service.BatchCreateStudents(newTeacherContext(1), 101, teacherdto.BatchCreateStudentsRequest{Items: []teacherdto.CreateStudentItem{{Name: "A", StudentNo: "1001", Email: "same@example.com", Password: "123456"}, {Name: "B", StudentNo: "1002", Email: "same@example.com", Password: "123456"}}})
 	if err == nil || apperr.AsAppError(err).HTTPStatus != 409 {
 		t.Fatalf("expected conflict error, got %v", err)
@@ -139,7 +153,7 @@ func TestGetStudentDetailSuccess(t *testing.T) {
 			return &teacherentity.Student{ID: studentID, Name: "学生A", Email: "a@example.com", Role: teacherrepo.RoleStudent, Title: &title, StudentNo: "20260001", ClassID: 101, ClassName: "AI 一班", Target: "算法工程师", Status: teacherrepo.StatusActive, CreatedAt: time.Date(2026, 4, 8, 0, 0, 0, 0, time.UTC)}, nil
 		},
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	resp, err := service.GetStudentDetail(newTeacherContext(1), 201)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -159,7 +173,7 @@ func TestRequireTeacherForbiddenWhenRoleChanged(t *testing.T) {
 		listStudents:    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID:  func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, nil },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	_, err := service.ListClassrooms(newTeacherContext(1), teacherdto.PaginationQuery{})
 	if err == nil || apperr.AsAppError(err).HTTPStatus != 403 {
 		t.Fatalf("expected forbidden error, got %v", err)
@@ -175,7 +189,7 @@ func TestRequireTeacherDependencyError(t *testing.T) {
 		listStudents:    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID:  func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, nil },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	_, err := service.ListClassrooms(newTeacherContext(1), teacherdto.PaginationQuery{})
 	if err == nil || apperr.AsAppError(err).HTTPStatus != 503 {
 		t.Fatalf("expected dependency unavailable error, got %v", err)
@@ -191,12 +205,57 @@ func TestGetStudentDetailNotFoundUsesStudentSemantic(t *testing.T) {
 		listStudents:    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
 		getStudentByID:  func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) { return nil, teacherrepo.ErrStudentNotFound },
 	}
-	service := New(repo, sharedpassword.NewService())
+	service := New(repo, sharedpassword.NewService(), nil)
 	_, err := service.GetStudentDetail(newTeacherContext(1), 999)
 	if err == nil || apperr.AsAppError(err).HTTPStatus != 404 {
 		t.Fatalf("expected not found error, got %v", err)
 	}
 	if !errors.Is(apperr.AsAppError(err).Cause, teacherrepo.ErrStudentNotFound) {
 		t.Fatalf("expected student semantic cause, got %v", apperr.AsAppError(err).Cause)
+	}
+}
+
+func TestGetStudentKnowledgeStatusRejectsUnknownKnowledgeID(t *testing.T) {
+	repo := &teacherRepoStub{
+		isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return true, nil },
+		createClassroom: func(ctx context.Context, teacherID int64, name string, grade string) (*teacherentity.Classroom, error) { return nil, nil },
+		listClassrooms:  func(ctx context.Context, teacherID int64, pagination teacherentity.Pagination) ([]teacherentity.Classroom, int64, error) { return nil, 0, nil },
+		batchStudents:   func(ctx context.Context, teacherID int64, classID int64, items []teacherentity.CreateStudentInput) (int, error) { return 0, nil },
+		listStudents:    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
+		getStudentByID: func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) {
+			return &teacherentity.Student{ID: studentID, Name: "学生A", ClassID: 101, ClassName: "AI 一班"}, nil
+		},
+	}
+	stateReader := &stateReaderStub{getStudentKnowledgeStatus: func(ctx context.Context, studentID int64, knowledgeID string, page int, pageSize int) (map[string]any, error) {
+		return nil, apperr.ErrNotFound
+	}}
+	service := New(repo, sharedpassword.NewService(), stateReader)
+	_, err := service.GetStudentKnowledgeStatus(newTeacherContext(1), 201, "kp_missing", teacherdto.PaginationQuery{})
+	if err == nil || apperr.AsAppError(err).HTTPStatus != 404 {
+		t.Fatalf("expected not found, got %v", err)
+	}
+}
+
+func TestGetStudentKnowledgeStatusUsesRealPagination(t *testing.T) {
+	repo := &teacherRepoStub{
+		isActiveTeacher: func(ctx context.Context, userID int64) (bool, error) { return true, nil },
+		createClassroom: func(ctx context.Context, teacherID int64, name string, grade string) (*teacherentity.Classroom, error) { return nil, nil },
+		listClassrooms:  func(ctx context.Context, teacherID int64, pagination teacherentity.Pagination) ([]teacherentity.Classroom, int64, error) { return nil, 0, nil },
+		batchStudents:   func(ctx context.Context, teacherID int64, classID int64, items []teacherentity.CreateStudentInput) (int, error) { return 0, nil },
+		listStudents:    func(ctx context.Context, teacherID int64, classID int64, pagination teacherentity.Pagination) ([]teacherentity.Student, int64, error) { return nil, 0, nil },
+		getStudentByID: func(ctx context.Context, teacherID int64, studentID int64) (*teacherentity.Student, error) {
+			return &teacherentity.Student{ID: studentID, Name: "学生A", ClassID: 101, ClassName: "AI 一班"}, nil
+		},
+	}
+	stateReader := &stateReaderStub{getStudentKnowledgeStatus: func(ctx context.Context, studentID int64, knowledgeID string, page int, pageSize int) (map[string]any, error) {
+		return map[string]any{"list": []map[string]any{{"knowledgeId": "kp_1"}}, "total": 10, "page": page, "pageSize": pageSize}, nil
+	}}
+	service := New(repo, sharedpassword.NewService(), stateReader)
+	resp, err := service.GetStudentKnowledgeStatus(newTeacherContext(1), 201, "", teacherdto.PaginationQuery{Page: 2, PageSize: 5})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp["page"].(int) != 2 || resp["pageSize"].(int) != 5 {
+		t.Fatalf("unexpected pagination payload: %+v", resp)
 	}
 }

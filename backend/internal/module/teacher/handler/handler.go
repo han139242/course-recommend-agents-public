@@ -114,6 +114,26 @@ func (h *Handler) GetStudentDetail(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// GetStudentKnowledgeStatus 查询学生知识点掌握状态。
+func (h *Handler) GetStudentKnowledgeStatus(ctx *gin.Context) {
+	studentID, err := parseClassID(ctx.Param("studentId"))
+	if err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	var query teacherdto.PaginationQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.GetStudentKnowledgeStatus(ctx.Request.Context(), studentID, ctx.Query("knowledgeId"), query)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func parseClassID(raw string) (int64, error) {
 	return strconv.ParseInt(raw, 10, 64)
 }

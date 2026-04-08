@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	learningservice "github.com/han139242/course-recommend-agents/backend/internal/module/learning/service"
 	teacherdto "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/dto"
 	teacherentity "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/entity"
 	teacherrepo "github.com/han139242/course-recommend-agents/backend/internal/module/teacher/repository"
@@ -17,11 +18,12 @@ import (
 type TeacherService struct {
 	repo            teacherrepo.TeacherRepository
 	passwordService *sharedpassword.Service
+	stateReader     learningservice.StateReader
 }
 
 // New 创建教师端服务。
-func New(repo teacherrepo.TeacherRepository, passwordService *sharedpassword.Service) *TeacherService {
-	return &TeacherService{repo: repo, passwordService: passwordService}
+func New(repo teacherrepo.TeacherRepository, passwordService *sharedpassword.Service, stateReader learningservice.StateReader) *TeacherService {
+	return &TeacherService{repo: repo, passwordService: passwordService, stateReader: stateReader}
 }
 
 // CreateClassroom 创建班级。
@@ -245,4 +247,30 @@ func toStudentDetailView(item teacherentity.Student) teacherdto.StudentDetailVie
 		Status:    item.Status,
 		CreatedAt: item.CreatedAt.Format(time.RFC3339),
 	}
+}
+
+// GetStudentKnowledgeStatus 查询学生知识点掌握状态。
+func (s *TeacherService) GetStudentKnowledgeStatus(ctx context.Context, studentID int64, knowledgeID string, query teacherdto.PaginationQuery) (map[string]any, error) {
+	teacherID, err := s.requireTeacher(ctx)
+	if err != nil {
+		return nil, err
+	}
+	student, err := s.repo.GetStudentByID(ctx, teacherID, studentID)
+	if err != nil {
+		if errors.Is(err, teacherrepo.ErrStudentNotFound) {
+			return nil, apperr.ErrNotFound.WithCause(err)
+		}
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	normalized := query.Normalize()
+	status, err := s.stateReader.GetStudentKnowledgeStatus(ctx, studentID, knowledgeID, normalized.Page, normalized.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	status["student"] = map[string]any{"id": student.ID, "name": student.Name, "classId": student.ClassID, "className": student.ClassName}
+	if knowledgeID == "" {
+		status["page"] = normalized.Page
+		status["pageSize"] = normalized.PageSize
+	}
+	return status, nil
 }

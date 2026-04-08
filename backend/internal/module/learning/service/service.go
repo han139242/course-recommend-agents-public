@@ -16,13 +16,19 @@ import (
 
 // Service 提供题库与答题业务能力。
 type Service struct {
-	repo  learningrepo.Repository
-	redis *redis.Client
+	repo         learningrepo.Repository
+	redis        *redis.Client
+	stateService *StateService
 }
 
 // New 创建学习模块服务。
 func New(repo learningrepo.Repository, redisClient *redis.Client) *Service {
-	return &Service{repo: repo, redis: redisClient}
+	redisRepo := learningrepo.NewRedisRepository(redisClient)
+	var stateRepo learningrepo.StateRepository
+	if mysqlRepo, ok := repo.(*learningrepo.MySQLRepository); ok {
+		stateRepo = learningrepo.NewStateMySQLRepository(mysqlRepo.DB())
+	}
+	return &Service{repo: repo, redis: redisClient, stateService: NewStateService(redisRepo, stateRepo)}
 }
 
 // ImportQuestions 教师批量导题。
@@ -120,8 +126,25 @@ func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAn
 			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 		}
 	}
-	response := &learningdto.SubmitAnswerResponse{Accepted: result.Accepted, QuestionID: result.QuestionID, KnowledgeID: result.KnowledgeID, Degraded: s.redis == nil || result.Degraded}
+	degraded, stateErr := s.stateService.SnapshotMastery(ctx, studentID, strings.TrimSpace(request.KnowledgeID), masteryDelta(result), answeredAt, result.Correct)
+	if stateErr != nil {
+		return nil, stateErr
+	}
+	response := &learningdto.SubmitAnswerResponse{Accepted: result.Accepted, QuestionID: result.QuestionID, KnowledgeID: result.KnowledgeID, Degraded: degraded || s.redis == nil || result.Degraded}
 	return response, nil
+}
+
+// GetLearningProgress 查询学生当前学习进度，优先读取 Redis，失败时回源 MySQL。
+func (s *Service) GetLearningProgress(ctx context.Context) (*learningdto.LearningProgressResponse, bool, error) {
+	studentID, err := s.requireStudent(ctx)
+	if err != nil {
+		return nil, false, err
+	}
+	response, degraded, stateErr := s.stateService.GetLearningProgress(ctx, studentID)
+	if stateErr != nil {
+		return nil, degraded, stateErr
+	}
+	return response, degraded, nil
 }
 
 // requireStudent 校验当前请求是否来自启用中的学生。
@@ -261,4 +284,14 @@ func toQuestionOptionDTOs(items []learningentity.QuestionOption) []learningdto.Q
 		result = append(result, learningdto.QuestionOptionDTO{Key: item.Key, Text: item.Text})
 	}
 	return result
+}
+
+func masteryDelta(result *learningentity.SubmitAnswerResult) float64 {
+	if result == nil {
+		return 0
+	}
+	if result.Accepted {
+		return 10
+	}
+	return 0
 }

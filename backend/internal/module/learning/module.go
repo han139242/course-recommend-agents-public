@@ -30,8 +30,9 @@ func (m *Module) RegisterTeacherRoutes(group *gin.RouterGroup) {
 }
 
 // RegisterStudentRoutes 注册学生学习路由。
-// 学生侧接口只暴露拉题与答题提交，不返回题目答案等教师可见信息，避免路由层误共享视图模型。
+// 学生侧接口只暴露拉题、答题与学习进度查询，不返回题目答案等教师可见信息，避免路由层误共享视图模型。
 func (m *Module) RegisterStudentRoutes(group *gin.RouterGroup) {
 	group.GET("/questions", m.Handler.ListStudentQuestions)
 	group.POST("/answers", m.Handler.SubmitAnswer)
+	group.GET("/progress", m.Handler.GetLearningProgress)
 }

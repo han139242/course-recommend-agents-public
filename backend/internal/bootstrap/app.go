@@ -47,7 +47,6 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	teacherModule := NewTeacherModule(mysqlDB)
 
 	redisClient, err := NewRedis(ctx, cfg, logger)
 	if err != nil {
@@ -58,9 +57,14 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("初始化 Neo4j 失败: %w", err)
 	}
+	teacherModule := NewTeacherModule(mysqlDB, redisClient)
 	learningModule := NewLearningModule(mysqlDB, redisClient)
+	graphModule := NewGraphModule(neo4jDriver)
+	competencyModule := NewCompetencyModule(redisClient, authModule.AuthService)
+	recommendModule := NewRecommendModule(neo4jDriver, redisClient)
+	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
 
-	r := NewRouter(logger, authModule, teacherModule, learningModule)
+	r := NewRouter(logger, authModule, teacherModule, learningModule, graphModule, competencyModule, recommendModule, dashboardModule)
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port),
 		Handler:      r,
