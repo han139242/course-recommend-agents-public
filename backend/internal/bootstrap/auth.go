@@ -11,7 +11,7 @@ import (
 
 // NewAuthModule 初始化认证模块。
 func NewAuthModule(cfg config.Config, db *gorm.DB, logger *applogger.Logger) (*authmodule.Module, error) {
-	module, err := authmodule.New(cfg.Auth, db, logger)
+	module, err := authmodule.New(cfg.App, cfg.Auth, db, logger)
 	if err != nil {
 		return nil, fmt.Errorf("初始化认证模块失败: %w", err)
 	}

@@ -31,10 +31,13 @@
 - 主键优先使用稳定 ID，例如 `knowledgeId`、`target`、`classId`、`studentId`。
 - 文件导入解析工作由前端完成，后端只接收**批量结构化数据**，不负责解析 Excel / CSV 原始文件。
 - 当前阶段**不开放学生自主注册**，账号创建由教师端或管理员端统一完成。
+- 若前端保留 `/register` 页面，它仅作为“账号开通说明页”，不是有效业务入口。
 - 当前阶段教师与管理员同责，统一使用教师端 API 即可。
 - 行为埋点接口暂不实现，不写入当前最小可行契约。
 - 在线请求只承诺可稳定返回的能力；离线生成的扩展内容属于最终一致数据。
 - 聚合接口可以保留，但必须明确它们是 BFF 视图聚合，不是底层领域模型本身。
+- 首页知识目录、项目推荐、图谱跳转 ID 等前端已消费但后端尚未完全在线化的能力，需要在主契约中显式声明，不能默认依赖前端静态兜底长期存在。
+- 前端允许在接口失败时回退到静态展示内容，但这不代表后端字段可以缺失；静态兜底只用于演示降级，不用于放宽契约要求。
 
 ## 统一请求约定
 
@@ -349,6 +352,7 @@ Go 在线服务建议统一为：
 ```json
 {
   "id": "node-1",
+  "routeKnowledgeId": "gradient-descent",
   "name": "梯度下降",
   "canonicalName": "梯度下降",
   "entityType": "concept",
@@ -357,6 +361,12 @@ Go 在线服务建议统一为：
   "sourcePath": "machine-learning/chapter-1"
 }
 ```
+
+字段补充说明：
+
+- `id` 表示图谱内部节点 ID。
+- `routeKnowledgeId` 表示前端路由层使用的稳定知识点 ID，推荐优先用于跳转 `/knowledge/:knowledgeId`。
+- 前端当前兼容读取顺序建议为：`routeKnowledgeId` -> `knowledgeId` -> `slug` -> `id`。
 
 ### GraphEdge
 
@@ -447,20 +457,28 @@ Go 在线服务建议统一为：
 
 ```json
 {
-  "knowledgeId": "node-kg-1",
-  "knowledge": "知识图谱",
-  "ready": true,
-  "message": "已为该知识点准备第一版课后扩展条目，后续可切换为自动抓取与定期更新。",
-  "frontierTopics": ["图谱推理", "LLM + KG", "可解释问答"],
+  "knowledgeId": "gradient-descent",
+  "status": "ready",
+  "knowledge": "梯度下降",
+  "message": "已为该知识点准备第一版课后扩展条目。",
+  "digestSummary": "梯度下降近期在大模型训练稳定性与自适应优化方向上仍是核心基础。",
+  "topics": [
+    {
+      "topicId": "adaptive-optimization",
+      "name": "自适应优化",
+      "reason": "该主题直接扩展了梯度下降在训练策略上的应用边界。"
+    }
+  ],
   "papers": [
     {
-      "title": "Knowledge Graph Reasoning with Large Language Models",
-      "venue": "ACL Findings",
-      "year": 2024,
-      "summary": "探索大语言模型与知识图谱推理协同工作的最新路径。",
-      "relation": "帮助学生理解课内知识图谱如何与问答、推理和智能体结合。"
+      "paperId": "paper_001",
+      "title": "A Survey on Adaptive Optimization",
+      "venue": "NeurIPS",
+      "year": 2025,
+      "url": "https://example.com/paper"
     }
-  ]
+  ],
+  "generatedAt": "2026-04-08T00:00:00Z"
 }
 ```
 
@@ -1253,6 +1271,51 @@ Authorization: Bearer <token>
 
 该组接口是 **BFF 视图聚合接口**，用于减少首页请求数，方便前端一次性拉取渲染所需数据。
 
+### `GET /api/catalog/domains`
+
+该接口用于替代当前首页仍在使用的前端本地静态知识目录数据。
+
+建议用途：
+
+- 首页知识域导航。
+- 首页知识点卡片列表。
+- 知识点搜索的数据源。
+
+成功响应：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "domains": [
+      {
+        "id": "ml",
+        "name": "机器学习",
+        "desc": "经典模型与训练方法论",
+        "points": [
+          {
+            "id": "gradient-descent",
+            "name": "梯度下降",
+            "level": "core",
+            "levelLabel": "核心",
+            "mastery": 52,
+            "description": "模型训练的核心优化算法。",
+            "recommend": "补弱推荐",
+            "route": "/knowledge/gradient-descent"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+说明：
+
+- 这是建议新增接口，当前前端在后端未提供该接口时可继续使用静态兜底数据。
+- 一旦后端落地，首页应优先消费在线目录结果，而不是长期依赖本地常量。
+
 ### `GET /api/dashboard/summary`
 
 说明：
@@ -1268,6 +1331,10 @@ Authorization: Bearer <token>
   "code": 0,
   "message": "ok",
   "data": {
+    "quickStats": [
+      { "label": "学习中知识点", "value": "6" },
+      { "label": "已掌握知识点", "value": "12" }
+    ],
     "stats": [
       { "label": "学习中知识点", "value": "6" },
       { "label": "已掌握知识点", "value": "12" }
@@ -1300,10 +1367,43 @@ Authorization: Bearer <token>
 
 说明：
 
-- `stats` 对应 `StatItem[]`。
+- `quickStats` 为首页主用字段名。
+- `stats` 作为兼容别名可短期保留。
 - `knowledgeCards` 对应 `KnowledgeCard[]`。
 - `recommendedPath` 对应 `RecommendedPathItem[]`。
 - 匿名态返回公共默认内容；登录态返回当前用户个性化结果。
+
+### `GET /api/recommend/projects`
+
+该接口用于承接首页“行业实践实时推荐”模块，替代当前前端本地排序逻辑。
+
+成功响应：
+
+```json
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "items": [
+      {
+        "id": "image-classify",
+        "title": "图像分类项目",
+        "domain": "行业实践",
+        "fitPercent": 78,
+        "fitHint": "侧重 深度学习、Python 工程化 · 匹配度 78%",
+        "reasonCode": "ability_match",
+        "reasonLabel": "能力匹配",
+        "route": "/knowledge/image-classify"
+      }
+    ]
+  }
+}
+```
+
+说明：
+
+- 这是建议新增接口，用于把首页项目推荐从静态卡片升级为在线个性化结果。
+- 若当前阶段暂未落地，前端可继续使用静态展示，但主契约应提前保留该接口位置。
 
 ## 8. 扩展接口
 
@@ -1316,6 +1416,8 @@ Authorization: Bearer <token>
 定位说明：
 
 - 它是扩展接口，不属于当前在线推荐主链路。
+- 当前仓库里“前沿知识域”仍处于本体与文档先行阶段，完整的论文抓取、主题抽取、digest 生成与 Go 路由尚未全部落地。
+- 因此这里描述的是**目标契约**，不是“当前后端已全部实现完成”的既成事实。
 - 数据通常来自离线爬虫、语料处理和内容整理的产物。
 - 因此接口成功并不代表每个知识点都已有完整内容。
 
@@ -1323,7 +1425,7 @@ Authorization: Bearer <token>
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `knowledgeId` | `string` | 否 | 建议未来主用该字段 |
+| `knowledgeId` | `string` | 否 | 推荐主用字段 |
 | `knowledge` | `string` | 否 | 当前兼容字段，表示知识点名称 |
 
 成功响应：
@@ -1333,27 +1435,37 @@ Authorization: Bearer <token>
   "code": 0,
   "message": "ok",
   "data": {
-    "knowledgeId": "node-kg-1",
-    "knowledge": "知识图谱",
-    "ready": true,
+    "knowledgeId": "gradient-descent",
+    "status": "ready",
+    "knowledge": "梯度下降",
     "message": "已为该知识点准备第一版课后扩展条目。",
-    "frontierTopics": ["图谱推理", "LLM + KG", "可解释问答"],
+    "digestSummary": "梯度下降近期在大模型训练稳定性与自适应优化方向上仍是核心基础。",
+    "topics": [
+      {
+        "topicId": "adaptive-optimization",
+        "name": "自适应优化",
+        "reason": "该主题直接扩展了梯度下降在训练策略上的应用边界。"
+      }
+    ],
     "papers": [
       {
-        "title": "Knowledge Graph Reasoning with Large Language Models",
-        "venue": "ACL Findings",
-        "year": 2024,
-        "summary": "探索大语言模型与知识图谱推理协同工作的最新路径。",
-        "relation": "帮助学生理解课内知识图谱如何与问答、推理和智能体结合。"
+        "paperId": "paper_001",
+        "title": "A Survey on Adaptive Optimization",
+        "venue": "NeurIPS",
+        "year": 2025,
+        "url": "https://example.com/paper"
       }
-    ]
+    ],
+    "generatedAt": "2026-04-08T00:00:00Z"
   }
 }
 ```
 
 说明：
 
-- `ready = false` 时表示该知识点的前沿内容尚未就绪，前端应给予相应提示。
+- `status` 建议至少支持：`ready`、`not_ready`、`stale`、`failed`。
+- 当内容尚未就绪时，建议仍返回 HTTP 200，但 `status = not_ready`，同时给出可读 `message`。
+- `digestSummary` 是前端知识点详情页最稳定可消费的主字段，不建议只返回自由文本 `digest` 而没有状态字段。
 - 数据通常来自离线流水线产物，允许最终一致。
 
 ## 页面消费映射（附录）
@@ -1369,9 +1481,9 @@ Authorization: Bearer <token>
 | 教师端题目导入 | `POST /api/teacher/questions/batch` | 批量导入结构化题目 |
 | 教师端学生知识状态 | `GET /api/teacher/students/:studentId/knowledge-status` | 查看学生知识点掌握情况 |
 | 全局鉴权启动 | `GET /api/auth/me` | 校验 token 是否仍有效 |
-| 首页 | `GET /api/dashboard/summary` | 首页摘要、知识卡片、推荐路径 |
+| 首页 | `GET /api/dashboard/summary`、`GET /api/catalog/domains`、`GET /api/recommend/projects` | 首页摘要、知识目录、项目推荐 |
 | 知识图谱页 | `GET /api/graph/subgraph` | 加载一跳子图 |
-| 知识点详情页 | `GET /api/knowledge/:knowledgeId` | 加载知识点详情 |
+| 知识点详情页 | `GET /api/knowledge/:knowledgeId`、`GET /api/graph/subgraph`、`GET /api/competency/profile` | 加载知识点详情、局部子图、侧边画像 |
 | 成长分析页 | `GET /api/competency/profile` | 能力画像、热力图 |
 | 详情页侧栏推荐 | `GET /api/recommend/path` | 推荐学习路径 |
 | 课后扩展 | `GET /api/frontier/briefing` | 扩展内容摘要 |
@@ -1381,7 +1493,7 @@ Authorization: Bearer <token>
 
 以下需求后续可能恢复，但当前阶段暂不实现，不纳入最小可行契约：
 
-- `POST /api/auth/register`：学生自主注册关闭。
+- `POST /api/auth/register`：学生自主注册关闭，前端若保留 `/register` 页面，仅作说明页。
 - `POST /api/behavior/event`：通用行为埋点后置。
 - 复杂文件上传解析接口：由前端自行完成文件解析，后端只接受结构化 JSON。
 - `PUT/DELETE /api/teacher/questions/:questionId`：题目修改与删除。
@@ -1389,14 +1501,17 @@ Authorization: Bearer <token>
 - `PUT/PATCH /api/teacher/classes/:classId`：班级信息修改与归档。
 - `PUT/PATCH /api/teacher/teachers/:teacherId`：教师信息修改。
 - `PUT /api/student/profile`：学生自行修改目标方向（`target`）。
+- `POST /api/assistant/chat`、`POST /api/assistant/generate-content`：当前前端仍可通过开发代理直连模型，后端统一接管属于扩展能力，不纳入本阶段最小闭环。
 
 ## 兼容说明
 
 为兼顾当前前端实现，以下兼容策略暂时保留：
 
 - `GET /api/recommend/path` 返回字段名继续使用 `path`。
-- `GET /api/dashboard/summary` 返回字段名继续使用 `recommendedPath`、`knowledgeCards`。
+- `GET /api/dashboard/summary` 返回字段名继续使用 `recommendedPath`、`knowledgeCards`，并短期同时兼容 `quickStats` / `stats`。
 - `GET /api/graph/subgraph` 仍兼容通过名称查询 `root`，但主契约推荐使用稳定 ID。
+- 图谱节点跳转字段短期兼容 `routeKnowledgeId`、`knowledgeId`、`slug`、`id`，但推荐后端优先返回 `routeKnowledgeId`。
 - `GET /api/frontier/briefing` 仍兼容通过 `knowledge` 名称查询，但长期建议迁移为 `knowledgeId`。
+- 首页知识目录与项目推荐在后端完全落地前，前端允许保留静态兜底内容，但这不改变主契约中对 `GET /api/catalog/domains`、`GET /api/recommend/projects` 的建议方向。
 
 这些兼容字段不代表长期最优设计，后续如需统一命名，应通过版本化或前后端联动改造完成。

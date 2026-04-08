@@ -19,12 +19,12 @@ type Module struct {
 }
 
 // New 创建认证模块。
-func New(cfg config.AuthConfig, db *gorm.DB, _ *applogger.Logger) (*Module, error) {
+func New(appCfg config.AppConfig, cfg config.AuthConfig, db *gorm.DB, _ *applogger.Logger) (*Module, error) {
 	if db == nil {
 		return nil, fmt.Errorf("认证模块初始化失败：MySQL 未连接")
 	}
 
-	jwtService := service.NewJWTService(cfg)
+	jwtService := service.NewJWTService(cfg, appCfg)
 	passwordService := service.NewPasswordService()
 	userRepo := repository.NewMySQLUserRepository(db)
 	authService := service.NewAuthService(userRepo, jwtService, passwordService)

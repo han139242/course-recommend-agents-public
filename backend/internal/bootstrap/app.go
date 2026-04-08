@@ -25,6 +25,8 @@ type App struct {
 }
 
 // New 创建应用实例。
+// 装配顺序遵循“先基础设施、再模块、最后路由与 HTTP 服务”的约定，
+// 这样可以让模块只依赖已准备好的共享资源，避免在路由层直接拼装底层依赖。
 func New(ctx context.Context) (*App, error) {
 	cfg, err := LoadConfig()
 	if err != nil {
@@ -42,6 +44,7 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	teacherModule := NewTeacherModule(mysqlDB)
 
 	redisClient, err := NewRedis(ctx, cfg, logger)
 	if err != nil {
@@ -53,7 +56,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("初始化 Neo4j 失败: %w", err)
 	}
 
-	r := NewRouter(logger, authModule)
+	r := NewRouter(logger, authModule, teacherModule)
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port),
 		Handler:      r,

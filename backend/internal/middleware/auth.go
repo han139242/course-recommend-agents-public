@@ -12,6 +12,8 @@ import (
 )
 
 // Auth 校验 Bearer Token 并注入用户身份。
+// 这里注入的是 token 中的身份快照，不会回源确认用户最新状态；
+// 对权限敏感的接口仍应在业务层基于 userID 做二次校验。
 func Auth(jwtService *service.JWTService) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorization := strings.TrimSpace(ctx.GetHeader("Authorization"))
