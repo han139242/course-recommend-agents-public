@@ -1,0 +1,8 @@
+.git
+.idea
+.vscode
+*.md
+**/coverage.out
+**/*_test.go
+bin/
+dist/

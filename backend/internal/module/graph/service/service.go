@@ -50,5 +50,8 @@ func (s *Service) GetKnowledgeDetail(ctx context.Context, knowledgeID string) (*
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	if detail == nil {
+		return nil, apperr.ErrNotFound
+	}
 	return &graphdto.KnowledgeDetailView{ID: detail.ID, RouteKnowledgeID: detail.RouteKnowledgeID, Name: detail.Name, CanonicalName: detail.CanonicalName, EntityType: detail.EntityType, Description: detail.Description, ChapterTitle: detail.ChapterTitle, SourcePath: detail.SourcePath, Summary: detail.Summary, Prerequisites: detail.Prerequisites, Related: detail.Related, Scenarios: detail.Scenarios, ParentTopics: detail.ParentTopics, MasteryScore: 0, Status: "not_started", MasteryText: "当前暂无学习记录。", RecommendReason: "建议先从当前知识点的先修内容开始。"}, nil
 }

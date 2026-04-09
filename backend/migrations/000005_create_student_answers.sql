@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS student_answers (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    student_id BIGINT NOT NULL,
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    student_id BIGINT UNSIGNED NOT NULL,
     question_code VARCHAR(64) NOT NULL,
     knowledge_id VARCHAR(64) NOT NULL,
     selected_option VARCHAR(8) NOT NULL,

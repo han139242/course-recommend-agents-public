@@ -97,7 +97,9 @@ func (r *MySQLRepository) ListQuestions(ctx context.Context, filter learningenti
 	}
 
 	var total int64
-	if err := baseQuery.Distinct("questions.id").Count(&total).Error; err != nil {
+	// Count 与 Find 必须使用独立 Session，避免 Distinct 残留在链上触发 MySQL 3065（ORDER BY 列不在 SELECT DISTINCT 中）。
+	countQuery := baseQuery.Session(&gorm.Session{})
+	if err := countQuery.Distinct("questions.id").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -145,7 +147,8 @@ func (r *MySQLRepository) ListStudentQuestions(ctx context.Context, filter learn
 		baseQuery = baseQuery.Where("questions.knowledge_id = ?", filter.KnowledgeID)
 	}
 	var total int64
-	if err := baseQuery.Distinct("questions.id").Count(&total).Error; err != nil {
+	countQuery := baseQuery.Session(&gorm.Session{})
+	if err := countQuery.Distinct("questions.id").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	var questions []learningmodel.Question

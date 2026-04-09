@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS question_options (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    question_id BIGINT NOT NULL,
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    question_id BIGINT UNSIGNED NOT NULL,
     option_key VARCHAR(8) NOT NULL,
     option_text TEXT NOT NULL,
     sort_order INT NOT NULL DEFAULT 0,

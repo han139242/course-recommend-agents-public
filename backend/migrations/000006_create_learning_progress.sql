@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS learning_progress (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    student_id BIGINT NOT NULL,
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    student_id BIGINT UNSIGNED NOT NULL,
     knowledge_id VARCHAR(64) NOT NULL,
     canonical_name VARCHAR(255) NOT NULL,
     mastery_score DECIMAL(5,2) NOT NULL DEFAULT 0,
