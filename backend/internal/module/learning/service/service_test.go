@@ -7,15 +7,10 @@ import (
 	"testing"
 	"time"
 
-	authdto "github.com/han139242/course-recommend-agents/backend/internal/module/auth/dto"
-	"github.com/han139242/course-recommend-agents/backend/internal/config"
-	graphwriterrepo "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/repository"
-	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningdto "github.com/han139242/course-recommend-agents/backend/internal/module/learning/dto"
 	learningentity "github.com/han139242/course-recommend-agents/backend/internal/module/learning/entity"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
 	"github.com/han139242/course-recommend-agents/backend/pkg/ctxmeta"
-	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -79,30 +74,15 @@ func (s *stubStateService) GetLearningProgress(_ context.Context, _ int64) (*lea
 	return s.progressResponse, s.progressDegraded, s.progressErr
 }
 
-type stubAuthService struct {
-	user *authdto.AuthUserView
-	err  error
-}
-
-func (s *stubAuthService) GetCurrentUser(_ context.Context, _ int64) (*authdto.AuthUserView, error) {
-	if s.err != nil {
-		return nil, s.err
-	}
-	return s.user, nil
-}
-
-func TestSubmitAnswerDoesNotPolluteDegradedWithGraphWriterFailure(t *testing.T) {
+func TestSubmitAnswerReflectsOnlyMainChainDegraded(t *testing.T) {
 	repo := &stubLearningRepo{
 		submitResult:  &learningentity.SubmitAnswerResult{Accepted: true, QuestionID: "q_001", KnowledgeID: "kp_001", Correct: true},
 		activeStudent: true,
 	}
-	graphWriter := graphwriterservice.New(applogger.New("debug"), graphwriterrepo.NewNeo4jWriterRepository(nil), nil, config.GraphWriterConfig{Enabled: false})
 	service := &Service{
 		repo:         repo,
 		redis:        redis.NewClient(&redis.Options{Addr: "127.0.0.1:0"}),
-		graphWriter:  graphWriter,
 		stateService: &stubStateService{snapshotState: learningentity.MasteryState{KnowledgeID: "kp_001", MasteryScore: 100, AnsweredCount: 1, CorrectCount: 1}},
-		authService:  &stubAuthService{user: &authdto.AuthUserView{Name: "学生A", Target: "算法工程师"}},
 	}
 	resp, err := service.SubmitAnswer(withUserID(2), learningdto.SubmitAnswerRequest{QuestionID: "q_001", KnowledgeID: "kp_001", SelectedOption: "A", AnsweredAt: time.Now().UTC().Format(time.RFC3339)})
 	if err != nil {
@@ -110,24 +90,6 @@ func TestSubmitAnswerDoesNotPolluteDegradedWithGraphWriterFailure(t *testing.T) 
 	}
 	if resp.Degraded {
 		t.Fatal("expected degraded to reflect only main answer chain")
-	}
-}
-
-func TestEnqueueGraphSyncReturnsFalseWhenGraphWriterDisabled(t *testing.T) {
-	graphWriter := graphwriterservice.New(applogger.New("debug"), graphwriterrepo.NewNeo4jWriterRepository(nil), nil, config.GraphWriterConfig{Enabled: false})
-	service := &Service{graphWriter: graphWriter, authService: &stubAuthService{user: &authdto.AuthUserView{Name: "学生A", Target: "算法工程师"}}}
-	accepted := service.enqueueGraphSync(context.Background(), 2, time.Now().UTC(), learningentity.MasteryState{KnowledgeID: "kp_001"})
-	if accepted {
-		t.Fatal("expected graph sync enqueue to be rejected when graph writer is disabled")
-	}
-}
-
-func TestEnqueueGraphSyncRequiresUserIdentity(t *testing.T) {
-	graphWriter := graphwriterservice.New(applogger.New("debug"), graphwriterrepo.NewNeo4jWriterRepository(nil), nil, config.GraphWriterConfig{Enabled: true})
-	service := &Service{graphWriter: graphWriter}
-	accepted := service.enqueueGraphSync(context.Background(), 2, time.Now().UTC(), learningentity.MasteryState{KnowledgeID: "kp_001", MasteryScore: 80})
-	if accepted {
-		t.Fatal("expected enqueue to fail without user identity")
 	}
 }
 

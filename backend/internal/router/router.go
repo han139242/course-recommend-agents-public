@@ -17,13 +17,16 @@ import (
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/han139242/course-recommend-agents/backend/pkg/result"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 // New 创建 Gin 路由实例。
 //
 // 路由层只负责统一挂载中间件、健康检查与模块路由，
 // 不在此处处理业务编排，避免入口层承担过多职责。
-func New(logger *applogger.Logger, cfg config.Config, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -39,7 +42,7 @@ func New(logger *applogger.Logger, cfg config.Config, authModule *authmodule.Mod
 		})
 	})
 
-	registerRuntimeRoutes(engine, cfg, graphWriter)
+	registerRuntimeRoutes(engine, cfg, mysqlDB, redisClient, neo4jDriver, graphWriter, graphModule)
 
 	api := engine.Group("/api")
 

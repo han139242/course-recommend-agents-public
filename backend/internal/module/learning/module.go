@@ -3,6 +3,7 @@ package learning
 import (
 	"github.com/gin-gonic/gin"
 	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
+	competencyservice "github.com/han139242/course-recommend-agents/backend/internal/module/competency/service"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learninghandler "github.com/han139242/course-recommend-agents/backend/internal/module/learning/handler"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
@@ -14,13 +15,22 @@ import (
 // Module 聚合学习模块依赖。
 type Module struct {
 	Handler *learninghandler.Handler
+	Service *learningservice.Service
 }
 
 // New 创建学习模块。
 func New(db *gorm.DB, redisClient *redis.Client, authService *authservice.AuthService, graphWriter *graphwriterservice.Service) *Module {
 	repo := learningrepo.NewMySQLRepository(db)
 	service := learningservice.New(repo, redisClient, authService, graphWriter)
-	return &Module{Handler: learninghandler.New(service)}
+	return &Module{Handler: learninghandler.New(service), Service: service}
+}
+
+// SetCompetencyService 注入能力画像聚合服务。
+func (m *Module) SetCompetencyService(service *competencyservice.Service) {
+	if m == nil || m.Service == nil {
+		return
+	}
+	m.Service.SetCompetencyService(service)
 }
 
 // RegisterTeacherRoutes 注册教师题库路由。

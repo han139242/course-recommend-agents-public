@@ -59,3 +59,12 @@ type FrontierBriefing struct {
 	Papers        []FrontierPaper
 	GeneratedAt   string
 }
+
+// CompetencyMapping 表示知识点映射到能力维度的权重。
+type CompetencyMapping struct {
+	KnowledgeID     string
+	CompetencyID    string
+	CompetencyName  string
+	Category        string
+	Weight          float64
+}

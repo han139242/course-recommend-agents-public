@@ -2,12 +2,12 @@ package entity
 
 import "time"
 
-// CompetencyRelation 表示用户与单个能力节点之间的掌握关系快照。
+// CompetencyRelation 表示用户与单个能力节点之间的能力分数快照。
 type CompetencyRelation struct {
-	KnowledgeID   string
-	MasteryScore  float64
-	AnsweredCount int
-	CorrectCount  int
+	CompetencyID   string
+	CompetencyName string
+	Category       string
+	Score          float64
 }
 
 // ProfileIdentity 表示图谱写入所需的最小用户身份信息。

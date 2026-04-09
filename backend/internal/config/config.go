@@ -67,10 +67,13 @@ func Load() (Config, error) {
 			TopologyChannel: getEnv("GRAPH_WRITER_TOPOLOGY_CHANNEL", "topology_updates"),
 		},
 		Observability: ObservabilityConfig{
-			BuildVersion: getEnv("BUILD_VERSION", "dev"),
-			BuildCommit:  getEnv("BUILD_COMMIT", "local"),
-			BuildTime:    getEnv("BUILD_TIME", ""),
-			EnablePprof:  getBoolEnv("ENABLE_PPROF", false),
+			BuildVersion:       getEnv("BUILD_VERSION", "dev"),
+			BuildCommit:        getEnv("BUILD_COMMIT", "local"),
+			BuildTime:          getEnv("BUILD_TIME", ""),
+			EnablePprof:        getBoolEnv("ENABLE_PPROF", false),
+			EnableMetrics:      getBoolEnv("ENABLE_METRICS", false),
+			EnableTracing:      getBoolEnv("ENABLE_TRACING", false),
+			SlowQueryThreshold: getEnv("SLOW_QUERY_THRESHOLD", "500ms"),
 		},
 	}
 

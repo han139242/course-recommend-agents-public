@@ -13,13 +13,14 @@ type Module struct {
 	Handler *graphhandler.Handler
 	Service *graphservice.Service
 	Repo    *graphrepo.Neo4jRepository
+	Driver  neo4j.DriverWithContext
 }
 
 // New 创建图谱模块。
 func New(driver neo4j.DriverWithContext) *Module {
 	repo := graphrepo.NewNeo4jRepository(driver)
 	service := graphservice.New(repo)
-	return &Module{Handler: graphhandler.New(service), Service: service, Repo: repo}
+	return &Module{Handler: graphhandler.New(service), Service: service, Repo: repo, Driver: driver}
 }
 
 // RegisterRoutes 注册图谱路由。

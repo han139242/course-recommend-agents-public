@@ -9,7 +9,8 @@ import (
 )
 
 func TestGetProfileWithDisabledRedisStillReturnsProfile(t *testing.T) {
-	service := New(learningrepo.NewRedisRepository(nil))
+	matrixManager := NewMatrixManager(nil, nil, nil, "")
+	service := New(learningrepo.NewRedisRepository(nil), matrixManager, nil)
 	user := &competencyentity.UserProfile{ID: 1, Name: "学生A", Role: "student", Target: "算法工程师"}
 	resp, err := service.GetProfile(context.Background(), user)
 	if err != nil {

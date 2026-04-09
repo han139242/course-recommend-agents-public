@@ -24,7 +24,7 @@ func (r *Neo4jWriterRepository) Enabled() bool {
 	return r != nil && r.driver != nil
 }
 
-// UpsertUserCompetencies 批量写入用户能力关系。
+// UpsertUserCompetencies 批量写入用户能力关系快照。
 func (r *Neo4jWriterRepository) UpsertUserCompetencies(ctx context.Context, events []graphwriterentity.ProfileUpdateEvent, topologyVersion string) error {
 	if !r.Enabled() || len(events) == 0 {
 		return nil
@@ -35,10 +35,10 @@ func (r *Neo4jWriterRepository) UpsertUserCompetencies(ctx context.Context, even
 		relations := make([]map[string]any, 0, len(event.Relations))
 		for _, relation := range event.Relations {
 			relations = append(relations, map[string]any{
-				"knowledge_id":    relation.KnowledgeID,
-				"mastery_score":   relation.MasteryScore,
-				"answered_count":  relation.AnsweredCount,
-				"correct_count":   relation.CorrectCount,
+				"competency_id":   relation.CompetencyID,
+				"competency_name": relation.CompetencyName,
+				"category":        relation.Category,
+				"score":           relation.Score,
 			})
 		}
 		payload = append(payload, map[string]any{
@@ -63,13 +63,16 @@ SET u.name = CASE WHEN trim(coalesce(event.student_name, '')) = '' THEN u.name E
     u.last_profile_source = event.source,
     u.topology_version = event.topology_version
 WITH u, event
+OPTIONAL MATCH (u)-[old:HAS_COMPETENCY]->(:Competency)
+DELETE old
+WITH u, event
 UNWIND event.relations AS relation
-MERGE (c:KnowledgeNode {knowledge_id: relation.knowledge_id})
+MERGE (c:Competency {id: relation.competency_id})
+SET c.name = CASE WHEN trim(coalesce(relation.competency_name, '')) = '' THEN c.name ELSE relation.competency_name END,
+    c.category = CASE WHEN trim(coalesce(relation.category, '')) = '' THEN c.category ELSE relation.category END
 MERGE (u)-[r:HAS_COMPETENCY]->(c)
-SET r.mastery_score = relation.mastery_score,
-    r.answered_count = relation.answered_count,
-    r.correct_count = relation.correct_count,
-    r.updated_at = datetime(event.updated_at),
+SET r.score = relation.score,
+    r.snapshot_time = datetime(event.updated_at),
     r.trace_id = event.trace_id,
     r.topology_version = event.topology_version
 `

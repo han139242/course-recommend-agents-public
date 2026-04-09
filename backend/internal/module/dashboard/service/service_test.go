@@ -15,7 +15,7 @@ import (
 
 func TestGetSummaryReturnsAggregatedFields(t *testing.T) {
 	ctx := ctxmeta.WithUserID(context.Background(), "1")
-	competencySvc := competencyservice.New(learningrepo.NewRedisRepository(nil))
+	competencySvc := competencyservice.New(learningrepo.NewRedisRepository(nil), competencyservice.NewMatrixManager(nil, nil, nil, ""), nil)
 	graphSvc := graphservice.New(graphrepo.NewNeo4jRepository(nil))
 	recommendSvc := recommendservice.New(graphSvc, learningrepo.NewRedisRepository(nil))
 	service := New(competencySvc, recommendSvc)

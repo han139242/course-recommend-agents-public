@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strings"
+	"time"
 
 	frontierdto "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/dto"
 	frontierrepo "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/repository"
@@ -33,5 +34,36 @@ func (s *Service) GetBriefing(ctx context.Context, query frontierdto.BriefingQue
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	s.normalizeStatus(response)
 	return response, nil
+}
+
+func (s *Service) normalizeStatus(response *frontierdto.BriefingResponse) {
+	if response == nil {
+		return
+	}
+	status := strings.ToLower(strings.TrimSpace(strings.ReplaceAll(response.Status, "-", "_")))
+	if status == "" {
+		status = "not_ready"
+	}
+	switch status {
+	case "ready":
+		if response.GeneratedAt != "" {
+			if generatedAt, err := time.Parse(time.RFC3339, response.GeneratedAt); err == nil && time.Since(generatedAt) > 30*24*time.Hour {
+				status = "stale"
+				if strings.TrimSpace(response.Message) == "" {
+					response.Message = "当前摘要已过期，建议等待离线链路刷新。"
+				}
+			}
+		}
+	case "failed":
+		if strings.TrimSpace(response.Message) == "" {
+			response.Message = "前沿内容生成失败，请稍后重试。"
+		}
+	case "stale", "not_ready":
+		// 保留原始业务含义
+	default:
+		status = "not_ready"
+	}
+	response.Status = status
 }

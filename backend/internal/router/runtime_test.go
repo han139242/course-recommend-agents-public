@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
+	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
 	graphwriterrepo "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/repository"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
@@ -20,13 +21,14 @@ func TestReadyzReturnsRuntimeGraphWriterStatus(t *testing.T) {
 	cfg := config.Config{App: config.AppConfig{Env: "development"}, Observability: config.ObservabilityConfig{BuildVersion: "dev"}, GraphWriter: config.GraphWriterConfig{Enabled: true}}
 	graphWriter := graphwriterservice.New(applogger.New("debug"), graphwriterrepo.NewNeo4jWriterRepository(nil), nil, config.GraphWriterConfig{Enabled: true})
 	graphWriter.Start(context.TODO())
-	registerRuntimeRoutes(engine, cfg, graphWriter)
+	graphModule := graphmodule.New(nil)
+	registerRuntimeRoutes(engine, cfg, nil, nil, nil, graphWriter, graphModule)
 
 	req := httptest.NewRequest(http.MethodGet, "/readyz", nil)
 	w := httptest.NewRecorder()
 	engine.ServeHTTP(w, req)
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", w.Code)
+	if w.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected 503, got %d", w.Code)
 	}
 	var body map[string]any
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
