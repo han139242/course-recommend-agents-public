@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { fetchGraphSubgraph, fetchKnowledgeDetail } from '../auth'
+import { edgeSvgCoords, layoutNeoSubgraph, resolveKnowledgeRouteId } from '../utils/neoSubgraphLayout'
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -34,40 +35,17 @@ const selectedDescription = computed(() => {
 
 const hasKnowledgeDetail = computed(() => Boolean(selectedKnowledge.value?.id))
 
-const positionedNodes = computed(() => {
-  const root = graphData.value.root
+const selectedRouteKnowledgeId = computed(() => resolveKnowledgeRouteId(selectedNode.value))
 
-  if (!root) {
-    return []
-  }
-
-  const neighbors = graphData.value.nodes.filter((node) => node.id !== root.id)
-
-  return [
-    { ...root, label: root.canonicalName, group: root.entityType, x: 50, y: 50, level: 'focus' },
-    ...neighbors.map((node, index) => {
-      const angle = (-Math.PI / 2 + (index * Math.PI * 2) / Math.max(neighbors.length, 1))
-      const radius = 31
-      return {
-        ...node,
-        label: node.canonicalName,
-        group: node.entityType,
-        x: 50 + radius * Math.cos(angle),
-        y: 50 + radius * Math.sin(angle),
-        level:
-          node.entityType === 'application'
-            ? 'project'
-            : node.entityType === 'topic'
-              ? 'core'
-              : 'base',
-      }
-    }),
-  ]
-})
-
-const positionedNodeMap = computed(
-  () => Object.fromEntries(positionedNodes.value.map((node) => [node.id, node])),
+const layoutPack = computed(() =>
+  layoutNeoSubgraph(graphData.value, selectedNodeId.value || graphData.value.root?.id),
 )
+
+const positionedNodes = computed(() => layoutPack.value.positionedNodes)
+
+const positionedNodeMap = computed(() => layoutPack.value.nodeMap)
+
+const visibleEdges = computed(() => layoutPack.value.edges)
 
 function nodeStyle(node) {
   return {
@@ -77,15 +55,7 @@ function nodeStyle(node) {
 }
 
 function edgePosition(edge) {
-  const from = positionedNodeMap.value[edge.sourceId]
-  const to = positionedNodeMap.value[edge.targetId]
-
-  return {
-    x1: from?.x ?? 50,
-    y1: from?.y ?? 50,
-    x2: to?.x ?? 50,
-    y2: to?.y ?? 50,
-  }
+  return edgeSvgCoords(edge, positionedNodeMap.value)
 }
 
 async function loadGraph(root = '') {
@@ -94,9 +64,15 @@ async function loadGraph(root = '') {
 
   try {
     const data = await fetchGraphSubgraph(root, 12)
+    if (!data.root && data.nodes?.length) {
+      data.root = root
+        ? data.nodes.find((n) => n.id === root) || data.nodes[0]
+        : data.nodes[0]
+    }
     graphData.value = data
-    selectedNodeId.value = data.root?.id || ''
-    selectedKnowledge.value = data.root?.id ? await fetchKnowledgeDetail(data.root.id) : null
+    selectedNodeId.value = data.root?.id || data.nodes?.[0]?.id || ''
+    const kid = resolveKnowledgeRouteId(data.root || data.nodes?.[0])
+    selectedKnowledge.value = kid ? await fetchKnowledgeDetail(kid).catch(() => null) : null
   } catch (error) {
     errorMessage.value = error.message
   } finally {
@@ -139,7 +115,7 @@ onMounted(() => {
           <p v-else-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="graph-svg" aria-hidden="true">
             <line
-              v-for="edge in graphData.edges"
+              v-for="edge in visibleEdges"
               :key="edge.relationId || `${edge.sourceId}-${edge.targetId}-${edge.relationType}`"
               :x1="edgePosition(edge).x1"
               :y1="edgePosition(edge).y1"
@@ -182,7 +158,7 @@ onMounted(() => {
               </strong>
             </div>
           </div>
-          <RouterLink v-if="hasKnowledgeDetail" :to="`/knowledge/${selectedNodeId}`" class="back-home-link">
+          <RouterLink v-if="hasKnowledgeDetail" :to="`/knowledge/${selectedRouteKnowledgeId}`" class="back-home-link">
             查看知识点详情
           </RouterLink>
         </div>

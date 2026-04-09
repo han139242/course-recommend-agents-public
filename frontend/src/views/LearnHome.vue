@@ -1,245 +1,238 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-
-import {
-  assistantPrompts,
-  curriculumFilters,
-  stageTabs,
-  valueCards,
-} from '../data/learning'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { domains } from '../data/courseData'
+import { quickStats, recommendedPath, assistantPrompts } from '../data/learning'
 import { fetchDashboardSummary } from '../auth'
+import { rankPracticeProjects } from '../utils/projectRecommend'
 
-const showStats = ref(false)
-const loading = ref(true)
-const errorMessage = ref('')
-const dashboard = ref({
-  quickStats: [],
-  growthInsights: [],
-  knowledgeCards: [],
-  recommendedPath: [],
-  profile: null,
+const router = useRouter()
+const activeDomainId = ref(domains[0]?.id || '')
+const searchQuery = ref('')
+const aiBarInput = ref('')
+
+function goAssistant() {
+  const q = aiBarInput.value.trim()
+  router.push(q ? `/assistant?q=${encodeURIComponent(q)}` : '/assistant')
+}
+const isScrolling = ref(false)
+const stats = ref(quickStats)
+const pathItems = ref(recommendedPath)
+let observer = null
+let scrollTimeout = null
+
+const filteredDomains = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return domains
+  return domains
+    .map((d) => ({
+      ...d,
+      points: d.points.filter(
+        (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q),
+      ),
+    }))
+    .filter((d) => d.points.length > 0)
 })
 
-const quickStats = computed(() => dashboard.value.quickStats || [])
-const growthInsights = computed(() => dashboard.value.growthInsights || [])
-const knowledgeCards = computed(() => dashboard.value.knowledgeCards || [])
-const recommendedPath = computed(() => dashboard.value.recommendedPath || [])
+/** 全量域掌握度上的项目匹配排序（实时重算） */
+const practiceRanked = computed(() => rankPracticeProjects(domains))
+
+/** 搜索过滤后仍保持推荐顺序 */
+const practiceDomainFiltered = computed(() => {
+  const fd = filteredDomains.value.find((d) => d.id === 'practice')
+  if (!fd) return []
+  const ids = new Set(fd.points.map((p) => p.id))
+  return practiceRanked.value.filter((p) => ids.has(p.id))
+})
+
+const recommendSnapshot = ref('')
+
+function touchRecommendSnapshot() {
+  recommendSnapshot.value = new Date().toLocaleString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+}
+
+const totalPoints = computed(() => domains.reduce((s, d) => s + d.points.length, 0))
+const masteredCount = computed(
+  () => domains.reduce((s, d) => s + d.points.filter((p) => p.mastery >= 60).length, 0),
+)
+
+function scrollToDomain(id) {
+  isScrolling.value = true
+  activeDomainId.value = id
+  const el = document.getElementById(`domain-${id}`)
+  if (el) {
+    const top = el.getBoundingClientRect().top + window.scrollY - 120
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
+  clearTimeout(scrollTimeout)
+  scrollTimeout = setTimeout(() => {
+    isScrolling.value = false
+  }, 800)
+}
 
 async function loadDashboard() {
-  loading.value = true
-  errorMessage.value = ''
-
   try {
-    dashboard.value = await fetchDashboardSummary()
-  } catch (error) {
-    errorMessage.value = error.message
-  } finally {
-    loading.value = false
+    const data = await fetchDashboardSummary()
+    if ((data.quickStats || data.stats)?.length) {
+      stats.value = data.quickStats || data.stats
+    }
+    if ((data.recommendedPath || data.path)?.length) {
+      pathItems.value = data.recommendedPath || data.path
+    }
+  } catch {
+    /* use defaults */
   }
 }
 
 onMounted(() => {
+  touchRecommendSnapshot()
   loadDashboard()
+  nextTick(() => {
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrolling.value) return
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        if (visible.length) {
+          activeDomainId.value = visible[0].target.dataset.domainId
+        }
+      },
+      { rootMargin: '-120px 0px -60% 0px', threshold: 0 },
+    )
+    for (const d of domains) {
+      const el = document.getElementById(`domain-${d.id}`)
+      if (el) observer.observe(el)
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  if (observer) observer.disconnect()
+  clearTimeout(scrollTimeout)
 })
 </script>
 
 <template>
-  <section class="hero-banner">
-    <div class="banner-copy">
-      <span class="eyebrow">AI 知识推荐智能体</span>
-      <h1>突破课程边界的人工智能专业知识图谱学习空间</h1>
-      <p>
-        从知识点出发组织学习，不再被课程顺序和学期边界限制。哪里不会，就从哪里开始，学完立刻知道下一步。
-      </p>
-      <p v-if="dashboard.profile?.summary" class="auth-side-copy">{{ dashboard.profile.summary }}</p>
-    </div>
-
-    <div class="banner-stats-compact">
-      <button class="stats-trigger" @click="showStats = !showStats">
-        <div>
-          <span>我的学习数据</span>
-          <strong>查看本周进展</strong>
+  <div class="learn-page">
+    <!-- Hero -->
+    <section class="learn-hero">
+      <div class="learn-hero-left">
+        <h1 class="learn-title">
+          突破课程边界的<br /><strong>AI 专业知识图谱</strong>
+        </h1>
+        <p class="learn-desc">
+          从知识点出发组织学习，不再被课程顺序和学期边界限制。<br />
+          哪里不会就从哪里开始，学完立刻知道下一步。
+        </p>
+      </div>
+      <div class="learn-stats">
+        <div class="learn-stat">
+          <strong>{{ masteredCount }}/{{ totalPoints }}</strong>
+          <span>已掌握</span>
         </div>
-        <span class="stats-trigger-icon">{{ showStats ? '收起' : '展开' }}</span>
+        <div class="learn-stat" v-for="s in stats" :key="s.label">
+          <strong>{{ s.value }}</strong>
+          <span>{{ s.label }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- AI Companion Entry -->
+    <form class="ai-bar" @submit.prevent="goAssistant">
+      <span class="ai-bar-label">AI 学伴</span>
+      <input
+        v-model="aiBarInput"
+        class="ai-bar-input"
+        :placeholder="assistantPrompts[0]"
+      />
+      <button type="submit" class="ai-bar-go">→</button>
+    </form>
+
+    <!-- Domain Navigation (sticky) -->
+    <nav class="domain-nav">
+      <button
+        v-for="d in domains"
+        :key="d.id"
+        class="domain-tab"
+        :class="{ active: activeDomainId === d.id }"
+        @click="scrollToDomain(d.id)"
+      >
+        {{ d.name }}
       </button>
 
-      <div v-if="showStats" class="stats-popover">
-        <article v-for="item in quickStats" :key="item.label" class="stat-card">
-          <span>{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-        </article>
+      <div class="domain-nav-search">
+        <input v-model="searchQuery" placeholder="搜索知识点..." />
       </div>
-    </div>
-  </section>
+    </nav>
 
-  <p v-if="loading" class="auth-side-copy">正在加载学习空间数据...</p>
-  <p v-else-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
-
-  <section class="dashboard-grid">
-    <article class="assistant-card">
-      <div class="card-toolbar">
-        <div class="mini-tabs">
-          <span class="mini-tab">AI 学伴</span>
-          <span class="mini-tab active">智能体</span>
-        </div>
-        <RouterLink to="/assistant" class="toolbar-link">进入</RouterLink>
-      </div>
-
-      <div class="assistant-head">
-        <div>
-          <h2>Hi，我是你的跨课程学习助手</h2>
-          <p>我会根据你的薄弱点、目标方向和兴趣偏好，帮你找到更合适的补弱、进阶和场景化学习路径。</p>
-        </div>
-        <div class="assistant-avatar">AI</div>
-      </div>
-
-      <div class="prompt-list">
-        <RouterLink
-          v-for="prompt in assistantPrompts"
-          :key="prompt"
-          :to="{ path: '/assistant', query: { q: prompt } }"
-          class="prompt-item prompt-link"
-        >
-          {{ prompt }}
-        </RouterLink>
-      </div>
-
-      <div class="mode-chips">
-        <span>智慧测评专家</span>
-        <span>个性化学习规划师</span>
-        <span>基础薄弱导航</span>
-      </div>
-
-      <div class="chat-input">
-        <span>请输入问题，或点击示例问题快速开始</span>
-        <RouterLink to="/assistant" class="voice-btn">◎</RouterLink>
-      </div>
-    </article>
-
-    <article class="ability-card">
-      <div class="card-toolbar">
-        <div class="mini-tabs dark">
-          <span class="mini-tab active">成长摘要</span>
-          <span class="mini-tab">能力趋势</span>
-        </div>
-        <RouterLink to="/growth" class="toolbar-link">查看</RouterLink>
-      </div>
-
-      <div class="ability-header">
-        <h3>当前学习概况</h3>
-        <p>首页只保留最关键的成长信号，更完整的能力画像和热力图放在成长分析页查看。</p>
-      </div>
-
-      <div class="ability-summary-list">
-        <div v-for="item in growthInsights" :key="item.label" class="ability-summary-item">
-          <div class="analysis-top">
-            <span>{{ item.label }}</span>
-            <strong>{{ item.value }}%</strong>
+    <!-- Domain Sections -->
+    <div class="domain-content">
+      <section
+        v-for="domain in filteredDomains"
+        :key="domain.id"
+        :id="`domain-${domain.id}`"
+        :data-domain-id="domain.id"
+        class="domain-section"
+      >
+        <div class="domain-heading">
+          <div>
+            <h2>{{ domain.name }}</h2>
+            <p class="domain-desc">{{ domain.desc }}</p>
           </div>
-          <div class="progress-track soft compact">
-            <div class="progress-fill" :style="{ width: `${item.value}%` }"></div>
-          </div>
+          <span class="domain-count">{{ domain.points.length }} 个知识点</span>
         </div>
-      </div>
 
-      <RouterLink to="/growth" class="ability-cta">
-        进入成长分析查看完整雷达图和知识点热力图
-      </RouterLink>
-    </article>
-  </section>
+        <div class="point-grid">
+          <RouterLink
+            v-for="p in domain.points"
+            :key="p.id"
+            :to="p.route"
+            class="point-card"
+          >
+            <div class="point-head">
+              <span class="point-level" :class="p.level">{{ p.levelLabel }}</span>
+              <span v-if="p.recommend" class="point-rec">{{ p.recommend }}</span>
+            </div>
+            <h3 class="point-name">{{ p.name }}</h3>
+            <p class="point-desc">{{ p.description }}</p>
+            <div class="point-bar-row">
+              <div class="point-bar">
+                <div class="point-bar-fill" :style="{ width: `${p.mastery}%` }"></div>
+              </div>
+              <span class="point-pct">{{ p.mastery }}%</span>
+            </div>
+          </RouterLink>
+        </div>
+      </section>
 
-  <section class="value-strip">
-    <article v-for="card in valueCards" :key="card.title" class="value-pill-card">
-      <span class="section-tag">{{ card.title }}</span>
-      <p>{{ card.description }}</p>
-    </article>
-  </section>
-
-  <section class="curriculum-section">
-    <div class="section-head">
-      <div>
-        <span class="section-tag">知识点学习空间</span>
-        <h2>从知识点出发组织跨课程学习</h2>
-      </div>
-      <div class="search-box">搜索知识点</div>
-    </div>
-    <div class="filter-row">
-      <span class="filter-pill active">图谱目录</span>
-      <span v-for="item in curriculumFilters" :key="item" class="filter-pill">{{ item }}</span>
+      <p v-if="filteredDomains.length === 0" class="learn-empty">没有找到匹配的知识点</p>
     </div>
 
-    <div class="loop-section">
-      <div class="section-head compact">
-        <div>
-          <span class="section-tag">学练测荐</span>
-          <h2>选择一个阶段继续学习</h2>
-        </div>
-        <p>每个阶段单独成页，帮助你在清晰的学习路径里完成导学、练习、测评和推荐。</p>
+    <!-- Cross-course Recommendations -->
+    <section class="cross-section">
+      <div class="cross-heading">
+        <h2>跨课程推荐路径</h2>
+        <p>根据你的薄弱点、目标方向和兴趣偏好，动态生成补弱、进阶和场景化路径。</p>
       </div>
-
-      <div class="loop-tabs">
+      <div class="cross-list">
         <RouterLink
-          v-for="stage in stageTabs"
-          :key="stage.id"
-          :to="`/flow/${stage.id}`"
-          class="tab-btn tab-link"
-        >
-          <span>{{ stage.label }}</span>
-          {{ stage.title }}
-        </RouterLink>
-      </div>
-
-      <div class="focus-card">
-        <div class="focus-row">
-          <span class="panel-label">推荐学习顺序</span>
-          <span class="status-pill">可跳转</span>
-        </div>
-        <h3>先补弱点，再做练习，再通过短测验证，最后进入跨课程推荐路径。</h3>
-        <div class="focus-meta">
-          <span>核心目标</span>
-          <strong>让学习围绕知识点掌握推进，而不是被课程章节顺序绑住。</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-grid">
-      <RouterLink v-for="card in knowledgeCards" :key="card.id" :to="card.route" class="knowledge-card">
-        <div class="knowledge-top">
-          <span class="knowledge-type">{{ card.type }}</span>
-          <span class="progress-circle">{{ card.progress }}%</span>
-        </div>
-        <h3>{{ card.title }}</h3>
-        <p>{{ card.domain }} · {{ card.tag }}</p>
-        <div class="progress-track">
-          <div class="progress-fill" :style="{ width: `${card.progress}%` }"></div>
-        </div>
-      </RouterLink>
-    </div>
-
-    <article class="path-card homepage-path-card">
-      <div class="section-head compact">
-        <div>
-          <span class="section-tag">跨课程推荐</span>
-          <h2>下一步学习路径</h2>
-        </div>
-        <p>系统会把补弱推荐、进阶推荐和场景推荐组织成一条可执行路径。</p>
-      </div>
-
-      <div class="path-list">
-        <RouterLink
-          v-for="item in recommendedPath"
-          :key="item.stage"
+          v-for="item in pathItems"
+          :key="item.title"
           :to="item.route"
-          class="path-item path-link"
+          class="cross-item"
         >
-          <div class="path-stage">{{ item.stage }}</div>
-          <div class="path-content">
+          <span class="cross-type">{{ item.stage }}</span>
+          <div class="cross-body">
             <h3>{{ item.title }}</h3>
             <p>{{ item.detail }}</p>
           </div>
         </RouterLink>
       </div>
-    </article>
-  </section>
+    </section>
+  </div>
 </template>

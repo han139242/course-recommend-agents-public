@@ -1,35 +1,5 @@
 <script setup>
-import { reactive, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-
-import { register } from '../auth'
-
-const router = useRouter()
-
-const submitting = ref(false)
-const errorMessage = ref('')
-
-const form = reactive({
-  name: '',
-  email: '',
-  password: '',
-  role: '人工智能专业学生',
-  target: '',
-})
-
-async function handleSubmit() {
-  submitting.value = true
-  errorMessage.value = ''
-
-  try {
-    await register(form)
-    router.push('/profile')
-  } catch (error) {
-    errorMessage.value = error.message
-  } finally {
-    submitting.value = false
-  }
-}
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
@@ -45,47 +15,19 @@ async function handleSubmit() {
         <div class="section-head compact">
           <div>
             <span class="section-tag">注册</span>
-            <h2>开始建立个人学习档案</h2>
+            <h2>当前阶段不开放自主注册</h2>
           </div>
         </div>
 
-        <form class="auth-form" @submit.prevent="handleSubmit">
-          <label class="auth-field">
-            <span>姓名</span>
-            <input v-model.trim="form.name" type="text" placeholder="请输入姓名" autocomplete="name" />
-          </label>
-
-          <label class="auth-field">
-            <span>邮箱</span>
-            <input v-model.trim="form.email" type="email" placeholder="请输入邮箱" autocomplete="email" />
-          </label>
-
-          <label class="auth-field">
-            <span>密码</span>
-            <input
-              v-model="form.password"
-              type="password"
-              placeholder="至少 6 位密码"
-              autocomplete="new-password"
-            />
-          </label>
-
-          <label class="auth-field">
-            <span>身份角色</span>
-            <input v-model.trim="form.role" type="text" placeholder="如：人工智能专业学生" />
-          </label>
-
-          <label class="auth-field">
-            <span>目标方向</span>
-            <input v-model.trim="form.target" type="text" placeholder="如：算法工程师 / 智能体应用开发" />
-          </label>
-
-          <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
-
-          <button class="auth-submit" type="submit" :disabled="submitting">
-            {{ submitting ? '注册中...' : '注册并进入学习空间' }}
-          </button>
-        </form>
+        <div class="auth-form">
+          <p class="auth-side-copy">
+            根据当前 API 契约，学生账号由教师或管理员统一导入创建，前端不再直接提交注册请求。
+          </p>
+          <p class="auth-side-copy">
+            如果你需要体验学生端页面，请让教师先分配账号，或使用已有测试账号直接登录。
+          </p>
+          <RouterLink to="/login" class="auth-submit">返回登录</RouterLink>
+        </div>
       </article>
 
       <aside class="auth-side">

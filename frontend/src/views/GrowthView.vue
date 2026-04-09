@@ -23,10 +23,11 @@ const heatmapRows = computed(() => profileData.value.heatmapRows || [])
 const radarPolygon = computed(() => {
   const center = 130
   const radius = 88
+  const axes = growthRadarAxes.value
 
-  return growthRadarAxes
+  return axes
     .map((item, index) => {
-      const angle = -Math.PI / 2 + (index * Math.PI * 2) / growthRadarAxes.length
+      const angle = -Math.PI / 2 + (index * Math.PI * 2) / axes.length
       const scoreRadius = radius * (item.value / 100)
       const x = center + scoreRadius * Math.cos(angle)
       const y = center + scoreRadius * Math.sin(angle)
@@ -38,9 +39,10 @@ const radarPolygon = computed(() => {
 const radarAxes = computed(() => {
   const center = 130
   const radius = 88
+  const axes = growthRadarAxes.value
 
-  return growthRadarAxes.map((item, index) => {
-    const angle = -Math.PI / 2 + (index * Math.PI * 2) / growthRadarAxes.length
+  return axes.map((item, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI * 2) / axes.length
     return {
       ...item,
       x: center + radius * Math.cos(angle),
@@ -55,10 +57,11 @@ const radarAxes = computed(() => {
 function guidePolygon(scale) {
   const center = 130
   const radius = 88 * scale
+  const axes = growthRadarAxes.value
 
-  return growthRadarAxes
+  return axes
     .map((_, index) => {
-      const angle = -Math.PI / 2 + (index * Math.PI * 2) / growthRadarAxes.length
+      const angle = -Math.PI / 2 + (index * Math.PI * 2) / axes.length
       const x = center + radius * Math.cos(angle)
       const y = center + radius * Math.sin(angle)
       return `${x},${y}`

@@ -28,13 +28,16 @@ function logout() {
   <div class="page-shell">
     <header class="app-header">
       <div class="banner-top">
-        <button class="back-btn" aria-label="返回" @click="goBack">←</button>
+        <div class="header-left">
+          <button class="back-btn" aria-label="返回" @click="goBack">←</button>
+          <span class="brand-text">AI 知识推荐</span>
+        </div>
         <div class="header-actions">
-        <RouterLink :to="profileRoute" class="profile-pill">
-          <div class="avatar-dot"></div>
-          <span>{{ profileLabel }}</span>
-        </RouterLink>
-        <button v-if="authState.user" class="header-logout" @click="logout">退出</button>
+          <RouterLink :to="profileRoute" class="profile-pill">
+            <div class="avatar-dot"></div>
+            <span>{{ profileLabel }}</span>
+          </RouterLink>
+          <button v-if="authState.user" class="header-logout" @click="logout">退出</button>
         </div>
       </div>
 
