@@ -23,14 +23,15 @@ func NewStateService(redisRepo *learningrepo.RedisRepository, mysqlRepo learning
 }
 
 // SnapshotMastery 增量更新掌握度并按需要回写快照。
-func (s *StateService) SnapshotMastery(ctx context.Context, studentID int64, knowledgeID string, _ float64, answeredAt time.Time, correct bool) (bool, error) {
+func (s *StateService) SnapshotMastery(ctx context.Context, studentID int64, knowledgeID string, _ float64, answeredAt time.Time, correct bool) (learningentity.MasteryState, bool, error) {
 	if s.redisRepo != nil && s.redisRepo.Enabled() {
-		if _, err := s.redisRepo.RecordAnswer(ctx, studentID, knowledgeID, correct, answeredAt); err == nil {
-			return false, nil
+		state, err := s.redisRepo.RecordAnswer(ctx, studentID, knowledgeID, correct, answeredAt)
+		if err == nil {
+			return state, false, nil
 		}
 	}
 	// Redis 不可用时只返回降级标记，不伪造学习进度快照，避免把本次增量错误写成完整状态。
-	return true, nil
+	return learningentity.MasteryState{KnowledgeID: knowledgeID}, true, nil
 }
 
 // GetLearningProgress 查询学习进度，优先读 Redis，失败时回源 MySQL。
@@ -109,6 +110,18 @@ func progressStatus(score float64) string {
 		return "progressing"
 	}
 	return learningentity.LearningStatusNotStarted
+}
+
+// GetMasteryStates 读取当前学生掌握度状态，供异步图谱写入使用。
+func (s *StateService) GetMasteryStates(ctx context.Context, studentID int64) (map[string]learningentity.MasteryState, error) {
+	if s.redisRepo == nil || !s.redisRepo.Enabled() {
+		return map[string]learningentity.MasteryState{}, nil
+	}
+	states, err := s.redisRepo.GetMasteryStates(ctx, studentID)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	return states, nil
 }
 
 func maxMastery(value float64, floor float64) float64 {

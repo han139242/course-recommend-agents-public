@@ -20,6 +20,7 @@ func RequestID() gin.HandlerFunc {
 
 		requestCtx := ctx.Request.Context()
 		requestCtx = ctxmeta.WithTraceID(requestCtx, traceID)
+		requestCtx = ctxmeta.WithRequestID(requestCtx, requestID)
 		ctx.Request = ctx.Request.WithContext(requestCtx)
 
 		ctx.Set(constant.ContextRequestID, requestID)

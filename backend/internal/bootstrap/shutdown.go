@@ -16,6 +16,12 @@ func (a *App) registerShutdownJobs() {
 		},
 	}
 
+	if a.GraphWriter != nil && a.GraphWriter.Service != nil {
+		a.shutdownJobs = append(a.shutdownJobs, func(ctx context.Context) error {
+			return a.GraphWriter.Service.Stop(ctx)
+		})
+	}
+
 	if a.Redis != nil {
 		a.shutdownJobs = append(a.shutdownJobs, func(_ context.Context) error {
 			return a.Redis.Close()

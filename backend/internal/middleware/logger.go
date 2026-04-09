@@ -16,14 +16,26 @@ func Logger(logger *applogger.Logger) gin.HandlerFunc {
 		startedAt := time.Now()
 		ctx.Next()
 
-		logger.WithCtx(ctx.Request.Context()).Info(
-			"请求完成",
+		latency := time.Since(startedAt)
+		path := ctx.FullPath()
+		if path == "" {
+			path = ctx.Request.URL.Path
+		}
+		fields := []applogger.Field{
 			applogger.String("method", ctx.Request.Method),
-			applogger.String("path", ctx.FullPath()),
+			applogger.String("path", path),
 			applogger.String("raw_path", ctx.Request.URL.Path),
 			applogger.String("client_ip", ctx.ClientIP()),
 			applogger.Int("status", ctx.Writer.Status()),
-			applogger.String("latency", time.Since(startedAt).String()),
-		)
+			applogger.Duration("latency", latency),
+			applogger.Int("body_size", ctx.Writer.Size()),
+			applogger.String("user_agent", ctx.Request.UserAgent()),
+		}
+		if latency >= 500*time.Millisecond {
+			fields = append(fields, applogger.Bool("slow_request", true))
+			logger.WithCtx(ctx.Request.Context()).Warn("检测到慢请求", fields...)
+			return
+		}
+		logger.WithCtx(ctx.Request.Context()).Info("请求完成", fields...)
 	}
 }

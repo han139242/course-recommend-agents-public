@@ -11,13 +11,15 @@ import (
 // Module 聚合图谱模块依赖。
 type Module struct {
 	Handler *graphhandler.Handler
+	Service *graphservice.Service
+	Repo    *graphrepo.Neo4jRepository
 }
 
 // New 创建图谱模块。
 func New(driver neo4j.DriverWithContext) *Module {
 	repo := graphrepo.NewNeo4jRepository(driver)
 	service := graphservice.New(repo)
-	return &Module{Handler: graphhandler.New(service)}
+	return &Module{Handler: graphhandler.New(service), Service: service, Repo: repo}
 }
 
 // RegisterRoutes 注册图谱路由。

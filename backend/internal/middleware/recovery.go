@@ -20,6 +20,8 @@ func Recovery(logger *applogger.Logger) gin.HandlerFunc {
 				logger.WithCtx(ctx.Request.Context()).Error(
 					"请求发生 panic",
 					applogger.Any("panic", fmt.Sprint(recovered)),
+					applogger.String("method", ctx.Request.Method),
+					applogger.String("path", ctx.Request.URL.Path),
 				)
 				result.Error(ctx, apperr.ErrInternal.HTTPStatus, apperr.ErrInternal.Code, apperr.ErrInternal.Message)
 				ctx.Abort()

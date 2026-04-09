@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	frontiermodule "github.com/han139242/course-recommend-agents/backend/internal/module/frontier"
+	graphwritermodule "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter"
+	graphwriterrepo "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/repository"
+	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -17,14 +21,16 @@ import (
 // 该结构体只负责承载启动阶段已经准备好的基础设施对象，
 // 便于入口层统一管理生命周期与停机顺序。
 type App struct {
-	Config       config.Config
-	Logger       *applogger.Logger
-	MySQL        *gorm.DB
-	Redis        *redis.Client
-	Neo4j        neo4j.DriverWithContext
-	Router       http.Handler
-	HTTPServer   *http.Server
-	shutdownJobs []func(context.Context) error
+	Config        config.Config
+	Logger        *applogger.Logger
+	MySQL         *gorm.DB
+	Redis         *redis.Client
+	Neo4j         neo4j.DriverWithContext
+	GraphWriter   *graphwritermodule.Module
+	Frontier      *frontiermodule.Module
+	Router        http.Handler
+	HTTPServer    *http.Server
+	shutdownJobs  []func(context.Context) error
 }
 
 // New 创建应用实例。
@@ -58,13 +64,17 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("初始化 Neo4j 失败: %w", err)
 	}
 	teacherModule := NewTeacherModule(mysqlDB, redisClient)
-	learningModule := NewLearningModule(mysqlDB, redisClient)
 	graphModule := NewGraphModule(neo4jDriver)
+	graphWriterService := graphwriterservice.New(logger, graphwriterrepo.NewNeo4jWriterRepository(neo4jDriver), redisClient, cfg.GraphWriter)
+	graphWriterModule := graphwritermodule.New(graphWriterService)
+	learningModule := NewLearningModule(mysqlDB, redisClient, authModule.AuthService, graphWriterService)
 	competencyModule := NewCompetencyModule(redisClient, authModule.AuthService)
 	recommendModule := NewRecommendModule(neo4jDriver, redisClient)
 	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
+	frontierModule := frontiermodule.New(graphModule.Repo)
+	graphWriterService.Start(context.TODO())
 
-	r := NewRouter(logger, authModule, teacherModule, learningModule, graphModule, competencyModule, recommendModule, dashboardModule)
+	r := NewRouter(logger, cfg, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, dashboardModule, frontierModule)
 	server := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port),
 		Handler:      r,
@@ -73,13 +83,15 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	app := &App{
-		Config:     cfg,
-		Logger:     logger,
-		MySQL:      mysqlDB,
-		Redis:      redisClient,
-		Neo4j:      neo4jDriver,
-		Router:     r,
-		HTTPServer: server,
+		Config:      cfg,
+		Logger:      logger,
+		MySQL:       mysqlDB,
+		Redis:       redisClient,
+		Neo4j:       neo4jDriver,
+		GraphWriter: graphWriterModule,
+		Frontier:    frontierModule,
+		Router:      r,
+		HTTPServer:  server,
 	}
 
 	app.registerShutdownJobs()

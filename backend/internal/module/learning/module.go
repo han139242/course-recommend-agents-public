@@ -2,6 +2,8 @@ package learning
 
 import (
 	"github.com/gin-gonic/gin"
+	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
+	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learninghandler "github.com/han139242/course-recommend-agents/backend/internal/module/learning/handler"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
 	learningservice "github.com/han139242/course-recommend-agents/backend/internal/module/learning/service"
@@ -15,9 +17,9 @@ type Module struct {
 }
 
 // New 创建学习模块。
-func New(db *gorm.DB, redisClient *redis.Client) *Module {
+func New(db *gorm.DB, redisClient *redis.Client, authService *authservice.AuthService, graphWriter *graphwriterservice.Service) *Module {
 	repo := learningrepo.NewMySQLRepository(db)
-	service := learningservice.New(repo, redisClient)
+	service := learningservice.New(repo, redisClient, authService, graphWriter)
 	return &Module{Handler: learninghandler.New(service)}
 }
 

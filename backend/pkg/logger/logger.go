@@ -61,12 +61,18 @@ func (l *Logger) WithCtx(ctx context.Context) *Entry {
 		ctx = context.Background()
 	}
 
-	fields := make([]Field, 0, 2)
+	fields := make([]Field, 0, 4)
 	if traceID := ctxmeta.TraceID(ctx); traceID != "" {
 		fields = append(fields, zap.String("trace_id", traceID))
 	}
+	if requestID := ctxmeta.RequestID(ctx); requestID != "" {
+		fields = append(fields, zap.String("request_id", requestID))
+	}
 	if userID := ctxmeta.UserID(ctx); userID != "" {
 		fields = append(fields, zap.String("user_id", userID))
+	}
+	if role := ctxmeta.Role(ctx); role != "" {
+		fields = append(fields, zap.String("role", role))
 	}
 
 	return &Entry{
@@ -112,6 +118,21 @@ func String(key string, value string) Field {
 // Int 构造整数字段。
 func Int(key string, value int) Field {
 	return zap.Int(key, value)
+}
+
+// Int64 构造长整数字段。
+func Int64(key string, value int64) Field {
+	return zap.Int64(key, value)
+}
+
+// Bool 构造布尔字段。
+func Bool(key string, value bool) Field {
+	return zap.Bool(key, value)
+}
+
+// Duration 构造耗时字段。
+func Duration(key string, value interface{ String() string }) Field {
+	return zap.String(key, value.String())
 }
 
 // Any 构造任意类型字段。

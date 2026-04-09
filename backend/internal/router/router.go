@@ -1,12 +1,17 @@
 package router
 
 import (
+	"net/http/pprof"
+
 	"github.com/gin-gonic/gin"
+	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	"github.com/han139242/course-recommend-agents/backend/internal/middleware"
 	authmodule "github.com/han139242/course-recommend-agents/backend/internal/module/auth"
 	competencymodule "github.com/han139242/course-recommend-agents/backend/internal/module/competency"
 	dashboardmodule "github.com/han139242/course-recommend-agents/backend/internal/module/dashboard"
+	frontiermodule "github.com/han139242/course-recommend-agents/backend/internal/module/frontier"
 	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
+	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningmodule "github.com/han139242/course-recommend-agents/backend/internal/module/learning"
 	recommendmodule "github.com/han139242/course-recommend-agents/backend/internal/module/recommend"
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
@@ -18,7 +23,7 @@ import (
 //
 // 路由层只负责统一挂载中间件、健康检查与模块路由，
 // 不在此处处理业务编排，避免入口层承担过多职责。
-func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, cfg config.Config, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -27,15 +32,14 @@ func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule 
 
 	engine.GET("/healthz", func(ctx *gin.Context) {
 		result.Success(ctx, gin.H{
-			"status": "ok",
+			"status":       "ok",
+			"buildVersion": cfg.Observability.BuildVersion,
+			"buildCommit":  cfg.Observability.BuildCommit,
+			"buildTime":    cfg.Observability.BuildTime,
 		})
 	})
 
-	engine.GET("/readyz", func(ctx *gin.Context) {
-		result.Success(ctx, gin.H{
-			"status": "ready",
-		})
-	})
+	registerRuntimeRoutes(engine, cfg, graphWriter)
 
 	api := engine.Group("/api")
 
@@ -65,10 +69,20 @@ func New(logger *applogger.Logger, authModule *authmodule.Module, teacherModule 
 	recommendModule.RegisterRoutes(recommendGroup)
 	dashboardGroup := authGroup.Group("/dashboard")
 	dashboardModule.RegisterRoutes(dashboardGroup)
+	frontierGroup := api.Group("/frontier")
+	frontierModule.RegisterRoutes(frontierGroup)
 	graphGroup := api.Group("/graph")
 	graphModule.RegisterRoutes(graphGroup)
 	knowledgeGroup := api.Group("/knowledge")
 	graphModule.RegisterKnowledgeRoutes(knowledgeGroup)
+	if cfg.Observability.EnablePprof && cfg.App.Env != "production" {
+		pprofGroup := engine.Group("/debug/pprof")
+		pprofGroup.GET("/", gin.WrapF(pprof.Index))
+		pprofGroup.GET("/cmdline", gin.WrapF(pprof.Cmdline))
+		pprofGroup.GET("/profile", gin.WrapF(pprof.Profile))
+		pprofGroup.GET("/symbol", gin.WrapF(pprof.Symbol))
+		pprofGroup.GET("/trace", gin.WrapF(pprof.Trace))
+	}
 
 	return engine
 }

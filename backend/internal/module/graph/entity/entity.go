@@ -25,9 +25,37 @@ type Edge struct {
 // KnowledgeDetail 表示知识点详情。
 type KnowledgeDetail struct {
 	Node
-	Summary         string
-	Prerequisites   []string
-	Related         []string
-	Scenarios       []string
-	ParentTopics    []string
+	Summary       string
+	Prerequisites []string
+	Related       []string
+	Scenarios     []string
+	ParentTopics  []string
+}
+
+// FrontierTopic 表示知识点关联的前沿主题。
+type FrontierTopic struct {
+	TopicID string
+	Name    string
+	Reason  string
+}
+
+// FrontierPaper 表示知识点关联的代表论文。
+type FrontierPaper struct {
+	PaperID string
+	Title   string
+	Venue   string
+	Year    int
+	URL     string
+}
+
+// FrontierBriefing 表示知识点的前沿扩展摘要。
+type FrontierBriefing struct {
+	KnowledgeID   string
+	Status        string
+	Knowledge     string
+	Message       string
+	DigestSummary string
+	Topics        []FrontierTopic
+	Papers        []FrontierPaper
+	GeneratedAt   string
 }

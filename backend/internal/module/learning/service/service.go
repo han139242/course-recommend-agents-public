@@ -6,6 +6,10 @@ import (
 	"strings"
 	"time"
 
+	authdto "github.com/han139242/course-recommend-agents/backend/internal/module/auth/dto"
+	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
+	graphwriterentity "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/entity"
+	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningdto "github.com/han139242/course-recommend-agents/backend/internal/module/learning/dto"
 	learningentity "github.com/han139242/course-recommend-agents/backend/internal/module/learning/entity"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
@@ -15,20 +19,31 @@ import (
 )
 
 // Service 提供题库与答题业务能力。
+type authReader interface {
+	GetCurrentUser(ctx context.Context, userID int64) (*authdto.AuthUserView, error)
+}
+
+type stateReader interface {
+	SnapshotMastery(ctx context.Context, studentID int64, knowledgeID string, delta float64, answeredAt time.Time, correct bool) (learningentity.MasteryState, bool, error)
+	GetLearningProgress(ctx context.Context, studentID int64) (*learningdto.LearningProgressResponse, bool, error)
+}
+
 type Service struct {
 	repo         learningrepo.Repository
 	redis        *redis.Client
-	stateService *StateService
+	authService  authReader
+	graphWriter  *graphwriterservice.Service
+	stateService stateReader
 }
 
 // New 创建学习模块服务。
-func New(repo learningrepo.Repository, redisClient *redis.Client) *Service {
+func New(repo learningrepo.Repository, redisClient *redis.Client, authService *authservice.AuthService, graphWriter *graphwriterservice.Service) *Service {
 	redisRepo := learningrepo.NewRedisRepository(redisClient)
 	var stateRepo learningrepo.StateRepository
 	if mysqlRepo, ok := repo.(*learningrepo.MySQLRepository); ok {
 		stateRepo = learningrepo.NewStateMySQLRepository(mysqlRepo.DB())
 	}
-	return &Service{repo: repo, redis: redisClient, stateService: NewStateService(redisRepo, stateRepo)}
+	return &Service{repo: repo, redis: redisClient, authService: authService, graphWriter: graphWriter, stateService: NewStateService(redisRepo, stateRepo)}
 }
 
 // ImportQuestions 教师批量导题。
@@ -126,10 +141,11 @@ func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAn
 			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 		}
 	}
-	degraded, stateErr := s.stateService.SnapshotMastery(ctx, studentID, strings.TrimSpace(request.KnowledgeID), masteryDelta(result), answeredAt, result.Correct)
+	state, degraded, stateErr := s.stateService.SnapshotMastery(ctx, studentID, strings.TrimSpace(request.KnowledgeID), masteryDelta(result), answeredAt, result.Correct)
 	if stateErr != nil {
 		return nil, stateErr
 	}
+	s.enqueueGraphSync(ctx, studentID, answeredAt, state)
 	response := &learningdto.SubmitAnswerResponse{Accepted: result.Accepted, QuestionID: result.QuestionID, KnowledgeID: result.KnowledgeID, Degraded: degraded || s.redis == nil || result.Degraded}
 	return response, nil
 }
@@ -256,6 +272,50 @@ func hasOptionKey(options []learningentity.QuestionOption, key string) bool {
 		}
 	}
 	return false
+}
+
+func (s *Service) enqueueGraphSync(ctx context.Context, studentID int64, answeredAt time.Time, state learningentity.MasteryState) bool {
+	if s.graphWriter == nil || !s.graphWriter.Enabled() {
+		return false
+	}
+	profile, ok := s.loadGraphProfile(ctx, studentID)
+	if !ok {
+		return false
+	}
+	if strings.TrimSpace(state.KnowledgeID) == "" {
+		return false
+	}
+	event := graphwriterentity.ProfileUpdateEvent{
+		StudentID: studentID,
+		Identity: graphwriterentity.ProfileIdentity{
+			Name:   profile.Name,
+			Target: profile.Target,
+		},
+		UpdatedAt: answeredAt,
+		TraceID:   ctxmeta.TraceID(ctx),
+		Source:    "learning.submit_answer",
+		Relations: []graphwriterentity.CompetencyRelation{{
+			KnowledgeID:   state.KnowledgeID,
+			MasteryScore:  state.MasteryScore,
+			AnsweredCount: state.AnsweredCount,
+			CorrectCount:  state.CorrectCount,
+		}},
+	}
+	return s.graphWriter.Enqueue(ctx, event)
+}
+
+func (s *Service) loadGraphProfile(ctx context.Context, studentID int64) (graphwriterentity.ProfileIdentity, bool) {
+	if s.authService == nil {
+		return graphwriterentity.ProfileIdentity{}, false
+	}
+	userView, err := s.authService.GetCurrentUser(ctx, studentID)
+	if err != nil {
+		return graphwriterentity.ProfileIdentity{}, false
+	}
+	if strings.TrimSpace(userView.Name) == "" {
+		return graphwriterentity.ProfileIdentity{}, false
+	}
+	return graphwriterentity.ProfileIdentity{Name: userView.Name, Target: userView.Target}, true
 }
 
 func toTeacherQuestionViews(items []learningentity.Question) []learningdto.TeacherQuestionView {
