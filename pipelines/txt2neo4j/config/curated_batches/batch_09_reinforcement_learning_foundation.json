@@ -103,13 +103,13 @@
     }
   ],
   "relations": [
-    ["智能体-环境交互", "强化学习", "PREREQUISITE_OF"],
+    ["智能体-环境交互", "强化学习", "SUBTOPIC_OF"],
     ["状态", "马尔可夫决策过程", "PREREQUISITE_OF"],
     ["动作", "马尔可夫决策过程", "PREREQUISITE_OF"],
     ["奖励", "马尔可夫决策过程", "PREREQUISITE_OF"],
-    ["回报", "强化学习", "PREREQUISITE_OF"],
+    ["回报", "强化学习", "SUBTOPIC_OF"],
     ["折扣因子", "回报", "PREREQUISITE_OF"],
-    ["策略", "强化学习", "PREREQUISITE_OF"],
+    ["策略", "强化学习", "SUBTOPIC_OF"],
     ["状态价值函数", "强化学习", "SUBTOPIC_OF"],
     ["动作价值函数", "强化学习", "SUBTOPIC_OF"],
     ["状态价值函数", "贝尔曼方程", "PREREQUISITE_OF"],

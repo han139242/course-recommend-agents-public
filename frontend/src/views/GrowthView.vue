@@ -2,10 +2,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import { fetchCompetencyProfile } from '../auth'
+import { fetchCompetencyProfile, fetchLearningProgress } from '../auth'
+import { buildAbilitySnapshot } from '../utils/learningAnalytics'
 
 const loading = ref(true)
 const errorMessage = ref('')
+const fallbackSnapshot = ref(buildAbilitySnapshot())
 const profileData = ref({
   radarAxes: [],
   growthInsights: [],
@@ -14,11 +16,45 @@ const profileData = ref({
   heatmapRows: [],
 })
 
-const growthRadarAxes = computed(() => profileData.value.radarAxes || [])
-const growthInsights = computed(() => profileData.value.growthInsights || [])
-const growthSummaryCards = computed(() => profileData.value.growthSummaryCards || [])
-const heatmapDomains = computed(() => profileData.value.heatmapDomains || [])
-const heatmapRows = computed(() => profileData.value.heatmapRows || [])
+function hasUsableProfile(data) {
+  return Boolean(
+    (data?.radarAxes || []).length >= 3 &&
+    (data?.growthSummaryCards || []).length &&
+    (data?.heatmapDomains || []).length >= 3 &&
+    (data?.heatmapRows || []).length,
+  )
+}
+
+const growthRadarAxes = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? profileData.value.radarAxes || []
+    : fallbackSnapshot.value.radarAxes
+))
+const growthInsights = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? profileData.value.growthInsights || []
+    : fallbackSnapshot.value.growthInsights
+))
+const growthSummaryCards = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? profileData.value.growthSummaryCards || []
+    : fallbackSnapshot.value.growthSummaryCards
+))
+const heatmapDomains = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? profileData.value.heatmapDomains || []
+    : fallbackSnapshot.value.heatmapDomains
+))
+const heatmapRows = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? profileData.value.heatmapRows || []
+    : fallbackSnapshot.value.heatmapRows
+))
+const profileSummary = computed(() => (
+  hasUsableProfile(profileData.value)
+    ? '能力图谱由知识图谱映射与当前掌握度共同生成，重点看哪条路径已经形成稳定能力、哪条路径还需要补。'
+    : fallbackSnapshot.value.profileSummary
+))
 
 const radarPolygon = computed(() => {
   const center = 130
@@ -82,6 +118,8 @@ async function loadProfile() {
   errorMessage.value = ''
 
   try {
+    const progress = await fetchLearningProgress().catch(() => ({ list: [] }))
+    fallbackSnapshot.value = buildAbilitySnapshot(progress.list || [])
     profileData.value = await fetchCompetencyProfile()
   } catch (error) {
     errorMessage.value = error.message
@@ -98,9 +136,9 @@ onMounted(() => {
 <template>
   <section class="growth-page">
     <div class="detail-hero">
-      <span class="section-tag">成长分析</span>
-      <h1>能力画像与知识点掌握热力</h1>
-      <p>把学习行为、练习结果和测评表现聚合成能力变化，帮助用户知道自己现在处在什么位置、下一步该补哪里。</p>
+      <span class="section-tag">能力图谱</span>
+      <h1>从知识路径，反推出你的能力结构</h1>
+      <p>{{ profileSummary }}</p>
     </div>
 
     <div class="growth-summary-grid">
@@ -115,9 +153,9 @@ onMounted(() => {
         <div class="section-head compact">
           <div>
             <span class="section-tag">能力雷达图</span>
-            <h2>跨课程能力表现</h2>
+            <h2>按知识路径聚合的能力表现</h2>
           </div>
-          <p>能力不是按课程拆开，而是看数学基础、机器学习、深度学习、知识图谱和场景能力是否同步成长。</p>
+          <p>不是看你刷了多少页面，而是看每条知识路径上的关键节点是否真正打通，再聚合成能力轴。</p>
         </div>
 
         <p v-if="loading" class="auth-side-copy">正在同步成长画像...</p>
@@ -169,10 +207,10 @@ onMounted(() => {
       <article class="growth-heatmap-card">
         <div class="section-head compact">
           <div>
-            <span class="section-tag">知识点热力图</span>
-            <h2>当前掌握分布</h2>
+            <span class="section-tag">路径热力图</span>
+            <h2>关键知识点分布</h2>
           </div>
-          <p>颜色越深代表掌握越高，浅色区域是后续补弱和推荐的重点。</p>
+          <p>横向看每条路径，纵向看关键知识点。浅色区域就是下一轮补强和推荐的重点。</p>
         </div>
 
         <div class="heatmap-table">

@@ -1,10 +1,8 @@
 export const navTabs = [
   { label: '知识学习', to: '/' },
   { label: 'AI 助学室', to: '/assistant' },
-  { label: '知识图谱', to: '/graph' },
-  { label: '问题图谱', to: '/question-graph' },
-  { label: '任务·作业·考试', to: '/tasks' },
-  { label: '成长分析', to: '/growth' },
+  { label: '学习路径', to: '/graph' },
+  { label: '能力图谱', to: '/growth' },
 ]
 
 export const profileData = {

@@ -87,5 +87,7 @@ func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisCli
 		pprofGroup.GET("/trace", gin.WrapF(pprof.Trace))
 	}
 
+	registerFrontendIntegrationRoutes(engine, cfg)
+
 	return engine
 }

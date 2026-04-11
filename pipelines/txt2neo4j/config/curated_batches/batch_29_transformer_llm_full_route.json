@@ -1,0 +1,255 @@
+{
+  "source": "batch_29_transformer_llm_full_route",
+  "nodes": [
+    {
+      "canonical_name": "词元",
+      "entity_type": "concept",
+      "description": "Transformer 输入序列中的最小离散单元，可对应字、子词或特殊标记。"
+    },
+    {
+      "canonical_name": "分词器",
+      "entity_type": "method",
+      "description": "将原始文本切分并映射为词元序列的文本预处理组件。"
+    },
+    {
+      "canonical_name": "子词分词",
+      "entity_type": "method",
+      "description": "在词与字符之间折中建模词表粒度的分词方法。"
+    },
+    {
+      "canonical_name": "BPE分词",
+      "entity_type": "algorithm",
+      "description": "通过频繁子串合并逐步构造子词词表的经典分词算法。"
+    },
+    {
+      "canonical_name": "SentencePiece",
+      "entity_type": "algorithm",
+      "description": "面向原始文本直接学习子词切分与词表的通用分词算法框架。"
+    },
+    {
+      "canonical_name": "位置编码",
+      "entity_type": "method",
+      "description": "为序列中每个词元注入位置信息以弥补自注意力顺序感知不足的方法。"
+    },
+    {
+      "canonical_name": "绝对位置编码",
+      "entity_type": "method",
+      "description": "为每个序列位置分配固定或可学习绝对索引表示的位置建模方法。"
+    },
+    {
+      "canonical_name": "相对位置编码",
+      "entity_type": "method",
+      "description": "通过词元之间相对距离建模位置信息的位置表示方法。"
+    },
+    {
+      "canonical_name": "旋转位置编码",
+      "entity_type": "method",
+      "description": "通过旋转变换将相对位置信息注入注意力计算的高效位置编码方法。"
+    },
+    {
+      "canonical_name": "查询向量",
+      "entity_type": "concept",
+      "description": "注意力机制中用于发起匹配请求并选择关注信息的向量表示。"
+    },
+    {
+      "canonical_name": "键向量",
+      "entity_type": "concept",
+      "description": "注意力机制中用于被查询匹配并参与相关性计算的向量表示。"
+    },
+    {
+      "canonical_name": "值向量",
+      "entity_type": "concept",
+      "description": "注意力机制中在权重加权后被聚合输出的内容向量表示。"
+    },
+    {
+      "canonical_name": "缩放点积注意力",
+      "entity_type": "method",
+      "description": "通过查询与键的点积相似度并结合缩放与 softmax 计算注意力权重的方法。"
+    },
+    {
+      "canonical_name": "自注意力",
+      "entity_type": "method",
+      "description": "让序列内每个位置与同一序列其他位置交互建模上下文依赖的方法。"
+    },
+    {
+      "canonical_name": "多头注意力",
+      "entity_type": "method",
+      "description": "并行使用多个注意力头从不同子空间建模关系的注意力机制。"
+    },
+    {
+      "canonical_name": "注意力掩码",
+      "entity_type": "method",
+      "description": "通过屏蔽特定位置来约束注意力可见范围与信息流向的方法。"
+    },
+    {
+      "canonical_name": "因果掩码",
+      "entity_type": "method",
+      "description": "禁止当前位置看到未来词元以实现自回归生成的掩码机制。"
+    },
+    {
+      "canonical_name": "前馈网络",
+      "entity_type": "concept",
+      "description": "位于注意力子层之后并对每个位置独立进行非线性变换的网络模块。"
+    },
+    {
+      "canonical_name": "Transformer编码器",
+      "entity_type": "concept",
+      "description": "由自注意力与前馈网络堆叠组成、侧重双向上下文建模的 Transformer 结构。"
+    },
+    {
+      "canonical_name": "Transformer解码器",
+      "entity_type": "concept",
+      "description": "结合因果掩码与自回归生成机制的 Transformer 序列建模结构。"
+    },
+    {
+      "canonical_name": "交叉注意力",
+      "entity_type": "method",
+      "description": "让解码端从另一序列或外部上下文读取信息的注意力机制。"
+    },
+    {
+      "canonical_name": "预训练",
+      "entity_type": "method",
+      "description": "先在大规模通用语料上学习通用表示或生成能力，再迁移到下游任务的训练阶段。"
+    },
+    {
+      "canonical_name": "下一个词预测",
+      "entity_type": "method",
+      "description": "根据历史上下文预测下一个词元的自回归训练目标。"
+    },
+    {
+      "canonical_name": "监督微调",
+      "entity_type": "method",
+      "description": "在预训练模型基础上利用高质量标注数据进行任务适配的微调方法。"
+    },
+    {
+      "canonical_name": "参数高效微调",
+      "entity_type": "method",
+      "description": "仅训练少量附加参数或低秩参数更新以降低微调成本的方法。"
+    },
+    {
+      "canonical_name": "LoRA",
+      "entity_type": "method",
+      "description": "通过在权重更新中引入低秩分解适配器实现参数高效微调的方法。"
+    },
+    {
+      "canonical_name": "提示调优",
+      "entity_type": "method",
+      "description": "仅优化软提示或前缀参数而非完整模型权重的参数高效调优方法。"
+    },
+    {
+      "canonical_name": "奖励模型",
+      "entity_type": "algorithm",
+      "description": "根据人类偏好数据学习输出质量评分函数以支持对齐优化的模型。"
+    },
+    {
+      "canonical_name": "直接偏好优化",
+      "entity_type": "method",
+      "description": "直接利用偏好对比数据优化语言模型行为的对齐方法。"
+    },
+    {
+      "canonical_name": "上下文学习",
+      "entity_type": "method",
+      "description": "模型在推理时仅依赖上下文示例而无需参数更新完成任务适配的能力。"
+    },
+    {
+      "canonical_name": "KV缓存",
+      "entity_type": "concept",
+      "description": "在自回归解码时复用历史键值张量以减少重复计算的推理缓存机制。"
+    },
+    {
+      "canonical_name": "上下文扩展",
+      "entity_type": "method",
+      "description": "通过架构改造或训练策略让模型稳定处理更长输入上下文的方法。"
+    },
+    {
+      "canonical_name": "稀疏注意力",
+      "entity_type": "method",
+      "description": "仅计算局部或选定位置之间注意力以降低长序列计算复杂度的方法。"
+    },
+    {
+      "canonical_name": "滑动窗口注意力",
+      "entity_type": "method",
+      "description": "让每个位置只关注固定局部窗口内词元以支持长上下文建模的稀疏注意力方法。"
+    },
+    {
+      "canonical_name": "推理加速",
+      "entity_type": "topic",
+      "description": "围绕降低大模型生成延迟与显存消耗开展的推理优化主题。"
+    },
+    {
+      "canonical_name": "推测解码",
+      "entity_type": "method",
+      "description": "利用草稿模型与验证模型协同生成以提升大模型解码吞吐的方法。"
+    }
+  ],
+  "relations": [
+    ["分词器", "分词", "RELATED_TO"],
+    ["分词器", "词元", "PREREQUISITE_OF"],
+    ["词元", "词嵌入", "PREREQUISITE_OF"],
+    ["词元", "上下文窗口", "PREREQUISITE_OF"],
+    ["分词器", "大语言模型", "PREREQUISITE_OF"],
+    ["子词分词", "分词器", "SUBTOPIC_OF"],
+    ["BPE分词", "子词分词", "SUBTOPIC_OF"],
+    ["SentencePiece", "子词分词", "SUBTOPIC_OF"],
+    ["子词分词", "子词表示", "RELATED_TO"],
+
+    ["位置编码", "Transformer", "PREREQUISITE_OF"],
+    ["绝对位置编码", "位置编码", "SUBTOPIC_OF"],
+    ["相对位置编码", "位置编码", "SUBTOPIC_OF"],
+    ["旋转位置编码", "位置编码", "SUBTOPIC_OF"],
+    ["旋转位置编码", "长上下文建模", "RELATED_TO"],
+    ["词嵌入", "Transformer", "PREREQUISITE_OF"],
+    ["位置编码", "词嵌入", "RELATED_TO"],
+
+    ["查询向量", "缩放点积注意力", "PART_OF"],
+    ["键向量", "缩放点积注意力", "PART_OF"],
+    ["值向量", "缩放点积注意力", "PART_OF"],
+    ["缩放点积注意力", "自注意力", "PREREQUISITE_OF"],
+    ["缩放点积注意力", "多头注意力", "PREREQUISITE_OF"],
+    ["自注意力", "Transformer", "PREREQUISITE_OF"],
+    ["自注意力", "注意力机制", "RELATED_TO"],
+    ["多头注意力", "Transformer", "PART_OF"],
+    ["多头注意力", "自注意力", "RELATED_TO"],
+    ["多头注意力", "视觉 Transformer", "PREREQUISITE_OF"],
+    ["注意力掩码", "Transformer", "PART_OF"],
+    ["因果掩码", "注意力掩码", "SUBTOPIC_OF"],
+    ["因果掩码", "因果语言模型", "PREREQUISITE_OF"],
+    ["前馈网络", "Transformer", "PART_OF"],
+    ["残差连接", "Transformer", "PART_OF"],
+    ["层归一化", "Transformer", "PART_OF"],
+    ["Transformer编码器", "Transformer", "PART_OF"],
+    ["Transformer解码器", "Transformer", "PART_OF"],
+    ["交叉注意力", "Transformer解码器", "PART_OF"],
+    ["Transformer编码器", "BERT", "PREREQUISITE_OF"],
+    ["Transformer解码器", "因果语言模型", "PREREQUISITE_OF"],
+    ["交叉注意力", "机器翻译", "PREREQUISITE_OF"],
+    ["交叉注意力", "问答系统", "RELATED_TO"],
+
+    ["预训练", "大语言模型", "PREREQUISITE_OF"],
+    ["下一个词预测", "预训练", "SUBTOPIC_OF"],
+    ["下一个词预测", "因果语言模型", "PREREQUISITE_OF"],
+    ["预训练", "监督微调", "PREREQUISITE_OF"],
+    ["监督微调", "指令微调", "RELATED_TO"],
+    ["参数高效微调", "监督微调", "SUBTOPIC_OF"],
+    ["LoRA", "参数高效微调", "SUBTOPIC_OF"],
+    ["提示调优", "参数高效微调", "SUBTOPIC_OF"],
+    ["参数高效微调", "大语言模型", "APPLIES_TO"],
+    ["奖励模型", "人类反馈强化学习", "PREREQUISITE_OF"],
+    ["奖励模型", "指令对齐", "PREREQUISITE_OF"],
+    ["监督微调", "直接偏好优化", "PREREQUISITE_OF"],
+    ["直接偏好优化", "指令对齐", "RELATED_TO"],
+    ["直接偏好优化", "人类反馈强化学习", "RELATED_TO"],
+    ["上下文学习", "提示学习", "RELATED_TO"],
+    ["上下文学习", "大语言模型", "RELATED_TO"],
+
+    ["KV缓存", "自回归生成", "PREREQUISITE_OF"],
+    ["KV缓存", "推理加速", "PREREQUISITE_OF"],
+    ["推理加速", "自回归生成", "RELATED_TO"],
+    ["推测解码", "推理加速", "SUBTOPIC_OF"],
+    ["上下文扩展", "长上下文建模", "SUBTOPIC_OF"],
+    ["稀疏注意力", "长上下文建模", "RELATED_TO"],
+    ["稀疏注意力", "上下文扩展", "PREREQUISITE_OF"],
+    ["滑动窗口注意力", "稀疏注意力", "SUBTOPIC_OF"],
+    ["旋转位置编码", "上下文扩展", "RELATED_TO"]
+  ]
+}

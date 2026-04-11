@@ -10,6 +10,7 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=build /out/server ./server
+COPY --from=build /src/web ./web
 RUN chmod 755 /app/server
 EXPOSE 8080
 USER nobody

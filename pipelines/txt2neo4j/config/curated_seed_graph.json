@@ -67,6 +67,31 @@
       "description": "研究机器人感知、控制、规划与自主行为的交叉领域。"
     },
     {
+      "canonical_name": "数学基础",
+      "entity_type": "topic",
+      "description": "支撑人工智能建模、推导、优化与评估的数学知识体系。"
+    },
+    {
+      "canonical_name": "线性代数",
+      "entity_type": "topic",
+      "description": "研究向量、矩阵与线性变换的数学基础，是机器学习和深度学习的重要前置知识。"
+    },
+    {
+      "canonical_name": "微积分",
+      "entity_type": "topic",
+      "description": "研究极限、导数与积分的数学基础，是梯度计算和优化方法的重要前置知识。"
+    },
+    {
+      "canonical_name": "概率统计",
+      "entity_type": "topic",
+      "description": "研究随机性建模、概率分布与统计推断的数学基础，是机器学习建模与评估的重要前置知识。"
+    },
+    {
+      "canonical_name": "最优化",
+      "entity_type": "topic",
+      "description": "研究目标函数求解、约束处理与参数优化方法的数学基础。"
+    },
+    {
       "canonical_name": "一阶谓词逻辑表示法",
       "entity_type": "method",
       "description": "用谓词逻辑形式化表示对象、属性与关系的知识表示方法。"
@@ -190,6 +215,16 @@
       "canonical_name": "深度学习",
       "entity_type": "topic",
       "description": "基于多层神经网络进行表示学习与任务建模的方法体系。"
+    },
+    {
+      "canonical_name": "数据集划分",
+      "entity_type": "method",
+      "description": "将数据划分为训练、验证与测试等不同用途子集的机器学习基础流程。"
+    },
+    {
+      "canonical_name": "泛化",
+      "entity_type": "concept",
+      "description": "模型在未见样本上保持稳定性能的能力。"
     },
     {
       "canonical_name": "概率图模型",
@@ -390,6 +425,19 @@
     ["多智能体系统", "人工智能", "SUBTOPIC_OF"],
     ["专家系统", "人工智能", "SUBTOPIC_OF"],
     ["机器人学", "人工智能", "SUBTOPIC_OF"],
+    ["数学基础", "人工智能", "SUBTOPIC_OF"],
+
+    ["线性代数", "数学基础", "SUBTOPIC_OF"],
+    ["微积分", "数学基础", "SUBTOPIC_OF"],
+    ["概率统计", "数学基础", "SUBTOPIC_OF"],
+    ["最优化", "数学基础", "SUBTOPIC_OF"],
+    ["线性代数", "机器学习", "PREREQUISITE_OF"],
+    ["微积分", "机器学习", "PREREQUISITE_OF"],
+    ["概率统计", "机器学习", "PREREQUISITE_OF"],
+    ["最优化", "机器学习", "PREREQUISITE_OF"],
+    ["线性代数", "深度学习", "PREREQUISITE_OF"],
+    ["微积分", "深度学习", "PREREQUISITE_OF"],
+    ["最优化", "深度学习", "PREREQUISITE_OF"],
 
     ["一阶谓词逻辑表示法", "知识表示", "SUBTOPIC_OF"],
     ["产生式表示法", "知识表示", "SUBTOPIC_OF"],
@@ -419,9 +467,23 @@
     ["迁移学习", "机器学习", "SUBTOPIC_OF"],
     ["表示学习", "机器学习", "SUBTOPIC_OF"],
     ["深度学习", "机器学习", "SUBTOPIC_OF"],
+    ["特征工程", "机器学习", "SUBTOPIC_OF"],
+    ["数据集划分", "机器学习", "SUBTOPIC_OF"],
+    ["模型评估", "机器学习", "SUBTOPIC_OF"],
+    ["损失函数", "机器学习", "SUBTOPIC_OF"],
+    ["正则化", "机器学习", "SUBTOPIC_OF"],
     ["概率图模型", "机器学习", "SUBTOPIC_OF"],
     ["生成式模型", "机器学习", "SUBTOPIC_OF"],
     ["判别式模型", "机器学习", "SUBTOPIC_OF"],
+    ["数据集划分", "训练集", "PART_OF"],
+    ["数据集划分", "验证集", "PART_OF"],
+    ["数据集划分", "测试集", "PART_OF"],
+    ["交叉验证", "模型评估", "SUBTOPIC_OF"],
+    ["数据集划分", "模型评估", "PREREQUISITE_OF"],
+    ["模型评估", "泛化", "RELATED_TO"],
+    ["过拟合", "泛化", "RELATED_TO"],
+    ["欠拟合", "泛化", "RELATED_TO"],
+    ["正则化", "泛化", "RELATED_TO"],
 
     ["分类", "监督学习", "SUBTOPIC_OF"],
     ["回归", "监督学习", "SUBTOPIC_OF"],
@@ -442,16 +504,31 @@
     ["策略梯度", "强化学习", "SUBTOPIC_OF"],
 
     ["感知机", "神经网络", "SUBTOPIC_OF"],
+    ["多层感知机", "神经网络", "SUBTOPIC_OF"],
     ["BP神经网络", "神经网络", "SUBTOPIC_OF"],
+    ["激活函数", "神经网络", "SUBTOPIC_OF"],
+    ["反向传播", "神经网络", "SUBTOPIC_OF"],
     ["神经网络", "深度学习", "PREREQUISITE_OF"],
     ["表示学习", "深度学习", "PREREQUISITE_OF"],
+    ["梯度下降", "最优化", "SUBTOPIC_OF"],
+    ["多层感知机", "激活函数", "PART_OF"],
+    ["梯度下降", "损失函数", "USES"],
+    ["反向传播", "损失函数", "USES"],
+    ["反向传播", "BP神经网络", "PREREQUISITE_OF"],
+    ["反向传播", "深度学习", "PREREQUISITE_OF"],
+    ["梯度下降", "深度学习", "PREREQUISITE_OF"],
+    ["多层感知机", "深度学习", "PREREQUISITE_OF"],
+    ["正则化", "深度学习", "RELATED_TO"],
     ["卷积神经网络", "深度学习", "SUBTOPIC_OF"],
     ["循环神经网络", "深度学习", "SUBTOPIC_OF"],
     ["注意力机制", "深度学习", "SUBTOPIC_OF"],
+    ["注意力机制", "Transformer", "PREREQUISITE_OF"],
     ["Transformer", "深度学习", "SUBTOPIC_OF"],
     ["BERT", "Transformer", "SUBTOPIC_OF"],
     ["Transformer", "大语言模型", "PREREQUISITE_OF"],
+    ["自监督学习", "大语言模型", "PREREQUISITE_OF"],
     ["大语言模型", "自然语言处理", "SUBTOPIC_OF"],
+    ["检索增强生成", "大语言模型", "RELATED_TO"],
     ["生成式模型", "大语言模型", "PREREQUISITE_OF"],
 
     ["贝叶斯网络", "概率图模型", "SUBTOPIC_OF"],
@@ -464,6 +541,9 @@
     ["信息抽取", "自然语言处理", "SUBTOPIC_OF"],
     ["命名实体识别", "信息抽取", "SUBTOPIC_OF"],
     ["语音识别", "自然语言处理", "SUBTOPIC_OF"],
+    ["信息抽取", "知识图谱", "PREREQUISITE_OF"],
+    ["知识图谱", "检索增强生成", "RELATED_TO"],
+    ["检索增强生成", "问答系统", "RELATED_TO"],
     ["词嵌入", "序列到序列模型", "PREREQUISITE_OF"],
     ["序列到序列模型", "机器翻译", "PREREQUISITE_OF"],
     ["Transformer", "机器翻译", "PREREQUISITE_OF"],

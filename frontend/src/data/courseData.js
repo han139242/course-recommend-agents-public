@@ -1,4 +1,204 @@
-export const domains = [
+const CARD_TYPE_META = {
+  concept: {
+    label: '概念卡',
+    graphRoleTitle: '图谱负责把概念放回知识链',
+    graphRoleDescription: '概念型知识点最容易出现“定义看懂了，但放回路径里又不会用”的问题，所以图谱重点负责先修和后续连接。',
+  },
+  method: {
+    label: '方法卡',
+    graphRoleTitle: '图谱负责串起方法的前提和步骤',
+    graphRoleDescription: '方法型知识点不只看定义，更要看它依赖什么条件、适用于什么场景，以及做完后能通向哪些能力。',
+  },
+  tool: {
+    label: '工具卡',
+    graphRoleTitle: '图谱负责把工具接到方法和任务',
+    graphRoleDescription: '工具型知识点如果只记 API 很快会碎掉，图谱会告诉学生这个工具服务于哪条方法链、最终落在哪类任务上。',
+  },
+  application: {
+    label: '应用卡',
+    graphRoleTitle: '图谱负责把任务拆回能力路径',
+    graphRoleDescription: '应用型知识点本质上是多个概念、方法、工具的汇合点，图谱负责把任务拆回可补的知识路径。',
+  },
+}
+
+const KNOWLEDGE_META = {
+  derivative: {
+    cardType: 'concept',
+    learningGoal: '能解释变化率含义，并看懂它为什么会出现在梯度下降和反向传播里。',
+  },
+  'partial-derivative': {
+    cardType: 'concept',
+    learningGoal: '能区分偏导、梯度和方向变化，并知道它们怎样驱动参数更新。',
+  },
+  'matrix-ops': {
+    cardType: 'tool',
+    learningGoal: '能读懂向量和矩阵计算过程，并在模型计算里定位维度与变换关系。',
+  },
+  probability: {
+    cardType: 'concept',
+    learningGoal: '能用概率视角理解不确定性、分布和模型输出。',
+  },
+  optimization: {
+    cardType: 'method',
+    learningGoal: '能把训练问题看成优化问题，知道目标、约束和常见求解思路。',
+  },
+  'python-data': {
+    cardType: 'tool',
+    learningGoal: '能用 Pandas / NumPy 处理模型输入输出，并整理成稳定的数据流程。',
+  },
+  'numpy-sci': {
+    cardType: 'tool',
+    learningGoal: '能用 NumPy 完成基础张量与数组计算，并理解底层运算如何影响性能和调试。',
+  },
+  'dl-framework': {
+    cardType: 'tool',
+    learningGoal: '能在框架里搭起最小训练流程，把理论推导落到实验代码上。',
+  },
+  'model-deploy': {
+    cardType: 'application',
+    learningGoal: '能把训练好的模型变成可部署的服务，并理解线上推理链路。',
+  },
+  'gradient-descent': {
+    cardType: 'method',
+    learningGoal: '能说清更新公式、学习率作用和它与损失函数、偏导数的关系。',
+  },
+  'loss-function': {
+    cardType: 'concept',
+    learningGoal: '能解释损失函数衡量什么，以及它为什么决定训练方向。',
+  },
+  'linear-logistic': {
+    cardType: 'method',
+    learningGoal: '能跑通最基础监督学习流程，并用它理解训练闭环。',
+  },
+  'decision-tree': {
+    cardType: 'method',
+    learningGoal: '能说明树模型怎样划分特征空间，以及集成方法为什么有效。',
+  },
+  'model-eval': {
+    cardType: 'method',
+    learningGoal: '能判断一个模型是否真的学会了，而不是只在训练集上表现好。',
+  },
+  'nn-basic': {
+    cardType: 'concept',
+    learningGoal: '能解释神经网络的基本结构、激活函数和前向计算流程。',
+  },
+  backprop: {
+    cardType: 'method',
+    learningGoal: '能顺着计算图解释梯度是怎么反向传播回每一层参数的。',
+  },
+  cnn: {
+    cardType: 'method',
+    learningGoal: '能说清卷积、池化和特征提取为什么适合图像任务。',
+  },
+  rnn: {
+    cardType: 'method',
+    learningGoal: '能理解序列状态如何传递，并知道它为什么会遇到长依赖问题。',
+  },
+  attention: {
+    cardType: 'concept',
+    learningGoal: '能解释注意力如何重分配信息权重，以及它为何成为 Transformer 核心。',
+  },
+  transformer: {
+    cardType: 'method',
+    learningGoal: '能把自注意力、多头机制和编码结构串成一套完整理解。',
+  },
+  'pretrain-finetune': {
+    cardType: 'method',
+    learningGoal: '能解释大模型能力从哪里来，以及预训练和微调分别解决什么问题。',
+  },
+  rag: {
+    cardType: 'application',
+    learningGoal: '能把检索、知识组织和生成串成一个可执行应用链路。',
+  },
+  'prompt-eng': {
+    cardType: 'tool',
+    learningGoal: '能设计一组稳定提示词，让模型在特定任务里输出更可控。',
+  },
+  'agent-tool': {
+    cardType: 'application',
+    learningGoal: '能理解智能体何时调用工具、如何规划步骤以及如何闭环反馈。',
+  },
+  'graph-basic': {
+    cardType: 'concept',
+    learningGoal: '能看懂节点、边、路径和遍历在知识组织里的作用。',
+  },
+  'entity-relation': {
+    cardType: 'method',
+    learningGoal: '能把文本内容抽成实体、关系和三元组结构。',
+  },
+  'knowledge-graph': {
+    cardType: 'application',
+    learningGoal: '能理解从知识抽取、关系组织到图查询的完整闭环。',
+  },
+  'image-classify': {
+    cardType: 'application',
+    learningGoal: '能完成一个最小图像分类项目，并把模型链路讲清楚。',
+  },
+  sentiment: {
+    cardType: 'application',
+    learningGoal: '能把文本分类任务从数据处理、建模到评估完整走通一次。',
+  },
+  recsys: {
+    cardType: 'application',
+    learningGoal: '能理解推荐系统从召回、排序到反馈闭环的基本结构。',
+  },
+  'llm-app': {
+    cardType: 'application',
+    learningGoal: '能把提示词、检索和工具调用组合成一个可交付的大模型应用。',
+  },
+}
+
+function buildMasteryChecklist(pointName, cardType, learningGoal) {
+  switch (cardType) {
+    case 'concept':
+      return [
+        { title: '能解释概念', description: `能用自己的话说明「${pointName}」是什么、解决什么问题。`, milestone: '先把定义和作用讲明白' },
+        { title: '能辨认关键点', description: `看到公式、图示或术语时，能认出它和「${pointName}」的关系。`, milestone: '基础判断要稳定' },
+        { title: '能举最小例子', description: `能用一个最小例子说明「${pointName}」怎么出现、为什么重要。`, milestone: '开始具备应用感' },
+        { title: '能连到上下游', description: `能说出它依赖什么、学完后能接到哪里。`, milestone: '图谱关系开始打通' },
+      ]
+    case 'tool':
+      return [
+        { title: '知道工具价值', description: `知道「${pointName}」主要解决哪类实现问题。`, milestone: '先建立用途感' },
+        { title: '能完成基础操作', description: `能独立完成最常见的基础 API / 操作。`, milestone: '会做最小操作' },
+        { title: '能接进流程', description: `能把「${pointName}」放进一个最小数据或训练流程里。`, milestone: '开始服务真实任务' },
+        { title: '能说明和方法关系', description: `能说清它服务于哪条方法链和哪类任务。`, milestone: '不再只记工具本身' },
+      ]
+    case 'application':
+      return [
+        { title: '知道任务目标', description: `知道「${pointName}」要完成什么任务、用什么指标判断好坏。`, milestone: '先明确任务边界' },
+        { title: '能拆出所需模块', description: `能说出这个任务依赖哪些概念、方法和工具。`, milestone: '知道自己缺哪一块' },
+        { title: '能做最小版本', description: `能搭出一个最小可运行版本，而不是只会看案例。`, milestone: '开始真正落地' },
+        { title: '能复盘与优化', description: `能解释结果为什么好/不好，并知道下一步优化方向。`, milestone: '进入可迭代阶段' },
+      ]
+    default:
+      return [
+        { title: '知道方法目标', description: `知道「${pointName}」的目标、输入和输出是什么。`, milestone: '先弄清方法边界' },
+        { title: '能走通关键步骤', description: `能说清方法的核心步骤，而不是只记名字。`, milestone: '核心流程要顺' },
+        { title: '能做简单应用', description: `能在一个简单例子里把它实际用出来。`, milestone: '开始脱离纸面理解' },
+        { title: '能迁移到路径', description: `${learningGoal || `能把「${pointName}」和前置、后续知识连接起来。`}`, milestone: '能接进整条学习路径' },
+      ]
+  }
+}
+
+function enrichPoint(domain, point) {
+  const meta = KNOWLEDGE_META[point.id] || {}
+  const cardType = meta.cardType || 'concept'
+  const typeMeta = CARD_TYPE_META[cardType]
+
+  return {
+    ...point,
+    cardType,
+    cardTypeLabel: typeMeta.label,
+    learningGoal: meta.learningGoal || `能完成和「${point.name}」相关的最小学习目标。`,
+    graphRoleTitle: typeMeta.graphRoleTitle,
+    graphRoleDescription: typeMeta.graphRoleDescription,
+    masteryChecklist: buildMasteryChecklist(point.name, cardType, meta.learningGoal),
+    domainName: domain.name,
+  }
+}
+
+const rawDomains = [
   {
     id: 'math',
     name: '数学基础',
@@ -116,3 +316,8 @@ export const domains = [
     ],
   },
 ]
+
+export const domains = rawDomains.map((domain) => ({
+  ...domain,
+  points: domain.points.map((point) => enrichPoint(domain, point)),
+}))

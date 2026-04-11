@@ -63,6 +63,22 @@ txt2neo4j \
   --neo4j-password "your-password"
 ```
 
+对已有 Neo4j 图谱做工业级规范化清洗：
+
+```bash
+cd pipelines/txt2neo4j
+python -m txt2neo4j.normalize_graph
+```
+
+规范化脚本会执行：
+
+- 用 curated registry 覆盖同名旧节点的属性
+- 合并仅有空格差异的近重复节点
+- 删除明显题目式/练习式脏节点
+- 为孤立节点补充关键 `SUBTOPIC_OF` 关系
+- 写入 `normalized_name`、`source_kind`、`quality_tier`、`taxonomy_domain` 等工业化元数据
+- 输出 `artifacts/neo4j_normalization/normalization_report.json`
+
 ## 输出产物
 
 - `cleaned_lines.json`

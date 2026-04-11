@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 txt2neo4j = "txt2neo4j.cli:main"
+txt2neo4j-normalize = "txt2neo4j.normalize_graph:main"
 
 [build-system]
 requires = ["setuptools>=80.0"]

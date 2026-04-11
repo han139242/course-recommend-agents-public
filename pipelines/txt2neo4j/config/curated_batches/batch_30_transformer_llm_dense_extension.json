@@ -1,0 +1,195 @@
+{
+  "source": "batch_30_transformer_llm_dense_extension",
+  "nodes": [
+    {
+      "canonical_name": "编码器-解码器架构",
+      "entity_type": "concept",
+      "description": "由编码器负责理解输入、解码器负责逐步生成输出的经典 Transformer 架构形态。"
+    },
+    {
+      "canonical_name": "注意力头",
+      "entity_type": "concept",
+      "description": "多头注意力中独立建模一种关注模式并输出子空间表示的单个注意力分支。"
+    },
+    {
+      "canonical_name": "注意力分数",
+      "entity_type": "concept",
+      "description": "由查询与键之间相似度计算得到并用于后续归一化的注意力匹配分值。"
+    },
+    {
+      "canonical_name": "注意力权重",
+      "entity_type": "concept",
+      "description": "对注意力分数归一化后得到的概率性权重，用于加权聚合值向量。"
+    },
+    {
+      "canonical_name": "缩放因子",
+      "entity_type": "concept",
+      "description": "在缩放点积注意力中用于稳定数值范围和梯度分布的缩放项。"
+    },
+    {
+      "canonical_name": "解码策略",
+      "entity_type": "topic",
+      "description": "围绕如何从模型输出分布中选择下一个词元的生成决策方法集合。"
+    },
+    {
+      "canonical_name": "采样解码",
+      "entity_type": "method",
+      "description": "从候选词元概率分布中按一定随机策略抽样生成下一个词元的解码方法。"
+    },
+    {
+      "canonical_name": "零样本提示",
+      "entity_type": "method",
+      "description": "不提供示例、仅依赖任务说明让模型直接完成任务的提示方法。"
+    },
+    {
+      "canonical_name": "少样本提示",
+      "entity_type": "method",
+      "description": "在提示中提供少量演示样例以激发模型完成任务的上下文学习方法。"
+    },
+    {
+      "canonical_name": "系统提示",
+      "entity_type": "concept",
+      "description": "用于约束模型角色、行为边界、输出格式与工具使用规则的高优先级提示部分。"
+    },
+    {
+      "canonical_name": "偏好数据",
+      "entity_type": "concept",
+      "description": "记录人类对多个候选回答偏好次序或优劣判断的对齐训练数据。"
+    },
+    {
+      "canonical_name": "预填充阶段",
+      "entity_type": "concept",
+      "description": "大模型先处理整段输入上下文并建立首轮隐藏状态与缓存的推理阶段。"
+    },
+    {
+      "canonical_name": "生成阶段",
+      "entity_type": "concept",
+      "description": "大模型基于历史上下文和缓存逐词元递推生成输出内容的推理阶段。"
+    },
+    {
+      "canonical_name": "首词延迟",
+      "entity_type": "concept",
+      "description": "从请求发起到模型生成第一个词元所经历的时间开销指标。"
+    },
+    {
+      "canonical_name": "吞吐量",
+      "entity_type": "concept",
+      "description": "单位时间内模型可处理或生成的词元数量，用于衡量服务效率。"
+    },
+    {
+      "canonical_name": "约束解码",
+      "entity_type": "method",
+      "description": "在生成过程中施加结构、语法或输出模式约束以保证结果满足规则的方法。"
+    }
+  ],
+  "relations": [
+    ["编码器-解码器架构", "Transformer", "SUBTOPIC_OF"],
+    ["Transformer编码器", "编码器-解码器架构", "PART_OF"],
+    ["Transformer解码器", "编码器-解码器架构", "PART_OF"],
+    ["交叉注意力", "编码器-解码器架构", "PART_OF"],
+    ["编码器-解码器架构", "序列到序列模型", "RELATED_TO"],
+    ["编码器-解码器架构", "机器翻译", "PREREQUISITE_OF"],
+    ["编码器-解码器架构", "问答系统", "RELATED_TO"],
+    ["Transformer编码器", "掩码语言模型", "PREREQUISITE_OF"],
+    ["Transformer解码器", "自回归生成", "PREREQUISITE_OF"],
+    ["Transformer解码器", "大语言模型", "PREREQUISITE_OF"],
+
+    ["分词器", "子词分词", "USES"],
+    ["分词器", "预训练", "PREREQUISITE_OF"],
+    ["分词器", "监督微调", "PREREQUISITE_OF"],
+    ["词元", "下一个词预测", "PREREQUISITE_OF"],
+    ["BPE分词", "SentencePiece", "RELATED_TO"],
+    ["BPE分词", "子词表示", "RELATED_TO"],
+    ["SentencePiece", "子词表示", "RELATED_TO"],
+    ["位置编码", "Transformer编码器", "PREREQUISITE_OF"],
+    ["位置编码", "Transformer解码器", "PREREQUISITE_OF"],
+
+    ["注意力头", "多头注意力", "PART_OF"],
+    ["注意力分数", "缩放点积注意力", "PART_OF"],
+    ["注意力权重", "缩放点积注意力", "PART_OF"],
+    ["缩放因子", "缩放点积注意力", "PART_OF"],
+    ["查询向量", "注意力分数", "PREREQUISITE_OF"],
+    ["键向量", "注意力分数", "PREREQUISITE_OF"],
+    ["注意力分数", "注意力权重", "PREREQUISITE_OF"],
+    ["Softmax函数", "注意力权重", "PREREQUISITE_OF"],
+    ["缩放因子", "注意力分数", "RELATED_TO"],
+    ["注意力权重", "值向量", "RELATED_TO"],
+    ["位置编码", "注意力分数", "RELATED_TO"],
+    ["多头注意力", "缩放点积注意力", "USES"],
+    ["自注意力", "缩放点积注意力", "USES"],
+    ["注意力机制", "缩放点积注意力", "PREREQUISITE_OF"],
+    ["注意力掩码", "缩放点积注意力", "APPLIES_TO"],
+    ["因果掩码", "Transformer解码器", "APPLIES_TO"],
+    ["因果掩码", "自回归生成", "APPLIES_TO"],
+    ["注意力头", "查询向量", "RELATED_TO"],
+    ["注意力头", "键向量", "RELATED_TO"],
+    ["注意力头", "值向量", "RELATED_TO"],
+    ["自注意力", "Transformer编码器", "RELATED_TO"],
+    ["自注意力", "Transformer解码器", "RELATED_TO"],
+
+    ["解码策略", "自回归生成", "SUBTOPIC_OF"],
+    ["采样解码", "解码策略", "SUBTOPIC_OF"],
+    ["束搜索", "解码策略", "SUBTOPIC_OF"],
+    ["约束解码", "解码策略", "SUBTOPIC_OF"],
+    ["温度采样", "采样解码", "SUBTOPIC_OF"],
+    ["top-k采样", "采样解码", "SUBTOPIC_OF"],
+    ["top-p采样", "采样解码", "SUBTOPIC_OF"],
+    ["采样解码", "大语言模型", "RELATED_TO"],
+    ["约束解码", "函数调用", "RELATED_TO"],
+    ["约束解码", "工具调用", "RELATED_TO"],
+    ["约束解码", "语法引导生成", "RELATED_TO"],
+
+    ["系统提示", "提示工程", "SUBTOPIC_OF"],
+    ["零样本提示", "提示工程", "SUBTOPIC_OF"],
+    ["少样本提示", "提示工程", "SUBTOPIC_OF"],
+    ["提示模板", "系统提示", "PREREQUISITE_OF"],
+    ["提示模板", "零样本提示", "PREREQUISITE_OF"],
+    ["提示模板", "少样本提示", "PREREQUISITE_OF"],
+    ["零样本提示", "提示学习", "RELATED_TO"],
+    ["少样本提示", "提示学习", "RELATED_TO"],
+    ["零样本提示", "零样本评估", "RELATED_TO"],
+    ["少样本提示", "少样本评估", "RELATED_TO"],
+    ["零样本提示", "上下文学习", "RELATED_TO"],
+    ["少样本提示", "上下文学习", "RELATED_TO"],
+    ["系统提示", "工具调用", "RELATED_TO"],
+    ["系统提示", "函数调用", "RELATED_TO"],
+    ["少样本提示", "问答系统", "RELATED_TO"],
+    ["零样本提示", "文本分类", "RELATED_TO"],
+
+    ["指令微调", "监督微调", "SUBTOPIC_OF"],
+    ["参数高效微调", "大语言模型", "APPLIES_TO"],
+    ["LoRA", "大语言模型", "APPLIES_TO"],
+    ["LoRA", "低秩分解压缩", "RELATED_TO"],
+    ["LoRA", "提示调优", "RELATED_TO"],
+    ["LoRA", "指令微调", "RELATED_TO"],
+    ["偏好数据", "奖励模型", "PREREQUISITE_OF"],
+    ["偏好数据", "直接偏好优化", "PREREQUISITE_OF"],
+    ["奖励模型", "偏好数据", "USES"],
+    ["直接偏好优化", "偏好数据", "USES"],
+    ["人类反馈强化学习", "奖励模型", "USES"],
+    ["偏好数据", "指令对齐", "RELATED_TO"],
+    ["监督微调", "指令对齐", "RELATED_TO"],
+    ["交叉熵", "下一个词预测", "PREREQUISITE_OF"],
+    ["交叉熵", "监督微调", "PREREQUISITE_OF"],
+    ["交叉熵", "指令微调", "PREREQUISITE_OF"],
+    ["Softmax函数", "下一个词预测", "PREREQUISITE_OF"],
+
+    ["预填充阶段", "自回归生成", "PART_OF"],
+    ["生成阶段", "自回归生成", "PART_OF"],
+    ["预填充阶段", "生成阶段", "PREREQUISITE_OF"],
+    ["上下文窗口", "预填充阶段", "PREREQUISITE_OF"],
+    ["KV缓存", "预填充阶段", "RELATED_TO"],
+    ["KV缓存", "生成阶段", "RELATED_TO"],
+    ["预填充阶段", "首词延迟", "RELATED_TO"],
+    ["生成阶段", "吞吐量", "RELATED_TO"],
+    ["推理加速", "首词延迟", "RELATED_TO"],
+    ["推理加速", "吞吐量", "RELATED_TO"],
+    ["推理加速", "预填充阶段", "RELATED_TO"],
+    ["推理加速", "生成阶段", "RELATED_TO"],
+    ["推测解码", "生成阶段", "RELATED_TO"],
+    ["推测解码", "吞吐量", "RELATED_TO"],
+    ["KV缓存", "吞吐量", "RELATED_TO"],
+    ["上下文窗口", "首词延迟", "RELATED_TO"],
+    ["上下文扩展", "首词延迟", "RELATED_TO"]
+  ]
+}

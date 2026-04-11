@@ -3,7 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +18,8 @@ type Config struct {
 	Redis         RedisConfig
 	Neo4j         Neo4jConfig
 	Auth          AuthConfig
+	AI            AIConfig
+	Frontend      FrontendConfig
 	Log           LogConfig
 	GraphWriter   GraphWriterConfig
 	Observability ObservabilityConfig
@@ -26,20 +30,25 @@ type Config struct {
 // 对可选基础设施使用偏宽松的默认策略，对核心安全配置保持强校验，
 // 以便本地开发可快速启动，同时避免生产环境在关键项缺失时静默运行。
 func Load() (Config, error) {
+	loadDotEnv()
+
+	appEnv := getEnv("APP_ENV", "development")
+
 	cfg := Config{
 		App: AppConfig{
 			Name: getEnv("APP_NAME", "course-recommend-agents-backend"),
-			Env:  getEnv("APP_ENV", "development"),
+			Env:  appEnv,
 		},
 		HTTP: HTTPConfig{
 			Host:            getEnv("HTTP_HOST", "0.0.0.0"),
 			Port:            getEnv("HTTP_PORT", "8080"),
 			ReadTimeout:     getDurationEnv("HTTP_READ_TIMEOUT", 5*time.Second),
-			WriteTimeout:    getDurationEnv("HTTP_WRITE_TIMEOUT", 10*time.Second),
+			// AI 对话与学习内容生成会走流式输出，默认 10s 会导致响应被服务端提前截断。
+			WriteTimeout:    getDurationEnv("HTTP_WRITE_TIMEOUT", 2*time.Minute),
 			ShutdownTimeout: getDurationEnv("HTTP_SHUTDOWN_TIMEOUT", 10*time.Second),
 		},
 		MySQL: MySQLConfig{
-			DSN: os.Getenv("MYSQL_DSN"),
+			DSN: getMySQLDSN(),
 		},
 		Redis: RedisConfig{
 			Addr:     getEnv("REDIS_ADDR", "127.0.0.1:6379"),
@@ -52,8 +61,17 @@ func Load() (Config, error) {
 			Password: os.Getenv("NEO4J_PASSWORD"),
 		},
 		Auth: AuthConfig{
-			JWTSecret: os.Getenv("JWT_SECRET"),
+			JWTSecret: getEnv("JWT_SECRET", defaultJWTSecret(appEnv)),
 			TokenTTL:  getDurationEnv("JWT_TOKEN_TTL", 24*time.Hour),
+		},
+		AI: AIConfig{
+			APIKey:      os.Getenv("DEEPSEEK_API_KEY"),
+			BaseURL:     getEnv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+			ChatModel:   getEnv("DEEPSEEK_MODEL", "deepseek-chat"),
+			VisionModel: getEnv("DEEPSEEK_VISION_MODEL", ""),
+		},
+		Frontend: FrontendConfig{
+			DistDir: getEnv("FRONTEND_DIST_DIR", "web/dist"),
 		},
 		Log: LogConfig{
 			Level: getEnv("LOG_LEVEL", "info"),
@@ -81,7 +99,82 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	if cfg.AI.VisionModel == "" {
+		cfg.AI.VisionModel = cfg.AI.ChatModel
+	}
+
 	return cfg, nil
+}
+
+func loadDotEnv() {
+	candidates := []string{
+		".env",
+		filepath.Join("..", ".env"),
+		filepath.Join("..", "..", ".env"),
+	}
+
+	for _, candidate := range candidates {
+		raw, err := os.ReadFile(candidate)
+		if err != nil {
+			continue
+		}
+
+		lines := strings.Split(string(raw), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+			if strings.HasPrefix(line, "export ") {
+				line = strings.TrimSpace(strings.TrimPrefix(line, "export "))
+			}
+
+			key, value, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+
+			key = strings.TrimSpace(key)
+			value = strings.TrimSpace(value)
+			if key == "" || os.Getenv(key) != "" {
+				continue
+			}
+			if len(value) >= 2 {
+				if (value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'') {
+					value = value[1 : len(value)-1]
+				}
+			}
+
+			_ = os.Setenv(key, value)
+		}
+		return
+	}
+}
+
+func getMySQLDSN() string {
+	if dsn := strings.TrimSpace(os.Getenv("MYSQL_DSN")); dsn != "" {
+		return dsn
+	}
+
+	host := strings.TrimSpace(os.Getenv("MYSQL_HOST"))
+	if host == "" {
+		return ""
+	}
+
+	port := getEnv("MYSQL_PORT", "3306")
+	user := getEnv("MYSQL_USER", "root")
+	password := os.Getenv("MYSQL_PASSWORD")
+	database := getEnv("MYSQL_DATABASE", "course_recommend")
+	params := getEnv("MYSQL_PARAMS", "parseTime=true&charset=utf8mb4&loc=Local")
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s", user, password, host, port, database, params)
+}
+
+func defaultJWTSecret(appEnv string) string {
+	if strings.EqualFold(appEnv, "production") {
+		return ""
+	}
+	return "course-recommend-dev-secret"
 }
 
 // Validate 校验关键配置是否完整。

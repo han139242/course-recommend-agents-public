@@ -8,12 +8,27 @@ const router = useRouter()
 const loading = ref(true)
 const profileSnapshot = ref(null)
 
+function roleLabel(role) {
+  if (role === 'student') return '学生'
+  if (role === 'teacher') return '教师'
+  if (role === 'admin') return '管理员'
+  return role || '学习者'
+}
+
+function formatTarget(raw) {
+  const t = (raw || '').trim()
+  if (!t) return '目标方向：待设置'
+  if (t.startsWith('目标')) return t
+  return `目标方向：${t}`
+}
+
 const mergedProfile = computed(() => {
   const profile = profileSnapshot.value?.profile
+  const rawRole = authState.user?.role || profile?.role || ''
   return {
     name: authState.user?.name || profile?.name || '学习者',
-    role: authState.user?.role || profile?.role || '人工智能专业学生',
-    target: authState.user?.target ? `目标方向：${authState.user.target}` : profile?.target || '目标方向：待设置',
+    role: roleLabel(rawRole) || '人工智能专业学生',
+    target: formatTarget(authState.user?.target || profile?.target),
     summary: profile?.summary || '正在同步你的学习画像...',
     stats: profile?.stats || [],
     goals: profile?.goals || [],

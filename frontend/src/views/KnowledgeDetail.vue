@@ -1,22 +1,19 @@
 <script setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, shallowRef, watch, nextTick, onBeforeUnmount } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { domains } from '../data/courseData'
-import { knowledgeDetails, graphNodes, graphEdges, growthRadarAxes } from '../data/learning'
-import { fetchCompetencyProfile, fetchGraphSubgraph, fetchKnowledgeDetail } from '../auth'
-import { edgeSvgCoords, layoutNeoSubgraph, resolveKnowledgeRouteId } from '../utils/neoSubgraphLayout'
-import { useAiChat, generateLearningContent, imageFileToDataUrl } from '../composables/useAiChat'
+import { knowledgeDetails } from '../data/learning'
+import { fetchKnowledgeDetail } from '../auth'
+import { buildKnowledgeLookupCandidates } from '../utils/knowledgeLookup'
+import { getKnowledgeMasteryProfile } from '../utils/knowledgeExperience'
+import { useAiChat, generateLearningContent, imageFileToDataUrl, buildInstantLearningContent } from '../composables/useAiChat'
 import { renderLatex } from '../composables/useKatex'
 import 'katex/dist/katex.min.css'
-
-/** 与 Vite 代理调用的 DeepSeek 模型一致，仅用于界面说明（不含密钥） */
-const aiContentModelLabel =
-  import.meta.env.VITE_AI_MODEL_LABEL || 'DeepSeek Chat（deepseek-chat）'
 
 const route = useRoute()
 const knowledgeId = computed(() => String(route.params.knowledgeId || ''))
 
-// ─── Data Resolution ───
+// Data resolution
 
 const currentPoint = computed(() => {
   for (const d of domains) {
@@ -27,17 +24,47 @@ const currentPoint = computed(() => {
 })
 
 const detailSnapshot = ref(null)
-const competencySnapshot = ref(null)
 
 const detailData = computed(() => detailSnapshot.value || knowledgeDetails[knowledgeId.value] || null)
 
-const currentMastery = computed(() => {
-  const score = Number(detailData.value?.masteryScore)
-  return Number.isFinite(score) ? score : (currentPoint.value?.mastery ?? 0)
+const displayPoint = computed(() => {
+  if (currentPoint.value) {
+    return currentPoint.value
+  }
+
+  if (!detailData.value) {
+    return null
+  }
+
+  const domainName =
+    detailData.value.parentTopics?.[0] ||
+    detailData.value.chapterTitle ||
+    detailData.value.entityType ||
+    '知识点'
+
+  return {
+    id: detailData.value.routeKnowledgeId || detailData.value.id || knowledgeId.value,
+    name: detailData.value.name || detailData.value.canonicalName || knowledgeId.value,
+    domain: domainName,
+    domainId: '',
+    level: 'core',
+    levelLabel: '核心',
+    mastery: Number(detailData.value.masteryScore || 0),
+    description: detailData.value.description || detailData.value.summary || '',
+    recommend: detailData.value.recommendReason || '',
+    route: `/knowledge/${detailData.value.routeKnowledgeId || detailData.value.id || knowledgeId.value}`,
+  }
 })
 
+const currentMastery = computed(() => {
+  const score = Number(detailData.value?.masteryScore)
+  return Number.isFinite(score) ? score : (displayPoint.value?.mastery ?? 0)
+})
+
+const masteryProfile = computed(() => getKnowledgeMasteryProfile(displayPoint.value, currentMastery.value))
+
 const displayDescription = computed(() => {
-  return detailData.value?.description || currentPoint.value?.description || ''
+  return detailData.value?.description || displayPoint.value?.description || ''
 })
 
 const prerequisitePoints = computed(() => {
@@ -52,104 +79,131 @@ const prerequisitePoints = computed(() => {
 })
 
 const nextSteps = computed(() => {
-  if (!currentPoint.value) return []
-  const currentDomain = domains.find((d) => d.id === currentPoint.value.domainId)
+  if (!displayPoint.value?.domainId) return []
+  const currentDomain = domains.find((d) => d.id === displayPoint.value.domainId)
   if (!currentDomain) return []
   return currentDomain.points
     .filter((p) => p.id !== knowledgeId.value && p.mastery < 60)
     .slice(0, 3)
 })
 
-// ─── Left Column: Local Subgraph ───
-
-const subgraphNodes = computed(() => {
-  const id = knowledgeId.value
-  const neighborIds = new Set()
-  neighborIds.add(id)
-  for (const e of graphEdges) {
-    if (e.from === id) neighborIds.add(e.to)
-    if (e.to === id) neighborIds.add(e.from)
-  }
-  // also add 2-hop neighbors
-  const firstHop = [...neighborIds]
-  for (const nid of firstHop) {
-    for (const e of graphEdges) {
-      if (e.from === nid) neighborIds.add(e.to)
-      if (e.to === nid) neighborIds.add(e.from)
-    }
-  }
-  return graphNodes.filter((n) => neighborIds.has(n.id))
-})
-
-const subgraphEdges = computed(() => {
-  const nodeIds = new Set(subgraphNodes.value.map((n) => n.id))
-  return graphEdges.filter((e) => nodeIds.has(e.from) && nodeIds.has(e.to))
-})
-
-/** 演示用 graphNodes 只含少量节点；未收录的知识点无法画出子图 */
-const domainPeersForNav = computed(() => {
-  if (!currentPoint.value) return []
-  const d = domains.find((x) => x.id === currentPoint.value.domainId)
-  if (!d) return []
-  return d.points.filter((p) => p.id !== knowledgeId.value)
-})
-
-// ─── Neo4j 子图（优先）───
-
-const neoGraphData = ref(null)
-const neoLoading = ref(false)
-const neoError = ref('')
-
-const neoLayout = computed(() => {
-  if (!neoGraphData.value?.nodes?.length) return null
-  return layoutNeoSubgraph(neoGraphData.value, knowledgeId.value)
-})
-
-async function loadNeoSubgraph() {
-  const id = knowledgeId.value
-  if (!id) return
-  neoLoading.value = true
-  neoError.value = ''
-  neoGraphData.value = null
-  try {
-    const data = await fetchGraphSubgraph(id, 14)
-    if (!data.root && data.nodes?.length) {
-      data.root = data.nodes.find((n) => n.id === id) || data.nodes[0]
-    }
-    neoGraphData.value = data
-  } catch (e) {
-    neoError.value = e.message || '子图加载失败'
-    neoGraphData.value = null
-  } finally {
-    neoLoading.value = false
-  }
+function knowledgeLookupCandidates() {
+  return buildKnowledgeLookupCandidates({
+    knowledgeId: knowledgeId.value,
+    currentPoint: currentPoint.value,
+    detailSnapshot: detailSnapshot.value,
+  })
 }
 
-function neoEdgeCoords(edge) {
-  const m = neoLayout.value?.nodeMap || {}
-  return edgeSvgCoords(edge, m)
-}
 
-function sgX(pct) { return (pct / 100) * 220 + 10 }
-function sgY(pct) { return (pct / 100) * 180 + 10 }
+// Middle column: AI-generated content
 
-// ─── Middle Column: AI-Generated Content ───
-
+const AI_CONTENT_STORAGE_PREFIX = 'knowledge-detail-ai-content:v1'
 const aiContent = ref('')
 const contentLoading = ref(false)
 const contentError = ref('')
+let contentRequestSerial = 0
+let contentAbortController = null
 
-async function loadContent() {
-  const pt = currentPoint.value
+const aiContentStorageIds = computed(() => {
+  return [...new Set(
+    [
+      detailData.value?.routeKnowledgeId,
+      displayPoint.value?.id,
+      detailData.value?.id,
+      knowledgeId.value,
+    ]
+      .map((item) => String(item || '').trim())
+      .filter(Boolean),
+  )]
+})
+
+function readStoredAiContent() {
+  if (typeof window === 'undefined') return ''
+
+  for (const id of aiContentStorageIds.value) {
+    const storageKey = `${AI_CONTENT_STORAGE_PREFIX}:${id}`
+    let raw = ''
+    try {
+      raw = window.localStorage.getItem(storageKey) || ''
+      if (!raw) continue
+      const parsed = JSON.parse(raw)
+      const content = typeof parsed === 'string' ? parsed : parsed?.content
+      if (typeof content === 'string' && content.trim()) {
+        return content.trim()
+      }
+    } catch {
+      if (raw.trim()) {
+        return raw.trim()
+      }
+    }
+  }
+
+  return ''
+}
+
+function persistAiContent(content) {
+  const nextContent = String(content || '').trim()
+  if (!nextContent || typeof window === 'undefined') return
+
+  const payload = JSON.stringify({
+    content: nextContent,
+    updatedAt: Date.now(),
+  })
+
+  for (const id of aiContentStorageIds.value) {
+    const storageKey = `${AI_CONTENT_STORAGE_PREFIX}:${id}`
+    try {
+      window.localStorage.setItem(storageKey, payload)
+    } catch {
+      return
+    }
+  }
+}
+
+function restoreStoredAiContent() {
+  const stored = readStoredAiContent()
+  aiContent.value = stored
+  return Boolean(stored)
+}
+
+const displayedAiContent = computed(() => {
+  if (aiContent.value.trim()) return aiContent.value
+
+  const pt = displayPoint.value || currentPoint.value
+  if (!pt) return ''
+
+  const detail = detailData.value || {}
+  return buildInstantLearningContent({
+    id: pt.id,
+    name: pt.name,
+    domain: pt.domain,
+    levelLabel: pt.levelLabel,
+    description: displayDescription.value || pt.description || '',
+    mastery: currentMastery.value,
+    prerequisites: detail?.prerequisites || [],
+    related: detail?.related || [],
+    scenarios: detail?.scenarios || [],
+  })
+})
+
+async function loadContent(force = false) {
+  const pt = displayPoint.value
   const detail = detailData.value
   if (!pt) return
 
+  const requestSerial = ++contentRequestSerial
+
+  if (contentAbortController) {
+    contentAbortController.abort()
+  }
+  contentAbortController = new AbortController()
+
   contentLoading.value = true
   contentError.value = ''
-  aiContent.value = ''
 
   try {
-    aiContent.value = await generateLearningContent({
+    const content = await generateLearningContent({
       id: pt.id,
       name: pt.name,
       domain: pt.domain,
@@ -159,28 +213,46 @@ async function loadContent() {
       prerequisites: detail?.prerequisites || [],
       related: detail?.related || [],
       scenarios: detail?.scenarios || [],
+    }, {
+      force,
+      signal: contentAbortController.signal,
+      onProgress(nextContent) {
+        if (requestSerial !== contentRequestSerial) return
+        if (String(nextContent || '').trim()) {
+          aiContent.value = nextContent
+        }
+      },
     })
+    if (requestSerial !== contentRequestSerial) return
+    aiContent.value = content
+    persistAiContent(content)
   } catch (err) {
+    if (err?.name === 'AbortError' || requestSerial !== contentRequestSerial) {
+      return
+    }
     contentError.value = err.message || '生成学习内容失败'
   } finally {
-    contentLoading.value = false
+    if (requestSerial === contentRequestSerial) {
+      contentLoading.value = false
+      contentAbortController = null
+    }
   }
 }
 
-// ─── Right Column: AI Chat ───
+// Right column: AI chat
 
 const chatRef = ref(null)
 const draft = ref('')
 const fileInput = ref(null)
 const pendingImage = ref('')
-let chatInstance = null
-const chatMessages = ref([])
-const chatLoading = ref(false)
+const chatInstance = shallowRef(null)
+const chatMessages = computed(() => chatInstance.value?.messages.value || [])
+const chatLoading = computed(() => chatInstance.value?.loading.value || false)
 
 function initChat() {
-  const ctx = currentPoint.value
+  const ctx = displayPoint.value
   const detail = detailData.value
-  chatInstance = useAiChat({
+  chatInstance.value = useAiChat({
     knowledgeContext: {
       name: ctx?.name || knowledgeId.value,
       domain: ctx?.domain || '',
@@ -192,63 +264,76 @@ function initChat() {
       scenarios: detail?.scenarios || [],
     },
   })
-  chatMessages.value = chatInstance.messages.value
-  chatLoading.value = chatInstance.loading.value
 }
 
 const suggestedQuestions = computed(() => {
-  const name = currentPoint.value?.name || '这个知识点'
+  const name = displayPoint.value?.name || '这个知识点'
   return [
     `${name}的核心思想是什么？`,
-    `和先修知识有什么关系？`,
-    `实际中怎么用？`,
+    '和先修知识有什么关系？',
+    '实际中怎么用？',
   ]
 })
 
 async function handleSend(text) {
   const input = typeof text === 'string' ? text : draft.value
-  if (!input.trim() && !pendingImage.value) return
+  if (!chatInstance.value || (!input.trim() && !pendingImage.value)) return
   const img = pendingImage.value
   draft.value = ''
   pendingImage.value = ''
-  await chatInstance.send(input, { imageDataUrl: img || undefined })
-  chatMessages.value = chatInstance.messages.value
-  chatLoading.value = chatInstance.loading.value
+  await chatInstance.value.send(input, { imageDataUrl: img || undefined })
   await nextTick()
   if (chatRef.value) chatRef.value.scrollTop = chatRef.value.scrollHeight
 }
 
-watch(() => chatInstance?.messages?.value, (v) => { if (v) chatMessages.value = v }, { deep: true })
-watch(() => chatInstance?.loading?.value, (v) => { if (v != null) chatLoading.value = v })
-
-// ─── Lifecycle ───
+// Lifecycle
 
 async function loadKnowledgeDetail() {
   if (!knowledgeId.value) return
-  try {
-    detailSnapshot.value = await fetchKnowledgeDetail(knowledgeId.value)
-  } catch {
-    detailSnapshot.value = knowledgeDetails[knowledgeId.value] || null
+  const fallback = knowledgeDetails[knowledgeId.value] || null
+  detailSnapshot.value = fallback
+  if (currentPoint.value) {
+    return
   }
+  for (const candidate of knowledgeLookupCandidates()) {
+    try {
+      detailSnapshot.value = await fetchKnowledgeDetail(candidate)
+      return
+    } catch {
+      // Try the next identifier so slug pages can fall back to canonical Chinese names.
+    }
+  }
+  detailSnapshot.value = fallback
 }
 
-async function loadCompetencySnapshot() {
-  try {
-    competencySnapshot.value = await fetchCompetencyProfile()
-  } catch {
-    competencySnapshot.value = null
-  }
-}
+let pageLoadSerial = 0
 
-watch(knowledgeId, async () => {
-  await loadKnowledgeDetail()
-  await loadCompetencySnapshot()
+watch(knowledgeId, () => {
+  const loadSerial = ++pageLoadSerial
+  contentAbortController?.abort()
+  contentAbortController = null
+  contentLoading.value = false
+  contentError.value = ''
+  aiContent.value = ''
+  detailSnapshot.value = knowledgeDetails[knowledgeId.value] || null
+  restoreStoredAiContent()
   initChat()
-  loadContent()
-  loadNeoSubgraph()
   draft.value = ''
   pendingImage.value = ''
+
+  void loadKnowledgeDetail().then(() => {
+    if (loadSerial !== pageLoadSerial) return
+    const hasStoredContent = restoreStoredAiContent()
+    initChat()
+    if (!hasStoredContent) {
+      void loadContent()
+    }
+  })
 }, { immediate: true })
+
+onBeforeUnmount(() => {
+  contentAbortController?.abort()
+})
 
 function triggerImagePick() {
   fileInput.value?.click()
@@ -273,43 +358,7 @@ function clearPendingImage() {
   pendingImage.value = ''
 }
 
-// ─── Radar Chart for Ability Profile ───
-
-const radarAxes = computed(() => competencySnapshot.value?.radarAxes?.length
-  ? competencySnapshot.value.radarAxes
-  : growthRadarAxes)
-const radarCenter = { x: 90, y: 90 }
-const radarRadius = 70
-
-function radarPoint(index, value, total) {
-  const angle = (Math.PI * 2 * index) / total - Math.PI / 2
-  const r = (value / 100) * radarRadius
-  return { x: radarCenter.x + r * Math.cos(angle), y: radarCenter.y + r * Math.sin(angle) }
-}
-
-const radarPolygon = computed(() => {
-  return radarAxes.value
-    .map((a, i) => {
-      const p = radarPoint(i, a.value, radarAxes.value.length)
-      return `${p.x},${p.y}`
-    })
-    .join(' ')
-})
-
-const radarLabelPositions = computed(() => {
-  return radarAxes.value.map((a, i) => {
-    const angle = (Math.PI * 2 * i) / radarAxes.value.length - Math.PI / 2
-    const r = radarRadius + 18
-    return {
-      name: a.name,
-      value: a.value,
-      x: radarCenter.x + r * Math.cos(angle),
-      y: radarCenter.y + r * Math.sin(angle),
-    }
-  })
-})
-
-// ─── Helpers ───
+// Helpers
 
 function renderMarkdown(md) {
   if (!md) return ''
@@ -344,157 +393,33 @@ function formatChat(text) {
 </script>
 
 <template>
-  <section class="kd-page" v-if="currentPoint">
+  <section class="kd-page" v-if="displayPoint">
     <div class="kd-three-col">
 
-      <!-- ═══ LEFT: Graph Navigation + Ability Profile ═══ -->
+      <!-- Left: knowledge meta -->
       <aside class="kd-left">
-        <!-- Ability Radar -->
-        <div class="kd-card">
-          <span class="section-tag">我的能力画像</span>
-          <div class="kd-radar-wrap">
-            <svg viewBox="0 0 180 180" class="kd-radar-svg">
-              <polygon
-                v-for="ring in [100, 75, 50, 25]"
-                :key="ring"
-                :points="radarAxes.map((_, i) => {
-                  const p = radarPoint(i, ring, radarAxes.length)
-                  return `${p.x},${p.y}`
-                }).join(' ')"
-                class="kd-radar-ring"
-              />
-              <line
-                v-for="(_, i) in radarAxes"
-                :key="'axis' + i"
-                :x1="radarCenter.x"
-                :y1="radarCenter.y"
-                :x2="radarPoint(i, 100, radarAxes.length).x"
-                :y2="radarPoint(i, 100, radarAxes.length).y"
-                class="kd-radar-axis"
-              />
-              <polygon :points="radarPolygon" class="kd-radar-area" />
-              <circle
-                v-for="(a, i) in radarAxes"
-                :key="'dot' + i"
-                :cx="radarPoint(i, a.value, radarAxes.length).x"
-                :cy="radarPoint(i, a.value, radarAxes.length).y"
-                r="3"
-                class="kd-radar-dot"
-              />
-              <text
-                v-for="lp in radarLabelPositions"
-                :key="lp.name"
-                :x="lp.x"
-                :y="lp.y"
-                text-anchor="middle"
-                dominant-baseline="central"
-                class="kd-radar-label"
-              >{{ lp.name }} {{ lp.value }}%</text>
-            </svg>
-          </div>
-        </div>
-
-        <div class="kd-card">
-          <span class="section-tag">知识图谱导航</span>
-          <p v-if="neoLoading" class="kd-neo-hint">正在从 Neo4j 加载子图…</p>
-          <p v-else-if="neoError" class="kd-neo-err">{{ neoError }}</p>
-
-          <!-- Neo4j 子图（与 /graph 页一致的数据源） -->
-          <div v-if="!neoLoading && neoLayout?.positionedNodes?.length" class="kd-graph-wrap kd-graph-wrap--neo">
-            <svg viewBox="0 0 100 100" class="kd-graph-svg kd-graph-svg--neo" preserveAspectRatio="xMidYMid meet">
-              <line
-                v-for="edge in neoLayout.edges"
-                :key="edge.relationId || `${edge.sourceId}-${edge.targetId}`"
-                :x1="neoEdgeCoords(edge).x1"
-                :y1="neoEdgeCoords(edge).y1"
-                :x2="neoEdgeCoords(edge).x2"
-                :y2="neoEdgeCoords(edge).y2"
-                class="kd-graph-edge"
-              />
-              <g v-for="n in neoLayout.positionedNodes" :key="n.id">
-                <RouterLink :to="'/knowledge/' + resolveKnowledgeRouteId(n)">
-                  <circle
-                    :cx="n.x"
-                    :cy="n.y"
-                    :r="n.id === knowledgeId ? 6 : 4.5"
-                    :class="['kd-graph-node-circle', n.level, { current: n.id === knowledgeId }]"
-                  />
-                  <text
-                    :x="n.x"
-                    :y="n.y + (n.id === knowledgeId ? 9 : 8)"
-                    text-anchor="middle"
-                    :class="['kd-graph-node-label', 'kd-graph-node-label--neo', { current: n.id === knowledgeId }]"
-                  >{{ n.label }}</text>
-                </RouterLink>
-              </g>
-            </svg>
-          </div>
-
-          <!-- 演示子图（Neo4j 无数据或失败时） -->
-          <div v-else-if="!neoLoading && subgraphNodes.length" class="kd-graph-wrap">
-            <svg viewBox="0 0 240 200" class="kd-graph-svg">
-              <line
-                v-for="(e, i) in subgraphEdges"
-                :key="'e' + i"
-                :x1="sgX(graphNodes.find(n => n.id === e.from)?.x || 0)"
-                :y1="sgY(graphNodes.find(n => n.id === e.from)?.y || 0)"
-                :x2="sgX(graphNodes.find(n => n.id === e.to)?.x || 0)"
-                :y2="sgY(graphNodes.find(n => n.id === e.to)?.y || 0)"
-                class="kd-graph-edge"
-              />
-              <g v-for="n in subgraphNodes" :key="n.id">
-                <RouterLink :to="'/knowledge/' + n.id">
-                  <circle
-                    :cx="sgX(n.x)"
-                    :cy="sgY(n.y)"
-                    :r="n.id === knowledgeId ? 14 : 10"
-                    :class="['kd-graph-node-circle', n.level, { current: n.id === knowledgeId }]"
-                  />
-                  <text
-                    :x="sgX(n.x)"
-                    :y="sgY(n.y) + (n.id === knowledgeId ? 24 : 20)"
-                    text-anchor="middle"
-                    :class="['kd-graph-node-label', { current: n.id === knowledgeId }]"
-                  >{{ n.label }}</text>
-                </RouterLink>
-              </g>
-            </svg>
-          </div>
-
-          <div v-else-if="!neoLoading" class="kd-graph-fallback">
-            <p class="kd-graph-fallback-note">
-              <template v-if="neoError">Neo4j 子图暂不可用，已切换为演示数据或同域跳转。请确认后端与 Neo4j 已启动。</template>
-              <template v-else>当前知识点在演示子图中无节点，且 Neo4j 未返回关联数据。</template>
-            </p>
-            <p class="kd-graph-fallback-sub">同域其它知识点（可跳转）：</p>
-            <div class="kd-peer-links">
-              <RouterLink
-                v-for="p in domainPeersForNav"
-                :key="p.id"
-                :to="p.route"
-                class="kd-peer-link"
-              >{{ p.name }}</RouterLink>
-            </div>
-          </div>
-        </div>
-
         <div class="kd-card">
           <span class="section-tag">当前知识点</span>
           <div class="kd-pos-info">
             <div class="kd-pos-row">
-              <span class="kd-pos-label">所属域</span>
-              <span class="kd-pos-value">{{ currentPoint.domain }}</span>
+              <span class="kd-pos-label">卡片类型</span>
+              <span class="kd-pos-value">{{ displayPoint.cardTypeLabel || '知识卡' }}</span>
+            </div>
+            <div class="kd-pos-row">
+              <span class="kd-pos-label">所属领域</span>
+              <span class="kd-pos-value">{{ displayPoint.domain }}</span>
             </div>
             <div class="kd-pos-row">
               <span class="kd-pos-label">等级</span>
-              <span :class="['point-level', currentPoint.level]">{{ currentPoint.levelLabel }}</span>
+              <span :class="['point-level', displayPoint.level]">{{ displayPoint.levelLabel }}</span>
             </div>
             <div class="kd-pos-row">
               <span class="kd-pos-label">掌握度</span>
               <span class="kd-pos-value kd-mastery">{{ currentMastery }}%</span>
             </div>
-            <div class="kd-pos-bar">
-              <div class="kd-pos-bar-fill" :style="{ width: currentMastery + '%' }"></div>
+            <div class="kd-pos-row">
+              <span class="kd-pos-label">当前判定</span>
+              <span :class="['kd-mastery-stage', masteryProfile.stageKey]">{{ masteryProfile.stageLabel }}</span>
             </div>
           </div>
         </div>
@@ -524,47 +449,48 @@ function formatChat(text) {
           </div>
         </div>
 
-        <RouterLink to="/" class="kd-back-link">← 返回首页</RouterLink>
+        <RouterLink to="/" class="kd-back-link">返回首页</RouterLink>
       </aside>
 
-      <!-- ═══ MIDDLE: AI-Generated Content ═══ -->
+      <!-- Middle: AI-generated content -->
       <main class="kd-center">
         <div class="kd-center-header">
           <div class="kd-header-top">
-            <span :class="['point-level', currentPoint.level]">{{ currentPoint.levelLabel }}</span>
-            <span v-if="currentPoint.recommend" class="point-rec">{{ currentPoint.recommend }}</span>
-            <span class="kd-domain-badge">{{ currentPoint.domain }}</span>
+            <span :class="['point-level', displayPoint.level]">{{ displayPoint.levelLabel }}</span>
+            <span class="kd-card-type-badge">{{ displayPoint.cardTypeLabel || '知识卡' }}</span>
+            <span v-if="displayPoint.recommend" class="point-rec">{{ displayPoint.recommend }}</span>
+            <span class="kd-domain-badge">{{ displayPoint.domain }}</span>
           </div>
-          <h1 class="kd-title">{{ currentPoint.name }}</h1>
+          <h1 class="kd-title">{{ displayPoint.name }}</h1>
           <p class="kd-desc">{{ displayDescription }}</p>
         </div>
 
         <div class="kd-ai-content">
           <div class="kd-ai-content-head">
-            <div class="kd-ai-head-text">
-              <span class="section-tag">AI 生成学习内容</span>
-              <p class="kd-ai-model-note">
-                由 <strong>{{ aiContentModelLabel }}</strong> 根据当前知识点、先修与掌握度实时生成摘要，非预置讲义。
-              </p>
-            </div>
-            <button v-if="!contentLoading" class="kd-refresh-btn" @click="loadContent">重新生成</button>
+            <span class="section-tag">AI 生成学习内容</span>
+            <button v-if="!contentLoading" class="kd-refresh-btn" @click="loadContent(true)">重新生成</button>
           </div>
 
-          <div v-if="contentLoading" class="kd-content-loading">
+          <div v-if="contentLoading && !displayedAiContent" class="kd-content-loading">
             <div class="kd-spinner"></div>
             <span>AI 正在根据你的掌握情况生成个性化学习内容...</span>
           </div>
 
-          <div v-else-if="contentError" class="kd-content-error">
-            <p>{{ contentError }}</p>
-            <button class="kd-retry-btn" @click="loadContent">重试</button>
+          <div v-else class="kd-content-body-wrap">
+            <div v-if="contentError" class="kd-content-error-inline">
+              <p>{{ contentError }}</p>
+              <button class="kd-retry-btn" @click="loadContent(true)">重试</button>
+            </div>
+            <div v-if="contentLoading" class="kd-content-streaming-hint">
+              <div class="kd-spinner kd-spinner--inline"></div>
+              <span>正在继续生成内容...</span>
+            </div>
+            <div class="kd-content-body" v-html="renderMarkdown(displayedAiContent)"></div>
           </div>
-
-          <div v-else class="kd-content-body" v-html="renderMarkdown(aiContent)"></div>
         </div>
       </main>
 
-      <!-- ═══ RIGHT: AI Chat ═══ -->
+      <!-- Right: AI chat -->
       <aside class="kd-right">
         <div class="kd-chat-panel">
           <div class="kd-chat-head">
@@ -572,7 +498,7 @@ function formatChat(text) {
           </div>
 
           <div class="kd-chat-suggest" v-if="chatMessages.length === 0">
-            <p class="kd-chat-hint">关于「{{ currentPoint.name }}」，你想了解什么？</p>
+            <p class="kd-chat-hint">关于「{{ displayPoint.name }}」，你想了解什么？</p>
             <button
               v-for="q in suggestedQuestions"
               :key="q"
@@ -598,7 +524,7 @@ function formatChat(text) {
           </div>
 
           <div v-if="pendingImage" class="kd-image-preview">
-            <img :src="pendingImage" alt="待发送" />
+            <img :src="pendingImage" alt="待发送图片" />
             <button type="button" class="kd-image-remove" @click="clearPendingImage" aria-label="移除图片">×</button>
           </div>
           <div class="kd-chat-input">

@@ -1,0 +1,129 @@
+{
+  "source": "batch_32_ai_core_entities_semantic_completion",
+  "nodes": [
+    {
+      "canonical_name": "文本摘要",
+      "entity_type": "application",
+      "description": "从长文本中提炼关键信息并生成简洁摘要的自然语言处理任务。"
+    },
+    {
+      "canonical_name": "对话系统",
+      "entity_type": "application",
+      "description": "围绕多轮交互、上下文理解与回复生成构建的人机对话系统。"
+    },
+    {
+      "canonical_name": "实体",
+      "entity_type": "concept",
+      "description": "知识图谱中被建模和识别的对象、概念或事件单元。"
+    },
+    {
+      "canonical_name": "关系",
+      "entity_type": "concept",
+      "description": "知识图谱中用于连接实体并表达语义联系的结构化关联。"
+    },
+    {
+      "canonical_name": "属性",
+      "entity_type": "concept",
+      "description": "描述实体或关系特征、状态与数值信息的字段。"
+    },
+    {
+      "canonical_name": "本体建模",
+      "entity_type": "method",
+      "description": "定义概念层次、关系约束与语义规则的知识图谱建模方法。"
+    },
+    {
+      "canonical_name": "环境",
+      "entity_type": "concept",
+      "description": "强化学习中向智能体提供状态转移与奖励反馈的外部系统。"
+    },
+    {
+      "canonical_name": "价值函数",
+      "entity_type": "concept",
+      "description": "评估状态或动作长期期望回报的核心函数。"
+    },
+    {
+      "canonical_name": "策略优化",
+      "entity_type": "method",
+      "description": "通过直接改进策略参数以提升累计回报的强化学习方法框架。"
+    },
+    {
+      "canonical_name": "DQN",
+      "entity_type": "algorithm",
+      "description": "利用深度神经网络逼近动作价值函数的经典价值型强化学习算法。"
+    },
+    {
+      "canonical_name": "Actor-Critic",
+      "entity_type": "algorithm",
+      "description": "结合策略模型与价值估计器协同更新的强化学习算法范式。"
+    },
+    {
+      "canonical_name": "PPO",
+      "entity_type": "algorithm",
+      "description": "通过裁剪目标函数稳定策略更新的常用策略优化算法。"
+    },
+    {
+      "canonical_name": "任务分解",
+      "entity_type": "method",
+      "description": "将复杂目标拆解为若干可执行子任务并组织执行顺序的方法。"
+    },
+    {
+      "canonical_name": "反思",
+      "entity_type": "method",
+      "description": "基于历史执行结果回顾错误并调整后续决策的自我改进机制。"
+    }
+  ],
+  "relations": [
+    ["命名实体识别", "自然语言处理", "SUBTOPIC_OF"],
+    ["情感分析", "自然语言处理", "SUBTOPIC_OF"],
+    ["文本摘要", "自然语言处理", "SUBTOPIC_OF"],
+    ["大语言模型", "文本摘要", "APPLIES_TO"],
+    ["对话系统", "自然语言处理", "SUBTOPIC_OF"],
+    ["大语言模型", "对话系统", "APPLIES_TO"],
+    ["对话系统", "会话记忆", "RELATED_TO"],
+    ["对话系统", "问答系统", "RELATED_TO"],
+
+    ["实体", "知识图谱", "PART_OF"],
+    ["关系", "知识图谱", "PART_OF"],
+    ["属性", "知识图谱", "PART_OF"],
+    ["本体建模", "知识图谱", "SUBTOPIC_OF"],
+    ["本体建模", "本体", "RELATED_TO"],
+    ["本体建模", "模式层", "RELATED_TO"],
+    ["实体", "数据层", "PART_OF"],
+    ["关系", "数据层", "PART_OF"],
+    ["属性", "数据层", "PART_OF"],
+    ["实体链接", "实体", "RELATED_TO"],
+    ["关系抽取", "关系", "RELATED_TO"],
+    ["三元组", "实体", "RELATED_TO"],
+    ["三元组", "关系", "RELATED_TO"],
+
+    ["环境", "强化学习", "SUBTOPIC_OF"],
+    ["价值函数", "强化学习", "SUBTOPIC_OF"],
+    ["状态价值函数", "价值函数", "SUBTOPIC_OF"],
+    ["动作价值函数", "价值函数", "SUBTOPIC_OF"],
+    ["策略优化", "强化学习", "SUBTOPIC_OF"],
+    ["策略梯度", "策略优化", "SUBTOPIC_OF"],
+    ["DQN", "强化学习", "SUBTOPIC_OF"],
+    ["DQN", "价值函数", "SUBTOPIC_OF"],
+    ["DQN", "Off-policy学习", "SUBTOPIC_OF"],
+    ["DQN", "动作价值函数", "RELATED_TO"],
+    ["Actor-Critic", "强化学习", "SUBTOPIC_OF"],
+    ["Actor-Critic", "策略优化", "SUBTOPIC_OF"],
+    ["Actor-Critic", "价值函数", "RELATED_TO"],
+    ["Actor-Critic", "策略梯度", "RELATED_TO"],
+    ["PPO", "强化学习", "SUBTOPIC_OF"],
+    ["PPO", "策略优化", "SUBTOPIC_OF"],
+    ["PPO", "On-policy学习", "SUBTOPIC_OF"],
+    ["PPO", "Actor-Critic", "RELATED_TO"],
+    ["智能体-环境交互", "环境", "RELATED_TO"],
+
+    ["规划", "智能体", "RELATED_TO"],
+    ["工作记忆", "智能体", "PART_OF"],
+    ["智能体-环境交互", "智能体", "RELATED_TO"],
+    ["任务分解", "智能体", "RELATED_TO"],
+    ["任务分解", "规划", "RELATED_TO"],
+    ["任务分解", "工作流编排", "RELATED_TO"],
+    ["反思", "智能体", "RELATED_TO"],
+    ["反思", "会话记忆", "RELATED_TO"],
+    ["反思", "工作记忆", "RELATED_TO"]
+  ]
+}

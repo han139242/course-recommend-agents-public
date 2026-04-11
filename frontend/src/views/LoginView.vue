@@ -21,7 +21,7 @@ async function handleSubmit() {
 
   try {
     await login(form)
-    router.push(String(route.query.redirect || '/profile'))
+    router.push(String(route.query.redirect || '/'))
   } catch (error) {
     errorMessage.value = error.message
   } finally {

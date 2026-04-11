@@ -87,11 +87,7 @@ def build_curated_rows(existing_lookup: dict[str, dict], seed_path: Path) -> tup
     for item in seed.get("nodes", []):
         canonical_name = item["canonical_name"]
         existing = existing_lookup.get(canonical_name)
-        if existing:
-            canonical_to_id[canonical_name] = existing["node_id"]
-            continue
-
-        node_id = _stable_id("entity", canonical_name)
+        node_id = existing["node_id"] if existing else _stable_id("entity", canonical_name)
         canonical_to_id[canonical_name] = node_id
         node_rows.append(
             {
@@ -153,6 +149,11 @@ def merge_curated_graph(
             )
         create_constraints(driver)
         existing_lookup = fetch_existing_nodes(driver, database)
+        existing_canonical_names = {
+            node["canonical_name"]
+            for node in existing_lookup.values()
+            if node.get("canonical_name")
+        }
         before_names = {
             node["canonical_name"]
             for node in existing_lookup.values()
@@ -200,9 +201,11 @@ def merge_curated_graph(
             if node.get("name")
         }
         coverage_after = build_coverage_report(after_names)
+        nodes_inserted = sum(1 for row in node_rows if row["canonical_name"] not in existing_canonical_names)
         report = {
             "source": seed["source"],
-            "nodes_added": len(node_rows),
+            "nodes_inserted": nodes_inserted,
+            "nodes_overlaid": len(node_rows) - nodes_inserted,
             "relations_merged": len(relation_rows),
             "coverage_before": coverage_before,
             "coverage_after": coverage_after,

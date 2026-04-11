@@ -1,3 +1,5 @@
+import { resolveFriendlyKnowledgeRouteId } from './knowledgeLookup'
+
 /**
  * 将 Neo4j 子图 API 返回的 nodes/edges 布局为 viewBox="0 0 100 100" 的径向图（与 GraphView 一致）。
  */
@@ -60,5 +62,5 @@ export function edgeSvgCoords(edge, nodeMap) {
 }
 
 export function resolveKnowledgeRouteId(node) {
-  return node?.routeKnowledgeId || node?.knowledgeId || node?.slug || node?.id || ''
+  return resolveFriendlyKnowledgeRouteId(node)
 }

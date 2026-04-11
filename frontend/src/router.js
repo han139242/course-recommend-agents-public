@@ -77,7 +77,7 @@ const routes = [
     name: 'graph',
     component: GraphView,
     meta: {
-      title: '知识图谱',
+      title: '学习路径',
     },
   },
   {
@@ -90,20 +90,26 @@ const routes = [
     },
   },
   {
-    path: '/tasks',
-    name: 'tasks',
+    path: '/assignments',
+    name: 'assignments',
     component: PlaceholderPage,
     meta: {
-      title: '任务·作业·考试',
-      description: '任务、作业与考试模块正在开发中，后续会支持跨课程任务编排、项目实践和测评管理。',
+      title: '作业 / 考试',
+      requiresAuth: true,
+      description: '作业 / 考试模块入口已预留，当前先聚焦知识学习、学习路径和能力图谱，后续再补完整流程。',
     },
+  },
+  {
+    path: '/tasks',
+    redirect: '/assignments',
   },
   {
     path: '/growth',
     name: 'growth',
     component: GrowthView,
     meta: {
-      title: '成长分析',
+      title: '能力图谱',
+      requiresAuth: true,
     },
   },
 ]

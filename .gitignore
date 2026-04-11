@@ -24,3 +24,8 @@ db/mysql/
 Thumbs.db
 
 course-recommend-agents.wiki/
+artifacts/handoff/
+backend/*.log
+backend/*.err.log
+backend/*.exe
+backend/web/dist/

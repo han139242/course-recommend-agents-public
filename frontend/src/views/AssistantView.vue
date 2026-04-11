@@ -19,19 +19,19 @@ const systemPrompt = computed(() => {
     .map((d) => {
       const avg = Math.round(d.points.reduce((s, p) => s + p.mastery, 0) / (d.points.length || 1))
       const weak = d.points.filter((p) => p.mastery < 50).map((p) => p.name)
-      return `${d.name}（平均掌握 ${avg}%${weak.length ? '，薄弱：' + weak.join('、') : ''}）`
+      return `${d.name}（平均掌握 ${avg}%${weak.length ? `，薄弱：${weak.join('、')}` : ''}）`
     })
     .join('\n')
 
   return [
-    '你是一个人工智能专业课程的学习助手，名叫"AI 学伴"。',
+    '你是一个人工智能专业课程的学习助手，名叫“AI 学伴”。',
     '你的任务是帮助学生规划学习路径、解答知识点疑惑、分析薄弱环节。',
     '',
     '当前学生的能力画像：',
     domainSummary,
     '',
-    '请根据学生的提问，结合上述能力数据给出有针对性的建议。',
-    '回答要准确、清晰、有层次，使用中文。',
+    '请根据学生的提问，结合上面的能力数据给出有针对性的建议。',
+    '回答要准确、清晰、有层次，并使用中文。',
   ].join('\n')
 })
 
@@ -49,10 +49,12 @@ const exampleQuestions = [
 async function handleSend(text) {
   const input = typeof text === 'string' ? text : draft.value
   if (!input.trim() && !pendingImage.value) return
-  const img = pendingImage.value
+
+  const imageDataUrl = pendingImage.value
   draft.value = ''
   pendingImage.value = ''
-  await send(input, { imageDataUrl: img || undefined })
+
+  await send(input, { imageDataUrl: imageDataUrl || undefined })
   await nextTick()
   if (chatRef.value) {
     chatRef.value.scrollTop = chatRef.value.scrollHeight
@@ -67,10 +69,12 @@ async function onImageSelected(e) {
   const file = e.target.files?.[0]
   e.target.value = ''
   if (!file || !file.type.startsWith('image/')) return
+
   if (file.size > 6 * 1024 * 1024) {
     window.alert('图片请小于 6MB')
     return
   }
+
   try {
     pendingImage.value = await imageFileToDataUrl(file)
   } catch (err) {
@@ -101,7 +105,6 @@ function formatContent(text) {
   return renderLatex(html)
 }
 
-// Auto-send initial query
 if (draft.value.trim()) {
   handleSend(draft.value)
 }
@@ -113,15 +116,17 @@ if (draft.value.trim()) {
       <span class="section-tag">AI 助学室</span>
       <h1>跨课程学习助手</h1>
       <p>围绕知识点补弱、进阶学习和场景目标提供建议，帮助你快速找到下一步该学什么。</p>
-      <p class="ast-model-note">本页对话由 <strong>{{ aiModelLabel }}</strong> 流式回答；与「知识学习」里 AI 生成摘要、配图答疑使用同一套 DeepSeek 接口（开发环境经 Vite 代理）。下方可输入或上传图片。</p>
+      <p class="ast-model-note">
+        本页对话由 <strong>{{ aiModelLabel }}</strong> 流式回答；与「知识学习」里 AI 生成摘要、配图答疑使用同一套
+        DeepSeek 接口。下方可输入问题或上传图片。
+      </p>
     </div>
 
     <div class="ast-body">
-      <!-- Example questions shown when empty -->
       <div v-if="messages.length === 0" class="ast-welcome">
         <div class="ast-welcome-icon">AI</div>
         <h2>你好，我是你的 AI 学伴</h2>
-        <p>我了解你的学习进度和能力画像，可以帮你分析薄弱点、规划路径、解答问题。试试下面的问题：</p>
+        <p>我了解你的学习进度和能力画像，可以帮你分析薄弱点、规划路径、解答问题。试试下面这些问题：</p>
         <div class="ast-example-grid">
           <button
             v-for="q in exampleQuestions"
@@ -132,7 +137,6 @@ if (draft.value.trim()) {
         </div>
       </div>
 
-      <!-- Chat messages -->
       <div v-else class="ast-chat-area" ref="chatRef">
         <div
           v-for="(msg, idx) in messages"
@@ -147,6 +151,7 @@ if (draft.value.trim()) {
             </div>
           </div>
         </div>
+
         <div v-if="loading && messages.length > 0 && messages[messages.length - 1]?.content === ''" class="kd-msg assistant">
           <div class="kd-msg-avatar">AI</div>
           <div class="kd-msg-body">
@@ -155,12 +160,12 @@ if (draft.value.trim()) {
         </div>
       </div>
 
-      <!-- Input -->
       <div class="ast-input-area">
         <div v-if="pendingImage" class="ast-image-preview">
-          <img :src="pendingImage" alt="待发送" />
+          <img :src="pendingImage" alt="待发送图片" />
           <button type="button" class="kd-image-remove" @click="clearPendingImage" aria-label="移除图片">×</button>
         </div>
+
         <div class="ast-input-row">
           <input
             ref="fileInput"
@@ -185,10 +190,13 @@ if (draft.value.trim()) {
             发送
           </button>
         </div>
+
         <div class="ast-input-hint">
           <button v-if="messages.length > 0" class="ast-clear-btn" @click="clearMessages">清空对话</button>
           <span>按 Enter 发送，Shift+Enter 换行</span>
         </div>
+
+        <p v-if="error" class="auth-error">{{ error }}</p>
       </div>
     </div>
   </section>

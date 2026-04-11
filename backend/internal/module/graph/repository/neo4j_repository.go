@@ -36,24 +36,31 @@ func (r *Neo4jRepository) LoadSubgraph(ctx context.Context, root string, limit i
 		return nil, nil, neo4jUsageError("neo4j 未启用")
 	}
 	resolvedRoot := strings.TrimSpace(root)
-	if resolvedRoot == "" {
-		return []graphentity.Node{}, []graphentity.Edge{}, nil
-	}
 	if limit <= 0 {
 		limit = 12
 	}
 	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
+	if resolvedRoot == "" {
+		defaultRoot, resolveErr := r.resolveDefaultRoot(ctx, session)
+		if resolveErr != nil {
+			return nil, nil, fmt.Errorf("查询默认图谱根节点失败: %w", resolveErr)
+		}
+		if defaultRoot == "" {
+			return []graphentity.Node{}, []graphentity.Edge{}, nil
+		}
+		resolvedRoot = defaultRoot
+	}
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
 MATCH (root)
-WHERE ($root <> '' AND (coalesce(root.knowledge_id, root.id, root.name) = $root OR root.name = $root))
+WHERE ($root <> '' AND (coalesce(root.knowledge_id, root.node_id, root.id, root.name) = $root OR root.name = $root))
 OPTIONAL MATCH (root)-[rel]-(neighbor)
 WITH root, rel, neighbor
 LIMIT $limit
 RETURN collect(DISTINCT root) AS roots,
        collect(DISTINCT neighbor) AS neighbors,
-       collect(DISTINCT {relation_id: toString(id(rel)), relation_type: type(rel), source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).id, startNode(rel).name), target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).id, endNode(rel).name), source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''), target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')}) AS edges
+       collect(DISTINCT {relation_id: toString(id(rel)), relation_type: type(rel), source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name), target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name), source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''), target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')}) AS edges
 `
 		records, runErr := tx.Run(ctx, query, map[string]any{"root": resolvedRoot, "limit": limit})
 		if runErr != nil {
@@ -90,6 +97,32 @@ RETURN collect(DISTINCT root) AS roots,
 	return payload.Nodes, payload.Edges, nil
 }
 
+func (r *Neo4jRepository) resolveDefaultRoot(ctx context.Context, session neo4j.SessionWithContext) (string, error) {
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (root:KnowledgeNode)
+RETURN coalesce(root.knowledge_id, root.node_id, root.id, root.name) AS root_id
+ORDER BY coalesce(root.name, root.knowledge_id, root.id)
+LIMIT 1
+`
+		records, runErr := tx.Run(ctx, query, map[string]any{})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return "", nil
+		}
+		rootID, _ := records.Record().Get("root_id")
+		return stringOrDefault(rootID, ""), records.Err()
+	})
+	if err != nil {
+		return "", err
+	}
+
+	rootID, _ := result.(string)
+	return rootID, nil
+}
+
 // LoadKnowledgeDetail 查询知识点详情。
 func (r *Neo4jRepository) LoadKnowledgeDetail(ctx context.Context, knowledgeID string) (*graphentity.KnowledgeDetail, error) {
 	if !r.Enabled() {
@@ -104,7 +137,7 @@ func (r *Neo4jRepository) LoadKnowledgeDetail(ctx context.Context, knowledgeID s
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
 MATCH (k)
-WHERE coalesce(k.knowledge_id, k.id, k.name) = $knowledge_id OR k.name = $knowledge_id
+WHERE coalesce(k.knowledge_id, k.node_id, k.id, k.name) = $knowledge_id OR k.name = $knowledge_id
 OPTIONAL MATCH (pre)-[:PREREQUISITE_OF]->(k)
 OPTIONAL MATCH (k)-[:RELATED_TO]-(related)
 OPTIONAL MATCH (k)-[:SUBTOPIC_OF]->(parent)
@@ -227,8 +260,8 @@ func (r *Neo4jRepository) LoadCompetencyMappings(ctx context.Context) (map[strin
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
 MATCH (kp)-[rel:MAPS_TO]->(comp:Competency)
-WHERE exists(kp.knowledge_id) OR exists(kp.id)
-RETURN coalesce(kp.knowledge_id, kp.id) AS knowledge_id,
+WHERE kp.knowledge_id IS NOT NULL OR kp.node_id IS NOT NULL OR kp.id IS NOT NULL
+RETURN coalesce(kp.knowledge_id, kp.node_id, kp.id) AS knowledge_id,
        comp.id AS competency_id,
        comp.name AS competency_name,
        comp.category AS category,
@@ -294,12 +327,12 @@ func (r *Neo4jRepository) LoadFrontierBriefing(ctx context.Context, knowledgeID 
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
 MATCH (k:KnowledgeNode)
-WHERE ($knowledge_id <> '' AND k.knowledge_id = $knowledge_id)
+WHERE ($knowledge_id <> '' AND coalesce(k.knowledge_id, k.node_id, k.id) = $knowledge_id)
    OR ($knowledge_name <> '' AND k.name = $knowledge_name)
 OPTIONAL MATCH (d:FrontierDigest)-[:CURATED_FOR]->(k)
 OPTIONAL MATCH (topic:ResearchTopic)-[:EXTENDS_KNOWLEDGE]->(k)
 OPTIONAL MATCH (d)-[:SUMMARIZES_PAPER]->(paper:Paper)
-RETURN k.knowledge_id AS knowledge_id,
+RETURN coalesce(k.knowledge_id, k.node_id, k.id, k.name) AS knowledge_id,
        coalesce(k.name, $knowledge_name, $knowledge_id) AS knowledge_name,
        d.summary AS digest_summary,
        d.status AS digest_status,
@@ -375,7 +408,7 @@ func parseSingleNode(value any) graphentity.Node {
 		return graphentity.Node{}
 	}
 	properties := node.Props
-	id := stringOrDefault(properties["knowledge_id"], stringOrDefault(properties["id"], stringOrDefault(properties["name"], "")))
+	id := stringOrDefault(properties["knowledge_id"], stringOrDefault(properties["node_id"], stringOrDefault(properties["id"], stringOrDefault(properties["name"], ""))))
 	name := stringOrDefault(properties["name"], id)
 	canonical := stringOrDefault(properties["canonicalName"], stringOrDefault(properties["canonical_name"], name))
 	entityType := stringOrDefault(properties["entityType"], stringOrDefault(properties["entity_type"], "concept"))
