@@ -15,7 +15,7 @@ func TestGetPathReturnsFallbackRecommendation(t *testing.T) {
 	ctx := ctxmeta.WithUserID(context.Background(), "2")
 	graphRepo := repository.NewNeo4jRepository(nil)
 	graphSvc := graphservice.New(graphRepo)
-	service := New(graphSvc, learningrepo.NewRedisRepository(nil))
+	service := New(graphSvc, learningrepo.NewRedisRepository(nil), nil)
 	resp, err := service.GetPath(ctx, recommenddto.PathQuery{Target: "kp_001", Limit: 3})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

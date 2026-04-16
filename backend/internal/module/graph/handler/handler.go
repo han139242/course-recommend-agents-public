@@ -8,38 +8,58 @@ import (
 	"github.com/han139242/course-recommend-agents/backend/pkg/result"
 )
 
-// Handler 提供图谱查询 HTTP 处理能力。
+// Handler provides HTTP handlers for graph queries.
 type Handler struct {
 	service *graphservice.Service
 }
 
-// New 创建图谱处理器。
+// New creates a graph handler.
 func New(service *graphservice.Service) *Handler {
 	return &Handler{service: service}
 }
 
-// GetSubgraph 查询知识子图。
+// GetSubgraph returns a one-hop graph around a root node.
 func (h *Handler) GetSubgraph(ctx *gin.Context) {
 	var query graphdto.SubgraphQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {
 		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
 		return
 	}
+
 	response, err := h.service.GetSubgraph(ctx.Request.Context(), query)
 	if err != nil {
 		writeError(ctx, err)
 		return
 	}
+
 	result.Success(ctx, response)
 }
 
-// GetKnowledgeDetail 查询知识点详情。
+// GetFullGraph returns a full knowledge graph snapshot for the homepage.
+func (h *Handler) GetFullGraph(ctx *gin.Context) {
+	var query graphdto.FullGraphQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+
+	response, err := h.service.GetFullGraph(ctx.Request.Context(), query)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	result.Success(ctx, response)
+}
+
+// GetKnowledgeDetail returns detail information for a knowledge node.
 func (h *Handler) GetKnowledgeDetail(ctx *gin.Context) {
 	response, err := h.service.GetKnowledgeDetail(ctx.Request.Context(), ctx.Param("knowledgeId"))
 	if err != nil {
 		writeError(ctx, err)
 		return
 	}
+
 	result.Success(ctx, response)
 }
 

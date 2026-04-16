@@ -2,18 +2,21 @@ package bootstrap
 
 import (
 	"context"
+	"time"
 
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-// NewNeo4j 初始化 Neo4j Driver。
-// Neo4j 在当前阶段属于可选依赖：认证信息缺失或连通性校验失败时，
-// 启动流程会记录告警并返回 nil，让服务以降级模式继续运行。
+// NewNeo4j initializes Neo4j as an optional dependency.
 func NewNeo4j(ctx context.Context, cfg config.Config, logger *applogger.Logger) (neo4j.DriverWithContext, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	if cfg.Neo4j.Password == "" {
-		logger.WithCtx(ctx).Warn("Neo4j 密码未配置，跳过连接初始化")
+		logger.WithCtx(ctx).Warn("Neo4j password is empty, skipping initialization")
 		return nil, nil
 	}
 
@@ -22,9 +25,12 @@ func NewNeo4j(ctx context.Context, cfg config.Config, logger *applogger.Logger) 
 		return nil, err
 	}
 
-	if err := driver.VerifyConnectivity(ctx); err != nil {
-		logger.WithCtx(ctx).Warn("Neo4j 连接失败，当前以降级模式启动", applogger.ErrorField("error", err))
-		_ = driver.Close(ctx)
+	verifyCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	if err := driver.VerifyConnectivity(verifyCtx); err != nil {
+		logger.WithCtx(ctx).Warn("Neo4j unavailable, starting in degraded mode", applogger.ErrorField("error", err))
+		_ = driver.Close(context.Background())
 		return nil, nil
 	}
 

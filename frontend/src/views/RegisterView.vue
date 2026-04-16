@@ -1,43 +1,57 @@
-<script setup>
-import { RouterLink } from 'vue-router'
+﻿<script setup>
+import { reactive, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+
+import { useUserStore } from '../stores/userStore'
+
+const router = useRouter()
+const userStore = useUserStore()
+const form = reactive({
+  email: '',
+  password: '',
+})
+const loading = ref(false)
+const error = ref('')
+
+async function submit() {
+  error.value = ''
+  loading.value = true
+
+  try {
+    await userStore.register(form.email, form.password, 'student')
+    router.push('/')
+  } catch (registerError) {
+    error.value = registerError?.message || '注册暂时不可用，请联系管理员创建账号。'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
-  <section class="auth-page">
-    <div class="detail-hero">
-      <span class="section-tag">账号注册</span>
-      <h1>创建你的学习账号</h1>
-      <p>把基础身份信息和学习目标录入系统后，推荐路径会更贴合你的能力阶段与发展方向。</p>
-    </div>
+  <section class="auth-view page-frame">
+    <div class="auth-card page-card">
+      <p class="eyebrow">创建账号</p>
+      <h1>注册学生身份</h1>
+      <p>如果后端暂未开放自助注册，这里会给出清晰提示。</p>
 
-    <div class="auth-layout">
-      <article class="auth-card">
-        <div class="section-head compact">
-          <div>
-            <span class="section-tag">注册</span>
-            <h2>当前阶段不开放自主注册</h2>
-          </div>
-        </div>
+      <label>
+        邮箱
+        <input v-model="form.email" type="email" placeholder="new_student@school.edu" />
+      </label>
+      <label>
+        密码
+        <input v-model="form.password" type="password" placeholder="至少 6 位密码" />
+      </label>
 
-        <div class="auth-form">
-          <p class="auth-side-copy">
-            根据当前 API 契约，学生账号由教师或管理员统一导入创建，前端不再直接提交注册请求。
-          </p>
-          <p class="auth-side-copy">
-            如果你需要体验学生端页面，请让教师先分配账号，或使用已有测试账号直接登录。
-          </p>
-          <RouterLink to="/login" class="auth-submit">返回登录</RouterLink>
-        </div>
-      </article>
+      <p v-if="error" class="form-error">{{ error }}</p>
 
-      <aside class="auth-side">
-        <div class="detail-side-card">
-          <span class="section-tag">已有账号</span>
-          <h3>已经注册过了？</h3>
-          <p class="auth-side-copy">直接登录即可继续使用原来的学习档案和推荐记录。</p>
-          <RouterLink to="/login" class="auth-secondary-link">去登录</RouterLink>
-        </div>
-      </aside>
+      <button type="button" class="primary-btn" :disabled="loading" @click="submit">
+        {{ loading ? '提交中...' : '注册' }}
+      </button>
+
+      <RouterLink class="link-button" to="/login">已有账号？去登录</RouterLink>
+      <RouterLink class="secondary-btn" to="/">返回图谱</RouterLink>
     </div>
   </section>
 </template>

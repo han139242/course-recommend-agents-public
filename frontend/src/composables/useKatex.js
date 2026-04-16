@@ -1,40 +1,26 @@
-import katex from 'katex'
+﻿import katex from 'katex'
 
-/**
- * Render LaTeX in HTML string. Supports:
- * - Display math: $$ ... $$ or \[ ... \]
- * - Inline math:  $ ... $  or \( ... \)
- */
-export function renderLatex(html) {
-  if (!html) return ''
+function escapeHtml(text = '') {
+  return String(text || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+}
 
-  // Display math: $$ ... $$
-  html = html.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => {
-    try {
-      return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false })
-    } catch { return _ }
-  })
+export function renderWithKatex(content = '') {
+  const raw = String(content || '')
+  if (!raw) return ''
 
-  // Display math: \[ ... \]
-  html = html.replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => {
-    try {
-      return katex.renderToString(tex.trim(), { displayMode: true, throwOnError: false })
-    } catch { return _ }
-  })
-
-  // Inline math: \( ... \)
-  html = html.replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => {
-    try {
-      return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false })
-    } catch { return _ }
-  })
-
-  // Inline math: $ ... $ (single dollar, not greedy, avoid $$)
-  html = html.replace(/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g, (_, tex) => {
-    try {
-      return katex.renderToString(tex.trim(), { displayMode: false, throwOnError: false })
-    } catch { return _ }
-  })
-
-  return html
+  const blocks = raw.split(/(\$\$[\s\S]+?\$\$|\$[^$\n]+\$)/g)
+  return blocks
+    .map((block) => {
+      if (block.startsWith('$$') && block.endsWith('$$')) {
+        return katex.renderToString(block.slice(2, -2), { displayMode: true, throwOnError: false })
+      }
+      if (block.startsWith('$') && block.endsWith('$')) {
+        return katex.renderToString(block.slice(1, -1), { displayMode: false, throwOnError: false })
+      }
+      return escapeHtml(block).replace(/\n/g, '<br/>')
+    })
+    .join('')
 }

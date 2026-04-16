@@ -8,7 +8,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-// Module 聚合图谱模块依赖。
+// Module groups graph dependencies.
 type Module struct {
 	Handler *graphhandler.Handler
 	Service *graphservice.Service
@@ -16,19 +16,25 @@ type Module struct {
 	Driver  neo4j.DriverWithContext
 }
 
-// New 创建图谱模块。
+// New creates a graph module.
 func New(driver neo4j.DriverWithContext) *Module {
 	repo := graphrepo.NewNeo4jRepository(driver)
 	service := graphservice.New(repo)
-	return &Module{Handler: graphhandler.New(service), Service: service, Repo: repo, Driver: driver}
+	return &Module{
+		Handler: graphhandler.New(service),
+		Service: service,
+		Repo:    repo,
+		Driver:  driver,
+	}
 }
 
-// RegisterRoutes 注册图谱路由。
+// RegisterRoutes registers graph routes.
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/subgraph", m.Handler.GetSubgraph)
+	group.GET("/full", m.Handler.GetFullGraph)
 }
 
-// RegisterKnowledgeRoutes 注册知识点详情路由。
+// RegisterKnowledgeRoutes registers knowledge detail routes.
 func (m *Module) RegisterKnowledgeRoutes(group *gin.RouterGroup) {
 	group.GET(":knowledgeId", m.Handler.GetKnowledgeDetail)
 }

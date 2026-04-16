@@ -1,32 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { authState, bootstrapAuth } from './auth'
 
-import AssistantView from './views/AssistantView.vue'
-import GraphView from './views/GraphView.vue'
-import GrowthView from './views/GrowthView.vue'
-import LearnHome from './views/LearnHome.vue'
-import KnowledgeDetail from './views/KnowledgeDetail.vue'
-import LoginView from './views/LoginView.vue'
-import PlaceholderPage from './views/PlaceholderPage.vue'
-import ProfileView from './views/ProfileView.vue'
-import RegisterView from './views/RegisterView.vue'
-import StageDetail from './views/StageDetail.vue'
+import { useUserStore } from './stores/userStore'
+
+const GraphHome = () => import('./views/GraphHome.vue')
+const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
+const LoginView = () => import('./views/LoginView.vue')
+const RegisterView = () => import('./views/RegisterView.vue')
 
 const routes = [
   {
     path: '/',
-    name: 'learn-home',
-    component: LearnHome,
+    name: 'graph-home',
+    component: GraphHome,
     meta: {
-      title: '知识学习',
-    },
-  },
-  {
-    path: '/flow/:stageId',
-    name: 'stage-detail',
-    component: StageDetail,
-    meta: {
-      title: '学练测荐详情',
+      title: '知识图谱',
+      fullscreen: true,
     },
   },
   {
@@ -34,16 +22,7 @@ const routes = [
     name: 'knowledge-detail',
     component: KnowledgeDetail,
     meta: {
-      title: '知识点详情',
-    },
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    component: ProfileView,
-    meta: {
-      title: '个人学习档案',
-      requiresAuth: true,
+      title: '知识详情',
     },
   },
   {
@@ -64,54 +43,6 @@ const routes = [
       guestOnly: true,
     },
   },
-  {
-    path: '/assistant',
-    name: 'assistant',
-    component: AssistantView,
-    meta: {
-      title: 'AI 助学室',
-    },
-  },
-  {
-    path: '/graph',
-    name: 'graph',
-    component: GraphView,
-    meta: {
-      title: '学习路径',
-    },
-  },
-  {
-    path: '/question-graph',
-    name: 'question-graph',
-    component: PlaceholderPage,
-    meta: {
-      title: '问题图谱',
-      description: '问题图谱页面正在开发中，后续会支持错因聚类、薄弱点追踪和问题溯源。',
-    },
-  },
-  {
-    path: '/assignments',
-    name: 'assignments',
-    component: PlaceholderPage,
-    meta: {
-      title: '作业 / 考试',
-      requiresAuth: true,
-      description: '作业 / 考试模块入口已预留，当前先聚焦知识学习、学习路径和能力图谱，后续再补完整流程。',
-    },
-  },
-  {
-    path: '/tasks',
-    redirect: '/assignments',
-  },
-  {
-    path: '/growth',
-    name: 'growth',
-    component: GrowthView,
-    meta: {
-      title: '能力图谱',
-      requiresAuth: true,
-    },
-  },
 ]
 
 const router = createRouter({
@@ -120,25 +51,22 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  await bootstrapAuth()
+  const userStore = useUserStore()
+  await userStore.bootstrap()
 
   if (to.meta?.title) {
-    document.title = `${to.meta.title} | 课程推荐智能体`
+    document.title = `${to.meta.title} | 突破课程边界 · 知识点推荐智能体`
   }
 
-  if (to.meta?.requiresAuth && !authState.token) {
+  if (to.meta?.requiresAuth && !userStore.isAuthenticated) {
     return {
       name: 'login',
-      query: {
-        redirect: to.fullPath,
-      },
+      query: { redirect: to.fullPath },
     }
   }
 
-  if (to.meta?.guestOnly && authState.token) {
-    return {
-      name: 'learn-home',
-    }
+  if (to.meta?.guestOnly && userStore.isAuthenticated) {
+    return { name: 'graph-home' }
   }
 
   return true

@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// MatrixManager 管理能力矩阵热更新与双缓冲切换。
+// MatrixManager maintains the in-memory competency mapping snapshot.
 type MatrixManager struct {
 	logger          *applogger.Logger
 	graphRepo       *graphrepo.Neo4jRepository
@@ -24,7 +24,7 @@ type MatrixManager struct {
 	subscriberOn    atomic.Bool
 }
 
-// NewMatrixManager 创建矩阵管理器。
+// NewMatrixManager creates the matrix manager.
 func NewMatrixManager(logger *applogger.Logger, graphRepo *graphrepo.Neo4jRepository, redisClient *redis.Client, topologyChannel string) *MatrixManager {
 	manager := &MatrixManager{logger: logger, graphRepo: graphRepo, redisClient: redisClient, topologyChannel: topologyChannel}
 	empty := competencyentity.MatrixSnapshot{Version: "bootstrap", UpdatedAt: time.Now().UTC(), Mappings: map[string][]competencyentity.CompetencyWeight{}}
@@ -33,7 +33,7 @@ func NewMatrixManager(logger *applogger.Logger, graphRepo *graphrepo.Neo4jReposi
 	return manager
 }
 
-// Current 返回当前激活矩阵。
+// Current returns the active competency snapshot.
 func (m *MatrixManager) Current() competencyentity.MatrixSnapshot {
 	if m == nil {
 		return competencyentity.MatrixSnapshot{}
@@ -44,17 +44,17 @@ func (m *MatrixManager) Current() competencyentity.MatrixSnapshot {
 	return competencyentity.MatrixSnapshot{}
 }
 
-// Ready 返回矩阵是否已准备就绪。
+// Ready reports whether the matrix has loaded successfully.
 func (m *MatrixManager) Ready() bool {
 	return m != nil && m.ready.Load()
 }
 
-// SubscriberActive 返回订阅器是否处于活跃状态。
+// SubscriberActive reports whether the topology subscriber is active.
 func (m *MatrixManager) SubscriberActive() bool {
 	return m != nil && m.subscriberOn.Load()
 }
 
-// Start 启动矩阵初始化与订阅。
+// Start loads the initial snapshot and subscribes to later updates.
 func (m *MatrixManager) Start(ctx context.Context) {
 	if m == nil {
 		return
@@ -66,7 +66,7 @@ func (m *MatrixManager) Start(ctx context.Context) {
 	go m.subscribe(ctx)
 }
 
-// ComputeScores 根据 mastery 向量计算能力分数。
+// ComputeScores aggregates competency scores from knowledge mastery.
 func (m *MatrixManager) ComputeScores(mastery map[string]float64) []competencyentity.CompetencyScore {
 	snapshot := m.Current()
 	aggregated := make(map[string]competencyentity.CompetencyScore)
@@ -111,10 +111,21 @@ func (m *MatrixManager) reload(ctx context.Context, version string) {
 	if m == nil || m.graphRepo == nil || !m.graphRepo.Enabled() {
 		return
 	}
-	mappings, err := m.graphRepo.LoadCompetencyMappings(ctx)
+
+	reloadCtx := ctx
+	cancel := func() {}
+	if reloadCtx == nil {
+		reloadCtx = context.Background()
+	}
+	if _, hasDeadline := reloadCtx.Deadline(); !hasDeadline {
+		reloadCtx, cancel = context.WithTimeout(reloadCtx, 3*time.Second)
+	}
+	defer cancel()
+
+	mappings, err := m.graphRepo.LoadCompetencyMappings(reloadCtx)
 	if err != nil {
 		if m.logger != nil {
-			m.logger.WithCtx(ctx).Warn("能力矩阵热更新失败", applogger.String("version", version), applogger.ErrorField("error", err))
+			m.logger.WithCtx(reloadCtx).Warn("competency matrix refresh failed", applogger.String("version", version), applogger.ErrorField("error", err))
 		}
 		return
 	}
@@ -122,7 +133,12 @@ func (m *MatrixManager) reload(ctx context.Context, version string) {
 	for knowledgeID, items := range mappings {
 		weights := make([]competencyentity.CompetencyWeight, 0, len(items))
 		for _, item := range items {
-			weights = append(weights, competencyentity.CompetencyWeight{CompetencyID: item.CompetencyID, CompetencyName: item.CompetencyName, Category: item.Category, Weight: item.Weight})
+			weights = append(weights, competencyentity.CompetencyWeight{
+				CompetencyID:   item.CompetencyID,
+				CompetencyName: item.CompetencyName,
+				Category:       item.Category,
+				Weight:         item.Weight,
+			})
 		}
 		converted[knowledgeID] = weights
 	}

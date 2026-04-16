@@ -29,3 +29,5 @@ backend/*.log
 backend/*.err.log
 backend/*.exe
 backend/web/dist/
+.tmp-edge-profile-cdp/
+test-results/

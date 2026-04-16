@@ -1,12 +1,17 @@
 package dto
 
-// SubgraphQuery 定义图谱子图查询参数。
+// SubgraphQuery defines one-hop graph queries around a root node.
 type SubgraphQuery struct {
 	Root  string `form:"root" binding:"omitempty,max=128"`
 	Limit int    `form:"limit" binding:"omitempty,min=1,max=50"`
 }
 
-// GraphNodeView 定义图节点视图。
+// FullGraphQuery defines full graph queries for the homepage graph view.
+type FullGraphQuery struct {
+	Limit int `form:"limit" binding:"omitempty,min=1,max=2000"`
+}
+
+// GraphNodeView represents a knowledge graph node.
 type GraphNodeView struct {
 	ID               string `json:"id"`
 	RouteKnowledgeID string `json:"routeKnowledgeId"`
@@ -16,9 +21,10 @@ type GraphNodeView struct {
 	Description      string `json:"description"`
 	ChapterTitle     string `json:"chapterTitle"`
 	SourcePath       string `json:"sourcePath"`
+	CuratedSource    string `json:"curatedSource"`
 }
 
-// GraphEdgeView 定义图边视图。
+// GraphEdgeView represents a relationship between two graph nodes.
 type GraphEdgeView struct {
 	RelationID   string `json:"relationId"`
 	RelationType string `json:"relationType"`
@@ -28,13 +34,13 @@ type GraphEdgeView struct {
 	TargetName   string `json:"targetName"`
 }
 
-// SubgraphResponse 定义子图响应。
+// SubgraphResponse is returned by graph query endpoints.
 type SubgraphResponse struct {
 	Nodes []GraphNodeView `json:"nodes"`
 	Edges []GraphEdgeView `json:"edges"`
 }
 
-// KnowledgeDetailView 定义知识点详情视图。
+// KnowledgeDetailView represents detail information for a knowledge node.
 type KnowledgeDetailView struct {
 	ID               string   `json:"id"`
 	RouteKnowledgeID string   `json:"routeKnowledgeId"`
@@ -44,6 +50,7 @@ type KnowledgeDetailView struct {
 	Description      string   `json:"description"`
 	ChapterTitle     string   `json:"chapterTitle"`
 	SourcePath       string   `json:"sourcePath"`
+	CuratedSource    string   `json:"curatedSource"`
 	Summary          string   `json:"summary"`
 	Prerequisites    []string `json:"prerequisites"`
 	Related          []string `json:"related"`

@@ -97,6 +97,76 @@ RETURN collect(DISTINCT root) AS roots,
 	return payload.Nodes, payload.Edges, nil
 }
 
+// LoadFullGraph loads a bounded knowledge graph snapshot for the homepage graph view.
+func (r *Neo4jRepository) LoadFullGraph(ctx context.Context, limit int) ([]graphentity.Node, []graphentity.Edge, error) {
+	if !r.Enabled() {
+		return nil, nil, neo4jUsageError("neo4j 未启用")
+	}
+	if limit <= 0 {
+		limit = 1000
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (node:KnowledgeNode)
+WITH node
+ORDER BY coalesce(node.name, node.canonicalName, node.knowledge_id, node.node_id, node.id)
+LIMIT $limit
+WITH collect(node) AS nodes
+UNWIND nodes AS node
+OPTIONAL MATCH (node)-[rel]-(neighbor:KnowledgeNode)
+WHERE neighbor IN nodes
+RETURN nodes AS nodes,
+       collect(DISTINCT {
+         relation_id: toString(id(rel)),
+         relation_type: type(rel),
+         source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+         target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+         source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+         target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+       }) AS edges
+`
+		records, runErr := tx.Run(ctx, query, map[string]any{"limit": limit})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes []graphentity.Node
+				Edges []graphentity.Edge
+			}{Nodes: []graphentity.Node{}, Edges: []graphentity.Edge{}}, nil
+		}
+
+		record := records.Record()
+		nodesValue, _ := record.Get("nodes")
+		edgesValue, _ := record.Get("edges")
+
+		return struct {
+			Nodes []graphentity.Node
+			Edges []graphentity.Edge
+		}{
+			Nodes: dedupeNodes(parseGraphNodes(nodesValue)),
+			Edges: parseGraphEdges(edgesValue),
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("查询完整知识图谱失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes []graphentity.Node
+		Edges []graphentity.Edge
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, nil
+	}
+
+	return payload.Nodes, payload.Edges, nil
+}
+
 func (r *Neo4jRepository) resolveDefaultRoot(ctx context.Context, session neo4j.SessionWithContext) (string, error) {
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
@@ -415,7 +485,18 @@ func parseSingleNode(value any) graphentity.Node {
 	description := stringOrDefault(properties["description"], "")
 	chapterTitle := stringOrDefault(properties["chapterTitle"], stringOrDefault(properties["chapter_title"], ""))
 	sourcePath := stringOrDefault(properties["sourcePath"], stringOrDefault(properties["source_path"], ""))
-	return graphentity.Node{ID: id, RouteKnowledgeID: id, Name: name, CanonicalName: canonical, EntityType: entityType, Description: description, ChapterTitle: chapterTitle, SourcePath: sourcePath}
+	curatedSource := stringOrDefault(properties["curatedSource"], stringOrDefault(properties["curated_source"], ""))
+	return graphentity.Node{
+		ID:               id,
+		RouteKnowledgeID: id,
+		Name:             name,
+		CanonicalName:    canonical,
+		EntityType:       entityType,
+		Description:      description,
+		ChapterTitle:     chapterTitle,
+		SourcePath:       sourcePath,
+		CuratedSource:    curatedSource,
+	}
 }
 
 func parseGraphEdges(value any) []graphentity.Edge {

@@ -7,6 +7,7 @@ import (
 	recommendhandler "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/handler"
 	recommendservice "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/service"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 // Module 聚合推荐模块依赖。
@@ -16,9 +17,10 @@ type Module struct {
 }
 
 // New 创建推荐模块。
-func New(graphService *graphservice.Service, redisClient *redis.Client) *Module {
+func New(graphService *graphservice.Service, redisClient *redis.Client, db *gorm.DB) *Module {
 	redisRepo := learningrepo.NewRedisRepository(redisClient)
-	service := recommendservice.New(graphService, redisRepo)
+	stateRepo := learningrepo.NewStateMySQLRepository(db)
+	service := recommendservice.New(graphService, redisRepo, stateRepo)
 	return &Module{Handler: recommendhandler.New(service), Service: service}
 }
 

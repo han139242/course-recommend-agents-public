@@ -1,8 +1,8 @@
 export const navTabs = [
   { label: '知识学习', to: '/' },
   { label: 'AI 助学室', to: '/assistant' },
-  { label: '学习路径', to: '/graph' },
-  { label: '能力图谱', to: '/growth' },
+  { label: '下一步学习', to: '/graph' },
+  { label: '能力主线', to: '/growth' },
 ]
 
 export const profileData = {
@@ -18,7 +18,7 @@ export const profileData = {
   ],
   goals: ['补齐偏导数与优化方法', '进入 CNN 训练主线', '完成图像分类项目实践'],
   recentRecords: [
-    '完成“梯度下降”补弱学习，掌握度提升至 52%',
+    '完成“梯度下降”补弱学习，已经能接回损失函数和参数更新',
     '完成 2 组跨课程练习，数学基础错误率下降',
     '收到新的进阶推荐：卷积神经网络 CNN',
   ],
@@ -70,7 +70,7 @@ export const stageTabs = [
     panelTitle: '测评结果',
     panelContent: '导数与梯度关系掌握良好，但优化器选择与学习率调节仍然薄弱，建议回补优化基础。',
     feedbackLabel: '评估输出',
-    feedbackContent: '掌握度更新 + 能力画像刷新 + 推荐策略调整',
+    feedbackContent: '测后结论 + 薄弱点回流 + 推荐调整',
     tips: ['短测不打断学习', '关注真实掌握', '测后立即给建议'],
   },
   {
@@ -78,17 +78,17 @@ export const stageTabs = [
     label: '荐',
     title: '智能推荐',
     intro: '系统根据薄弱点、目标方向和兴趣偏好，动态生成补弱、进阶和场景化路径。',
-    panelTitle: '推荐路径',
+    panelTitle: '推荐安排',
     panelContent: '当前建议优先补“优化方法”相关知识点，再进入“卷积网络训练”，最后完成一个图像分类项目。',
     feedbackLabel: '推荐依据',
-    feedbackContent: '掌握度 + 先修依赖 + 能力目标 + 场景偏好',
+    feedbackContent: '先修依赖 + 当前薄弱点 + 目标方向 + 场景偏好',
     tips: ['补弱推荐', '进阶推荐', '场景型推荐'],
   },
 ]
 
 export const valueCards = [
   { title: '哪里不会，就从哪里开始', description: '系统会直接定位薄弱知识点，并推荐最需要回补的内容。' },
-  { title: '不被课程顺序绑住', description: '学习路径按知识点关系组织，而不是按固定章节线性推进。' },
+  { title: '不被课程顺序绑住', description: '学习顺序按知识点关系组织，而不是按固定章节线性推进。' },
   { title: '学完马上知道下一步', description: '每次学习后都会给出可执行的补弱、进阶或项目推荐。' },
 ]
 
@@ -157,7 +157,7 @@ export const recommendationStories = [
     type: '关联知识点',
     domain: '知识图谱',
     storyTitle: '理解系统如何组织跨课程知识',
-    storyDetail: '当你开始进入推荐系统和学习路径设计时，知识图谱建模会帮助你看懂知识点之间的连接逻辑。',
+    storyDetail: '当你开始进入推荐系统和学习安排设计时，知识图谱建模会帮助你看懂知识点之间的连接逻辑。',
     nextStep: '先理解图结构与实体关系，再进入图查询和推荐关联。',
     route: '/knowledge/knowledge-graph',
   },
@@ -259,7 +259,7 @@ export const knowledgeDetails = {
     title: '梯度下降',
     domain: '机器学习',
     summary: '模型训练中的核心优化方法，也是连接高数导数与机器学习训练过程的关键知识点。',
-    mastery: '当前掌握度 52%，建议优先补弱。',
+    mastery: '当前处于补基础阶段，建议优先补弱。',
     recommendReason: '你在损失函数理解上表现稳定，但在偏导数计算和学习率选择上出现连续错误。',
     prerequisites: ['导数', '偏导数', '函数极值'],
     related: ['损失函数', '反向传播', '优化器选择'],
@@ -270,7 +270,7 @@ export const knowledgeDetails = {
     title: '卷积神经网络 CNN',
     domain: '深度学习',
     summary: '图像任务中的核心模型结构，连接线性代数、特征提取、模型训练与视觉场景。',
-    mastery: '当前掌握度 66%，适合继续进阶。',
+    mastery: '当前已经具备继续进阶的基础。',
     recommendReason: '你已具备基本模型理解能力，可以从卷积与池化进入图像任务学习主线。',
     prerequisites: ['矩阵运算', '梯度下降', '神经网络基础'],
     related: ['图像分类', '目标检测', '特征提取'],
@@ -281,7 +281,7 @@ export const knowledgeDetails = {
     title: '检索增强生成 RAG',
     domain: '大模型',
     summary: '把检索系统与生成模型结合的关键能力点，适合智能体与大模型应用方向。',
-    mastery: '当前掌握度 34%，建议先补检索与向量表示。',
+    mastery: '当前建议先补检索与向量表示。',
     recommendReason: '如果你的目标是大模型应用开发，RAG 是连接知识库、检索和智能体的重要中间层。',
     prerequisites: ['向量表示', 'Embedding', '检索基础'],
     related: ['知识库问答', 'Agent 工具调用', '向量数据库'],
@@ -292,10 +292,10 @@ export const knowledgeDetails = {
     title: '知识图谱建模',
     domain: '知识图谱',
     summary: '将知识点、课程、能力和场景组织为结构化关系网络，是推荐智能体的重要底座。',
-    mastery: '当前掌握度 41%，建议先补图结构与实体关系。',
+    mastery: '当前建议先补图结构与实体关系。',
     recommendReason: '你已经开始进入推荐系统设计阶段，知识图谱能帮助你理解跨课程关联如何组织。',
     prerequisites: ['图结构基础', '实体关系', '图查询'],
-    related: ['Neo4j', '推荐路径', '能力画像'],
-    scenarios: ['课程知识网络', '跨课程推荐系统', '智能学习路径生成'],
+    related: ['Neo4j', '推荐逻辑', '知识主线'],
+    scenarios: ['课程知识网络', '跨课程推荐系统', '个性化学习安排'],
   },
 }

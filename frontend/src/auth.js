@@ -58,6 +58,11 @@ function normalizeRecommendationItems(items) {
     .filter(isUsableRecommendationItem)
     .map((item) => ({
       ...item,
+      mastery: Number(item.mastery ?? item.masteryScore ?? 0),
+      masteryScore: Number(item.masteryScore ?? item.mastery ?? 0),
+      correctRate: Number(item.correctRate ?? 0),
+      answeredCount: Number(item.answeredCount ?? 0),
+      knowledgeId: String(item.knowledgeId || '').trim(),
       route: resolveFriendlyKnowledgeRoute(item.route, item.title),
     }))
 }
@@ -86,13 +91,24 @@ async function apiRequest(path, options = {}) {
   let lastError = null
 
   for (const baseUrl of candidates) {
+    let timeoutId = null
     try {
+      const controller = new AbortController()
+      const timeoutMs = Number(options.timeoutMs || 0)
+      if (timeoutMs > 0) {
+        timeoutId = window.setTimeout(() => {
+          controller.abort(new Error('request_timeout'))
+        }, timeoutMs)
+      }
+
       const response = await fetch(`${baseUrl}${path}`, {
         ...options,
         headers,
+        signal: options.signal || controller.signal,
       })
 
       const payload = await response.json().catch(() => ({}))
+      if (timeoutId) window.clearTimeout(timeoutId)
 
       if (!response.ok) {
         const message = payload.message || '请求失败，请稍后重试。'
@@ -111,6 +127,10 @@ async function apiRequest(path, options = {}) {
       apiBaseUrlConfirmed = true
       return payload.data ?? {}
     } catch (error) {
+      if (error?.name === 'AbortError') {
+        lastError = new Error('请求超时，请确认后端服务正常运行后重试。')
+        continue
+      }
       const msg = error?.message || ''
       if (msg === 'Failed to fetch' || error?.name === 'TypeError') {
         lastError = new Error(
@@ -119,6 +139,8 @@ async function apiRequest(path, options = {}) {
       } else {
         lastError = error
       }
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId)
     }
   }
 
@@ -227,6 +249,15 @@ export async function fetchGraphSubgraph(root = '', limit = 12) {
   })
 }
 
+export async function fetchFullGraph(limit = 120) {
+  const params = new URLSearchParams()
+  params.set('limit', String(limit))
+  return apiRequest(`/graph/full?${params.toString()}`, {
+    method: 'GET',
+    timeoutMs: 12000,
+  })
+}
+
 export async function fetchKnowledgeDetail(id) {
   return apiRequest(`/knowledge/${id}`, {
     method: 'GET',
@@ -239,8 +270,15 @@ export async function fetchCompetencyProfile() {
   })
 }
 
-export async function fetchRecommendedPath() {
-  const data = await apiRequest('/recommend/path', {
+export async function fetchRecommendedPath(params = {}) {
+  const query = new URLSearchParams()
+  if (params.target) query.set('target', String(params.target))
+  if (params.scene) query.set('scene', String(params.scene))
+  if (params.knowledgeId) query.set('knowledgeId', String(params.knowledgeId))
+  if (params.limit) query.set('limit', String(params.limit))
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+
+  const data = await apiRequest(`/recommend/path${suffix}`, {
     method: 'GET',
   })
   return {

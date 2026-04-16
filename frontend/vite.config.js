@@ -11,6 +11,22 @@ export default defineConfig({
   build: {
     outDir: '../backend/web/dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('@antv/g6') || id.includes('@antv/g-webgl')) {
+            return 'antv'
+          }
+          if (id.includes('katex')) {
+            return 'katex'
+          }
+          if (id.includes('node_modules/vue') || id.includes('vue-router') || id.includes('pinia')) {
+            return 'vue'
+          }
+          return undefined
+        },
+      },
+    },
   },
   server: {
     proxy: {

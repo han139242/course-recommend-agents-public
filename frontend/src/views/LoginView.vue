@@ -1,83 +1,66 @@
-<script setup>
+﻿<script setup>
 import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
-import { login } from '../auth'
+import { useUserStore } from '../stores/userStore'
 
 const route = useRoute()
 const router = useRouter()
-
-const submitting = ref(false)
-const errorMessage = ref('')
-
+const userStore = useUserStore()
 const form = reactive({
   email: '',
   password: '',
 })
+const loading = ref(false)
+const error = ref('')
 
-async function handleSubmit() {
-  submitting.value = true
-  errorMessage.value = ''
+function fillDemoStudent() {
+  form.email = 'student@test.local'
+  form.password = 'TestPass123!'
+}
+
+async function submit() {
+  error.value = ''
+  loading.value = true
 
   try {
-    await login(form)
-    router.push(String(route.query.redirect || '/'))
-  } catch (error) {
-    errorMessage.value = error.message
+    await userStore.login(form.email, form.password)
+    const redirect = route.query.redirect ? decodeURIComponent(route.query.redirect) : '/'
+    router.push(redirect)
+  } catch (loginError) {
+    error.value = loginError?.message || '登录失败，请检查用户名和密码。'
   } finally {
-    submitting.value = false
+    loading.value = false
   }
 }
 </script>
 
 <template>
-  <section class="auth-page">
-    <div class="detail-hero">
-      <span class="section-tag">账号登录</span>
-      <h1>登录你的学习账号</h1>
-      <p>登录后可保存学习记录、查看个人档案，并让推荐结果和你的真实学习目标保持一致。</p>
-    </div>
+  <section class="auth-view page-frame">
+    <div class="auth-card page-card">
+      <p class="eyebrow">欢迎回来</p>
+      <h1>登录学习空间</h1>
+      <p>登录后可以同步个人学习进度、收藏和 AI 推荐路径。</p>
+      <p>当前测试学生账号：`student@test.local` / `TestPass123!`。</p>
+      <button type="button" class="secondary-btn" @click="fillDemoStudent">填入测试学生账号</button>
 
-    <div class="auth-layout">
-      <article class="auth-card">
-        <div class="section-head compact">
-          <div>
-            <span class="section-tag">登录</span>
-            <h2>欢迎回来</h2>
-          </div>
-        </div>
+      <label>
+        邮箱
+        <input v-model="form.email" type="email" placeholder="student@test.local" />
+      </label>
+      <label>
+        密码
+        <input v-model="form.password" type="password" placeholder="TestPass123!" />
+      </label>
 
-        <form class="auth-form" @submit.prevent="handleSubmit">
-          <label class="auth-field">
-            <span>邮箱</span>
-            <input v-model.trim="form.email" type="email" placeholder="请输入邮箱" autocomplete="email" />
-          </label>
+      <p v-if="error" class="form-error">{{ error }}</p>
 
-          <label class="auth-field">
-            <span>密码</span>
-            <input
-              v-model="form.password"
-              type="password"
-              placeholder="请输入密码"
-              autocomplete="current-password"
-            />
-          </label>
+      <button type="button" class="primary-btn" :disabled="loading" @click="submit">
+        {{ loading ? '登录中...' : '登录' }}
+      </button>
 
-          <p v-if="errorMessage" class="auth-error">{{ errorMessage }}</p>
-
-          <button class="auth-submit" type="submit" :disabled="submitting">
-            {{ submitting ? '登录中...' : '登录并进入学习空间' }}
-          </button>
-        </form>
-      </article>
-
-      <aside class="auth-side">
-        <div class="detail-side-card">
-          <span class="section-tag">账号开通</span>
-          <h3>当前阶段不开放自主注册</h3>
-          <p class="auth-side-copy">请联系教师或管理员统一创建学生账号。创建完成后，直接使用邮箱和密码登录即可。</p>
-        </div>
-      </aside>
+      <RouterLink class="link-button" to="/register">没有账号？去注册</RouterLink>
+      <RouterLink class="secondary-btn" to="/">返回图谱</RouterLink>
     </div>
   </section>
 </template>

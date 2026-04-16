@@ -10,6 +10,7 @@ type Node struct {
 	Description      string
 	ChapterTitle     string
 	SourcePath       string
+	CuratedSource    string
 }
 
 // Edge 表示图边。

@@ -96,7 +96,7 @@ func proxyAIStream(ctx *gin.Context, cfg config.Config) {
 	}
 
 	ctx.Status(response.StatusCode)
-	ctx.Header("Content-Type", "text/event-stream")
+	ctx.Header("Content-Type", "text/event-stream; charset=utf-8")
 	ctx.Header("Cache-Control", "no-cache")
 	ctx.Header("Connection", "keep-alive")
 
