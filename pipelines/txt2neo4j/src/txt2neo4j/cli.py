@@ -8,7 +8,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .curated_graph import merge_curated_graph
-from .neo4j_import import import_bundle
+from .frontier_pipeline import run_frontier_pipeline
+from .neo4j_import import import_bundle, import_frontier_bundle
 from .pipeline import run_pipeline
 
 
@@ -17,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="txt2neo4j",
         description="High-precision TXT to Neo4j extraction pipeline",
     )
-    parser.add_argument("--input", required=True, help="Path to the source TXT file")
+    parser.add_argument("--input", help="Path to the source TXT file")
     parser.add_argument(
         "--output-dir",
         default="artifacts/txt2neo4j",
@@ -27,6 +28,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--import-neo4j",
         action="store_true",
         help="Import exported graph data into Neo4j after extraction",
+    )
+    parser.add_argument(
+        "--frontier-input",
+        help="Path to local frontier paper metadata in JSON or JSONL format",
+    )
+    parser.add_argument(
+        "--frontier-output-dir",
+        default="artifacts/frontier",
+        help="Directory for frontier digests, topic mappings, and Neo4j CSV exports",
+    )
+    parser.add_argument(
+        "--import-frontier-neo4j",
+        action="store_true",
+        help="Import generated frontier metadata into Neo4j after extraction",
     )
     parser.add_argument(
         "--import-curated-seed",
@@ -50,19 +65,39 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    input_path = Path(args.input).resolve()
+    if not args.input and not args.frontier_input and not args.import_curated_seed:
+        parser.error("At least one of --input, --frontier-input, or --import-curated-seed is required.")
+
+    bundle = None
+    frontier_bundle = None
+    input_path = Path(args.input).resolve() if args.input else None
     output_dir = Path(args.output_dir).resolve()
+    frontier_input_path = Path(args.frontier_input).resolve() if args.frontier_input else None
+    frontier_output_dir = Path(args.frontier_output_dir).resolve()
 
-    bundle = run_pipeline(input_path, output_dir)
+    if input_path:
+        bundle = run_pipeline(input_path, output_dir)
 
-    if args.import_neo4j:
-        import_bundle(
-            bundle=bundle,
-            uri=args.neo4j_uri,
-            username=args.neo4j_user,
-            password=args.neo4j_password,
-            database=args.neo4j_database,
-        )
+        if args.import_neo4j:
+            import_bundle(
+                bundle=bundle,
+                uri=args.neo4j_uri,
+                username=args.neo4j_user,
+                password=args.neo4j_password,
+                database=args.neo4j_database,
+            )
+
+    if frontier_input_path:
+        frontier_bundle = run_frontier_pipeline(frontier_input_path, frontier_output_dir)
+
+        if args.import_frontier_neo4j or args.import_neo4j:
+            import_frontier_bundle(
+                bundle=frontier_bundle,
+                uri=args.neo4j_uri,
+                username=args.neo4j_user,
+                password=args.neo4j_password,
+                database=args.neo4j_database,
+            )
 
     curated_report = None
     if args.import_curated_seed:
@@ -77,12 +112,17 @@ def main() -> None:
     print(
         json.dumps(
             {
-                "source": str(input_path),
+                "source": str(input_path) if input_path else "",
                 "output_dir": str(output_dir),
-                "structure_nodes": len(bundle.structure_nodes),
-                "knowledge_nodes": len(bundle.knowledge_nodes),
-                "relations": len(bundle.relations),
-                "quality_gate_passed": bundle.quality_report["quality_gate_passed"],
+                "structure_nodes": len(bundle.structure_nodes) if bundle else 0,
+                "knowledge_nodes": len(bundle.knowledge_nodes) if bundle else 0,
+                "relations": len(bundle.relations) if bundle else 0,
+                "quality_gate_passed": bundle.quality_report["quality_gate_passed"] if bundle else None,
+                "frontier_source": str(frontier_input_path) if frontier_input_path else "",
+                "frontier_output_dir": str(frontier_output_dir),
+                "frontier_papers": len(frontier_bundle.papers) if frontier_bundle else 0,
+                "frontier_topics": len(frontier_bundle.topics) if frontier_bundle else 0,
+                "frontier_digests": len(frontier_bundle.digests) if frontier_bundle else 0,
                 "curated_report": curated_report,
             },
             ensure_ascii=False,

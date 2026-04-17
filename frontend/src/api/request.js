@@ -80,6 +80,7 @@ export async function streamRequest(path, options = {}) {
     headers = {},
     body,
     onMessage,
+    onEvent,
     signal,
     ...restOptions
   } = options
@@ -131,6 +132,9 @@ export async function streamRequest(path, options = {}) {
       const token = payload?.choices?.[0]?.delta?.content || ''
       if (token && typeof onMessage === 'function') {
         onMessage(token, payload)
+      }
+      if (typeof onEvent === 'function') {
+        onEvent(payload)
       }
     }
   }

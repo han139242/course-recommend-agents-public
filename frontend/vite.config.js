@@ -8,14 +8,20 @@ const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8080'
 export default defineConfig({
   envDir,
   plugins: [vue()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.js',
+    clearMocks: true,
+  },
   build: {
     outDir: '../backend/web/dist',
     emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('@antv/g6') || id.includes('@antv/g-webgl')) {
-            return 'antv'
+          if (id.includes('vis-network') || id.includes('vis-data') || id.includes('vis-util') || id.includes('keycharm') || id.includes('component-emitter') || id.includes('uuid') || id.includes('hammerjs')) {
+            return 'graph-engine'
           }
           if (id.includes('katex')) {
             return 'katex'

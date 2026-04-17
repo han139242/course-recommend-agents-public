@@ -21,6 +21,8 @@ function createSeedMessage(detail) {
   const name = detail?.canonicalName || detail?.name || '当前知识点'
   return {
     role: 'assistant',
+    agent: 'explorer',
+    agentLabel: '知识探索助手',
     content: `我们现在聚焦在“${name}”。如果你愿意，我可以帮你解释概念、梳理前置知识，或者给出下一步学习建议。`,
   }
 }
@@ -57,7 +59,21 @@ function buildLocalFallbackReply(detail, question) {
   return sections.join('\n\n')
 }
 
-export function useAiChat(selectedDetail, isAuthenticated) {
+function buildErrorHint(error) {
+  const message = String(error?.message || '').trim()
+
+  if (Number(error?.status) === 503 && /OPENAI_API_KEY|DEEPSEEK_API_KEY/i.test(message)) {
+    return [
+      '当前项目还没有配置可用的后端 AI Key。',
+      '请在项目根目录的 `.env` 里配置 `OPENAI_API_KEY`（或兼容的 `DEEPSEEK_API_KEY`），然后重启后端服务。',
+      '密钥只放后端，不要放到前端。',
+    ].join('\n')
+  }
+
+  return `提示：线上模型当前返回了异常，原因是：${message || '未知错误'}`
+}
+
+export function useAiChat(selectedDetail, isAuthenticated, options = {}) {
   const sessions = reactive({})
   const sending = ref(false)
 
@@ -87,6 +103,7 @@ export function useAiChat(selectedDetail, isAuthenticated) {
       `对比 ${name} 和相关知识`,
       `推荐 ${name} 的下一步学习`,
       `高亮 ${name} 的前置链`,
+      `展开 ${name} 的关联节点`,
     ]
   })
 
@@ -101,7 +118,7 @@ export function useAiChat(selectedDetail, isAuthenticated) {
 
     const baseMessages = sessions[key]
     baseMessages.push({ role: 'user', content: text })
-    const reply = { role: 'assistant', content: '' }
+    const reply = { role: 'assistant', content: '', agent: '', agentLabel: '' }
     baseMessages.push(reply)
 
     const payload = [
@@ -119,11 +136,22 @@ export function useAiChat(selectedDetail, isAuthenticated) {
         onMessage(chunk) {
           reply.content += chunk
         },
+        onEvent(payload) {
+          if (payload?.type === 'assistant_meta') {
+            if (payload.agent || payload.agentLabel) {
+              reply.agent = String(payload.agent || '').trim()
+              reply.agentLabel = String(payload.agentLabel || '').trim()
+            }
+            if (Array.isArray(payload.actions)) {
+              options.onActions?.(payload.actions)
+            }
+          }
+        },
       })
     } catch (error) {
       reply.content =
         reply.content ||
-        `${buildLocalFallbackReply(selectedDetail.value, text)}\n\n提示：线上模型当前返回了异常，原因是：${error.message || '未知错误'}`
+        `${buildLocalFallbackReply(selectedDetail.value, text)}\n\n${buildErrorHint(error)}`
     } finally {
       sending.value = false
     }

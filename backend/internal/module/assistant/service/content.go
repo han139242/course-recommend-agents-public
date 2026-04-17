@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	assistantdto "github.com/han139242/course-recommend-agents/backend/internal/module/assistant/dto"
 	frontierdto "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/dto"
 	recommenddto "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/dto"
@@ -161,8 +162,23 @@ func (s *Service) GenerateKnowledgeCard(ctx context.Context, request assistantdt
 }
 
 func (s *Service) requestPlainModel(ctx context.Context, messages []map[string]any, maxTokens int) (string, error) {
+	var lastErr error
+	for _, provider := range s.aiCfg.Providers() {
+		content, err := s.requestPlainModelWithProvider(ctx, provider, messages, maxTokens)
+		if err == nil {
+			return content, nil
+		}
+		lastErr = err
+	}
+	if lastErr != nil {
+		return "", lastErr
+	}
+	return "", apperr.ErrDependencyUnavailable.WithCause(errors.New("knowledge card provider is not configured"))
+}
+
+func (s *Service) requestPlainModelWithProvider(ctx context.Context, provider config.AIProviderConfig, messages []map[string]any, maxTokens int) (string, error) {
 	payload := map[string]any{
-		"model":    s.aiCfg.ChatModel,
+		"model":    provider.ChatModel,
 		"messages": messages,
 		"stream":   false,
 	}
@@ -175,15 +191,15 @@ func (s *Service) requestPlainModel(ctx context.Context, messages []map[string]a
 		return "", apperr.ErrInternal.WithCause(err)
 	}
 
-	baseURL := strings.TrimRight(s.aiCfg.BaseURL, "/")
+	baseURL := strings.TrimRight(provider.BaseURL, "/")
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
 	if err != nil {
 		return "", apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", "Bearer "+s.aiCfg.APIKey)
+	request.Header.Set("Authorization", "Bearer "+provider.APIKey)
 
-	response, err := s.doModelRequest(request, 2)
+	response, err := s.doModelRequest(request, s.providerRetries())
 	if err != nil {
 		return "", apperr.ErrDependencyUnavailable.WithCause(err)
 	}

@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
+import BridgeView from './BridgeView.vue'
 import { useUserStore } from '../../stores/userStore'
 import { useGraphStore } from '../../stores/graphStore'
 
@@ -57,10 +58,20 @@ function getStatusMeta(routeKnowledgeId) {
 const crossCourseRecommends = computed(() => {
   const currentCourse = props.detail?.chapterTitle || ''
   return (props.recommendedPath || [])
+    .map((item) => {
+      const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
+      return {
+        ...item,
+        sourceCourse: item.sourceCourse || currentCourse || '',
+        targetCourse: item.targetCourse || node?.chapterTitle || '',
+      }
+    })
     .filter((item) => {
       if (!item?.title && !item?.knowledgeId) return false
-      const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
-      return node && node.chapterTitle !== currentCourse
+      if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
+        return item.sourceCourse !== item.targetCourse
+      }
+      return Boolean(item.targetCourse && item.targetCourse !== currentCourse)
     })
     .slice(0, 3)
 })
@@ -150,10 +161,17 @@ function saveNote() {
               <span class="recommend-card__badge">{{ item.reasonLabel || '推荐' }}</span>
               <span class="recommend-card__course">{{ item.stage || '跨课程' }}</span>
             </div>
+            <div
+              v-if="item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse"
+            >
+              <BridgeView :item="item" />
+            </div>
             <button type="button" class="recommend-card__title" @click="emit('select-related', item.knowledgeId || item.title)">
               {{ item.title }}
             </button>
-            <p class="recommend-card__detail">{{ item.detail || '基于你当前的学习路径，推荐探索此知识点' }}</p>
+            <p v-if="item.reasonCode !== 'cross_course_transfer'" class="recommend-card__detail">
+              {{ item.detail || '基于你当前的学习路径，推荐探索此知识点' }}
+            </p>
             <div class="recommend-card__bar">
               <div class="progress-track">
                 <span class="progress-fill" :style="{ width: `${Math.round(item.masteryScore || 0)}%` }"></span>

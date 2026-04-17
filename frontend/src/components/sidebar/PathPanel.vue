@@ -128,6 +128,14 @@ function handleStartPath(nodeIds) {
   if (!routeIds.length) return
   emit('start-path', routeIds)
 }
+
+function getRecommendedPathLabel(item) {
+  if (!item) return ''
+  if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
+    return `${item.sourceCourse} → ${item.targetCourse} · ${item.title}`
+  }
+  return `${item.stage ? `${item.stage} · ` : ''}${item.title}`
+}
 </script>
 
 <template>
@@ -143,7 +151,7 @@ function handleStartPath(nodeIds) {
       <template v-if="recommendedRouteIds.length">
         <div class="path-chain">
           <span v-for="item in recommendedPath" :key="item.knowledgeId || item.title">
-            {{ item.stage ? `${item.stage} · ` : '' }}{{ item.title }}
+            {{ getRecommendedPathLabel(item) }}
           </span>
         </div>
 

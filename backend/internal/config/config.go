@@ -40,9 +40,9 @@ func Load() (Config, error) {
 			Env:  appEnv,
 		},
 		HTTP: HTTPConfig{
-			Host:            getEnv("HTTP_HOST", "0.0.0.0"),
-			Port:            getEnv("HTTP_PORT", "8080"),
-			ReadTimeout:     getDurationEnv("HTTP_READ_TIMEOUT", 5*time.Second),
+			Host:        getEnv("HTTP_HOST", "0.0.0.0"),
+			Port:        getEnv("HTTP_PORT", "8080"),
+			ReadTimeout: getDurationEnv("HTTP_READ_TIMEOUT", 5*time.Second),
 			// AI 对话与学习内容生成会走流式输出，默认 10s 会导致响应被服务端提前截断。
 			WriteTimeout:    getDurationEnv("HTTP_WRITE_TIMEOUT", 2*time.Minute),
 			ShutdownTimeout: getDurationEnv("HTTP_SHUTDOWN_TIMEOUT", 10*time.Second),
@@ -64,12 +64,7 @@ func Load() (Config, error) {
 			JWTSecret: getEnv("JWT_SECRET", defaultJWTSecret(appEnv)),
 			TokenTTL:  getDurationEnv("JWT_TOKEN_TTL", 24*time.Hour),
 		},
-		AI: AIConfig{
-			APIKey:      os.Getenv("DEEPSEEK_API_KEY"),
-			BaseURL:     getEnv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-			ChatModel:   getEnv("DEEPSEEK_MODEL", "deepseek-chat"),
-			VisionModel: getEnv("DEEPSEEK_VISION_MODEL", ""),
-		},
+		AI: buildAIConfig(),
 		Frontend: FrontendConfig{
 			DistDir: getEnv("FRONTEND_DIST_DIR", "web/dist"),
 		},
@@ -177,6 +172,60 @@ func defaultJWTSecret(appEnv string) string {
 	return "course-recommend-dev-secret"
 }
 
+func buildAIConfig() AIConfig {
+	openAIKey := strings.TrimSpace(os.Getenv("OPENAI_API_KEY"))
+	deepseekKey := strings.TrimSpace(os.Getenv("DEEPSEEK_API_KEY"))
+
+	openAIProvider := AIProviderConfig{
+		APIKey:      openAIKey,
+		BaseURL:     strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")),
+		ChatModel:   strings.TrimSpace(os.Getenv("OPENAI_MODEL")),
+		VisionModel: strings.TrimSpace(os.Getenv("OPENAI_VISION_MODEL")),
+	}
+	if openAIProvider.BaseURL == "" && openAIProvider.APIKey != "" {
+		openAIProvider.BaseURL = "https://api.openai.com"
+	}
+	if openAIProvider.ChatModel == "" && openAIProvider.APIKey != "" {
+		openAIProvider.ChatModel = "gpt-4.1-mini"
+	}
+
+	deepseekProvider := AIProviderConfig{
+		APIKey:      deepseekKey,
+		BaseURL:     strings.TrimSpace(os.Getenv("DEEPSEEK_BASE_URL")),
+		ChatModel:   strings.TrimSpace(os.Getenv("DEEPSEEK_MODEL")),
+		VisionModel: strings.TrimSpace(os.Getenv("DEEPSEEK_VISION_MODEL")),
+	}
+	if deepseekProvider.BaseURL == "" && deepseekProvider.APIKey != "" {
+		deepseekProvider.BaseURL = "https://api.deepseek.com"
+	}
+	if deepseekProvider.ChatModel == "" && deepseekProvider.APIKey != "" {
+		deepseekProvider.ChatModel = "deepseek-chat"
+	}
+
+	primary := AIProviderConfig{}
+	fallback := AIProviderConfig{}
+	switch {
+	case openAIProvider.Enabled():
+		primary = openAIProvider
+		if deepseekProvider.Enabled() {
+			fallback = deepseekProvider
+		}
+	case deepseekProvider.Enabled():
+		primary = deepseekProvider
+	}
+
+	return AIConfig{
+		APIKey:              primary.APIKey,
+		BaseURL:             primary.BaseURL,
+		ChatModel:           primary.ChatModel,
+		VisionModel:         primary.VisionModel,
+		FallbackAPIKey:      fallback.APIKey,
+		FallbackBaseURL:     fallback.BaseURL,
+		FallbackChatModel:   fallback.ChatModel,
+		FallbackVisionModel: fallback.VisionModel,
+	}
+}
+
 // Validate 校验关键配置是否完整。
 //
 // 这里仅校验会直接影响服务可用性或安全边界的必填项，
@@ -201,6 +250,15 @@ func getEnv(key string, fallback string) string {
 	}
 
 	return value
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
 }
 
 // getIntEnv 读取整型环境变量，解析失败时回退到默认值。

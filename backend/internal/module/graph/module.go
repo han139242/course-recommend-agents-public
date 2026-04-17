@@ -30,6 +30,10 @@ func New(driver neo4j.DriverWithContext) *Module {
 
 // RegisterRoutes registers graph routes.
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
+	group.GET("/catalog", m.Handler.GetCatalog)
+	group.GET("/seeds", m.Handler.GetSeeds)
+	group.GET("/neighbors", m.Handler.GetNeighbors)
+	group.GET("/path", m.Handler.GetPath)
 	group.GET("/subgraph", m.Handler.GetSubgraph)
 	group.GET("/full", m.Handler.GetFullGraph)
 }

@@ -51,6 +51,18 @@ txt2neo4j --input "C:\path\to\book.txt" --output-dir "C:\path\to\artifacts"
 txt2neo4j --input "C:\path\to\book.txt" --output-dir "C:\path\to\artifacts" --import-neo4j
 ```
 
+鍓嶆部璁烘枃鍏冩暟鎹閬擄紙鏈湴 JSON / JSONL 锛夛細
+
+```bash
+txt2neo4j --frontier-input "config/frontier_seed_metadata.json" --frontier-output-dir "artifacts/frontier-demo"
+```
+
+鍓嶆部绠￠亾鐩存帴鍐欏叆 Neo4j锛?
+
+```bash
+txt2neo4j --frontier-input "config/frontier_seed_metadata.json" --frontier-output-dir "artifacts/frontier-demo" --import-frontier-neo4j
+```
+
 也可以显式指定 Neo4j 参数：
 
 ```bash
@@ -116,3 +128,17 @@ python -m txt2neo4j.normalize_graph
 2. 清洗文本并抽取主题
 3. 将主题映射到 `KnowledgeNode`
 4. 生成面向学生的课后扩展摘要
+## Frontier Pipeline Status
+
+The frontier pipeline is now implemented end-to-end.
+
+- Sample metadata: `config/frontier_seed_metadata.json`
+- Main pipeline: `src/txt2neo4j/frontier_pipeline.py`
+- Full notes: `../docs/frontier-knowledge-pipeline.md`
+
+It now supports:
+
+1. Loading local paper metadata from `JSON / JSONL`
+2. Matching papers to course `KnowledgeNode` entries through curated batches and synonym dictionaries
+3. Generating `Paper`, `ResearchTopic`, `Venue`, `Author`, and `FrontierDigest`
+4. Exporting reviewable JSON / CSV artifacts and importing them straight into Neo4j

@@ -1,0 +1,91 @@
+{
+  "source": "frontier_seed_metadata",
+  "generatedAt": "2026-04-17T12:00:00Z",
+  "papers": [
+    {
+      "title": "Mixture-of-Depths Transformers for Budgeted Inference",
+      "abstract": "We study how dynamic depth allocation improves transformer efficiency while preserving reasoning quality. The method explicitly reshapes self-attention computation under constrained inference budgets.",
+      "keywords": ["Transformer", "Self-Attention", "Efficient Inference", "Dynamic Computation"],
+      "year": 2024,
+      "venue": "ICML",
+      "venueType": "conference",
+      "venueRank": "A*",
+      "url": "https://example.org/papers/mixture-of-depths-transformers",
+      "authors": [
+        {"name": "Alicia Chen", "affiliation": "Open Research Lab"},
+        {"name": "Bo Wang", "affiliation": "Open Research Lab"}
+      ],
+      "updatedAt": "2026-04-17T08:00:00Z",
+      "knowledgeHints": ["Transformer", "自注意力"],
+      "topicHints": ["高效 Transformer 推理", "动态计算预算"]
+    },
+    {
+      "title": "Retrieval-Augmented Generation with Adaptive Query Routing",
+      "abstract": "This work improves retrieval-augmented generation by combining query rewriting, adaptive routing, and compact context selection across heterogeneous indexes.",
+      "keywords": ["Retrieval-Augmented Generation", "Query Rewriting", "Vector Database", "Routing"],
+      "year": 2025,
+      "venue": "ACL",
+      "venueType": "conference",
+      "venueRank": "A",
+      "url": "https://example.org/papers/adaptive-rag-routing",
+      "authors": [
+        {"name": "Ming Zhao", "affiliation": "Language Systems Group"},
+        {"name": "Sara Liu", "affiliation": "Language Systems Group"}
+      ],
+      "updatedAt": "2026-04-17T08:10:00Z",
+      "knowledgeHints": ["检索增强生成", "向量数据库"],
+      "topicHints": ["自适应 RAG 路由", "查询改写"]
+    },
+    {
+      "title": "Graph Neural Knowledge Editing for Hallucination Reduction",
+      "abstract": "We combine graph neural networks with knowledge graph reasoning to revise factual memories and reduce hallucinations in large language models.",
+      "keywords": ["Knowledge Graph", "Graph Neural Network", "Knowledge Editing", "Hallucination Reduction"],
+      "year": 2025,
+      "venue": "NeurIPS",
+      "venueType": "conference",
+      "venueRank": "A*",
+      "url": "https://example.org/papers/graph-neural-knowledge-editing",
+      "authors": [
+        {"name": "Yifan Guo", "affiliation": "Graph Intelligence Lab"},
+        {"name": "Tina Park", "affiliation": "Graph Intelligence Lab"}
+      ],
+      "updatedAt": "2026-04-17T08:20:00Z",
+      "knowledgeHints": ["知识图谱", "图神经网络", "知识图谱推理"],
+      "topicHints": ["图神经知识编辑", "知识增强事实校正"]
+    },
+    {
+      "title": "Coordinating LLM Agents with Credit Assignment in Multi-Agent RL",
+      "abstract": "The paper studies communication protocols and credit assignment mechanisms for LLM-based agents trained with multi-agent reinforcement learning.",
+      "keywords": ["LLM Agent", "Multi-Agent Reinforcement Learning", "Credit Assignment", "Communication Protocol"],
+      "year": 2025,
+      "venue": "ICLR",
+      "venueType": "conference",
+      "venueRank": "A*",
+      "url": "https://example.org/papers/llm-agents-credit-assignment",
+      "authors": [
+        {"name": "Rui He", "affiliation": "Distributed Intelligence Center"},
+        {"name": "Nora Kim", "affiliation": "Distributed Intelligence Center"}
+      ],
+      "updatedAt": "2026-04-17T08:30:00Z",
+      "knowledgeHints": ["多智能体系统", "多智能体强化学习"],
+      "topicHints": ["LLM Agent 协作", "信用分配"]
+    },
+    {
+      "title": "Multimodal Retrieval-Augmented Generation with Vision Transformers",
+      "abstract": "We build a multimodal retrieval-augmented generation system that uses vision transformers and cross-modal retrieval to ground image-text reasoning.",
+      "keywords": ["Multimodal RAG", "Vision Transformer", "Cross-Modal Retrieval", "Grounded Reasoning"],
+      "year": 2025,
+      "venue": "CVPR",
+      "venueType": "conference",
+      "venueRank": "A",
+      "url": "https://example.org/papers/multimodal-rag-vit",
+      "authors": [
+        {"name": "Elena Torres", "affiliation": "Vision Language Research"},
+        {"name": "Qian Sun", "affiliation": "Vision Language Research"}
+      ],
+      "updatedAt": "2026-04-17T08:40:00Z",
+      "knowledgeHints": ["检索增强生成", "跨模态检索增强", "视觉 Transformer"],
+      "topicHints": ["多模态 RAG", "视觉检索增强"]
+    }
+  ]
+}

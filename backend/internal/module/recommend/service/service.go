@@ -40,6 +40,8 @@ type scoredCandidate struct {
 	Title         string
 	ReasonCode    string
 	ReasonLabel   string
+	SourceCourse  string
+	TargetCourse  string
 	ReasonDetail  string
 	MasteryScore  float64
 	CorrectRate   float64
@@ -99,7 +101,11 @@ func (s *Service) GetPath(ctx context.Context, query recommenddto.PathQuery) (*r
 		path = fallbackRecommendPath(query.Scene, limit)
 	}
 
-	response := &recommenddto.PathResponse{Path: path}
+	response := &recommenddto.PathResponse{
+		Path:           path,
+		Insights:       s.DetectLearningBottlenecks(ctx, query, progressList, stateLookup, path),
+		LearnerProfile: inferLearnerProfile(progressList),
+	}
 	if s.shouldUseCache(query) && s.redisRepo != nil && s.redisRepo.Enabled() {
 		if payload, err := json.Marshal(response); err == nil {
 			_ = s.redisRepo.CacheRecommendPath(ctx, studentID, cacheTarget, query.Scene, limit, string(payload))
@@ -207,21 +213,40 @@ func progressStatus(score float64) string {
 }
 
 func (s *Service) buildPersonalizedPath(ctx context.Context, query recommenddto.PathQuery, progressList []studentKnowledgeState, stateLookup map[string]studentKnowledgeState, limit int) []recommenddto.PathItemView {
-	if strings.TrimSpace(query.KnowledgeID) != "" {
-		path := s.buildKnowledgeContextPath(ctx, strings.TrimSpace(query.KnowledgeID), query.Scene, limit, stateLookup)
-		if len(path) > 0 {
-			return path
+	result := make([]recommenddto.PathItemView, 0, limit)
+	sectionLimit := min(max(limit, 1), 4)
+	knowledgeID := strings.TrimSpace(query.KnowledgeID)
+
+	if knowledgeID != "" {
+		result = mergePathItems(result, s.buildGapBridgePath(ctx, knowledgeID, query.Scene, sectionLimit, stateLookup), limit)
+		if len(result) >= limit {
+			return result
+		}
+
+		result = mergePathItems(result, s.buildKnowledgeContextPath(ctx, knowledgeID, query.Scene, sectionLimit, stateLookup), limit)
+		if len(result) >= limit {
+			return result
 		}
 	}
 
-	path := s.buildWeaknessPath(progressList, query.Scene, limit)
-	if len(path) >= limit {
-		return path[:limit]
+	result = mergePathItems(result, s.buildCrossCourseTransferPath(ctx, progressList, stateLookup, sectionLimit), limit)
+	if len(result) >= limit {
+		return result
+	}
+
+	result = mergePathItems(result, s.buildReviewPath(progressList, query.Scene, sectionLimit), limit)
+	if len(result) >= limit {
+		return result
+	}
+
+	result = mergePathItems(result, s.buildWeaknessPath(progressList, query.Scene, limit), limit)
+	if len(result) >= limit {
+		return result
 	}
 
 	root := strings.TrimSpace(query.Target)
 	graphPath := s.buildGraphDrivenPath(ctx, root, query.Scene, max(limit*2, 8), stateLookup)
-	return mergePathItems(path, graphPath, limit)
+	return mergePathItems(result, graphPath, limit)
 }
 
 func (s *Service) buildWeaknessPath(progressList []studentKnowledgeState, scene string, limit int) []recommenddto.PathItemView {
@@ -258,8 +283,8 @@ func (s *Service) buildWeaknessPath(progressList []studentKnowledgeState, scene 
 			Detail:        weaknessDetail(item),
 			Route:         fmt.Sprintf("/knowledge/%s", knowledgeID),
 			KnowledgeID:   knowledgeID,
-			ReasonCode:    "student_state",
-			ReasonLabel:   "实时薄弱点",
+			ReasonCode:    "weakness",
+			ReasonLabel:   "薄弱补强",
 			MasteryScore:  item.MasteryScore,
 			CorrectRate:   item.CorrectRate,
 			AnsweredCount: item.AnsweredCount,
@@ -399,6 +424,8 @@ func (s *Service) buildKnowledgeContextPath(ctx context.Context, knowledgeID str
 			KnowledgeID:   item.KnowledgeID,
 			ReasonCode:    item.ReasonCode,
 			ReasonLabel:   item.ReasonLabel,
+			SourceCourse:  item.SourceCourse,
+			TargetCourse:  item.TargetCourse,
 			MasteryScore:  item.MasteryScore,
 			CorrectRate:   item.CorrectRate,
 			AnsweredCount: item.AnsweredCount,
@@ -479,6 +506,7 @@ func buildScoredCandidate(rootTitle string, rootState studentKnowledgeState, edg
 		Title:         title,
 		ReasonCode:    reasonCode,
 		ReasonLabel:   reasonLabel,
+		TargetCourse:  strings.TrimSpace(node.ChapterTitle),
 		ReasonDetail:  contextualDetail(rootTitle, reasonLabel, state, hasState, title),
 		MasteryScore:  state.MasteryScore,
 		CorrectRate:   state.CorrectRate,
@@ -506,6 +534,7 @@ func buildFallbackCandidate(rootTitle string, node graphdto.GraphNodeView, looku
 		Title:         title,
 		ReasonCode:    "knowledge_graph",
 		ReasonLabel:   "图谱关联",
+		TargetCourse:  strings.TrimSpace(node.ChapterTitle),
 		ReasonDetail:  contextualDetail(rootTitle, "图谱关联", state, hasState, title),
 		MasteryScore:  state.MasteryScore,
 		CorrectRate:   state.CorrectRate,
@@ -628,6 +657,7 @@ func (s *Service) buildGraphDrivenPath(ctx context.Context, target string, scene
 				KnowledgeID:   routeID,
 				ReasonCode:    "knowledge_graph",
 				ReasonLabel:   "图谱关联",
+				TargetCourse:  strings.TrimSpace(node.ChapterTitle),
 				MasteryScore:  state.MasteryScore,
 				CorrectRate:   state.CorrectRate,
 				AnsweredCount: state.AnsweredCount,
@@ -639,6 +669,350 @@ func (s *Service) buildGraphDrivenPath(ctx context.Context, target string, scene
 		}
 	}
 	return path
+}
+
+func (s *Service) buildCrossCourseTransferPath(ctx context.Context, progressList []studentKnowledgeState, stateLookup map[string]studentKnowledgeState, limit int) []recommenddto.PathItemView {
+	if s.graphService == nil || limit <= 0 || len(progressList) == 0 {
+		return nil
+	}
+
+	strongStates := append([]studentKnowledgeState(nil), progressList...)
+	sort.SliceStable(strongStates, func(i, j int) bool {
+		if math.Abs(strongStates[i].MasteryScore-strongStates[j].MasteryScore) < 0.001 {
+			return strongStates[i].CorrectRate > strongStates[j].CorrectRate
+		}
+		return strongStates[i].MasteryScore > strongStates[j].MasteryScore
+	})
+
+	scored := make(map[string]recommenddto.PathItemView)
+	sourceBudget := 0
+	for _, sourceState := range strongStates {
+		if sourceBudget >= 6 {
+			break
+		}
+		if sourceState.MasteryScore < 60 || sourceState.AnsweredCount <= 0 {
+			continue
+		}
+		sourceBudget++
+
+		subgraph, err := s.graphService.GetSubgraph(ctx, graphdto.SubgraphQuery{
+			Root:  strings.TrimSpace(sourceState.KnowledgeID),
+			Limit: 10,
+		})
+		if err != nil || subgraph == nil || len(subgraph.Nodes) == 0 {
+			continue
+		}
+
+		nodeByKey := buildNodeLookup(subgraph.Nodes)
+		rootNode, ok := findGraphNode(nodeByKey, sourceState.KnowledgeID, sourceState.CanonicalName)
+		if !ok {
+			continue
+		}
+
+		sourceCourse := strings.TrimSpace(rootNode.ChapterTitle)
+		if sourceCourse == "" {
+			continue
+		}
+		sourceTitle := displayNodeTitle(rootNode)
+
+		for _, edge := range subgraph.Edges {
+			if !edgeTouchesRoot(edge, rootNode, sourceState.KnowledgeID) {
+				continue
+			}
+
+			neighborID := strings.TrimSpace(edge.SourceID)
+			if sameKnowledgeID(neighborID, sourceState.KnowledgeID) {
+				neighborID = strings.TrimSpace(edge.TargetID)
+			}
+			neighborNode, ok := findGraphNode(nodeByKey, neighborID, edge.SourceName, edge.TargetName)
+			if !ok || sameKnowledge(neighborNode, sourceState.KnowledgeID) {
+				continue
+			}
+
+			targetCourse := strings.TrimSpace(neighborNode.ChapterTitle)
+			if targetCourse == "" || normalizeStateKey(targetCourse) == normalizeStateKey(sourceCourse) {
+				continue
+			}
+
+			targetState, hasTargetState := lookupStateForNode(stateLookup, neighborNode)
+			if hasTargetState && targetState.MasteryScore >= 85 && targetState.CorrectRate >= 0.8 && targetState.AnsweredCount > 0 {
+				continue
+			}
+
+			knowledgeID := strings.TrimSpace(neighborNode.RouteKnowledgeID)
+			if knowledgeID == "" {
+				knowledgeID = strings.TrimSpace(neighborNode.ID)
+			}
+			if knowledgeID == "" {
+				continue
+			}
+
+			targetTitle := displayNodeTitle(neighborNode)
+			rawScore := (sourceState.MasteryScore * transferRelationWeight(edge.RelationType) * (1 - min(targetState.MasteryScore, 100)/100)) / 2.1
+			if !hasTargetState {
+				rawScore += 10
+			}
+
+			item := recommenddto.PathItemView{
+				Stage:         stageFromScene("cross_course_transfer"),
+				Title:         targetTitle,
+				Detail:        fmt.Sprintf("你在“%s”课程的「%s」掌握较好，可以把这部分能力迁移到“%s”课程的「%s」。", sourceCourse, sourceTitle, targetCourse, targetTitle),
+				Route:         fmt.Sprintf("/knowledge/%s", knowledgeID),
+				KnowledgeID:   knowledgeID,
+				ReasonCode:    "cross_course_transfer",
+				ReasonLabel:   "跨课程迁移",
+				SourceCourse:  sourceCourse,
+				TargetCourse:  targetCourse,
+				MasteryScore:  targetState.MasteryScore,
+				CorrectRate:   targetState.CorrectRate,
+				AnsweredCount: targetState.AnsweredCount,
+				Score:         normalizedRecommendationScore(rawScore),
+			}
+
+			if existing, exists := scored[knowledgeID]; !exists || item.Score > existing.Score {
+				scored[knowledgeID] = item
+			}
+		}
+	}
+
+	items := make([]recommenddto.PathItemView, 0, len(scored))
+	for _, item := range scored {
+		items = append(items, item)
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		if math.Abs(items[i].Score-items[j].Score) < 0.001 {
+			if items[i].TargetCourse == items[j].TargetCourse {
+				return items[i].Title < items[j].Title
+			}
+			return items[i].TargetCourse < items[j].TargetCourse
+		}
+		return items[i].Score > items[j].Score
+	})
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items
+}
+
+func (s *Service) buildGapBridgePath(ctx context.Context, knowledgeID string, scene string, limit int, stateLookup map[string]studentKnowledgeState) []recommenddto.PathItemView {
+	if s.graphService == nil || limit <= 0 || strings.TrimSpace(knowledgeID) == "" {
+		return nil
+	}
+
+	chain, err := s.graphService.GetPrerequisiteChain(ctx, graphdto.PrerequisiteChainQuery{
+		Target: strings.TrimSpace(knowledgeID),
+		Depth:  3,
+	})
+	if err != nil || chain == nil || len(chain.Nodes) == 0 {
+		return nil
+	}
+
+	nodeByKey := buildNodeLookup(chain.Nodes)
+	orderedNodes := orderedGraphNodes(chain.OrderedNodeIDs, nodeByKey)
+	if len(orderedNodes) == 0 {
+		return nil
+	}
+
+	lastMasteredIndex := -1
+	for index, node := range orderedNodes {
+		state, hasState := lookupStateForNode(stateLookup, node)
+		if hasState && state.MasteryScore >= 60 {
+			lastMasteredIndex = index
+		}
+	}
+
+	startIndex := lastMasteredIndex + 1
+	if startIndex >= len(orderedNodes) {
+		return nil
+	}
+
+	targetNode := orderedNodes[len(orderedNodes)-1]
+	targetTitle := displayNodeTitle(targetNode)
+	targetCourse := strings.TrimSpace(targetNode.ChapterTitle)
+	sourceCourse := targetCourse
+	sourceTitle := ""
+	if lastMasteredIndex >= 0 {
+		sourceNode := orderedNodes[lastMasteredIndex]
+		sourceCourse = firstNonEmptyCourse(strings.TrimSpace(sourceNode.ChapterTitle), targetCourse)
+		sourceTitle = displayNodeTitle(sourceNode)
+	}
+
+	path := make([]recommenddto.PathItemView, 0, min(limit, len(orderedNodes)-startIndex))
+	for index := startIndex; index < len(orderedNodes) && len(path) < limit; index++ {
+		node := orderedNodes[index]
+		state, hasState := lookupStateForNode(stateLookup, node)
+		if index == len(orderedNodes)-1 && hasState && state.MasteryScore >= 80 && state.CorrectRate >= 0.8 && state.AnsweredCount > 0 {
+			continue
+		}
+
+		title := displayNodeTitle(node)
+		routeID := strings.TrimSpace(node.RouteKnowledgeID)
+		if routeID == "" {
+			routeID = strings.TrimSpace(node.ID)
+		}
+		if routeID == "" {
+			continue
+		}
+
+		detail := fmt.Sprintf("为了更稳地走到目标「%s」，建议先补上桥接知识「%s」。", targetTitle, title)
+		if sourceTitle != "" && index == startIndex {
+			detail = fmt.Sprintf("你已经具备「%s」，从这里到目标「%s」之间，最先需要补上的桥接点是「%s」。", sourceTitle, targetTitle, title)
+		}
+
+		path = append(path, recommenddto.PathItemView{
+			Stage:         stageFromScene(scene),
+			Title:         title,
+			Detail:        detail,
+			Route:         fmt.Sprintf("/knowledge/%s", routeID),
+			KnowledgeID:   routeID,
+			ReasonCode:    "gap_bridge",
+			ReasonLabel:   "缺口桥接",
+			SourceCourse:  sourceCourse,
+			TargetCourse:  firstNonEmptyCourse(strings.TrimSpace(node.ChapterTitle), targetCourse),
+			MasteryScore:  state.MasteryScore,
+			CorrectRate:   state.CorrectRate,
+			AnsweredCount: state.AnsweredCount,
+			Score:         normalizedRecommendationScore(58 - float64(index-startIndex)*6 + masteryNeedScore(state, hasState)),
+		})
+	}
+
+	return path
+}
+
+func (s *Service) buildReviewPath(progressList []studentKnowledgeState, scene string, limit int) []recommenddto.PathItemView {
+	if limit <= 0 || len(progressList) == 0 {
+		return nil
+	}
+
+	type reviewCandidate struct {
+		item             recommenddto.PathItemView
+		effectiveMastery float64
+	}
+
+	candidates := make([]reviewCandidate, 0, len(progressList))
+	for _, state := range progressList {
+		if state.MasteryScore < 60 || strings.TrimSpace(state.LastAnsweredAt) == "" {
+			continue
+		}
+
+		effective := effectiveMastery(state.MasteryScore, state.LastAnsweredAt)
+		if effective >= 50 {
+			continue
+		}
+
+		knowledgeID := strings.TrimSpace(state.KnowledgeID)
+		title := firstNonEmptyText(strings.TrimSpace(state.CanonicalName), knowledgeID)
+		days := daysSinceLastAnswer(state.LastAnsweredAt)
+		candidates = append(candidates, reviewCandidate{
+			item: recommenddto.PathItemView{
+				Stage:         stageFromScene(scene),
+				Title:         title,
+				Detail:        fmt.Sprintf("你上次练到「%s」已经是 %.0f 天前了，当前有效掌握度约 %.0f%%，适合安排一次复习回温。", title, days, effective),
+				Route:         fmt.Sprintf("/knowledge/%s", knowledgeID),
+				KnowledgeID:   knowledgeID,
+				ReasonCode:    "forgetting_review",
+				ReasonLabel:   "遗忘复习",
+				MasteryScore:  state.MasteryScore,
+				CorrectRate:   state.CorrectRate,
+				AnsweredCount: state.AnsweredCount,
+				Score:         normalizedRecommendationScore(62 - effective + (state.MasteryScore - effective)),
+			},
+			effectiveMastery: effective,
+		})
+	}
+
+	sort.SliceStable(candidates, func(i, j int) bool {
+		if math.Abs(candidates[i].effectiveMastery-candidates[j].effectiveMastery) < 0.001 {
+			return candidates[i].item.Title < candidates[j].item.Title
+		}
+		return candidates[i].effectiveMastery < candidates[j].effectiveMastery
+	})
+
+	path := make([]recommenddto.PathItemView, 0, min(limit, len(candidates)))
+	for _, candidate := range candidates {
+		path = append(path, candidate.item)
+		if len(path) >= limit {
+			break
+		}
+	}
+	return path
+}
+
+// DetectLearningBottlenecks summarizes the strongest current learning risks.
+func (s *Service) DetectLearningBottlenecks(ctx context.Context, query recommenddto.PathQuery, progressList []studentKnowledgeState, stateLookup map[string]studentKnowledgeState, recommendedPath []recommenddto.PathItemView) []recommenddto.LearningInsightView {
+	insights := make([]recommenddto.LearningInsightView, 0, 3)
+	seen := make(map[string]struct{}, 4)
+	appendInsight := func(item recommenddto.LearningInsightView) {
+		key := strings.TrimSpace(item.ReasonCode)
+		if key == "" {
+			key = strings.TrimSpace(item.Title)
+		}
+		if key == "" {
+			return
+		}
+		if _, exists := seen[key]; exists {
+			return
+		}
+		seen[key] = struct{}{}
+		insights = append(insights, item)
+	}
+
+	if knowledgeID := strings.TrimSpace(query.KnowledgeID); knowledgeID != "" {
+		if gapPath := s.buildGapBridgePath(ctx, knowledgeID, query.Scene, 1, stateLookup); len(gapPath) > 0 {
+			item := gapPath[0]
+			appendInsight(recommenddto.LearningInsightView{
+				Type:        "proactive_hint",
+				ReasonCode:  "gap_bridge",
+				Severity:    "high",
+				Title:       "当前目标前有基础断层",
+				Detail:      item.Detail,
+				KnowledgeID: item.KnowledgeID,
+				Route:       item.Route,
+			})
+		}
+	}
+
+	if weakness := topWeaknessCandidate(progressList); weakness != nil {
+		appendInsight(recommenddto.LearningInsightView{
+			Type:        "proactive_hint",
+			ReasonCode:  "weakness",
+			Severity:    weaknessSeverity(*weakness),
+			Title:       "有一个知识点在反复卡住你",
+			Detail:      weaknessDetail(*weakness),
+			KnowledgeID: strings.TrimSpace(weakness.KnowledgeID),
+			Route:       fmt.Sprintf("/knowledge/%s", strings.TrimSpace(weakness.KnowledgeID)),
+		})
+	}
+
+	if reviewPath := s.buildReviewPath(progressList, query.Scene, 1); len(reviewPath) > 0 {
+		item := reviewPath[0]
+		appendInsight(recommenddto.LearningInsightView{
+			Type:        "proactive_hint",
+			ReasonCode:  "forgetting_review",
+			Severity:    "medium",
+			Title:       "有一个知识点到了回温窗口",
+			Detail:      item.Detail,
+			KnowledgeID: item.KnowledgeID,
+			Route:       item.Route,
+		})
+	}
+
+	if transfer := topReasonPathItem(recommendedPath, "cross_course_transfer"); transfer != nil {
+		appendInsight(recommenddto.LearningInsightView{
+			Type:        "proactive_hint",
+			ReasonCode:  "cross_course_transfer",
+			Severity:    "low",
+			Title:       "你可以利用已有强项跨课程迁移",
+			Detail:      transfer.Detail,
+			KnowledgeID: transfer.KnowledgeID,
+			Route:       transfer.Route,
+		})
+	}
+
+	if len(insights) > 3 {
+		return insights[:3]
+	}
+	return insights
 }
 
 func prioritizeRecommendNodes(root string, nodes []graphdto.GraphNodeView) []graphdto.GraphNodeView {
@@ -685,6 +1059,9 @@ func stageFromScene(scene string) string {
 	if scene == "detail" {
 		return "详情页推荐"
 	}
+	if scene == "cross_course_transfer" {
+		return "跨课程迁移"
+	}
 	return "补弱推荐"
 }
 
@@ -706,6 +1083,210 @@ func scoreForIndex(index int) float64 {
 	return base
 }
 
+func transferRelationWeight(relationType string) float64 {
+	switch strings.TrimSpace(relationType) {
+	case "PREREQUISITE_OF":
+		return 1.05
+	case "SUBTOPIC_OF":
+		return 0.92
+	case "RELATED_TO":
+		return 1.15
+	case "USES", "APPLIES_TO":
+		return 1.08
+	default:
+		return 0.88
+	}
+}
+
+func buildNodeLookup(nodes []graphdto.GraphNodeView) map[string]graphdto.GraphNodeView {
+	lookup := make(map[string]graphdto.GraphNodeView, len(nodes)*4)
+	for _, node := range nodes {
+		for _, key := range []string{node.RouteKnowledgeID, node.ID, node.Name, node.CanonicalName} {
+			normalized := normalizeStateKey(key)
+			if normalized == "" {
+				continue
+			}
+			lookup[normalized] = node
+		}
+	}
+	return lookup
+}
+
+func findGraphNode(lookup map[string]graphdto.GraphNodeView, keys ...string) (graphdto.GraphNodeView, bool) {
+	for _, key := range keys {
+		if node, ok := lookup[normalizeStateKey(key)]; ok {
+			return node, true
+		}
+	}
+	return graphdto.GraphNodeView{}, false
+}
+
+func orderedGraphNodes(orderedNodeIDs []string, lookup map[string]graphdto.GraphNodeView) []graphdto.GraphNodeView {
+	result := make([]graphdto.GraphNodeView, 0, len(orderedNodeIDs))
+	for _, orderedNodeID := range orderedNodeIDs {
+		if node, ok := lookup[normalizeStateKey(orderedNodeID)]; ok {
+			result = append(result, node)
+		}
+	}
+	return result
+}
+
+func displayNodeTitle(node graphdto.GraphNodeView) string {
+	return firstNonEmptyText(strings.TrimSpace(node.Name), strings.TrimSpace(node.CanonicalName), strings.TrimSpace(node.RouteKnowledgeID), strings.TrimSpace(node.ID))
+}
+
+func firstNonEmptyText(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
+}
+
+func firstNonEmptyCourse(values ...string) string {
+	return firstNonEmptyText(values...)
+}
+
+func forgettingFactor(lastAnsweredAt string) float64 {
+	days := daysSinceLastAnswer(lastAnsweredAt)
+	if days <= 0 {
+		return 1
+	}
+	return math.Exp(-days / 7)
+}
+
+func effectiveMastery(mastery float64, lastAnsweredAt string) float64 {
+	return mastery * forgettingFactor(lastAnsweredAt)
+}
+
+func daysSinceLastAnswer(lastAnsweredAt string) float64 {
+	parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(lastAnsweredAt))
+	if err != nil {
+		return 0
+	}
+	days := time.Since(parsed).Hours() / 24
+	if days < 0 {
+		return 0
+	}
+	return days
+}
+
+func topWeaknessCandidate(progressList []studentKnowledgeState) *studentKnowledgeState {
+	if len(progressList) == 0 {
+		return nil
+	}
+	candidates := append([]studentKnowledgeState(nil), progressList...)
+	sort.SliceStable(candidates, func(i, j int) bool {
+		left := weaknessScore(candidates[i])
+		right := weaknessScore(candidates[j])
+		if math.Abs(left-right) < 0.001 {
+			return candidates[i].CanonicalName < candidates[j].CanonicalName
+		}
+		return left > right
+	})
+	for _, item := range candidates {
+		if item.MasteryScore >= 55 && item.CorrectRate >= 0.65 {
+			continue
+		}
+		if item.AnsweredCount == 0 && item.MasteryScore >= 40 {
+			continue
+		}
+		copyItem := item
+		return &copyItem
+	}
+	return nil
+}
+
+func weaknessSeverity(item studentKnowledgeState) string {
+	if item.MasteryScore < 30 || (item.AnsweredCount >= 3 && item.CorrectRate < 0.45) {
+		return "high"
+	}
+	if item.MasteryScore < 55 || item.CorrectRate < 0.6 {
+		return "medium"
+	}
+	return "low"
+}
+
+func topReasonPathItem(items []recommenddto.PathItemView, reasonCode string) *recommenddto.PathItemView {
+	for _, item := range items {
+		if strings.TrimSpace(item.ReasonCode) != strings.TrimSpace(reasonCode) {
+			continue
+		}
+		copyItem := item
+		return &copyItem
+	}
+	return nil
+}
+
+func inferLearnerProfile(progressList []studentKnowledgeState) *recommenddto.LearnerProfileView {
+	activeNodes := 0
+	totalAnswered := 0
+	totalMastery := 0.0
+	strongNodes := 0
+	weakNodes := 0
+
+	for _, item := range progressList {
+		if item.AnsweredCount > 0 {
+			activeNodes++
+			totalAnswered += item.AnsweredCount
+		}
+		totalMastery += item.MasteryScore
+		if item.MasteryScore >= 80 {
+			strongNodes++
+		}
+		if item.AnsweredCount > 0 && item.MasteryScore < 40 {
+			weakNodes++
+		}
+	}
+
+	if len(progressList) == 0 || activeNodes == 0 {
+		return &recommenddto.LearnerProfileView{
+			Style:   "exploratory",
+			Label:   "探索型",
+			Summary: "当前系统里的学习记录还不多，适合先从兴趣点切入，再逐步把主线补齐。",
+		}
+	}
+
+	avgDepth := float64(totalAnswered) / float64(activeNodes)
+	avgMastery := totalMastery / float64(len(progressList))
+	weakRatio := float64(weakNodes) / float64(activeNodes)
+	strongRatio := float64(strongNodes) / float64(max(len(progressList), 1))
+
+	switch {
+	case weakRatio >= 0.45 || avgMastery < 48:
+		return &recommenddto.LearnerProfileView{
+			Style:   "struggling",
+			Label:   "困难型",
+			Summary: "你最近更适合被拆成更小步地学习，先稳住基础和正确率，再往前推进。",
+		}
+	case avgDepth >= 9 && activeNodes <= 5:
+		return &recommenddto.LearnerProfileView{
+			Style:   "focused",
+			Label:   "专注型",
+			Summary: "你倾向于深挖少数主题，适合直接给出重点、路径和少量关键对比。",
+		}
+	case activeNodes >= 10 && avgDepth <= 4.5:
+		return &recommenddto.LearnerProfileView{
+			Style:   "exploratory",
+			Label:   "探索型",
+			Summary: "你喜欢从多个知识点并行摸索，适合多给跨课程连接和有趣的入口。",
+		}
+	case activeNodes >= 8 && strongRatio >= 0.28:
+		return &recommenddto.LearnerProfileView{
+			Style:   "systematic",
+			Label:   "系统型",
+			Summary: "你更适合按知识树和先修顺序稳步推进，结构化学习会让你更快进入状态。",
+		}
+	default:
+		return &recommenddto.LearnerProfileView{
+			Style:   "focused",
+			Label:   "专注型",
+			Summary: "你当前更适合围绕一个目标连续推进，少切换主题会更高效。",
+		}
+	}
+}
+
 func limitValue(limit int) int {
 	if limit <= 0 {
 		return 5
@@ -717,9 +1298,9 @@ func normalizeRecommendCacheTarget(target string, knowledgeID string) string {
 	target = strings.TrimSpace(target)
 	knowledgeID = strings.TrimSpace(knowledgeID)
 	if target == "" && knowledgeID == "" {
-		return "__auto_v4__"
+		return "__auto_v5__"
 	}
-	return fmt.Sprintf("%s::%s", knowledgeID, target)
+	return fmt.Sprintf("v5::%s::%s", knowledgeID, target)
 }
 
 func recommendRoots(target string) []string {

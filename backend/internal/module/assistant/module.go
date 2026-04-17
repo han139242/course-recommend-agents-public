@@ -32,3 +32,8 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/chat", m.Handler.Chat)
 	group.POST("/knowledge-card", m.Handler.GenerateKnowledgeCard)
 }
+
+// RegisterPublicRoutes registers unauthenticated assistant routes.
+func (m *Module) RegisterPublicRoutes(group *gin.RouterGroup) {
+	group.POST("/public-chat", m.Handler.PublicChat)
+}

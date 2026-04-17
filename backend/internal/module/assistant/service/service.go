@@ -22,6 +22,7 @@ import (
 	frontierservice "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/service"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	learningservice "github.com/han139242/course-recommend-agents/backend/internal/module/learning/service"
+	recommenddto "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/dto"
 	recommendservice "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/service"
 	"github.com/han139242/course-recommend-agents/backend/pkg/apperr"
 	"github.com/han139242/course-recommend-agents/backend/pkg/ctxmeta"
@@ -68,11 +69,26 @@ type aiToolFunction struct {
 	Arguments string `json:"arguments"`
 }
 
+type agentIntent string
+
+const (
+	agentIntentPlanner  agentIntent = "planner"
+	agentIntentExplorer agentIntent = "explorer"
+	agentIntentAssessor agentIntent = "assessor"
+)
+
+type assistantAgentProfile struct {
+	Intent         agentIntent
+	Name           string
+	Label          string
+	LearnerProfile *recommenddto.LearnerProfileView
+}
+
 // New creates an assistant service.
 func New(aiCfg config.AIConfig, authService *authservice.AuthService, learningService *learningservice.Service, competencyService *competencyservice.Service, recommendService *recommendservice.Service, dashboardService *dashboardservice.Service, graphService *graphservice.Service, frontierService *frontierservice.Service, db *gorm.DB) *Service {
 	return &Service{
 		aiCfg:             aiCfg,
-		httpClient:        &http.Client{Timeout: 2 * time.Minute},
+		httpClient:        &http.Client{Timeout: 6 * time.Second},
 		authService:       authService,
 		learningService:   learningService,
 		competencyService: competencyService,
@@ -84,41 +100,83 @@ func New(aiCfg config.AIConfig, authService *authservice.AuthService, learningSe
 	}
 }
 
-// Chat runs the tool-calling agent loop and returns the final answer content.
-func (s *Service) Chat(ctx context.Context, request assistantdto.ChatRequest) (string, error) {
-	if !s.aiCfg.Enabled() {
-		return "", apperr.ErrDependencyUnavailable
-	}
+// Chat runs the authenticated tool-calling loop and returns the final answer plus queued UI actions.
+func (s *Service) Chat(ctx context.Context, request assistantdto.ChatRequest) (*assistantdto.ChatResponse, error) {
 	if s.authService == nil {
-		return "", apperr.ErrDependencyUnavailable
+		return nil, apperr.ErrDependencyUnavailable
 	}
 	if len(request.Messages) == 0 {
-		return "", apperr.ErrBadRequest
+		return nil, apperr.ErrBadRequest
 	}
 
 	userID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {
-		return "", apperr.ErrUnauthorized
+		return nil, apperr.ErrUnauthorized
 	}
 
 	currentUser, err := s.authService.GetCurrentUser(ctx, userID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	messages := s.buildConversation(currentUser, request.Messages)
+	profile := s.resolveAgentProfile(ctx, request.Messages, false)
+	messages := s.buildConversation(currentUser, request.Messages, false, profile)
+	return s.runChatLoop(ctx, currentUser, messages, request.MaxTokens, profile, false)
+}
+
+// ChatPublic runs a limited public chat loop without authenticated user context.
+func (s *Service) ChatPublic(ctx context.Context, request assistantdto.ChatRequest) (*assistantdto.ChatResponse, error) {
+	if len(request.Messages) == 0 {
+		return nil, apperr.ErrBadRequest
+	}
+
+	profile := s.resolveAgentProfile(ctx, request.Messages, true)
+	messages := s.buildConversation(nil, request.Messages, true, profile)
+	return s.runChatLoop(ctx, nil, messages, request.MaxTokens, profile, true)
+}
+
+func (s *Service) runChatLoop(ctx context.Context, currentUser *authdto.AuthUserView, messages []map[string]any, maxTokens int, profile assistantAgentProfile, isPublic bool) (*assistantdto.ChatResponse, error) {
+	inferredActions := inferClientActions(messages)
+	queuedActions := make([]assistantdto.ClientAction, 0, 4)
+	if shouldHandleActionsDirectly(messages, inferredActions) {
+		return &assistantdto.ChatResponse{
+			Content:    buildActionFallbackReply(inferredActions, ""),
+			Actions:    inferredActions,
+			Agent:      string(profile.Intent),
+			AgentLabel: profile.Label,
+		}, nil
+	}
+	if !s.aiCfg.Enabled() {
+		return s.buildLocalFallbackChatResponse(messages, inferredActions, profile), nil
+	}
+
 	for round := 0; round < maxToolRounds; round++ {
-		reply, err := s.requestModel(ctx, messages, request.MaxTokens)
+		reply, err := s.requestModel(ctx, messages, maxTokens, profile, isPublic)
 		if err != nil {
-			return "", err
+			return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 		}
 
 		if len(reply.ToolCalls) == 0 {
 			content := strings.TrimSpace(extractAssistantContent(reply.Content))
 			if content == "" {
-				return "", apperr.ErrDependencyUnavailable.WithCause(errors.New("assistant returned empty content"))
+				return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 			}
-			return content, nil
+			if round == 0 && len(queuedActions) == 0 {
+				if fallbackActions := inferClientActions(messages); len(fallbackActions) > 0 {
+					return &assistantdto.ChatResponse{
+						Content:    buildActionFallbackReply(fallbackActions, content),
+						Actions:    fallbackActions,
+						Agent:      string(profile.Intent),
+						AgentLabel: profile.Label,
+					}, nil
+				}
+			}
+			return &assistantdto.ChatResponse{
+				Content:    content,
+				Actions:    dedupeClientActions(queuedActions),
+				Agent:      string(profile.Intent),
+				AgentLabel: profile.Label,
+			}, nil
 		}
 
 		messages = append(messages, map[string]any{
@@ -128,7 +186,10 @@ func (s *Service) Chat(ctx context.Context, request assistantdto.ChatRequest) (s
 		})
 
 		for _, toolCall := range reply.ToolCalls {
-			toolResult := s.executeTool(ctx, currentUser, toolCall.Function.Name, toolCall.Function.Arguments)
+			toolResult, actions := s.executeTool(ctx, currentUser, toolCall.Function.Name, toolCall.Function.Arguments)
+			if len(actions) > 0 {
+				queuedActions = append(queuedActions, actions...)
+			}
 			messages = append(messages, map[string]any{
 				"role":         "tool",
 				"tool_call_id": toolCall.ID,
@@ -137,24 +198,31 @@ func (s *Service) Chat(ctx context.Context, request assistantdto.ChatRequest) (s
 		}
 	}
 
-	return "", apperr.ErrDependencyUnavailable.WithCause(errors.New("assistant exceeded tool call limit"))
+	return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 }
 
-func (s *Service) buildConversation(currentUser *authdto.AuthUserView, original []map[string]any) []map[string]any {
+func (s *Service) buildConversation(currentUser *authdto.AuthUserView, original []map[string]any, isPublic bool, profile assistantAgentProfile) []map[string]any {
 	messages := make([]map[string]any, 0, len(original)+1)
 	messages = append(messages, map[string]any{
 		"role":    "system",
-		"content": s.buildSystemPrompt(currentUser),
+		"content": s.buildSystemPrompt(currentUser, isPublic, profile),
 	})
 	messages = append(messages, normalizeUserMessages(original)...)
 	return messages
 }
 
-func (s *Service) buildSystemPrompt(currentUser *authdto.AuthUserView) string {
+func (s *Service) buildSystemPrompt(currentUser *authdto.AuthUserView, isPublic bool, profile assistantAgentProfile) string {
 	lines := []string{
-		"你是 course-recommend-agents 项目内的学习强 Agent，服务对象是当前已登录用户。",
-		"你不是泛泛聊天助手，你必须优先结合系统内实时数据、数据库查询结果、知识图谱和推荐结果回答问题。",
+		fmt.Sprintf("你是 course-recommend-agents 项目内的 %s。", profile.Label),
+		"你不是泛化聊天助手，优先结合系统已有数据、知识图谱和工具结果回答问题。",
 		fmt.Sprintf("当前时间：%s。", time.Now().Format(time.RFC3339)),
+	}
+
+	if isPublic {
+		lines = append(lines,
+			"当前会话未登录，只能使用公共知识图谱、公共知识详情、前沿摘要和页面 UI 动作工具。",
+			"不要声称你拿到了用户个人学习数据、错题记录、能力画像或推荐路径；这些在未登录状态下不可用。",
+		)
 	}
 
 	if currentUser != nil {
@@ -168,12 +236,18 @@ func (s *Service) buildSystemPrompt(currentUser *authdto.AuthUserView) string {
 	}
 
 	lines = append(lines,
-		"当用户询问“我现在情况如何、最近表现、薄弱点、推荐原因、下一步学什么、某知识点和我的关系、最近错题、数据库里有什么记录”等问题时，必须先调用相关工具，不能凭空猜测。",
-		"如果用户问数据来源，要明确写出来自 MySQL 学习记录、Redis 实时状态、Neo4j 知识图谱，还是推荐/画像服务。",
+		"当用户询问当前情况、最近表现、薄弱点、推荐原因、下一步学习什么、某知识点和用户的关系、最近错题或数据库中有什么记录时，必须先调用相关工具，不能凭空猜测。",
+		"如果用户问数据来源，要明确写出来自 MySQL 学习记录、Redis 实时状态、Neo4j 知识图谱，还是推荐/前沿服务。",
 		"如果工具没有查到结果，要如实说明当前系统没有查到对应数据。",
 		"回答使用中文，优先输出：结论、依据、下一步建议。",
 		"不要编造学生状态，不要伪造知识点和掌握度。",
+		"当用户明确要求你控制图谱或页面操作时，应调用 UI 动作工具，例如聚焦知识点、展开节点、高亮前置链、适配视图、重置场景或打开详情页。",
+		"如果只是解释知识或给学习建议，不要为了显得聪明而乱动页面。",
+		"在 UI 动作工具被调用后，最终回答要简短说明你已经做了什么，并提醒用户接下来可以看哪里。",
 	)
+
+	lines = append(lines, buildAgentPrompt(profile, isPublic)...)
+	lines = append(lines, buildLearnerStylePrompt(profile.LearnerProfile)...)
 
 	return strings.Join(lines, "\n")
 }
@@ -201,11 +275,26 @@ func normalizeUserMessages(original []map[string]any) []map[string]any {
 	return result
 }
 
-func (s *Service) requestModel(ctx context.Context, messages []map[string]any, maxTokens int) (*aiAssistantMessage, error) {
+func (s *Service) requestModel(ctx context.Context, messages []map[string]any, maxTokens int, profile assistantAgentProfile, isPublic bool) (*aiAssistantMessage, error) {
+	var lastErr error
+	for _, provider := range s.aiCfg.Providers() {
+		reply, err := s.requestModelWithProvider(ctx, provider, messages, maxTokens, profile, isPublic)
+		if err == nil {
+			return reply, nil
+		}
+		lastErr = err
+	}
+	if lastErr != nil {
+		return nil, lastErr
+	}
+	return nil, apperr.ErrDependencyUnavailable.WithCause(errors.New("assistant provider is not configured"))
+}
+
+func (s *Service) requestModelWithProvider(ctx context.Context, provider config.AIProviderConfig, messages []map[string]any, maxTokens int, profile assistantAgentProfile, isPublic bool) (*aiAssistantMessage, error) {
 	payload := map[string]any{
-		"model":       s.selectModel(messages),
+		"model":       s.selectModel(provider, messages),
 		"messages":    messages,
-		"tools":       buildAgentTools(),
+		"tools":       buildAgentTools(profile.Intent, isPublic),
 		"tool_choice": "auto",
 		"stream":      false,
 	}
@@ -218,15 +307,18 @@ func (s *Service) requestModel(ctx context.Context, messages []map[string]any, m
 		return nil, apperr.ErrInternal.WithCause(err)
 	}
 
-	baseURL := strings.TrimRight(s.aiCfg.BaseURL, "/")
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
+	baseURL := strings.TrimRight(provider.BaseURL, "/")
+	requestCtx, cancel := context.WithTimeout(ctx, s.chatProviderTimeout())
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(requestCtx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", "Bearer "+s.aiCfg.APIKey)
+	request.Header.Set("Authorization", "Bearer "+provider.APIKey)
 
-	response, err := s.doModelRequest(request, 2)
+	response, err := s.doModelRequest(request, s.providerRetries())
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
@@ -286,11 +378,25 @@ func (s *Service) doModelRequest(original *http.Request, retries int) (*http.Res
 	return nil, lastErr
 }
 
-func (s *Service) selectModel(messages []map[string]any) string {
-	if messagesIncludeImage(messages) && strings.TrimSpace(s.aiCfg.VisionModel) != "" {
-		return s.aiCfg.VisionModel
+func (s *Service) providerRetries() int {
+	if len(s.aiCfg.Providers()) > 1 {
+		return 0
 	}
-	return s.aiCfg.ChatModel
+	return 2
+}
+
+func (s *Service) chatProviderTimeout() time.Duration {
+	if len(s.aiCfg.Providers()) > 1 {
+		return 2 * time.Second
+	}
+	return 3 * time.Second
+}
+
+func (s *Service) selectModel(provider config.AIProviderConfig, messages []map[string]any) string {
+	if messagesIncludeImage(messages) && strings.TrimSpace(provider.VisionModel) != "" {
+		return provider.VisionModel
+	}
+	return provider.ChatModel
 }
 
 func extractAssistantContent(content any) string {
@@ -371,9 +477,197 @@ func messagesIncludeImage(messages []map[string]any) bool {
 	return false
 }
 
+func (s *Service) resolveAgentProfile(ctx context.Context, messages []map[string]any, isPublic bool) assistantAgentProfile {
+	intent := classifyIntent(lastUserMessage(messages))
+	learnerProfile := s.lookupLearnerProfile(ctx, isPublic)
+	switch intent {
+	case agentIntentPlanner:
+		return assistantAgentProfile{
+			Intent:         agentIntentPlanner,
+			Name:           "Planner",
+			Label:          "学习规划助手",
+			LearnerProfile: learnerProfile,
+		}
+	case agentIntentAssessor:
+		return assistantAgentProfile{
+			Intent:         agentIntentAssessor,
+			Name:           "Assessor",
+			Label:          "评估诊断助手",
+			LearnerProfile: learnerProfile,
+		}
+	default:
+		return assistantAgentProfile{
+			Intent:         agentIntentExplorer,
+			Name:           "Explorer",
+			Label:          "知识探索助手",
+			LearnerProfile: learnerProfile,
+		}
+	}
+}
+
+func classifyIntent(message string) agentIntent {
+	normalized := strings.ToLower(strings.TrimSpace(message))
+	if normalized == "" {
+		return agentIntentExplorer
+	}
+
+	planningKeywords := []string{"下一步", "推荐", "学什么", "路线", "路径", "规划", "计划", "安排", "如何学"}
+	assessingKeywords := []string{"进度", "掌握", "薄弱", "复盘", "表现", "情况", "分析", "评估", "诊断", "统计"}
+	exploringKeywords := []string{"解释", "是什么", "什么是", "对比", "区别", "原理", "为什么", "怎么理解", "联系"}
+
+	if containsAnyKeyword(normalized, planningKeywords) {
+		return agentIntentPlanner
+	}
+	if containsAnyKeyword(normalized, assessingKeywords) {
+		return agentIntentAssessor
+	}
+	if containsAnyKeyword(normalized, exploringKeywords) {
+		return agentIntentExplorer
+	}
+	return agentIntentExplorer
+}
+
+func lastUserMessage(messages []map[string]any) string {
+	for index := len(messages) - 1; index >= 0; index-- {
+		role, _ := messages[index]["role"].(string)
+		if strings.TrimSpace(role) != "user" {
+			continue
+		}
+		return extractAssistantContent(messages[index]["content"])
+	}
+	return ""
+}
+
+func containsAnyKeyword(text string, keywords []string) bool {
+	for _, keyword := range keywords {
+		if strings.Contains(text, strings.ToLower(strings.TrimSpace(keyword))) {
+			return true
+		}
+	}
+	return false
+}
+
+func buildAgentPrompt(profile assistantAgentProfile, isPublic bool) []string {
+	switch profile.Intent {
+	case agentIntentPlanner:
+		return []string{
+			"当前角色侧重：面向未来的学习规划。",
+			"优先给出清晰的学习顺序、阶段目标和 2 到 4 步可执行计划。",
+			"当推荐路径、能力画像或学习进度可用时，必须基于这些结果制定计划。",
+			"如果用户只问一个概念，也可以简短解释，但最后仍要落到下一步行动。",
+		}
+	case agentIntentAssessor:
+		return []string{
+			"当前角色侧重：数据驱动的学习评估与诊断。",
+			"优先客观呈现学习状态、掌握度、薄弱点、最近表现和风险，不要只给鸡汤式建议。",
+			"涉及进度、掌握度、错题、复盘、能力画像时，优先调用数据库、学习进度、能力画像、首页摘要工具。",
+			"结论要区分“系统已有证据”和“你的推断”。",
+		}
+	default:
+		lines := []string{
+			"当前角色侧重：知识探索与图谱推理。",
+			"优先通过知识图谱、知识详情、前沿摘要和图谱路径工具来解释概念之间的关系。",
+			"默认采用苏格拉底式教学：如果用户没有明确说“直接告诉我”或“直接讲”，先提出 1 个简短、启发式的问题，再给出解释。",
+			"引导问题应尽量借助学生已掌握的前置知识或相邻知识作为类比起点，避免连续抛出多个问题。",
+			"当用户明确要求直接讲解、赶时间或只要结论时，立刻切换成直接解释模式。",
+		}
+		if isPublic {
+			lines = append(lines, "当前未登录，不能声称你掌握了该学生的真实学习记录，但仍可用图谱关系做启发式引导。")
+		} else {
+			lines = append(lines, "如果需要寻找类比起点，可先调用 check_student_prior_knowledge 工具，再决定从哪里开始引导。")
+		}
+		return lines
+	}
+}
+
+func (s *Service) lookupLearnerProfile(ctx context.Context, isPublic bool) *recommenddto.LearnerProfileView {
+	if isPublic || s.recommendService == nil {
+		return nil
+	}
+	response, err := s.recommendService.GetPath(ctx, recommenddto.PathQuery{
+		Scene: "dashboard",
+		Limit: 1,
+	})
+	if err != nil || response == nil || response.LearnerProfile == nil {
+		return nil
+	}
+	return response.LearnerProfile
+}
+
+func buildLearnerStylePrompt(profile *recommenddto.LearnerProfileView) []string {
+	if profile == nil {
+		return nil
+	}
+
+	lines := []string{
+		fmt.Sprintf("当前推断的学习风格：%s（%s）。", strings.TrimSpace(profile.Label), strings.TrimSpace(profile.Style)),
+		fmt.Sprintf("风格摘要：%s", strings.TrimSpace(profile.Summary)),
+	}
+
+	switch strings.TrimSpace(profile.Style) {
+	case "systematic":
+		lines = append(lines,
+			"回答时尽量按知识树、先修顺序和分层结构来组织内容。",
+			"推荐步骤时优先给出稳定的线性推进路线，而不是太多分叉选项。",
+		)
+	case "exploratory":
+		lines = append(lines,
+			"回答时可以多给跨课程联系、类比和有趣入口，帮助用户保持探索感。",
+			"推荐时保留 1 到 2 个备选方向，让用户可以选择自己更感兴趣的切入点。",
+		)
+	case "focused":
+		lines = append(lines,
+			"回答时尽量直奔主题，减少不必要的铺垫和分支信息。",
+			"推荐时优先指出当前最关键的一步，而不是同时给太多任务。",
+		)
+	case "struggling":
+		lines = append(lines,
+			"回答时使用鼓励但诚实的语气，把复杂问题拆成更小的步骤。",
+			"如果发现理解门槛较高，优先回到基础定义、最小例子和先修补齐，而不是直接推高级扩展。",
+		)
+	default:
+		lines = append(lines, "回答时保持清晰、具体，并尽量贴合当前用户的学习节奏。")
+	}
+
+	return lines
+}
+
 func stringValue(value any) string {
 	text, _ := value.(string)
 	return text
+}
+
+func dedupeClientActions(actions []assistantdto.ClientAction) []assistantdto.ClientAction {
+	if len(actions) == 0 {
+		return nil
+	}
+
+	result := make([]assistantdto.ClientAction, 0, len(actions))
+	seen := make(map[string]struct{}, len(actions))
+	for _, action := range actions {
+		action.Type = strings.TrimSpace(action.Type)
+		action.Target = strings.TrimSpace(action.Target)
+		action.CourseTitle = strings.TrimSpace(action.CourseTitle)
+		if action.Type == "" {
+			continue
+		}
+		key := strings.Join([]string{
+			action.Type,
+			action.Target,
+			action.CourseTitle,
+			fmt.Sprintf("%t", action.Flash),
+		}, "::")
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		result = append(result, action)
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+	return result
 }
 
 func currentUserEntity(user *authdto.AuthUserView) *authentity.User {

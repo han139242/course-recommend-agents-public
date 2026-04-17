@@ -20,6 +20,18 @@ type Neo4jRepository struct {
 	driver neo4j.DriverWithContext
 }
 
+const relationPriorityCase = `
+CASE type(rel)
+  WHEN 'PREREQUISITE_OF' THEN 0
+  WHEN 'SUBTOPIC_OF' THEN 1
+  WHEN 'PART_OF' THEN 2
+  WHEN 'RELATED_TO' THEN 3
+  WHEN 'USES' THEN 4
+  WHEN 'APPLIES_TO' THEN 5
+  ELSE 6
+END
+`
+
 // NewNeo4jRepository 创建图谱仓储。
 func NewNeo4jRepository(driver neo4j.DriverWithContext) *Neo4jRepository {
 	return &Neo4jRepository{driver: driver}
@@ -165,6 +177,504 @@ RETURN nodes AS nodes,
 	}
 
 	return payload.Nodes, payload.Edges, nil
+}
+
+// LoadCatalog loads lightweight graph metadata and prerequisite edges for navigation/search.
+func (r *Neo4jRepository) LoadCatalog(ctx context.Context) ([]graphentity.Node, []graphentity.Edge, error) {
+	if !r.Enabled() {
+		return nil, nil, neo4jUsageError("neo4j 未启用")
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (node:KnowledgeNode)
+WITH collect(node) AS nodes
+OPTIONAL MATCH (source:KnowledgeNode)-[rel:PREREQUISITE_OF]->(target:KnowledgeNode)
+RETURN nodes AS nodes,
+       collect(DISTINCT {
+         relation_id: toString(id(rel)),
+         relation_type: type(rel),
+         source_id: coalesce(source.knowledge_id, source.node_id, source.id, source.name),
+         target_id: coalesce(target.knowledge_id, target.node_id, target.id, target.name),
+         source_name: coalesce(source.name, source.canonicalName, ''),
+         target_name: coalesce(target.name, target.canonicalName, '')
+       }) AS prerequisite_edges
+`
+		records, runErr := tx.Run(ctx, query, map[string]any{})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes []graphentity.Node
+				Edges []graphentity.Edge
+			}{Nodes: []graphentity.Node{}, Edges: []graphentity.Edge{}}, nil
+		}
+
+		record := records.Record()
+		nodesValue, _ := record.Get("nodes")
+		edgesValue, _ := record.Get("prerequisite_edges")
+
+		return struct {
+			Nodes []graphentity.Node
+			Edges []graphentity.Edge
+		}{
+			Nodes: dedupeNodes(parseGraphNodes(nodesValue)),
+			Edges: parseGraphEdges(edgesValue),
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("查询图谱目录失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes []graphentity.Node
+		Edges []graphentity.Edge
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, nil
+	}
+
+	return payload.Nodes, payload.Edges, nil
+}
+
+// LoadSeeds loads a bounded graph of important seed nodes for the homepage.
+func (r *Neo4jRepository) LoadSeeds(ctx context.Context, count int) ([]graphentity.Node, []graphentity.Edge, error) {
+	if !r.Enabled() {
+		return nil, nil, neo4jUsageError("neo4j 未启用")
+	}
+	if count <= 0 {
+		count = 14
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (node:KnowledgeNode)
+WITH node, COUNT { (node)--() } AS degree
+ORDER BY degree DESC, coalesce(node.name, node.canonicalName, node.knowledge_id, node.node_id, node.id)
+LIMIT $count
+WITH collect(node) AS seeds
+UNWIND seeds AS seed
+OPTIONAL MATCH (seed)-[rel]-(neighbor:KnowledgeNode)
+WHERE neighbor IN seeds
+RETURN seeds AS nodes,
+       collect(DISTINCT {
+         relation_id: toString(id(rel)),
+         relation_type: type(rel),
+         source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+         target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+         source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+         target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+       }) AS edges
+`
+		records, runErr := tx.Run(ctx, query, map[string]any{"count": count})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes []graphentity.Node
+				Edges []graphentity.Edge
+			}{Nodes: []graphentity.Node{}, Edges: []graphentity.Edge{}}, nil
+		}
+
+		record := records.Record()
+		nodesValue, _ := record.Get("nodes")
+		edgesValue, _ := record.Get("edges")
+
+		return struct {
+			Nodes []graphentity.Node
+			Edges []graphentity.Edge
+		}{
+			Nodes: dedupeNodes(parseGraphNodes(nodesValue)),
+			Edges: parseGraphEdges(edgesValue),
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("查询图谱种子节点失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes []graphentity.Node
+		Edges []graphentity.Edge
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, nil
+	}
+
+	return payload.Nodes, payload.Edges, nil
+}
+
+// LoadNeighbors loads on-demand graph neighbors for a target node.
+func (r *Neo4jRepository) LoadNeighbors(ctx context.Context, nodeID string, depth int, direction string, limit int) ([]graphentity.Node, []graphentity.Edge, error) {
+	if !r.Enabled() {
+		return nil, nil, neo4jUsageError("neo4j 未启用")
+	}
+
+	resolvedNodeID := strings.TrimSpace(nodeID)
+	if resolvedNodeID == "" {
+		return []graphentity.Node{}, []graphentity.Edge{}, nil
+	}
+	if depth <= 0 {
+		depth = 1
+	}
+	if depth > 2 {
+		depth = 2
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+	if strings.TrimSpace(direction) == "" {
+		direction = "both"
+	}
+
+	pattern := "-[rel]-(neighbor:KnowledgeNode)"
+	pathPattern := "(target)-[*1..2]-(neighbor:KnowledgeNode)"
+	switch direction {
+	case "outgoing":
+		pattern = "-[rel]->(neighbor:KnowledgeNode)"
+		pathPattern = "(target)-[*1..2]->(neighbor:KnowledgeNode)"
+	case "incoming":
+		pattern = "<-[rel]-(neighbor:KnowledgeNode)"
+		pathPattern = "(target)<-[*1..2]-(neighbor:KnowledgeNode)"
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := ""
+		params := map[string]any{"nodeID": resolvedNodeID, "limit": limit}
+
+		if depth <= 1 {
+			query = fmt.Sprintf(`
+MATCH (target:KnowledgeNode)
+WHERE coalesce(target.knowledge_id, target.node_id, target.id, target.name) = $nodeID
+OPTIONAL MATCH (target)%s
+WITH target, rel, neighbor
+ORDER BY %s, coalesce(neighbor.name, neighbor.canonicalName, neighbor.knowledge_id, neighbor.node_id, neighbor.id)
+LIMIT $limit
+RETURN collect(DISTINCT target) AS targets,
+       collect(DISTINCT neighbor) AS neighbors,
+       collect(DISTINCT {
+         relation_id: toString(id(rel)),
+         relation_type: type(rel),
+         source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+         target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+         source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+         target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+       }) AS edges
+`, pattern, relationPriorityCase)
+		} else {
+			query = fmt.Sprintf(`
+MATCH (target:KnowledgeNode)
+WHERE coalesce(target.knowledge_id, target.node_id, target.id, target.name) = $nodeID
+CALL {
+  WITH target
+  MATCH path=%s
+  WITH path, neighbor,
+       [rel IN relationships(path) |
+         CASE type(rel)
+           WHEN 'PREREQUISITE_OF' THEN 0
+           WHEN 'SUBTOPIC_OF' THEN 1
+           WHEN 'PART_OF' THEN 2
+           WHEN 'RELATED_TO' THEN 3
+           WHEN 'USES' THEN 4
+           WHEN 'APPLIES_TO' THEN 5
+           ELSE 6
+         END
+       ] AS priorities
+  ORDER BY reduce(best = 99, priority IN priorities |
+           CASE
+             WHEN priority < best THEN priority
+             ELSE best
+           END
+         ),
+         length(path),
+         coalesce(neighbor.name, neighbor.canonicalName, neighbor.knowledge_id, neighbor.node_id, neighbor.id)
+  LIMIT $limit
+  RETURN collect(DISTINCT path) AS paths
+}
+WITH target, paths
+UNWIND CASE WHEN size(paths) = 0 THEN [null] ELSE paths END AS path
+WITH target,
+     CASE WHEN path IS NULL THEN [target] ELSE nodes(path) END AS path_nodes,
+     CASE WHEN path IS NULL THEN [] ELSE relationships(path) END AS path_rels
+UNWIND path_nodes AS node
+WITH collect(DISTINCT node) AS raw_nodes, path_rels
+UNWIND CASE WHEN size(path_rels) = 0 THEN [null] ELSE path_rels END AS rel
+RETURN raw_nodes AS raw_nodes,
+       collect(DISTINCT CASE
+         WHEN rel IS NULL THEN null
+         ELSE {
+           relation_id: toString(id(rel)),
+           relation_type: type(rel),
+           source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+           target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+           source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+           target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+         }
+       END) AS edges
+`, pathPattern)
+		}
+
+		records, runErr := tx.Run(ctx, query, params)
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes []graphentity.Node
+				Edges []graphentity.Edge
+			}{Nodes: []graphentity.Node{}, Edges: []graphentity.Edge{}}, nil
+		}
+
+		record := records.Record()
+		if depth <= 1 {
+			targetValue, _ := record.Get("targets")
+			neighborsValue, _ := record.Get("neighbors")
+			edgesValue, _ := record.Get("edges")
+			nodes := append(parseGraphNodes(targetValue), parseGraphNodes(neighborsValue)...)
+			return struct {
+				Nodes []graphentity.Node
+				Edges []graphentity.Edge
+			}{
+				Nodes: dedupeNodes(nodes),
+				Edges: parseGraphEdges(edgesValue),
+			}, records.Err()
+		}
+
+		rawNodesValue, _ := record.Get("raw_nodes")
+		edgesValue, _ := record.Get("edges")
+		return struct {
+			Nodes []graphentity.Node
+			Edges []graphentity.Edge
+		}{
+			Nodes: dedupeNodes(parseGraphNodes(rawNodesValue)),
+			Edges: parseGraphEdges(edgesValue),
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("查询图谱邻居失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes []graphentity.Node
+		Edges []graphentity.Edge
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, nil
+	}
+
+	return payload.Nodes, payload.Edges, nil
+}
+
+// LoadPrerequisiteChain loads a deterministic prerequisite chain for a target knowledge node.
+func (r *Neo4jRepository) LoadPrerequisiteChain(ctx context.Context, targetID string, depth int) ([]graphentity.Node, []graphentity.Edge, []string, error) {
+	if !r.Enabled() {
+		return nil, nil, nil, neo4jUsageError("neo4j 未启用")
+	}
+
+	resolvedTargetID := strings.TrimSpace(targetID)
+	if resolvedTargetID == "" {
+		return []graphentity.Node{}, []graphentity.Edge{}, []string{}, nil
+	}
+	if depth <= 0 {
+		depth = 3
+	}
+	if depth > 4 {
+		depth = 4
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := fmt.Sprintf(`
+MATCH (target:KnowledgeNode)
+WHERE coalesce(target.knowledge_id, target.node_id, target.id, target.name) = $targetID
+   OR target.name = $targetID
+CALL {
+  WITH target
+  OPTIONAL MATCH path = (ancestor:KnowledgeNode)-[:PREREQUISITE_OF*1..%d]->(target)
+  WITH path
+  ORDER BY length(path) DESC,
+           [node IN nodes(path) | coalesce(node.name, node.canonicalName, node.knowledge_id, node.node_id, node.id)]
+  LIMIT 1
+  RETURN path
+}
+RETURN CASE
+         WHEN path IS NULL THEN [target]
+         ELSE nodes(path)
+       END AS ordered_nodes,
+       CASE
+         WHEN path IS NULL THEN []
+         ELSE [rel IN relationships(path) | {
+           relation_id: toString(id(rel)),
+           relation_type: type(rel),
+           source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+           target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+           source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+           target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+         }]
+       END AS ordered_rels
+`, depth)
+
+		records, runErr := tx.Run(ctx, query, map[string]any{"targetID": resolvedTargetID})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes          []graphentity.Node
+				Edges          []graphentity.Edge
+				OrderedNodeIDs []string
+			}{
+				Nodes:          []graphentity.Node{},
+				Edges:          []graphentity.Edge{},
+				OrderedNodeIDs: []string{},
+			}, nil
+		}
+
+		record := records.Record()
+		orderedNodesValue, _ := record.Get("ordered_nodes")
+		orderedRelsValue, _ := record.Get("ordered_rels")
+		orderedNodes := parseGraphNodes(orderedNodesValue)
+		return struct {
+			Nodes          []graphentity.Node
+			Edges          []graphentity.Edge
+			OrderedNodeIDs []string
+		}{
+			Nodes:          dedupeNodes(orderedNodes),
+			Edges:          parseGraphEdges(orderedRelsValue),
+			OrderedNodeIDs: extractOrderedNodeIDs(orderedNodes),
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("查询先修链失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes          []graphentity.Node
+		Edges          []graphentity.Edge
+		OrderedNodeIDs []string
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, []string{}, nil
+	}
+
+	return payload.Nodes, payload.Edges, payload.OrderedNodeIDs, nil
+}
+
+// FindShortestPath loads a shortest path between two knowledge nodes.
+func (r *Neo4jRepository) FindShortestPath(ctx context.Context, fromID string, toID string, maxDepth int) ([]graphentity.Node, []graphentity.Edge, []string, bool, error) {
+	if !r.Enabled() {
+		return nil, nil, nil, false, neo4jUsageError("neo4j 未启用")
+	}
+
+	resolvedFrom := strings.TrimSpace(fromID)
+	resolvedTo := strings.TrimSpace(toID)
+	if resolvedFrom == "" || resolvedTo == "" {
+		return []graphentity.Node{}, []graphentity.Edge{}, []string{}, false, nil
+	}
+	if maxDepth <= 0 {
+		maxDepth = 5
+	}
+	if maxDepth > 6 {
+		maxDepth = 6
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := fmt.Sprintf(`
+MATCH (source:KnowledgeNode)
+WHERE coalesce(source.knowledge_id, source.node_id, source.id, source.name) = $fromID
+   OR source.name = $fromID
+MATCH (target:KnowledgeNode)
+WHERE coalesce(target.knowledge_id, target.node_id, target.id, target.name) = $toID
+   OR target.name = $toID
+CALL {
+  WITH source, target
+  OPTIONAL MATCH path = shortestPath((source)-[*..%d]-(target))
+  RETURN path
+}
+RETURN CASE
+         WHEN path IS NULL THEN []
+         ELSE nodes(path)
+       END AS ordered_nodes,
+       CASE
+         WHEN path IS NULL THEN []
+         ELSE [rel IN relationships(path) | {
+           relation_id: toString(id(rel)),
+           relation_type: type(rel),
+           source_id: coalesce(startNode(rel).knowledge_id, startNode(rel).node_id, startNode(rel).id, startNode(rel).name),
+           target_id: coalesce(endNode(rel).knowledge_id, endNode(rel).node_id, endNode(rel).id, endNode(rel).name),
+           source_name: coalesce(startNode(rel).name, startNode(rel).canonicalName, ''),
+           target_name: coalesce(endNode(rel).name, endNode(rel).canonicalName, '')
+         }]
+       END AS ordered_rels
+`, maxDepth)
+
+		records, runErr := tx.Run(ctx, query, map[string]any{
+			"fromID": resolvedFrom,
+			"toID":   resolvedTo,
+		})
+		if runErr != nil {
+			return nil, runErr
+		}
+		if !records.Next(ctx) {
+			return struct {
+				Nodes          []graphentity.Node
+				Edges          []graphentity.Edge
+				OrderedNodeIDs []string
+				Found          bool
+			}{
+				Nodes:          []graphentity.Node{},
+				Edges:          []graphentity.Edge{},
+				OrderedNodeIDs: []string{},
+				Found:          false,
+			}, nil
+		}
+
+		record := records.Record()
+		orderedNodesValue, _ := record.Get("ordered_nodes")
+		orderedRelsValue, _ := record.Get("ordered_rels")
+		orderedNodes := parseGraphNodes(orderedNodesValue)
+		return struct {
+			Nodes          []graphentity.Node
+			Edges          []graphentity.Edge
+			OrderedNodeIDs []string
+			Found          bool
+		}{
+			Nodes:          dedupeNodes(orderedNodes),
+			Edges:          parseGraphEdges(orderedRelsValue),
+			OrderedNodeIDs: extractOrderedNodeIDs(orderedNodes),
+			Found:          len(orderedNodes) > 0,
+		}, records.Err()
+	})
+	if err != nil {
+		return nil, nil, nil, false, fmt.Errorf("查询图谱最短路径失败: %w", err)
+	}
+
+	payload, ok := result.(struct {
+		Nodes          []graphentity.Node
+		Edges          []graphentity.Edge
+		OrderedNodeIDs []string
+		Found          bool
+	})
+	if !ok {
+		return []graphentity.Node{}, []graphentity.Edge{}, []string{}, false, nil
+	}
+
+	return payload.Nodes, payload.Edges, payload.OrderedNodeIDs, payload.Found, nil
 }
 
 func (r *Neo4jRepository) resolveDefaultRoot(ctx context.Context, session neo4j.SessionWithContext) (string, error) {
@@ -532,6 +1042,20 @@ func parseStringList(value any) []string {
 		}
 	}
 	sort.Strings(result)
+	return result
+}
+
+func extractOrderedNodeIDs(nodes []graphentity.Node) []string {
+	result := make([]string, 0, len(nodes))
+	for _, node := range nodes {
+		if strings.TrimSpace(node.RouteKnowledgeID) != "" {
+			result = append(result, strings.TrimSpace(node.RouteKnowledgeID))
+			continue
+		}
+		if strings.TrimSpace(node.ID) != "" {
+			result = append(result, strings.TrimSpace(node.ID))
+		}
+	}
 	return result
 }
 

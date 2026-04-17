@@ -34,7 +34,7 @@ func (h *Handler) Chat(ctx *gin.Context) {
 		return
 	}
 
-	content, err := h.service.Chat(ctx.Request.Context(), request)
+	response, err := h.service.Chat(ctx.Request.Context(), request)
 	if err != nil {
 		appErr := apperr.AsAppError(err)
 		ctx.JSON(appErr.HTTPStatus, gin.H{"error": appErr.Message})
@@ -47,7 +47,7 @@ func (h *Handler) Chat(ctx *gin.Context) {
 	ctx.Header("Connection", "keep-alive")
 
 	flusher, _ := ctx.Writer.(http.Flusher)
-	for _, chunk := range splitContent(content, 72) {
+	for _, chunk := range splitContent(response.Content, 72) {
 		payload, _ := json.Marshal(map[string]any{
 			"choices": []map[string]any{
 				{
@@ -63,6 +63,82 @@ func (h *Handler) Chat(ctx *gin.Context) {
 		if flusher != nil {
 			flusher.Flush()
 		}
+	}
+
+	payload, _ := json.Marshal(map[string]any{
+		"type":       "assistant_meta",
+		"actions":    response.Actions,
+		"agent":      response.Agent,
+		"agentLabel": response.AgentLabel,
+	})
+	_, _ = ctx.Writer.Write([]byte("data: "))
+	_, _ = ctx.Writer.Write(payload)
+	_, _ = ctx.Writer.Write([]byte("\n\n"))
+	if flusher != nil {
+		flusher.Flush()
+	}
+
+	_, _ = ctx.Writer.Write([]byte("data: [DONE]\n\n"))
+	if flusher != nil {
+		flusher.Flush()
+	}
+}
+
+// PublicChat handles the unauthenticated assistant endpoint for graph/page control.
+func (h *Handler) PublicChat(ctx *gin.Context) {
+	if h.service == nil {
+		ctx.JSON(http.StatusServiceUnavailable, gin.H{"error": apperr.ErrDependencyUnavailable.Message})
+		return
+	}
+
+	var request assistantdto.ChatRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": apperr.ErrBadRequest.Message})
+		return
+	}
+
+	response, err := h.service.ChatPublic(ctx.Request.Context(), request)
+	if err != nil {
+		appErr := apperr.AsAppError(err)
+		ctx.JSON(appErr.HTTPStatus, gin.H{"error": appErr.Message})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
+	ctx.Header("Content-Type", "text/event-stream")
+	ctx.Header("Cache-Control", "no-cache")
+	ctx.Header("Connection", "keep-alive")
+
+	flusher, _ := ctx.Writer.(http.Flusher)
+	for _, chunk := range splitContent(response.Content, 72) {
+		payload, _ := json.Marshal(map[string]any{
+			"choices": []map[string]any{
+				{
+					"delta": map[string]any{
+						"content": chunk,
+					},
+				},
+			},
+		})
+		_, _ = ctx.Writer.Write([]byte("data: "))
+		_, _ = ctx.Writer.Write(payload)
+		_, _ = ctx.Writer.Write([]byte("\n\n"))
+		if flusher != nil {
+			flusher.Flush()
+		}
+	}
+
+	payload, _ := json.Marshal(map[string]any{
+		"type":       "assistant_meta",
+		"actions":    response.Actions,
+		"agent":      response.Agent,
+		"agentLabel": response.AgentLabel,
+	})
+	_, _ = ctx.Writer.Write([]byte("data: "))
+	_, _ = ctx.Writer.Write(payload)
+	_, _ = ctx.Writer.Write([]byte("\n\n"))
+	if flusher != nil {
+		flusher.Flush()
 	}
 
 	_, _ = ctx.Writer.Write([]byte("data: [DONE]\n\n"))

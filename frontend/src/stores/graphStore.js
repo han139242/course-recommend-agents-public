@@ -1,10 +1,26 @@
-﻿import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
 
-import { fetchFrontierBriefing, fetchFullGraph, fetchKnowledgeDetail } from '../api/graph'
+import {
+  fetchFrontierBriefing,
+  fetchFullGraph,
+  fetchGraphCatalog,
+  fetchGraphNeighbors,
+  fetchGraphSeeds,
+  fetchKnowledgeDetail,
+} from '../api/graph'
 import { fetchRecommendedPath } from '../api/recommend'
+import {
+  NEIGHBOR_LIMIT,
+  MAX_EXPAND_DEPTH,
+  MAX_VISIBLE_NODES,
+  createCircularPlacement,
+  createDetachedRootOrigin,
+  createExpansionPlacement,
+  getRelationPriority,
+} from '../utils/graphLayout'
 import { createSearchIndex, searchInIndex } from '../utils/searchIndex'
-import { buildSeedNodeIds, transformGraphData } from '../utils/graphTransform'
+import { transformGraphData } from '../utils/graphTransform'
 import { getCourseOptions } from '../utils/colorMap'
 import { useUserStore } from './userStore'
 
@@ -12,29 +28,123 @@ function getChapterTitle(node) {
   return String(node?.chapterTitle || '其他').trim() || '其他'
 }
 
-function findNodeByRoute(nodes, routeKnowledgeId) {
-  const routeId = String(routeKnowledgeId || '').trim()
-  return nodes.find((node) => [node.routeKnowledgeId, node.name, node.canonicalName].includes(routeId)) || null
+function normalizeCatalogNode(node = {}) {
+  const id = String(node.id || node.routeKnowledgeId || '').trim()
+  return {
+    id,
+    routeKnowledgeId: String(node.routeKnowledgeId || id).trim() || id,
+    name: String(node.name || node.canonicalName || id).trim() || id,
+    canonicalName: String(node.canonicalName || node.name || id).trim() || id,
+    chapterTitle: getChapterTitle(node),
+    entityType: String(node.entityType || 'concept').trim() || 'concept',
+    description: String(node.description || '').trim(),
+    sourcePath: String(node.sourcePath || '').trim(),
+    curatedSource: String(node.curatedSource || '').trim(),
+  }
 }
 
-function toggleInList(list = [], value) {
-  const normalized = String(value || '').trim()
-  if (!normalized) return [...list]
-  return list.includes(normalized) ? list.filter((item) => item !== normalized) : [...list, normalized]
+function normalizeVisibleNode(node = {}, overrides = {}) {
+  const base = normalizeCatalogNode(node)
+  return {
+    ...base,
+    x: Number.isFinite(overrides.x) ? overrides.x : Number.isFinite(node.x) ? node.x : 0,
+    y: Number.isFinite(overrides.y) ? overrides.y : Number.isFinite(node.y) ? node.y : 0,
+    fx: Number.isFinite(overrides.fx) ? overrides.fx : Number.isFinite(node.fx) ? node.fx : null,
+    fy: Number.isFinite(overrides.fy) ? overrides.fy : Number.isFinite(node.fy) ? node.fy : null,
+    depth: Number.isFinite(overrides.depth) ? overrides.depth : Number(node.depth || 0) || 0,
+    rootId: String(overrides.rootId || node.rootId || base.id).trim() || base.id,
+    isRoot: Boolean(overrides.isRoot ?? node.isRoot),
+    expandMeta: overrides.expandMeta ?? node.expandMeta ?? null,
+    layoutLock: overrides.layoutLock ?? node.layoutLock ?? null,
+  }
+}
+
+function normalizeVisibleEdge(edge = {}) {
+  const sourceId = String(edge.sourceId || edge.source || '').trim()
+  const targetId = String(edge.targetId || edge.target || '').trim()
+  const relationType = String(edge.relationType || 'RELATED_TO').trim() || 'RELATED_TO'
+  const relationId = String(edge.relationId || edge.id || `${sourceId}:${relationType}:${targetId}`).trim()
+  return {
+    id: relationId,
+    relationId,
+    relationType,
+    sourceId,
+    targetId,
+    sourceName: String(edge.sourceName || '').trim(),
+    targetName: String(edge.targetName || '').trim(),
+  }
+}
+
+function cloneMapOfSets(map) {
+  return new Map([...map.entries()].map(([key, value]) => [key, new Set(value)]))
+}
+
+function cloneSet(value) {
+  return new Set(value || [])
+}
+
+function addOwner(ownerMap, key, ownerKey) {
+  const next = new Map(ownerMap)
+  const owners = new Set(next.get(key) || [])
+  owners.add(ownerKey)
+  next.set(key, owners)
+  return next
+}
+
+function removeOwner(ownerMap, key, ownerKey) {
+  const next = new Map(ownerMap)
+  const owners = new Set(next.get(key) || [])
+  owners.delete(ownerKey)
+  if (owners.size) next.set(key, owners)
+  else next.delete(key)
+  return next
+}
+
+function isExpansionOwner(ownerKey = '') {
+  return String(ownerKey || '').startsWith('expand:')
+}
+
+function mergeVisibleNode(existing, incoming) {
+  if (!existing) return incoming
+  return {
+    ...existing,
+    ...incoming,
+    x: Number.isFinite(existing.x) ? existing.x : incoming.x,
+    y: Number.isFinite(existing.y) ? existing.y : incoming.y,
+    fx: Number.isFinite(existing.fx) ? existing.fx : incoming.fx,
+    fy: Number.isFinite(existing.fy) ? existing.fy : incoming.fy,
+    depth: Math.min(Number(existing.depth || 0), Number(incoming.depth || 0)),
+    isRoot: Boolean(existing.isRoot || incoming.isRoot),
+    rootId: existing.isRoot ? existing.rootId : incoming.rootId,
+    expandMeta: incoming.expandMeta ?? existing.expandMeta ?? null,
+    layoutLock: incoming.layoutLock ?? existing.layoutLock ?? null,
+  }
+}
+
+function buildEdgeId(edge) {
+  return String(edge.id || edge.relationId || `${edge.sourceId}:${edge.relationType}:${edge.targetId}`).trim()
+}
+
+function buildLayoutLock(node, expiresAt) {
+  if (!node) return null
+  return {
+    x: Number(node.x || 0),
+    y: Number(node.y || 0),
+    expiresAt,
+  }
 }
 
 export const useGraphStore = defineStore('graph', () => {
   const userStore = useUserStore()
 
-  const rawNodes = ref([])
-  const rawEdges = ref([])
+  const catalogNodes = ref([])
+  const prerequisiteIndex = ref([])
+
   const loading = ref(false)
   const error = ref('')
 
   const selectedNodeId = ref(null)
   const focusedNodeId = ref(null)
-  const expandedNodeIds = ref([])
-  const pinnedNodeIds = ref([])
   const highlightFilter = ref(null)
   const highlightPath = ref([])
   const activeCourseFilter = ref('全部')
@@ -43,30 +153,37 @@ export const useGraphStore = defineStore('graph', () => {
   const frontierCache = ref({})
   const recommendCache = ref({})
 
-  const nodeMap = computed(() => {
-    const map = new Map()
-    rawNodes.value.forEach((node) => map.set(node.id, node))
-    return map
-  })
+  const nodesMap = shallowRef(new Map())
+  const edgesMap = shallowRef(new Map())
+  const nodeOwners = shallowRef(new Map())
+  const edgeOwners = shallowRef(new Map())
+  const rootNodeIds = shallowRef(new Set())
+  const expandedNodeIds = shallowRef(new Set())
+  const expandedBy = shallowRef(new Map())
+  const pinnedNodeIds = shallowRef(new Set())
+  const expansionRecords = shallowRef(new Map())
+  const expansionChildrenMap = ref({})
+
+  const rawNodes = computed(() => catalogNodes.value)
+  const rawEdges = computed(() => prerequisiteIndex.value)
 
   const routeNodeMap = computed(() => {
     const map = new Map()
-    rawNodes.value.forEach((node) => {
-      ;[node.routeKnowledgeId, node.name, node.canonicalName].forEach((key) => {
+    catalogNodes.value.forEach((node) => {
+      const normalized = normalizeCatalogNode(node)
+      ;[normalized.routeKnowledgeId, normalized.name, normalized.canonicalName].forEach((key) => {
         const value = String(key || '').trim()
-        if (value) map.set(value, node)
+        if (value) map.set(value, normalized)
       })
     })
     return map
   })
 
-  const searchIndex = computed(() => createSearchIndex(rawNodes.value))
-  const courseOptions = computed(() => getCourseOptions(rawNodes.value))
-  const seedNodeIds = computed(() => buildSeedNodeIds(rawNodes.value, rawEdges.value, 14))
-
+  const searchIndex = computed(() => createSearchIndex(catalogNodes.value))
+  const courseOptions = computed(() => getCourseOptions(catalogNodes.value))
   const courseGroups = computed(() => {
     const groups = {}
-    rawNodes.value.forEach((node) => {
+    catalogNodes.value.forEach((node) => {
       const chapterTitle = getChapterTitle(node)
       const progress = userStore.getProgressMeta(node.routeKnowledgeId)
       if (!groups[chapterTitle]) {
@@ -75,7 +192,7 @@ export const useGraphStore = defineStore('graph', () => {
           total: 0,
           mastered: 0,
           openDepth: 0,
-          maxDepth: 0,
+          maxDepth: 1,
           nodes: [],
         }
       }
@@ -83,133 +200,82 @@ export const useGraphStore = defineStore('graph', () => {
       if (Number(progress.masteryScore || 0) >= 80) groups[chapterTitle].mastered += 1
       groups[chapterTitle].nodes.push(node)
     })
-
     return Object.values(groups).sort((left, right) => {
       if (right.total !== left.total) return right.total - left.total
       return String(left.title || '').localeCompare(String(right.title || ''), 'zh-CN')
     })
   })
 
-  const selectedNode = computed(() => (selectedNodeId.value ? nodeMap.value.get(selectedNodeId.value) || null : null))
-  const selectedRouteKnowledgeId = computed(() => selectedNode.value?.routeKnowledgeId || null)
-  const selectedDetail = computed(() => detailCache.value[selectedRouteKnowledgeId.value] || null)
-
-  const graphData = computed(() =>
-    transformGraphData(rawNodes.value, rawEdges.value, {
-      progressMap: userStore.progressMap,
-      bookmarks: new Set(userStore.bookmarks),
-      expandedNodeIds: expandedNodeIds.value,
-      pinnedNodeIds: pinnedNodeIds.value,
-      selectedNodeId: selectedNodeId.value,
-      seedNodeIds: seedNodeIds.value,
-    }),
-  )
-
-  const visibleNodeIds = computed(() => graphData.value.nodes.map((node) => node.id))
-  const visibleNodeIdSet = computed(() => new Set(visibleNodeIds.value))
-
-  const adjacentMap = computed(() => {
-    const map = new Map()
-    rawNodes.value.forEach((node) => {
-      map.set(node.id, {
-        nodes: new Set([node.id]),
-        edges: new Set(),
-      })
-    })
-
-    rawEdges.value.forEach((edge) => {
-      if (!map.has(edge.sourceId) || !map.has(edge.targetId)) return
-      const edgeId = edge.relationId || `${edge.sourceId}-${edge.relationType || 'related'}-${edge.targetId}`
-      map.get(edge.sourceId).nodes.add(edge.targetId)
-      map.get(edge.targetId).nodes.add(edge.sourceId)
-      map.get(edge.sourceId).edges.add(edgeId)
-      map.get(edge.targetId).edges.add(edgeId)
-    })
-
-    return map
-  })
-
   const prerequisiteParentMap = computed(() => {
     const map = new Map()
-    rawEdges.value.forEach((edge) => {
-      if (edge.relationType !== 'PREREQUISITE_OF') return
-      const targetNode = nodeMap.value.get(edge.targetId)
-      const sourceNode = nodeMap.value.get(edge.sourceId)
-      if (!targetNode?.routeKnowledgeId || !sourceNode?.routeKnowledgeId) return
-      const targetKey = targetNode.routeKnowledgeId
-      const sourceKey = sourceNode.routeKnowledgeId
-      if (!map.has(targetKey)) map.set(targetKey, new Set())
-      map.get(targetKey).add(sourceKey)
+    prerequisiteIndex.value.forEach((edge) => {
+      const source = String(edge.sourceRouteKnowledgeId || '').trim()
+      const target = String(edge.targetRouteKnowledgeId || '').trim()
+      if (!source || !target) return
+      if (!map.has(target)) map.set(target, new Set())
+      map.get(target).add(source)
     })
     return map
   })
 
   const prerequisiteNextMap = computed(() => {
     const map = new Map()
-    rawEdges.value.forEach((edge) => {
-      if (edge.relationType !== 'PREREQUISITE_OF') return
-      const sourceNode = nodeMap.value.get(edge.sourceId)
-      const targetNode = nodeMap.value.get(edge.targetId)
-      if (!sourceNode?.routeKnowledgeId || !targetNode?.routeKnowledgeId) return
-      const sourceKey = sourceNode.routeKnowledgeId
-      const targetKey = targetNode.routeKnowledgeId
-      if (!map.has(sourceKey)) map.set(sourceKey, new Set())
-      map.get(sourceKey).add(targetKey)
+    prerequisiteIndex.value.forEach((edge) => {
+      const source = String(edge.sourceRouteKnowledgeId || '').trim()
+      const target = String(edge.targetRouteKnowledgeId || '').trim()
+      if (!source || !target) return
+      if (!map.has(source)) map.set(source, new Set())
+      map.get(source).add(target)
     })
     return map
   })
 
-  function isNodeExpanded(nodeId) {
-    return expandedNodeIds.value.includes(String(nodeId || '').trim())
-  }
+  const graphData = computed(() =>
+    transformGraphData([...nodesMap.value.values()], [...edgesMap.value.values()], {
+      progressMap: userStore.progressMap,
+      bookmarks: new Set(userStore.bookmarks),
+      expandedNodeIds: [...expandedNodeIds.value],
+      pinnedNodeIds: [...pinnedNodeIds.value],
+      selectedNodeId: selectedNodeId.value,
+      rootNodeIds: [...rootNodeIds.value],
+      totalNodes: catalogNodes.value.length,
+    }),
+  )
 
-  function pinNode(nodeId) {
-    const normalized = String(nodeId || '').trim()
-    if (!normalized) return
-    if (seedNodeIds.value.includes(normalized)) return
-    if (pinnedNodeIds.value.includes(normalized)) return
-    pinnedNodeIds.value = [...pinnedNodeIds.value, normalized]
-  }
+  const nodeMap = computed(() => new Map(graphData.value.nodes.map((node) => [node.id, node])))
+  const selectedNode = computed(() => {
+    const key = String(selectedNodeId.value || '').trim()
+    return key ? nodesMap.value.get(key) || null : null
+  })
+  const selectedRouteKnowledgeId = computed(() => selectedNode.value?.routeKnowledgeId || null)
+  const selectedDetail = computed(() => detailCache.value[selectedRouteKnowledgeId.value] || null)
+  const visibleNodeIds = computed(() => graphData.value.nodes.map((node) => node.id))
+  const visibleNodeIdSet = computed(() => new Set(visibleNodeIds.value))
+  const adjacentMap = computed(() => {
+    const map = new Map()
+    graphData.value.nodes.forEach((node) => {
+      map.set(node.id, {
+        nodes: new Set([node.id]),
+        edges: new Set(),
+      })
+    })
+    graphData.value.edges.forEach((edge) => {
+      if (!map.has(edge.source) || !map.has(edge.target)) return
+      map.get(edge.source).nodes.add(edge.target)
+      map.get(edge.target).nodes.add(edge.source)
+      map.get(edge.source).edges.add(edge.id)
+      map.get(edge.target).edges.add(edge.id)
+    })
+    return map
+  })
+  const seedNodeIds = computed(() => [...rootNodeIds.value])
 
-  function unpinNode(nodeId) {
-    const normalized = String(nodeId || '').trim()
-    if (!normalized) return
-    pinnedNodeIds.value = pinnedNodeIds.value.filter((item) => item !== normalized)
-  }
-
-  function expandNode(nodeId) {
-    const normalized = String(nodeId || '').trim()
-    if (!normalized || expandedNodeIds.value.includes(normalized)) return
-    expandedNodeIds.value = [...expandedNodeIds.value, normalized]
-    pinNode(normalized)
-  }
-
-  function collapseNode(nodeId) {
-    const normalized = String(nodeId || '').trim()
-    if (!normalized) return
-    expandedNodeIds.value = expandedNodeIds.value.filter((item) => item !== normalized)
-    if (!seedNodeIds.value.includes(normalized) && selectedNodeId.value !== normalized) {
-      unpinNode(normalized)
-    }
-  }
-
-  function toggleNodeExpansion(nodeId) {
-    const normalized = String(nodeId || '').trim()
-    if (!normalized) return
-    if (isNodeExpanded(normalized)) {
-      collapseNode(normalized)
-      return
-    }
-    expandNode(normalized)
-  }
-
-  function collapseAllExpansions() {
-    expandedNodeIds.value = []
-    pinnedNodeIds.value = []
-  }
-
-  function collapseAllCourses() {
-    collapseAllExpansions()
+  function rebuildExpansionChildrenMap(nextExpansionRecords = expansionRecords.value) {
+    const next = {}
+    nextExpansionRecords.forEach((record, nodeId) => {
+      next[nodeId] = [...record.childIds]
+    })
+    expansionChildrenMap.value = next
   }
 
   function setCourseFilter(courseTitle = '全部') {
@@ -217,8 +283,363 @@ export const useGraphStore = defineStore('graph', () => {
   }
 
   function setFocusedNode(nodeId) {
-    focusedNodeId.value = nodeId
-    if (nodeId) pinNode(nodeId)
+    focusedNodeId.value = String(nodeId || '').trim() || null
+    if (focusedNodeId.value) pinNode(focusedNodeId.value)
+  }
+
+  function pinNode(nodeId) {
+    const key = String(nodeId || '').trim()
+    if (!key) return
+    const next = cloneSet(pinnedNodeIds.value)
+    next.add(key)
+    pinnedNodeIds.value = next
+  }
+
+  function unpinNode(nodeId) {
+    const key = String(nodeId || '').trim()
+    if (!key) return
+    const next = cloneSet(pinnedNodeIds.value)
+    next.delete(key)
+    pinnedNodeIds.value = next
+  }
+
+  function clearCanvasGraph() {
+    nodesMap.value = new Map()
+    edgesMap.value = new Map()
+    nodeOwners.value = new Map()
+    edgeOwners.value = new Map()
+    rootNodeIds.value = new Set()
+    expandedNodeIds.value = new Set()
+    expandedBy.value = new Map()
+    pinnedNodeIds.value = new Set()
+    expansionRecords.value = new Map()
+    rebuildExpansionChildrenMap(new Map())
+    selectedNodeId.value = null
+    focusedNodeId.value = null
+    highlightPath.value = []
+  }
+
+  function getVisibleNode(nodeId) {
+    return nodesMap.value.get(String(nodeId || '').trim()) || null
+  }
+
+  function getDetachedRevealOrigin(nodeId, anchorPosition = null) {
+    const rootCount = rootNodeIds.value.size
+    const point = Number.isFinite(anchorPosition?.x) && Number.isFinite(anchorPosition?.y)
+      ? (() => {
+          const hashAngle = ((String(nodeId || '').length * 47 + rootCount * 29) % 360) * (Math.PI / 180)
+          const radius = 82 + (rootCount % 6) * 18
+          return {
+            x: anchorPosition.x + Math.cos(hashAngle) * radius,
+            y: anchorPosition.y + Math.sin(hashAngle) * radius * 0.72,
+          }
+        })()
+      : createDetachedRootOrigin(rootCount)
+    const jitter = (String(nodeId || '').length % 7) * 18
+    return {
+      x: point.x + jitter,
+      y: point.y - jitter * 0.6,
+    }
+  }
+
+  function ensureVisibleCapacity(incomingNodes = []) {
+    const uniqueIncoming = incomingNodes.filter((node) => !nodesMap.value.has(node.id))
+    if (nodesMap.value.size + uniqueIncoming.length > MAX_VISIBLE_NODES) {
+      error.value = '当前图谱节点过多，请先收起部分子图，再继续展开。'
+      return false
+    }
+    return true
+  }
+
+  function getNeighborRequestLimit(overrideLimit = null) {
+    if (Number.isFinite(overrideLimit) && overrideLimit > 0) {
+      return overrideLimit
+    }
+    return nodesMap.value.size > 180 ? 12 : NEIGHBOR_LIMIT
+  }
+
+  function applySeedGraph(payload) {
+    const nextNodes = new Map()
+    const nextEdges = new Map()
+    const nextNodeOwners = new Map()
+    const nextEdgeOwners = new Map()
+    const nextRoots = new Set()
+
+    const normalizedNodes = (payload?.nodes || []).map((node) => normalizeVisibleNode(node, { isRoot: true, depth: 0 }))
+    const placements = createCircularPlacement(normalizedNodes.length, {
+      spacing: 132,
+      yScale: 0.88,
+    })
+    normalizedNodes.forEach((node, index) => {
+      const placement = placements[index] || { x: 0, y: 0 }
+      const positioned = {
+        ...node,
+        x: placement.x,
+        y: placement.y,
+        rootId: node.id,
+        isRoot: true,
+      }
+      nextNodes.set(positioned.id, positioned)
+      nextNodeOwners.set(positioned.id, new Set([`root:${positioned.id}`]))
+      nextRoots.add(positioned.id)
+    })
+
+    ;(payload?.edges || []).map((edge) => normalizeVisibleEdge(edge)).forEach((edge) => {
+      if (!nextNodes.has(edge.sourceId) || !nextNodes.has(edge.targetId)) return
+      nextEdges.set(edge.id, edge)
+      nextEdgeOwners.set(edge.id, new Set(['seed']))
+    })
+
+    nodesMap.value = nextNodes
+    edgesMap.value = nextEdges
+    nodeOwners.value = nextNodeOwners
+    edgeOwners.value = nextEdgeOwners
+    rootNodeIds.value = nextRoots
+    expandedNodeIds.value = new Set()
+    expandedBy.value = new Map()
+    expansionRecords.value = new Map()
+    rebuildExpansionChildrenMap(new Map())
+  }
+
+  function applyNeighborGraph(targetId, payload, options = {}) {
+    const ownerKey = `expand:${targetId}`
+    const asDetachedRoot = Boolean(options.asDetachedRoot)
+    const anchorPosition = options.anchorPosition || null
+    const occupiedNodes = Array.isArray(options.occupiedNodes) ? options.occupiedNodes : []
+    const viewportCenterWorld = options.viewportCenterWorld || null
+    const expansionStartedAt = Date.now()
+    const normalizedNodes = (payload?.nodes || []).map((node) => normalizeVisibleNode(node))
+    const normalizedEdges = (payload?.edges || []).map((edge) => normalizeVisibleEdge(edge))
+
+    if (!ensureVisibleCapacity(normalizedNodes)) {
+      return []
+    }
+
+    const currentNodes = new Map(nodesMap.value)
+    const currentEdges = new Map(edgesMap.value)
+    let nextNodeOwners = cloneMapOfSets(nodeOwners.value)
+    let nextEdgeOwners = cloneMapOfSets(edgeOwners.value)
+    let nextRoots = cloneSet(rootNodeIds.value)
+    let nextExpanded = cloneSet(expandedNodeIds.value)
+    let nextExpandedBy = cloneMapOfSets(expandedBy.value)
+    const nextExpansionRecords = new Map(expansionRecords.value)
+
+    const existingTarget = currentNodes.get(targetId)
+    const catalogTarget = routeNodeMap.value.get(targetId)
+    const baseTarget = normalizeVisibleNode(normalizedNodes.find((node) => node.id === targetId) || catalogTarget || { id: targetId }, {
+      isRoot: asDetachedRoot || Boolean(existingTarget?.isRoot),
+      depth: asDetachedRoot ? 0 : Number(existingTarget?.depth || 0),
+      rootId: asDetachedRoot ? targetId : existingTarget?.rootId || targetId,
+      x: Number.isFinite(anchorPosition?.x) ? anchorPosition.x : existingTarget?.x,
+      y: Number.isFinite(anchorPosition?.y) ? anchorPosition.y : existingTarget?.y,
+      fx: existingTarget?.fx,
+      fy: existingTarget?.fy,
+    })
+
+    if (!existingTarget) {
+      const origin = getDetachedRevealOrigin(targetId, anchorPosition)
+      currentNodes.set(
+        targetId,
+        normalizeVisibleNode(baseTarget, {
+          isRoot: true,
+          depth: 0,
+          rootId: targetId,
+          x: origin.x,
+          y: origin.y,
+        }),
+      )
+      nextRoots.add(targetId)
+      nextNodeOwners = addOwner(nextNodeOwners, targetId, `root:${targetId}`)
+    } else if (asDetachedRoot && !existingTarget.isRoot) {
+      currentNodes.set(
+        targetId,
+        mergeVisibleNode(existingTarget, {
+          ...baseTarget,
+          isRoot: true,
+          depth: 0,
+          rootId: targetId,
+        }),
+      )
+      nextRoots.add(targetId)
+      nextNodeOwners = addOwner(nextNodeOwners, targetId, `root:${targetId}`)
+    }
+
+    if (currentNodes.has(targetId) && Number.isFinite(anchorPosition?.x) && Number.isFinite(anchorPosition?.y)) {
+      const currentTarget = currentNodes.get(targetId)
+      currentNodes.set(targetId, {
+        ...currentTarget,
+        x: anchorPosition.x,
+        y: anchorPosition.y,
+        layoutLock: {
+          x: anchorPosition.x,
+          y: anchorPosition.y,
+          expiresAt: expansionStartedAt + (asDetachedRoot ? 1100 : 900),
+        },
+      })
+    }
+
+    const anchorNode = currentNodes.get(targetId) || baseTarget
+    const relationPriorityByNodeId = new Map()
+    normalizedEdges.forEach((edge) => {
+      if (edge.sourceId !== targetId && edge.targetId !== targetId) return
+      const neighborId = edge.sourceId === targetId ? edge.targetId : edge.sourceId
+      if (!neighborId) return
+      const currentPriority = relationPriorityByNodeId.get(neighborId)
+      const nextPriority = getRelationPriority(edge.relationType)
+      if (currentPriority == null || nextPriority < currentPriority) {
+        relationPriorityByNodeId.set(neighborId, nextPriority)
+      }
+    })
+
+    const childNodes = normalizedNodes
+      .filter((node) => node.id && node.id !== targetId)
+      .sort((left, right) => {
+        const priorityDelta = (relationPriorityByNodeId.get(left.id) ?? 99) - (relationPriorityByNodeId.get(right.id) ?? 99)
+        if (priorityDelta !== 0) return priorityDelta
+        return String(left.canonicalName || left.name || left.id).localeCompare(String(right.canonicalName || right.name || right.id), 'zh-CN')
+      })
+    const newChildNodes = childNodes.filter((node) => !currentNodes.has(node.id))
+    const placement = createExpansionPlacement(anchorNode, newChildNodes.length, currentNodes.size, {
+      occupiedNodes,
+      viewportCenterWorld,
+    })
+    const childIds = new Set()
+    const newChildIds = []
+    const edgeIds = new Set()
+    const layoutLockExpiresAt = expansionStartedAt + 720
+    let placementIndex = 0
+
+    childNodes.forEach((node) => {
+      const existing = currentNodes.get(node.id)
+      const slot = existing ? null : placement[placementIndex++]
+      const relationPriority = relationPriorityByNodeId.get(node.id) ?? 99
+      const radialOffset = slot ? Math.min(Math.max(relationPriority, 0), 5) * 14 : 0
+      const positionedX = slot ? anchorNode.x + Math.cos(slot.angle) * (slot.radius + radialOffset) : existing?.x ?? anchorNode.x
+      const positionedY = slot ? anchorNode.y + Math.sin(slot.angle) * (slot.radius + radialOffset) : existing?.y ?? anchorNode.y
+      const expandMeta =
+        existing || !slot
+          ? existing?.expandMeta || null
+          : {
+              anchorId: targetId,
+              x: anchorNode.x,
+              y: anchorNode.y,
+              targetX: positionedX,
+              targetY: positionedY,
+              radius: slot.radius + radialOffset,
+              createdAt: expansionStartedAt,
+              expiresAt: expansionStartedAt + 1800,
+            }
+      const positioned = normalizeVisibleNode(node, {
+        x: existing?.x ?? positionedX,
+        y: existing?.y ?? positionedY,
+        fx: existing?.fx,
+        fy: existing?.fy,
+        depth: Math.min(Number(existing?.depth ?? MAX_EXPAND_DEPTH), Number(anchorNode.depth || 0) + 1),
+        rootId: existing?.rootId || anchorNode.rootId || targetId,
+        isRoot: Boolean(existing?.isRoot),
+        expandMeta,
+        layoutLock:
+          existing && !existing.isRoot
+            ? {
+                x: existing.x,
+                y: existing.y,
+                expiresAt: layoutLockExpiresAt,
+              }
+            : existing?.layoutLock ?? null,
+      })
+      currentNodes.set(node.id, mergeVisibleNode(existing, positioned))
+      nextNodeOwners = addOwner(nextNodeOwners, node.id, ownerKey)
+      const currentParents = new Set(nextExpandedBy.get(node.id) || [])
+      currentParents.add(targetId)
+      nextExpandedBy.set(node.id, currentParents)
+      childIds.add(node.id)
+      if (!existing) newChildIds.push(node.id)
+    })
+
+    normalizedEdges.forEach((edge) => {
+      const edgeId = buildEdgeId(edge)
+      const normalized = { ...edge, id: edgeId }
+      if (!currentNodes.has(normalized.sourceId) || !currentNodes.has(normalized.targetId)) return
+      currentEdges.set(edgeId, normalized)
+      nextEdgeOwners = addOwner(nextEdgeOwners, edgeId, ownerKey)
+      edgeIds.add(edgeId)
+    })
+
+    nextExpanded.add(targetId)
+    nextExpansionRecords.set(targetId, {
+      childIds,
+      edgeIds,
+    })
+
+    nodesMap.value = currentNodes
+    edgesMap.value = currentEdges
+    nodeOwners.value = nextNodeOwners
+    edgeOwners.value = nextEdgeOwners
+    rootNodeIds.value = nextRoots
+    expandedNodeIds.value = nextExpanded
+    expandedBy.value = nextExpandedBy
+    expansionRecords.value = nextExpansionRecords
+    rebuildExpansionChildrenMap(nextExpansionRecords)
+
+    return newChildIds
+  }
+
+  async function loadCatalog(options = {}) {
+    const silent = Boolean(options.silent)
+    if (!silent) {
+      loading.value = true
+      error.value = ''
+    }
+
+    try {
+      const payload = await fetchGraphCatalog()
+      catalogNodes.value = (payload?.nodes || []).map((node) => normalizeCatalogNode(node)).filter((node) => node.id)
+      prerequisiteIndex.value = (payload?.prerequisiteEdges || [])
+        .map((edge) => ({
+          sourceRouteKnowledgeId: String(edge.sourceRouteKnowledgeId || '').trim(),
+          targetRouteKnowledgeId: String(edge.targetRouteKnowledgeId || '').trim(),
+        }))
+        .filter((edge) => edge.sourceRouteKnowledgeId && edge.targetRouteKnowledgeId)
+      return payload
+    } catch (loadError) {
+      error.value = loadError?.message || '图谱目录加载失败，请检查后端服务。'
+      throw loadError
+    } finally {
+      if (!silent) loading.value = false
+    }
+  }
+
+  async function loadSeeds(count = 14, options = {}) {
+    const silent = Boolean(options.silent)
+    if (!silent) {
+      loading.value = true
+      error.value = ''
+    }
+
+    try {
+      const payload = await fetchGraphSeeds(count)
+      clearCanvasGraph()
+      applySeedGraph(payload)
+      return payload
+    } catch (loadError) {
+      error.value = loadError?.message || '知识图谱种子加载失败，请检查后端服务。'
+      throw loadError
+    } finally {
+      if (!silent) loading.value = false
+    }
+  }
+
+  async function initGraph() {
+    loading.value = true
+    error.value = ''
+    try {
+      await Promise.all([loadCatalog({ silent: true }), loadSeeds(14, { silent: true })])
+    } catch (initError) {
+      error.value = initError?.message || '知识图谱初始化失败，请检查后端服务是否运行。'
+      throw initError
+    } finally {
+      loading.value = false
+    }
   }
 
   async function loadFullGraph(limit = 1600) {
@@ -226,21 +647,163 @@ export const useGraphStore = defineStore('graph', () => {
     error.value = ''
     try {
       const payload = await fetchFullGraph(limit)
-      const nodes = payload?.nodes || []
-      const edges = payload?.edges || []
-      console.info(`[GraphStore] loaded ${nodes.length} nodes, ${edges.length} edges`)
-      if (!nodes.length) {
-        error.value = '知识图谱数据为空，请确认后端服务和 Neo4j 数据库已启动。'
-      }
-      rawNodes.value = nodes
-      rawEdges.value = edges
+      const nodes = (payload?.nodes || []).map((node) => normalizeCatalogNode(node))
+      const edges = (payload?.edges || []).map((edge) => normalizeVisibleEdge(edge))
+      catalogNodes.value = nodes
+      prerequisiteIndex.value = edges
+        .filter((edge) => edge.relationType === 'PREREQUISITE_OF')
+        .map((edge) => ({
+          sourceRouteKnowledgeId: edge.sourceId,
+          targetRouteKnowledgeId: edge.targetId,
+        }))
+      clearCanvasGraph()
+      applySeedGraph({
+        nodes,
+        edges,
+      })
+      return payload
     } catch (loadError) {
-      console.error('[GraphStore] loadFullGraph failed:', loadError)
       error.value = loadError?.message || '知识图谱加载失败，请检查后端服务是否运行。'
       throw loadError
     } finally {
       loading.value = false
     }
+  }
+
+  function isNodeExpanded(nodeId) {
+    return expandedNodeIds.value.has(String(nodeId || '').trim())
+  }
+
+  async function expandNode(nodeId, options = {}) {
+    const key = String(nodeId || '').trim()
+    if (!key) return []
+    const current = getVisibleNode(key)
+    if (!current) return []
+    if (Number(current.depth || 0) >= MAX_EXPAND_DEPTH) return []
+    if (isNodeExpanded(key)) return []
+
+    error.value = ''
+    const payload = await fetchGraphNeighbors(key, {
+      limit: getNeighborRequestLimit(options.limit),
+      depth: options.depth ?? 1,
+      direction: options.direction || 'both',
+    })
+    return applyNeighborGraph(key, payload, {
+      asDetachedRoot: false,
+      anchorPosition: options.anchorPosition,
+      occupiedNodes: options.occupiedNodes,
+      viewportCenterWorld: options.viewportCenterWorld,
+    })
+  }
+
+  async function collapseNode(nodeId) {
+    const key = String(nodeId || '').trim()
+    if (!key || !expandedNodeIds.value.has(key)) return
+
+    const record = expansionRecords.value.get(key)
+    if (!record) return
+    const ownerKey = `expand:${key}`
+    const collapseStartedAt = Date.now()
+    const collapseLockUntil = collapseStartedAt + 760
+
+    for (const childId of record.childIds) {
+      const ownersAfterRemoval = new Set(nodeOwners.value.get(childId) || [])
+      ownersAfterRemoval.delete(ownerKey)
+      if (expandedNodeIds.value.has(childId) && ownersAfterRemoval.size === 0) {
+        await collapseNode(childId)
+      }
+    }
+
+    const nextNodes = new Map(nodesMap.value)
+    const nextEdges = new Map(edgesMap.value)
+    let nextNodeOwners = cloneMapOfSets(nodeOwners.value)
+    let nextEdgeOwners = cloneMapOfSets(edgeOwners.value)
+    const nextExpanded = cloneSet(expandedNodeIds.value)
+    const nextExpandedBy = cloneMapOfSets(expandedBy.value)
+    const nextExpansionRecords = new Map(expansionRecords.value)
+
+    record.edgeIds.forEach((edgeId) => {
+      nextEdgeOwners = removeOwner(nextEdgeOwners, edgeId, ownerKey)
+      if (!nextEdgeOwners.has(edgeId)) {
+        nextEdges.delete(edgeId)
+      }
+    })
+
+    record.childIds.forEach((childId) => {
+      nextNodeOwners = removeOwner(nextNodeOwners, childId, ownerKey)
+      const parentRefs = new Set(nextExpandedBy.get(childId) || [])
+      parentRefs.delete(key)
+      if (parentRefs.size) nextExpandedBy.set(childId, parentRefs)
+      else nextExpandedBy.delete(childId)
+
+      if (!nextNodeOwners.has(childId)) {
+        nextNodes.delete(childId)
+        if (selectedNodeId.value === childId) {
+          selectedNodeId.value = key
+          focusedNodeId.value = key
+        }
+      }
+    })
+
+    const survivorLockIds = new Set([key])
+    nextEdges.forEach((edge) => {
+      const touchesCollapsedCluster =
+        edge.sourceId === key ||
+        edge.targetId === key ||
+        record.childIds.has(edge.sourceId) ||
+        record.childIds.has(edge.targetId)
+      if (!touchesCollapsedCluster) return
+
+      if (nextNodes.has(edge.sourceId)) survivorLockIds.add(edge.sourceId)
+      if (nextNodes.has(edge.targetId)) survivorLockIds.add(edge.targetId)
+    })
+
+    survivorLockIds.forEach((survivorId) => {
+      const survivor = nextNodes.get(survivorId)
+      if (!survivor) return
+      nextNodes.set(survivorId, {
+        ...survivor,
+        layoutLock: buildLayoutLock(survivor, collapseLockUntil),
+      })
+    })
+
+    nextExpanded.delete(key)
+    nextExpansionRecords.delete(key)
+
+    nodesMap.value = nextNodes
+    edgesMap.value = nextEdges
+    nodeOwners.value = nextNodeOwners
+    edgeOwners.value = nextEdgeOwners
+    expandedNodeIds.value = nextExpanded
+    expandedBy.value = nextExpandedBy
+    expansionRecords.value = nextExpansionRecords
+    rebuildExpansionChildrenMap(nextExpansionRecords)
+  }
+
+  async function toggleNodeExpansion(nodeId, options = {}) {
+    const key = String(nodeId || '').trim()
+    if (!key) return []
+    if (expandedNodeIds.value.has(key)) {
+      await collapseNode(key)
+      return []
+    }
+    return expandNode(key, options)
+  }
+
+  async function collapseAllExpansions() {
+    const candidates = [...expandedNodeIds.value].sort((left, right) => {
+      const leftDepth = Number(nodesMap.value.get(left)?.depth || 0)
+      const rightDepth = Number(nodesMap.value.get(right)?.depth || 0)
+      return rightDepth - leftDepth
+    })
+    for (const nodeId of candidates) {
+      await collapseNode(nodeId)
+    }
+    pinnedNodeIds.value = new Set()
+  }
+
+  async function collapseAllCourses() {
+    await collapseAllExpansions()
   }
 
   async function ensureNodeDetail(routeKnowledgeId) {
@@ -262,7 +825,11 @@ export const useGraphStore = defineStore('graph', () => {
     if (frontierCache.value[key]) return frontierCache.value[key]
 
     try {
-      const briefing = await fetchFrontierBriefing(key)
+      const catalogNode = routeNodeMap.value.get(key)
+      const briefing = await fetchFrontierBriefing({
+        knowledgeId: key,
+        knowledge: catalogNode?.canonicalName || catalogNode?.name || key,
+      })
       frontierCache.value = {
         ...frontierCache.value,
         [key]: briefing,
@@ -300,7 +867,7 @@ export const useGraphStore = defineStore('graph', () => {
   async function selectNode(nodeId) {
     const key = String(nodeId || '').trim()
     if (!key) return
-    const node = nodeMap.value.get(key)
+    const node = getVisibleNode(key)
     if (!node) return
 
     selectedNodeId.value = key
@@ -323,14 +890,30 @@ export const useGraphStore = defineStore('graph', () => {
     clearFocus()
   }
 
-  async function revealNodeByRouteKnowledgeId(routeKnowledgeId) {
-    const node = routeNodeMap.value.get(String(routeKnowledgeId || '').trim()) || findNodeByRoute(rawNodes.value, routeKnowledgeId)
-    if (!node) return null
+  async function revealNodeByRouteKnowledgeId(routeKnowledgeId, options = {}) {
+    const key = String(routeKnowledgeId || '').trim()
+    if (!key) return null
 
-    pinNode(node.id)
-    expandNode(node.id)
-    await selectNode(node.id)
-    return node
+    const catalogNode = routeNodeMap.value.get(key)
+    if (!catalogNode?.id) return null
+
+    if (!nodesMap.value.has(catalogNode.id)) {
+      const payload = await fetchGraphNeighbors(catalogNode.id, {
+        limit: getNeighborRequestLimit(),
+        depth: 1,
+        direction: 'both',
+      })
+      applyNeighborGraph(catalogNode.id, payload, {
+        asDetachedRoot: true,
+        anchorPosition: options.anchorPosition,
+        occupiedNodes: options.occupiedNodes,
+        viewportCenterWorld: options.viewportCenterWorld,
+      })
+    }
+
+    pinNode(catalogNode.id)
+    await selectNode(catalogNode.id)
+    return getVisibleNode(catalogNode.id)
   }
 
   function highlightByStatus(status) {
@@ -342,8 +925,9 @@ export const useGraphStore = defineStore('graph', () => {
     highlightPath.value = normalized
     normalized.forEach((routeKnowledgeId) => {
       const node = routeNodeMap.value.get(String(routeKnowledgeId || '').trim())
-      if (!node?.id) return
-      pinNode(node.id)
+      if (node?.id && nodesMap.value.has(node.id)) {
+        pinNode(node.id)
+      }
     })
   }
 
@@ -381,14 +965,23 @@ export const useGraphStore = defineStore('graph', () => {
     return searchInIndex(searchIndex.value, keyword)
   }
 
-  function focusCourseRepresentative(courseTitle) {
+  async function focusCourseRepresentative(courseTitle, options = {}) {
     const title = String(courseTitle || '').trim()
     if (!title) return null
-    const courseNodes = rawNodes.value.filter((node) => getChapterTitle(node) === title)
-    if (!courseNodes.length) return null
-    const preferred = courseNodes.find((node) => seedNodeIds.value.includes(node.id)) || courseNodes[0]
-    pinNode(preferred.id)
-    return preferred
+
+    const visibleNode =
+      [...nodesMap.value.values()].find((node) => node.isRoot && getChapterTitle(node) === title) ||
+      [...nodesMap.value.values()].find((node) => getChapterTitle(node) === title)
+
+    if (visibleNode) {
+      pinNode(visibleNode.id)
+      return visibleNode
+    }
+
+    const catalogNode = catalogNodes.value.find((node) => getChapterTitle(node) === title)
+    if (!catalogNode?.routeKnowledgeId) return null
+
+    return revealNodeByRouteKnowledgeId(catalogNode.routeKnowledgeId, options)
   }
 
   function getCourseDepth() {
@@ -415,9 +1008,9 @@ export const useGraphStore = defineStore('graph', () => {
     return 0
   }
 
-  function deepenCourseByNode(nodeId) {
-    toggleNodeExpansion(nodeId)
-    return expandedNodeIds.value.length
+  async function deepenCourseByNode(nodeId) {
+    await toggleNodeExpansion(nodeId)
+    return expandedNodeIds.value.size
   }
 
   function collapseCourse() {
@@ -427,12 +1020,19 @@ export const useGraphStore = defineStore('graph', () => {
   return {
     rawNodes,
     rawEdges,
+    catalogNodes,
+    prerequisiteIndex,
+    nodesMap,
+    edgesMap,
+    rootNodeIds,
+    expandedNodeIds,
+    expandedBy,
+    pinnedNodeIds,
+    expansionChildrenMap,
     loading,
     error,
     selectedNodeId,
     focusedNodeId,
-    expandedNodeIds,
-    pinnedNodeIds,
     highlightFilter,
     highlightPath,
     activeCourseFilter,
@@ -454,6 +1054,10 @@ export const useGraphStore = defineStore('graph', () => {
     adjacentMap,
     prerequisiteParentMap,
     prerequisiteNextMap,
+    initGraph,
+    loadCatalog,
+    loadSeeds,
+    loadFullGraph,
     isNodeExpanded,
     pinNode,
     unpinNode,
@@ -462,7 +1066,6 @@ export const useGraphStore = defineStore('graph', () => {
     toggleNodeExpansion,
     collapseAllExpansions,
     collapseAllCourses,
-    loadFullGraph,
     ensureNodeDetail,
     ensureFrontier,
     ensureRecommendedPath,

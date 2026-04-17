@@ -27,7 +27,8 @@
 - `NEO4J_URI`
 - `NEO4J_USERNAME`
 - `NEO4J_PASSWORD`
-- 可选 AI 代理配置：`DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`
+- 可选 AI 代理配置：`OPENAI_API_KEY`、`OPENAI_BASE_URL`、`OPENAI_MODEL`，或兼容的 `DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`
+- AI 密钥只放后端 `.env`，不要放前端，也不能直接复用当前 Codex/助手会话的内部密钥
 
 如果你直接复用仓库内 `docker/neo4j` 启动的 MySQL，推荐使用：
 

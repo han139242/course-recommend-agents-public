@@ -19,9 +19,9 @@ import (
 )
 
 type aiProxyRequest struct {
-	Messages []map[string]any `json:"messages"`
-	Stream   bool             `json:"stream"`
-	MaxTokens int             `json:"maxTokens"`
+	Messages  []map[string]any `json:"messages"`
+	Stream    bool             `json:"stream"`
+	MaxTokens int              `json:"maxTokens"`
 }
 
 type aiContentResponse struct {
@@ -159,7 +159,7 @@ func proxyAIContent(ctx *gin.Context, cfg config.Config) {
 func bindAIProxyRequest(ctx *gin.Context, cfg config.Config) (aiProxyRequest, bool) {
 	if !cfg.AI.Enabled() {
 		ctx.JSON(http.StatusServiceUnavailable, gin.H{
-			"error": "AI proxy is not configured. Please set DEEPSEEK_API_KEY and related env vars.",
+			"error": "AI proxy is not configured. Please set OPENAI_API_KEY or DEEPSEEK_API_KEY and related env vars.",
 		})
 		return aiProxyRequest{}, false
 	}

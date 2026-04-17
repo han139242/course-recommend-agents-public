@@ -6,6 +6,22 @@ type ChatRequest struct {
 	MaxTokens int              `json:"maxTokens" binding:"omitempty,min=1,max=2048"`
 }
 
+// ClientAction represents a UI action that should be executed by the frontend.
+type ClientAction struct {
+	Type        string `json:"type"`
+	Target      string `json:"target,omitempty"`
+	CourseTitle string `json:"courseTitle,omitempty"`
+	Flash       bool   `json:"flash,omitempty"`
+}
+
+// ChatResponse contains the final assistant content plus optional UI actions.
+type ChatResponse struct {
+	Content    string         `json:"content"`
+	Actions    []ClientAction `json:"actions,omitempty"`
+	Agent      string         `json:"agent,omitempty"`
+	AgentLabel string         `json:"agentLabel,omitempty"`
+}
+
 // KnowledgeCardRequest defines the personalized knowledge card generation request.
 type KnowledgeCardRequest struct {
 	KnowledgeID   string   `json:"knowledgeId" binding:"required,max=128"`

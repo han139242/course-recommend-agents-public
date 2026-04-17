@@ -1,4 +1,4 @@
-export function buildGraphStateMap({
+﻿export function buildGraphStateMap({
   nodes = [],
   edges = [],
   focusedNodeId = null,
@@ -80,20 +80,22 @@ export function buildGraphStateMap({
     const targetRoute = targetNode?.data?.routeKnowledgeId
     const sourceCourse = sourceNode?.data?.chapterTitle || ''
     const targetCourse = targetNode?.data?.chapterTitle || ''
+    const crossCourse = Boolean(sourceCourse && targetCourse && sourceCourse !== targetCourse)
     const courseMatched =
       courseFilter === '全部' ||
       sourceCourse === courseFilter ||
       targetCourse === courseFilter
     const activeByFocus = !focusedNodeId || adjacencyEdges.has(id)
     const activeByFilter = !highlightFilter || (filterMatches.has(edge.source) && filterMatches.has(edge.target))
-    const inPath =
-      Boolean(sourceRoute && targetRoute) &&
-      pathEdgePairs.has(`${sourceRoute}->${targetRoute}`)
+    const inPath = Boolean(sourceRoute && targetRoute) && pathEdgePairs.has(`${sourceRoute}->${targetRoute}`)
 
     states[id] = []
     if (!(courseMatched && activeByFocus && activeByFilter) && !inPath) states[id].push('dimmed')
     if (focusedNodeId && adjacencyEdges.has(id)) states[id].push('active')
     if (inPath) states[id].push('path')
+    if (crossCourse) states[id].push('cross-course')
+    if (crossCourse && focusedNodeId && adjacencyEdges.has(id)) states[id].push('cross-course-active')
+    if (crossCourse && states[id].includes('dimmed')) states[id].push('cross-course-dimmed')
   })
 
   return states

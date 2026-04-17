@@ -56,6 +56,8 @@ func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisCli
 	})
 	publicAuthGroup := publicGroup.Group("/auth")
 	authModule.RegisterPublicRoutes(publicAuthGroup)
+	publicAssistantGroup := publicGroup.Group("/assistant")
+	assistantModule.RegisterPublicRoutes(publicAssistantGroup)
 
 	// authGroup 统一挂鉴权中间件，确保后续受保护路由共享同一身份注入约束。
 	authGroup := api.Group("")

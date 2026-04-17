@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, ref } from 'vue'
 
 import ContextMenu from './ContextMenu.vue'
@@ -52,8 +52,8 @@ function isKnowledgeNode(node) {
 function getRelativePoint(event) {
   const bounds = containerRef.value?.getBoundingClientRect()
   if (!bounds) return { x: 0, y: 0 }
-  const clientX = event?.client?.x ?? event?.clientX ?? event?.viewport?.x ?? bounds.left
-  const clientY = event?.client?.y ?? event?.clientY ?? event?.viewport?.y ?? bounds.top
+  const clientX = event?.client?.x ?? event?.clientX ?? bounds.left
+  const clientY = event?.client?.y ?? event?.clientY ?? bounds.top
   return {
     x: clientX - bounds.left + 12,
     y: clientY - bounds.top + 12,
@@ -122,10 +122,15 @@ const {
   fitView,
   centerGraph,
   centerElement,
+  queueViewportFocus,
   zoomIn,
   zoomOut,
   focusElement,
+  softFollowElement,
   flashNode,
+  getNodeSnapshot,
+  getNodeSnapshots,
+  getViewportCenterWorld,
 } = useGraph({
   data: computed(() => props.graphData),
   stateMap: computed(() => props.stateMap),
@@ -162,7 +167,19 @@ const {
   onNodeContextMenu: handleNodeContextMenu,
 })
 
-defineExpose({ fitView, centerGraph, centerElement, flashNode, closeContextMenu, focusElement })
+defineExpose({
+  fitView,
+  centerGraph,
+  centerElement,
+  queueViewportFocus,
+  flashNode,
+  closeContextMenu,
+  focusElement,
+  softFollowElement,
+  getNodeSnapshot,
+  getNodeSnapshots,
+  getViewportCenterWorld,
+})
 </script>
 
 <template>
@@ -171,7 +188,7 @@ defineExpose({ fitView, centerGraph, centerElement, flashNode, closeContextMenu,
       <div class="graph-canvas-status__inner">
         <div class="status-spinner"></div>
         <strong>知识图谱加载中</strong>
-        <span>正在同步 Neo4j 课程关系并构建可交互视图...</span>
+        <span>正在同步目录与种子节点，并构建 Canvas 力导布局...</span>
       </div>
     </div>
     <div v-else-if="error || renderError" class="graph-canvas-status graph-canvas-status--error">
@@ -179,12 +196,12 @@ defineExpose({ fitView, centerGraph, centerElement, flashNode, closeContextMenu,
         <strong>{{ renderError ? '渲染失败' : '加载失败' }}</strong>
         <p>{{ renderError || error }}</p>
         <p style="opacity:0.6;margin-top:4px">
-          {{ renderError ? '如果图谱区域一直空白，请检查浏览器是否开启硬件加速 / WebGL。' : '请确认后端服务和 Neo4j 已启动。' }}
+          {{ renderError ? '如果图谱区域一直空白，请检查浏览器 Canvas 2D 是否可用。' : '请确认后端服务和 Neo4j 已启动。' }}
         </p>
       </div>
     </div>
 
-    <div ref="graphMountRef" class="graph-canvas-stage"></div>
+    <canvas ref="graphMountRef" class="graph-canvas-stage"></canvas>
 
     <GraphControls
       :zoom="zoom"
@@ -193,6 +210,7 @@ defineExpose({ fitView, centerGraph, centerElement, flashNode, closeContextMenu,
       @zoom-out="zoomOut"
       @fullscreen="toggleFullscreen"
     />
+
     <div class="graph-legend">
       <div class="graph-legend__group">
         <span class="graph-legend__title">状态</span>
@@ -204,13 +222,13 @@ defineExpose({ fitView, centerGraph, centerElement, flashNode, closeContextMenu,
         <span class="graph-legend__title">交互</span>
         <span class="graph-legend__item">单击知识点：聚焦与查看详情</span>
         <span class="graph-legend__item">双击知识点：展开 / 收回关联节点</span>
-        <span class="graph-legend__item">首屏：只显示少量关键知识点</span>
+        <span class="graph-legend__item">拖拽节点：局部重排且保持位置</span>
       </div>
       <div class="graph-legend__group">
         <span class="graph-legend__title">关系</span>
         <span class="graph-legend__item">实线箭头：前置 / 相关 / 应用</span>
         <span class="graph-legend__item">虚线箭头：属于 / 组成 / 使用</span>
-        <span class="graph-legend__item">线中标签：当前关系语义</span>
+        <span class="graph-legend__item">同对节点多关系：自动分弧</span>
       </div>
     </div>
 

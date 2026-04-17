@@ -317,12 +317,23 @@ export async function fetchLearningProgress() {
   })
 }
 
-export async function fetchFrontierBriefing(knowledge = '') {
+export async function fetchFrontierBriefing(query = {}) {
+  const normalized =
+    typeof query === 'string'
+      ? {
+          knowledgeId: query,
+          knowledge: query,
+        }
+      : (query || {})
   const params = new URLSearchParams()
-  if (knowledge) {
-    params.set('knowledge', knowledge)
+  if (normalized.knowledgeId) {
+    params.set('knowledgeId', String(normalized.knowledgeId))
   }
-  return apiRequest(`/frontier/briefing?${params.toString()}`, {
+  if (normalized.knowledge) {
+    params.set('knowledge', String(normalized.knowledge))
+  }
+  const suffix = params.toString() ? `?${params.toString()}` : ''
+  return apiRequest(`/frontier/briefing${suffix}`, {
     method: 'GET',
   })
 }

@@ -52,6 +52,68 @@ func (h *Handler) GetFullGraph(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// GetCatalog returns lightweight graph metadata for search and navigation.
+func (h *Handler) GetCatalog(ctx *gin.Context) {
+	response, err := h.service.GetCatalog(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	result.Success(ctx, response)
+}
+
+// GetSeeds returns graph seed nodes for the homepage canvas.
+func (h *Handler) GetSeeds(ctx *gin.Context) {
+	var query graphdto.SeedQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+
+	response, err := h.service.GetSeeds(ctx.Request.Context(), query)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	result.Success(ctx, response)
+}
+
+// GetNeighbors returns on-demand graph neighbors for a target node.
+func (h *Handler) GetNeighbors(ctx *gin.Context) {
+	var query graphdto.NeighborQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+
+	response, err := h.service.GetNeighbors(ctx.Request.Context(), query)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	result.Success(ctx, response)
+}
+
+// GetPath returns the shortest graph path between two knowledge nodes.
+func (h *Handler) GetPath(ctx *gin.Context) {
+	var query graphdto.GraphPathQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+
+	response, err := h.service.FindPath(ctx.Request.Context(), query)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	result.Success(ctx, response)
+}
+
 // GetKnowledgeDetail returns detail information for a knowledge node.
 func (h *Handler) GetKnowledgeDetail(ctx *gin.Context) {
 	response, err := h.service.GetKnowledgeDetail(ctx.Request.Context(), ctx.Param("knowledgeId"))

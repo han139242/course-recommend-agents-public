@@ -98,7 +98,7 @@ def build_curated_rows(existing_lookup: dict[str, dict], seed_path: Path) -> tup
                 "entity_type": item["entity_type"],
                 "source_structure_id": f"curated::{canonical_name}",
                 "source_path": f"curated/{source_tag}",
-                "chapter_title": "人工智能基础知识骨架",
+                "chapter_title": seed.get("course_title", "人工智能基础知识骨架"),
                 "description": item.get("description", ""),
                 "aliases": [canonical_name],
                 "facets": [],

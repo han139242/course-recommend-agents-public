@@ -1,5 +1,5 @@
-﻿<script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+<script setup>
+import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import 'katex/dist/katex.min.css'
 
@@ -17,6 +17,18 @@ const draftNote = ref('')
 const knowledgeId = computed(() => decodeURIComponent(route.params.knowledgeId || ''))
 const detail = computed(() => graphStore.detailCache[knowledgeId.value] || null)
 const progress = computed(() => userStore.getProgressMeta(knowledgeId.value))
+const frontierSummary = computed(() =>
+  frontier.value?.digestSummary || frontier.value?.message || '前沿摘要暂未返回，后续可继续补充。',
+)
+const frontierTopics = computed(() => frontier.value?.topics || [])
+const frontierPapers = computed(() => frontier.value?.papers || [])
+const frontierStatusLabel = computed(() => {
+  const status = String(frontier.value?.status || '').trim().toLowerCase()
+  if (status === 'ready') return '已就绪'
+  if (status === 'stale') return '待刷新'
+  if (status === 'failed') return '生成失败'
+  return '暂未就绪'
+})
 
 watch(
   knowledgeId,
@@ -39,12 +51,55 @@ function saveNote() {
   userStore.saveNote(knowledgeId.value, draftNote.value)
 }
 
-onMounted(() => {
-  if (!graphStore.rawNodes.length) {
-    graphStore.loadFullGraph().catch(() => null)
+function getRecommendedPathLabel(item) {
+  if (!item) return ''
+  if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
+    return `${item.sourceCourse} → ${item.targetCourse} · ${item.title}`
   }
-  loadDetail()
-})
+  return item.title
+}
+
+function formatFrontierDate(value) {
+  const normalized = String(value || '').trim()
+  if (!normalized) return ''
+  const parsed = new Date(normalized)
+  if (Number.isNaN(parsed.getTime())) {
+    return normalized
+  }
+  return parsed.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+watch(
+  knowledgeId,
+  async () => {
+    if (!graphStore.catalogNodes.length) {
+      await graphStore.loadCatalog().catch(() => null)
+    }
+    await loadDetail()
+  },
+  { immediate: true },
+)
+
+watch(
+  () => graphStore.frontierCache[knowledgeId.value],
+  (value) => {
+    frontier.value = value || null
+  },
+  { immediate: true },
+)
+
+watch(
+  detail,
+  (value) => {
+    if (!value?.routeKnowledgeId) return
+    draftNote.value = userStore.notes[value.routeKnowledgeId] || draftNote.value
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -96,13 +151,45 @@ onMounted(() => {
 
         <section class="page-card detail-side__card">
           <h3>前沿扩展</h3>
-          <p>{{ frontier?.summary || frontier?.content || '前沿摘要暂未返回，后续可继续补充。' }}</p>
+          <div class="frontier-status-row">
+            <span class="frontier-status-chip" :class="`frontier-status-chip--${frontier?.status || 'not_ready'}`">
+              {{ frontierStatusLabel }}
+            </span>
+            <span v-if="frontier?.generatedAt" class="muted-text">
+              最近更新 {{ formatFrontierDate(frontier.generatedAt) }}
+            </span>
+          </div>
+          <p>{{ frontierSummary }}</p>
+
+          <div v-if="frontierTopics.length" class="frontier-section">
+            <span class="panel-label">关联主题</span>
+            <div class="path-chain">
+              <span v-for="topic in frontierTopics" :key="topic.topicId || topic.name">
+                {{ topic.name }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="frontierPapers.length" class="frontier-section frontier-paper-list">
+            <span class="panel-label">代表论文</span>
+            <a
+              v-for="paper in frontierPapers"
+              :key="paper.paperId || paper.title"
+              class="frontier-paper-link"
+              :href="paper.url || '#'"
+              :target="paper.url ? '_blank' : undefined"
+              :rel="paper.url ? 'noreferrer' : undefined"
+            >
+              <strong>{{ paper.title }}</strong>
+              <span>{{ [paper.venue, paper.year].filter(Boolean).join(' · ') || '未标注来源' }}</span>
+            </a>
+          </div>
         </section>
 
         <section class="page-card detail-side__card">
           <h3>推荐路径</h3>
           <div class="path-chain">
-            <span v-for="item in recommendedPath" :key="item.knowledgeId || item.title">{{ item.title }}</span>
+            <span v-for="item in recommendedPath" :key="item.knowledgeId || item.title">{{ getRecommendedPathLabel(item) }}</span>
           </div>
         </section>
 
@@ -115,4 +202,3 @@ onMounted(() => {
     </div>
   </section>
 </template>
-

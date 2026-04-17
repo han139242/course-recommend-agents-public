@@ -1,15 +1,16 @@
 ﻿<script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
-import AiAssistant from '../components/ai/AiAssistant.vue'
-import GraphCanvas from '../components/graph/GraphCanvas.vue'
-import RightPanel from '../components/detail/RightPanel.vue'
 import SearchBar from '../components/search/SearchBar.vue'
 import LeftPanel from '../components/sidebar/LeftPanel.vue'
 import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
+
+const GraphCanvas = defineAsyncComponent(() => import('../components/graph/GraphCanvas.vue'))
+const RightPanel = defineAsyncComponent(() => import('../components/detail/RightPanel.vue'))
+const AiAssistant = defineAsyncComponent(() => import('../components/ai/AiAssistant.vue'))
 
 const graphStore = useGraphStore()
 const userStore = useUserStore()
@@ -23,8 +24,13 @@ const aiAutoPrompt = ref(null)
 const searchBarRef = ref(null)
 const graphCanvasRef = ref(null)
 const recommendedPath = ref([])
+const recommendationMeta = ref({
+  path: [],
+  insights: [],
+  learnerProfile: null,
+})
 
-const sceneMeta = computed(() => graphStore.graphData?.meta || { totalNodes: 0, totalEdges: 0, visibleNodes: 0, visibleEdges: 0, openCourses: 0 })
+const sceneMeta = computed(() => graphStore.graphData?.meta || { totalNodes: 0, visibleNodes: 0, visibleEdges: 0, rootCount: 0, expandedCount: 0 })
 
 const nextLearningNodes = computed(() =>
   graphStore.getNextLearningOptions(graphStore.selectedRouteKnowledgeId).map((routeKnowledgeId) => {
@@ -57,30 +63,180 @@ const knowledgeMentions = computed(() => graphStore.rawNodes.map((node) => node.
 
 async function bootstrapPage() {
   await Promise.all([
-    graphStore.loadFullGraph().catch((err) => console.warn('[Bootstrap] graph load failed:', err?.message)),
+    graphStore.initGraph().catch((err) => console.warn('[Bootstrap] graph init failed:', err?.message)),
     userStore.loadProgress().catch(() => null),
     userStore.loadDashboard().catch(() => null),
     userStore.loadCompetency().catch(() => null),
   ])
 }
 
+function getRevealOptions() {
+  return {
+    anchorPosition: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    occupiedNodes: graphCanvasRef.value?.getNodeSnapshots?.() || [],
+  }
+}
+
+function queueExpandedClusterFocus(nodeId, childIds = [], options = {}) {
+  graphCanvasRef.value?.queueViewportFocus?.(nodeId, {
+    zoomLevel: options.zoomLevel ?? 1.06,
+    duration: options.duration ?? 220,
+    lockDuration: options.lockDuration ?? 880,
+    relatedNodeIds: childIds,
+    mode: childIds.length ? 'keep-visible' : 'center',
+  })
+}
+
+async function revealAndFocus(routeKnowledgeId, options = {}) {
+  const node = await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
+  if (node?.id) {
+    await graphCanvasRef.value?.focusElement?.(node.id, options.duration ?? 200)
+    if (options.flash) {
+      await graphCanvasRef.value?.flashNode?.(node.id)
+    }
+  }
+  return node
+}
+
+function resolveAssistantTarget(target) {
+  const normalized = String(target || '').trim()
+  if (!normalized) return null
+
+  const direct = graphStore.routeNodeMap.get(normalized)
+  if (direct?.routeKnowledgeId) return direct
+
+  const candidate = graphStore.searchNodes(normalized)[0]
+  if (candidate?.routeKnowledgeId) {
+    return graphStore.routeNodeMap.get(candidate.routeKnowledgeId) || candidate
+  }
+
+  return null
+}
+
+async function expandKnowledgeFromAssistant(target) {
+  const resolved = resolveAssistantTarget(target)
+  if (!resolved?.routeKnowledgeId) return
+
+  const node = await revealAndFocus(resolved.routeKnowledgeId, { flash: true, duration: 220 })
+  if (!node?.id) return
+
+  if (!graphStore.isNodeExpanded(node.id)) {
+    const anchorSnapshot = graphCanvasRef.value?.getNodeSnapshot?.(node.id)
+    const occupiedNodes = graphCanvasRef.value?.getNodeSnapshots?.() || []
+    const newChildIds = await graphStore.expandNode(node.id, {
+      anchorPosition: anchorSnapshot,
+      viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+      occupiedNodes,
+    })
+    queueExpandedClusterFocus(node.id, newChildIds, {
+      zoomLevel: 1.08,
+      duration: 220,
+      lockDuration: 820,
+    })
+  }
+
+  await graphStore.selectNode(node.id)
+  rightCollapsed.value = false
+}
+
+async function handleAssistantActions(actions = []) {
+  for (const action of actions) {
+    const type = String(action?.type || '').trim()
+    if (!type) continue
+
+    if (type === 'focus_knowledge') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        await revealAndFocus(resolved.routeKnowledgeId, {
+          flash: action.flash !== false,
+          duration: 220,
+        })
+        rightCollapsed.value = false
+      }
+      continue
+    }
+
+    if (type === 'expand_knowledge') {
+      await expandKnowledgeFromAssistant(action.target)
+      continue
+    }
+
+    if (type === 'highlight_prerequisite_chain') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        await revealAndFocus(resolved.routeKnowledgeId, { flash: true, duration: 200 })
+        await graphStore.ensureNodeDetail(resolved.routeKnowledgeId)
+        const path = graphStore.getPrerequisiteRouteChain(resolved.routeKnowledgeId)
+        graphStore.highlightPathNodes(path)
+        rightCollapsed.value = false
+      }
+      continue
+    }
+
+    if (type === 'open_knowledge_detail') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        router.push(`/knowledge/${encodeURIComponent(resolved.routeKnowledgeId)}`)
+      }
+      continue
+    }
+
+    if (type === 'filter_course') {
+      const courseTitle = String(action.courseTitle || action.target || '').trim()
+      if (!courseTitle) continue
+      graphStore.setCourseFilter(courseTitle)
+      const node = await graphStore.focusCourseRepresentative(courseTitle, getRevealOptions())
+      if (node?.id) {
+        await graphStore.selectNode(node.id)
+        await graphCanvasRef.value?.focusElement?.(node.id, 180)
+      }
+      continue
+    }
+
+    if (type === 'fit_graph_view') {
+      await graphCanvasRef.value?.fitView?.()
+      continue
+    }
+
+    if (type === 'reset_graph_scene') {
+      await handleSceneReset()
+    }
+  }
+}
+
 async function handleSearchSelect(item) {
   searchValue.value = item.name
-  await graphStore.revealNodeByRouteKnowledgeId(item.routeKnowledgeId)
+  await revealAndFocus(item.routeKnowledgeId, { flash: true, duration: 220 })
   rightCollapsed.value = false
-  await graphCanvasRef.value?.flashNode?.(graphStore.selectedNodeId)
 }
 
 async function handleNodeSelect(nodeId) {
   await graphStore.selectNode(nodeId)
   rightCollapsed.value = false
+  graphCanvasRef.value?.softFollowElement?.(nodeId, {
+    duration: 180,
+  })
 }
 
 async function handleNodeDoubleClick(nodeId) {
-  graphStore.toggleNodeExpansion(nodeId)
+  const wasExpanded = graphStore.isNodeExpanded(nodeId)
+  const anchorSnapshot = graphCanvasRef.value?.getNodeSnapshot?.(nodeId)
+  const occupiedNodes = graphCanvasRef.value?.getNodeSnapshots?.() || []
+  const changedNodeIds = await graphStore.toggleNodeExpansion(nodeId, {
+    anchorPosition: anchorSnapshot,
+    viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    occupiedNodes,
+  })
+  if (!wasExpanded) {
+    queueExpandedClusterFocus(nodeId, changedNodeIds, {
+      zoomLevel: 1.08,
+      duration: 240,
+      lockDuration: 920,
+    })
+  }
   await graphStore.selectNode(nodeId)
   rightCollapsed.value = false
-  await graphCanvasRef.value?.centerElement?.(nodeId, 1.4, 220)
 }
 
 function handleClearSelection() {
@@ -105,16 +261,15 @@ function handleHubDoubleClick(hubId) {
 
 async function handleCourseFocus(courseTitle) {
   graphStore.setCourseFilter(courseTitle)
-  const node = graphStore.focusCourseRepresentative(courseTitle)
+  const node = await graphStore.focusCourseRepresentative(courseTitle, getRevealOptions())
   if (!node?.id) return
   await graphStore.selectNode(node.id)
   await graphCanvasRef.value?.focusElement?.(node.id, 180)
 }
 
 async function handleTreeNodeFocus(routeKnowledgeId) {
-  await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId)
+  await revealAndFocus(routeKnowledgeId, { flash: true })
   rightCollapsed.value = false
-  await graphCanvasRef.value?.flashNode?.(graphStore.selectedNodeId)
 }
 
 async function handleContextAction({ action, node }) {
@@ -127,7 +282,7 @@ async function handleContextAction({ action, node }) {
   }
 
   if (action === 'note') {
-    await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId)
+    await revealAndFocus(routeKnowledgeId)
     rightCollapsed.value = false
     return
   }
@@ -138,7 +293,7 @@ async function handleContextAction({ action, node }) {
   }
 
   if (action === 'ai') {
-    await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId)
+    await revealAndFocus(routeKnowledgeId)
     rightCollapsed.value = false
     aiAutoPrompt.value = {
       id: Date.now(),
@@ -175,7 +330,7 @@ function handleToggleRight() {
 }
 
 async function handleBookmarkSelect(routeKnowledgeId) {
-  await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId)
+  await revealAndFocus(routeKnowledgeId, { flash: true })
   rightCollapsed.value = false
 }
 
@@ -185,8 +340,18 @@ function handleCreatePath() {
   userStore.createCustomPath(name)
 }
 
-function handleShowPath(nodeIds) {
-  graphStore.highlightPathNodes(nodeIds)
+async function handleShowPath(nodeIds) {
+  const routeIds = [...new Set((nodeIds || []).filter(Boolean))]
+  if (!routeIds.length) return
+
+  for (const routeKnowledgeId of routeIds) {
+    await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
+  }
+
+  graphStore.highlightPathNodes(routeIds)
+  rightCollapsed.value = false
+  await nextTick()
+  await graphCanvasRef.value?.fitView?.(240)
 }
 
 function handleRemovePathNode({ pathId, knowledgeId }) {
@@ -216,7 +381,7 @@ function handleStartPath(nodeIds) {
 }
 
 async function handleRelatedSelect(routeKnowledgeId) {
-  await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId)
+  await revealAndFocus(routeKnowledgeId)
   rightCollapsed.value = false
 }
 
@@ -229,12 +394,12 @@ function handleOpenAi() {
   aiOpen.value = true
 }
 
-function handleSceneReset() {
+async function handleSceneReset() {
   searchValue.value = ''
   graphStore.setCourseFilter('全部')
-  graphStore.collapseAllCourses()
+  await graphStore.collapseAllCourses()
   graphStore.clearSelection()
-  graphCanvasRef.value?.fitView?.()
+  await graphCanvasRef.value?.fitView?.()
 }
 
 watch(
@@ -242,6 +407,11 @@ watch(
   async (routeKnowledgeId) => {
     if (!routeKnowledgeId) {
       recommendedPath.value = []
+      recommendationMeta.value = {
+        path: [],
+        insights: [],
+        learnerProfile: null,
+      }
       return
     }
 
@@ -249,6 +419,11 @@ watch(
     const detail = graphStore.detailCache[routeKnowledgeId]
     const target = detail?.chapterTitle || detail?.canonicalName || detail?.name || ''
     const recommendation = await graphStore.ensureRecommendedPath(target, routeKnowledgeId, 'detail')
+    recommendationMeta.value = recommendation || {
+      path: [],
+      insights: [],
+      learnerProfile: null,
+    }
     recommendedPath.value = recommendation?.path || []
   },
   { immediate: true },
@@ -422,7 +597,10 @@ onBeforeUnmount(() => {
       :is-authenticated="userStore.isAuthenticated"
       :auto-prompt="aiAutoPrompt"
       :knowledge-mentions="knowledgeMentions"
+      :proactive-hints="recommendationMeta.insights || []"
+      :learner-profile="recommendationMeta.learnerProfile || null"
       @focus-knowledge="handleRelatedSelect"
+      @run-actions="handleAssistantActions"
     />
 
     <div class="mobile-dock">
@@ -432,3 +610,4 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
+

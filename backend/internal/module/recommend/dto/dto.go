@@ -17,13 +17,35 @@ type PathItemView struct {
 	KnowledgeID   string  `json:"knowledgeId"`
 	ReasonCode    string  `json:"reasonCode"`
 	ReasonLabel   string  `json:"reasonLabel"`
+	SourceCourse  string  `json:"sourceCourse,omitempty"`
+	TargetCourse  string  `json:"targetCourse,omitempty"`
 	MasteryScore  float64 `json:"masteryScore"`
 	CorrectRate   float64 `json:"correctRate"`
 	AnsweredCount int     `json:"answeredCount"`
 	Score         float64 `json:"score"`
 }
 
+// LearningInsightView defines a proactive learning hint.
+type LearningInsightView struct {
+	Type        string `json:"type"`
+	ReasonCode  string `json:"reasonCode"`
+	Severity    string `json:"severity"`
+	Title       string `json:"title"`
+	Detail      string `json:"detail"`
+	KnowledgeID string `json:"knowledgeId,omitempty"`
+	Route       string `json:"route,omitempty"`
+}
+
+// LearnerProfileView defines the inferred learning style.
+type LearnerProfileView struct {
+	Style   string `json:"style"`
+	Label   string `json:"label"`
+	Summary string `json:"summary"`
+}
+
 // PathResponse 定义推荐路径响应。
 type PathResponse struct {
-	Path []PathItemView `json:"path"`
+	Path           []PathItemView        `json:"path"`
+	Insights       []LearningInsightView `json:"insights,omitempty"`
+	LearnerProfile *LearnerProfileView   `json:"learnerProfile,omitempty"`
 }

@@ -1,4 +1,4 @@
-﻿import { getCoursePalette } from './colorMap'
+import { getCoursePalette } from './colorMap'
 
 export const RELATION_CONFIG = {
   PREREQUISITE_OF: {
@@ -61,10 +61,6 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
-function sortText(left = '', right = '') {
-  return String(left || '').localeCompare(String(right || ''), 'zh-CN')
-}
-
 function getChapterTitle(node) {
   return String(node?.chapterTitle || '其他').trim() || '其他'
 }
@@ -73,364 +69,232 @@ export function getNodeDisplayName(node) {
   return String(node?.canonicalName || node?.name || node?.routeKnowledgeId || node?.id || '未命名节点').trim()
 }
 
-function ensureBucket(map, key, factory) {
-  if (!map.has(key)) map.set(key, factory())
-  return map.get(key)
-}
+function splitLabelLines(label = '', lineLength = 5, maxLines = 3) {
+  const cleaned = String(label || '').replace(/\s+/g, '').trim()
+  if (!cleaned) return ['未命名']
 
-function getNodeVisualState(progress = {}, isBookmarked = false) {
-  const mastery = Number(progress?.masteryScore || 0)
-  const answeredCount = Number(progress?.answeredCount || 0)
-  const weak = mastery < 30 && answeredCount > 0
-  const mastered = mastery >= 80
-  const learning = mastery >= 40 && mastery < 80
-  return { mastery, weak, mastered, learning, isBookmarked }
-}
-
-function buildGraphMetrics(nodes = [], edges = []) {
-  const metrics = new Map(
-    nodes.map((node) => [
-      node.id,
-      {
-        degree: 0,
-        weightedDegree: 0,
-        inbound: 0,
-        outbound: 0,
-        crossCourse: 0,
-      },
-    ]),
-  )
-
-  const nodeChapterMap = new Map(nodes.map((node) => [node.id, getChapterTitle(node)]))
-
-  edges.forEach((edge) => {
-    const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
-    const sourceMetrics = metrics.get(edge.sourceId)
-    const targetMetrics = metrics.get(edge.targetId)
-    const crossCourse = nodeChapterMap.get(edge.sourceId) !== nodeChapterMap.get(edge.targetId)
-
-    if (sourceMetrics) {
-      sourceMetrics.degree += 1
-      sourceMetrics.weightedDegree += relation.weight || 1
-      sourceMetrics.outbound += 1
-      if (crossCourse) sourceMetrics.crossCourse += 1
-    }
-    if (targetMetrics) {
-      targetMetrics.degree += 1
-      targetMetrics.weightedDegree += relation.weight || 1
-      targetMetrics.inbound += 1
-      if (crossCourse) targetMetrics.crossCourse += 1
-    }
-  })
-
-  return metrics
-}
-
-function buildAdjacency(nodes = [], edges = []) {
-  const adjacency = new Map(nodes.map((node) => [node.id, []]))
-  edges.forEach((edge) => {
-    const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
-    const edgeId = edge.relationId || `${edge.sourceId}-${edge.relationType || 'related'}-${edge.targetId}`
-    const edgeMeta = {
-      id: edgeId,
-      sourceId: edge.sourceId,
-      targetId: edge.targetId,
-      relationType: edge.relationType,
-      relation,
-    }
-    ensureBucket(adjacency, edge.sourceId, () => []).push({ ...edgeMeta, neighborId: edge.targetId, direction: 'out' })
-    ensureBucket(adjacency, edge.targetId, () => []).push({ ...edgeMeta, neighborId: edge.sourceId, direction: 'in' })
-  })
-  adjacency.forEach((neighbors) => {
-    neighbors.sort((left, right) => {
-      if ((right.relation.weight || 1) !== (left.relation.weight || 1)) return (right.relation.weight || 1) - (left.relation.weight || 1)
-      return sortText(left.neighborId, right.neighborId)
-    })
-  })
-  return adjacency
-}
-
-function scoreNode(node, metrics) {
-  const label = getNodeDisplayName(node)
-  const meta = metrics.get(node.id) || { degree: 0, weightedDegree: 0, crossCourse: 0, outbound: 0 }
-  const keywordBoost = /基础|导论|总览|原理|核心|框架|模型|方法/.test(label) ? 1.3 : 0
-  return meta.weightedDegree * 2.2 + meta.degree * 1.2 + meta.outbound * 0.7 + meta.crossCourse * 1.1 + keywordBoost
-}
-
-export function buildSeedNodeIds(nodes = [], edges = [], desiredCount = 14) {
-  if (!nodes.length) return []
-
-  const metrics = buildGraphMetrics(nodes, edges)
-  const grouped = new Map()
-  nodes.forEach((node) => {
-    const course = getChapterTitle(node)
-    ensureBucket(grouped, course, () => []).push(node)
-  })
-
-  const seeds = []
-  const used = new Set()
-  const sortedGroups = [...grouped.entries()].sort((left, right) => right[1].length - left[1].length)
-
-  sortedGroups.forEach(([, groupNodes]) => {
-    if (seeds.length >= Math.ceil(desiredCount * 0.7)) return
-    const best = [...groupNodes].sort((left, right) => scoreNode(right, metrics) - scoreNode(left, metrics))[0]
-    if (best && !used.has(best.id)) {
-      used.add(best.id)
-      seeds.push(best.id)
-    }
-  })
-
-  const ranked = [...nodes].sort((left, right) => {
-    const scoreDiff = scoreNode(right, metrics) - scoreNode(left, metrics)
-    if (scoreDiff !== 0) return scoreDiff
-    return sortText(getNodeDisplayName(left), getNodeDisplayName(right))
-  })
-
-  ranked.forEach((node) => {
-    if (seeds.length >= desiredCount) return
-    if (used.has(node.id)) return
-    used.add(node.id)
-    seeds.push(node.id)
-  })
-
-  return seeds.slice(0, desiredCount)
-}
-
-function buildVisibleNodeContext(nodes = [], edges = [], options = {}) {
-  const {
-    seedNodeIds = buildSeedNodeIds(nodes, edges),
-    expandedNodeIds = [],
-    pinnedNodeIds = [],
-    selectedNodeId = null,
-  } = options
-
-  const nodeMap = new Map(nodes.map((node) => [node.id, node]))
-  const adjacency = buildAdjacency(nodes, edges)
-  const rootIds = [...new Set(seedNodeIds)].filter((nodeId) => nodeMap.has(nodeId))
-  const expandedIds = [...new Set(expandedNodeIds)].filter((nodeId) => nodeMap.has(nodeId))
-  const pinnedIds = [...new Set(pinnedNodeIds)].filter((nodeId) => nodeMap.has(nodeId))
-  const visible = new Set([...rootIds, ...expandedIds, ...pinnedIds])
-  if (selectedNodeId && nodeMap.has(selectedNodeId)) visible.add(selectedNodeId)
-
-  const anchorMap = new Map()
-  rootIds.forEach((nodeId) => anchorMap.set(nodeId, { anchorId: null, depth: 0, rootId: nodeId, priority: -1 }))
-  pinnedIds.forEach((nodeId) => {
-    if (!anchorMap.has(nodeId)) anchorMap.set(nodeId, { anchorId: null, depth: 0, rootId: nodeId, priority: -0.5 })
-  })
-  if (selectedNodeId && nodeMap.has(selectedNodeId) && !anchorMap.has(selectedNodeId)) {
-    anchorMap.set(selectedNodeId, { anchorId: null, depth: 0, rootId: selectedNodeId, priority: -0.25 })
+  const lines = []
+  for (let index = 0; index < cleaned.length; index += lineLength) {
+    if (lines.length >= maxLines) break
+    lines.push(cleaned.slice(index, index + lineLength))
   }
 
-  expandedIds.forEach((nodeId, index) => {
-    visible.add(nodeId)
-    if (!anchorMap.has(nodeId)) {
-      anchorMap.set(nodeId, { anchorId: null, depth: 0, rootId: nodeId, priority: index })
-    }
+  if (cleaned.length > lineLength * maxLines && lines.length) {
+    const last = lines[lines.length - 1]
+    lines[lines.length - 1] = `${last.slice(0, Math.max(1, last.length - 1))}…`
+  }
 
-    const parentContext = anchorMap.get(nodeId) || { rootId: nodeId, depth: 0 }
-    ;(adjacency.get(nodeId) || []).forEach((neighbor) => {
-      const neighborId = neighbor.neighborId
-      visible.add(neighborId)
-      const current = anchorMap.get(neighborId)
-      if (!current || current.priority <= index) {
-        anchorMap.set(neighborId, {
-          anchorId: nodeId,
-          depth: parentContext.depth + 1,
-          rootId: parentContext.rootId || nodeId,
-          priority: index + 1,
-        })
-      }
-    })
-  })
+  return lines
+}
 
-  ;[...visible].forEach((nodeId) => {
-    if (!anchorMap.has(nodeId)) {
-      anchorMap.set(nodeId, { anchorId: null, depth: 0, rootId: nodeId, priority: -2 })
+function estimateCollisionRadius(label = '', radius = 32, options = {}) {
+  const isRoot = Boolean(options.isRoot)
+  const isExpanded = Boolean(options.isExpanded)
+  const fontSize = isRoot ? 13.8 : 10.9
+  const lines = splitLabelLines(label, isRoot ? 6 : 5, 3)
+  const widest = Math.max(...lines.map((line) => String(line || '').length), 1)
+  const textWidth = widest * fontSize * 1.04
+  const textHeight = lines.length * (fontSize + 5)
+  const labelRadius = Math.hypot(textWidth * 0.58, textHeight * 0.68)
+  const labelSpreadBoost = Math.min(
+    isRoot ? 32 : 24,
+    Math.max(0, widest - 3) * (isRoot ? 2.8 : 2.3) + Math.max(0, lines.length - 1) * 5,
+  )
+  const basePadding = isRoot ? (isExpanded ? 32 : 28) : isExpanded ? 24 : 21
+  return Math.ceil(
+    Math.max(
+      radius + basePadding,
+      labelRadius + radius * (isRoot ? 0.46 : 0.4) + labelSpreadBoost,
+    ),
+  )
+}
+
+function resolveProgressState(progress = {}) {
+  const mastery = Number(progress?.masteryScore || 0)
+  const answeredCount = Number(progress?.answeredCount || 0)
+  if (mastery >= 80) return 'mastered'
+  if (mastery < 30 && answeredCount > 0) return 'weak'
+  if (mastery >= 40) return 'learning'
+  return 'default'
+}
+
+function buildNodeColors(courseTitle, progressState) {
+  const palette = getCoursePalette(courseTitle)
+  if (progressState === 'mastered') {
+    return {
+      fill: 'rgba(255, 246, 214, 0.99)',
+      stroke: 'rgba(250, 204, 21, 0.98)',
+      shadow: 'rgba(250, 204, 21, 0.22)',
+      accent: palette.primary,
+      ring: palette.ring,
+      courseLight: palette.light,
     }
-  })
+  }
+  if (progressState === 'weak') {
+    return {
+      fill: 'rgba(255, 228, 196, 0.99)',
+      stroke: 'rgba(251, 146, 60, 0.98)',
+      shadow: 'rgba(251, 146, 60, 0.22)',
+      accent: palette.primary,
+      ring: palette.ring,
+      courseLight: palette.light,
+    }
+  }
+  if (progressState === 'learning') {
+    return {
+      fill: 'rgba(230, 236, 255, 0.99)',
+      stroke: 'rgba(129, 140, 248, 0.98)',
+      shadow: 'rgba(129, 140, 248, 0.18)',
+      accent: palette.primary,
+      ring: palette.ring,
+      courseLight: palette.light,
+    }
+  }
+  return {
+    fill: 'rgba(241, 234, 255, 0.99)',
+    stroke: 'rgba(196, 181, 253, 1)',
+    shadow: 'rgba(196, 181, 253, 0.18)',
+    accent: palette.primary,
+    ring: palette.ring,
+    courseLight: palette.light,
+  }
+}
+
+function buildNodeStyle(node, options) {
+  const progress = options.progressMap?.[node.routeKnowledgeId] || {}
+  const progressState = resolveProgressState(progress)
+  const colors = buildNodeColors(getChapterTitle(node), progressState)
+  const isRoot = Boolean(node.isRoot)
+  const isExpanded = options.expandedSet.has(node.id)
+  const isPinned = options.pinnedSet.has(node.id)
+  const isSelected = options.selectedNodeId === node.id
+  const radius = isRoot ? 42 : 30
+  const shadowBlur = isSelected ? 24 : isExpanded ? 18 : isRoot ? 14 : 9
+  const borderWidth = isSelected ? 4 : isExpanded ? 3 : isPinned ? 2.4 : 2
 
   return {
-    nodeMap,
-    adjacency,
-    rootIds,
-    expandedIds,
-    pinnedIds,
-    visibleNodeIds: [...visible],
-    anchorMap,
+    radius,
+    collisionRadius: estimateCollisionRadius(getNodeDisplayName(node), radius, {
+      isRoot,
+      isExpanded,
+    }),
+    fill: colors.fill,
+    stroke: isSelected || isExpanded ? 'rgba(103, 232, 249, 1)' : colors.stroke,
+    borderWidth,
+    shadowBlur,
+    shadowColor: isSelected ? 'rgba(103, 232, 249, 0.42)' : colors.shadow,
+    badgeColor: colors.accent,
+    ringColor: colors.ring,
+    courseLight: colors.courseLight,
+    labelColor: '#F8FAFC',
+    labelStroke: 'rgba(15, 23, 42, 0.88)',
+    opacity: 1,
+    fontSize: isRoot ? 14 : 11,
+  }
+}
+
+function normalizeGraphNode(node, options) {
+  const label = getNodeDisplayName(node)
+  const style = buildNodeStyle(node, options)
+  return {
+    id: node.id,
+    label,
+    x: Number.isFinite(node.x) ? node.x : 0,
+    y: Number.isFinite(node.y) ? node.y : 0,
+    fx: Number.isFinite(node.fx) ? node.fx : null,
+    fy: Number.isFinite(node.fy) ? node.fy : null,
+    style,
+    data: {
+      routeKnowledgeId: node.routeKnowledgeId,
+      chapterTitle: getChapterTitle(node),
+      entityType: node.entityType || 'concept',
+      description: node.description || '',
+      canonicalName: node.canonicalName || '',
+      isRoot: Boolean(node.isRoot),
+      isExpanded: options.expandedSet.has(node.id),
+      isPinned: options.pinnedSet.has(node.id),
+      rootId: node.rootId || node.id,
+      layoutDepth: Number(node.depth || 0),
+      expandMeta: node.expandMeta || null,
+      layoutLock: node.layoutLock || null,
+      synthetic: false,
+    },
+  }
+}
+
+function normalizeGraphEdge(edge, nodeMap) {
+  const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
+  const sourceNode = nodeMap.get(edge.sourceId)
+  const targetNode = nodeMap.get(edge.targetId)
+  const sourceCourse = getChapterTitle(sourceNode)
+  const targetCourse = getChapterTitle(targetNode)
+  const sourcePalette = getCoursePalette(sourceCourse)
+  const targetPalette = getCoursePalette(targetCourse)
+  return {
+    id: edge.id,
+    source: edge.sourceId,
+    target: edge.targetId,
+    data: {
+      label: relation.label,
+      relationType: edge.relationType,
+      sourceName: edge.sourceName || '',
+      targetName: edge.targetName || '',
+      sourceCourse,
+      targetCourse,
+      crossCourse: sourceCourse !== targetCourse,
+    },
+    style: {
+      stroke: relation.stroke,
+      lineWidth: relation.lineWidth,
+      lineDash: relation.lineDash,
+      endArrow: relation.endArrow,
+      opacity: relation.opacity,
+      sourceRing: sourcePalette.ring,
+      targetRing: targetPalette.ring,
+      sourceLight: sourcePalette.light,
+      targetLight: targetPalette.light,
+    },
   }
 }
 
 export function transformGraphData(nodes = [], edges = [], options = {}) {
-  const {
-    progressMap = {},
-    bookmarks = new Set(),
-    expandedNodeIds = [],
-    pinnedNodeIds = [],
-    selectedNodeId = null,
-    seedNodeIds = buildSeedNodeIds(nodes, edges),
-  } = options
+  const expandedSet = new Set(options.expandedNodeIds || [])
+  const pinnedSet = new Set(options.pinnedNodeIds || [])
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]))
 
-  const metrics = buildGraphMetrics(nodes, edges)
-  const nodeChapterMap = new Map(nodes.map((node) => [node.id, getChapterTitle(node)]))
-  const {
-    nodeMap,
-    adjacency,
-    rootIds,
-    expandedIds,
-    pinnedIds,
-    visibleNodeIds,
-    anchorMap,
-  } = buildVisibleNodeContext(nodes, edges, {
-    seedNodeIds,
-    expandedNodeIds,
-    pinnedNodeIds,
-    selectedNodeId,
-  })
-
-  const visibleNodeIdSet = new Set(visibleNodeIds)
-  const visibleNodes = visibleNodeIds
-    .map((nodeId) => nodeMap.get(nodeId))
-    .filter(Boolean)
+  const visibleNodes = [...nodes]
     .sort((left, right) => {
-      const leftAnchor = anchorMap.get(left.id) || { depth: 0 }
-      const rightAnchor = anchorMap.get(right.id) || { depth: 0 }
-      if (leftAnchor.depth !== rightAnchor.depth) return leftAnchor.depth - rightAnchor.depth
-      return sortText(getNodeDisplayName(left), getNodeDisplayName(right))
+      const rootDelta = Number(right.isRoot) - Number(left.isRoot)
+      if (rootDelta !== 0) return rootDelta
+      const depthDelta = Number(left.depth || 0) - Number(right.depth || 0)
+      if (depthDelta !== 0) return depthDelta
+      return getNodeDisplayName(left).localeCompare(getNodeDisplayName(right), 'zh-CN')
     })
+    .map((node) =>
+      normalizeGraphNode(node, {
+        progressMap: options.progressMap || {},
+        expandedSet,
+        pinnedSet,
+        selectedNodeId: options.selectedNodeId || null,
+      }),
+    )
 
-  const graphNodes = visibleNodes.map((node) => {
-    const title = getChapterTitle(node)
-    const palette = getCoursePalette(title)
-    const progress = progressMap[node.routeKnowledgeId] || {}
-    const visual = getNodeVisualState(progress, bookmarks.has(node.routeKnowledgeId))
-    const meta = metrics.get(node.id) || { degree: 0, weightedDegree: 0 }
-    const context = anchorMap.get(node.id) || { anchorId: null, depth: 0, rootId: node.id }
-    const isRoot = rootIds.includes(node.id)
-    const isExpanded = expandedIds.includes(node.id)
-    const isPinned = pinnedIds.includes(node.id)
-    const isSelected = selectedNodeId === node.id
-    const label = getNodeDisplayName(node)
-    const shortLabel = label.length > 10 ? `${label.slice(0, 10)}…` : label
-    const size = clamp(isRoot ? 82 : 58 + Math.sqrt(meta.degree || 0) * 4.6, isRoot ? 78 : 54, isRoot ? 94 : 72)
-
-    let fill = 'rgba(241, 234, 255, 0.99)'
-    let stroke = 'rgba(196, 181, 253, 1)'
-    let shadowColor = palette.light
-    let shadowBlur = isRoot ? 12 : 6
-    let shadowOpacity = isRoot ? 0.2 : 0.1
-
-    if (visual.learning) {
-      fill = 'rgba(230, 236, 255, 0.99)'
-      stroke = 'rgba(129, 140, 248, 0.98)'
-      shadowOpacity = 0.18
-    }
-    if (visual.weak) {
-      fill = 'rgba(255, 228, 196, 0.99)'
-      stroke = 'rgba(251, 146, 60, 0.98)'
-      shadowColor = '#FB923C'
-      shadowOpacity = 0.22
-    }
-    if (visual.mastered) {
-      fill = 'rgba(255, 246, 214, 0.99)'
-      stroke = 'rgba(250, 204, 21, 0.98)'
-      shadowColor = '#FACC15'
-      shadowBlur = 18
-      shadowOpacity = 0.34
-    }
-    if (isExpanded || isSelected) {
-      stroke = 'rgba(103, 232, 249, 1)'
-      shadowColor = '#67E8F9'
-      shadowBlur = 20
-      shadowOpacity = 0.36
-    }
-
-    return {
-      id: node.id,
-      data: {
-        label,
-        fullLabel: label,
-        shortLabel,
-        routeKnowledgeId: node.routeKnowledgeId,
-        chapterTitle: title,
-        entityType: node.entityType,
-        description: node.description,
-        masteryScore: visual.mastery,
-        answeredCount: Number(progress?.answeredCount || 0),
-        weak: visual.weak,
-        mastered: visual.mastered,
-        learning: visual.learning,
-        bookmarked: visual.isBookmarked,
-        relationCount: meta.degree,
-        importanceScore: meta.weightedDegree,
-        size,
-        textMaxWidth: Math.max(46, size * 0.88),
-        shape: 'ellipse',
-        isRoot,
-        isExpanded,
-        isPinned,
-        anchorId: context.anchorId,
-        layoutDepth: context.depth,
-        rootId: context.rootId,
-      },
-        style: {
-          size,
-          fill,
-          stroke,
-          lineWidth: isExpanded || isSelected ? 2.8 : visual.mastered ? 2.2 : 1.4,
-          shadowColor,
-          shadowBlur,
-          shadowOpacity,
-          labelText: label,
-          labelFill: '#111827',
-          labelFontSize: isRoot ? 12.4 : 10.8,
-          cursor: 'pointer',
-        },
-      }
-  })
-
-  const graphEdges = edges
-    .filter((edge) => visibleNodeIdSet.has(edge.sourceId) && visibleNodeIdSet.has(edge.targetId))
-    .map((edge) => {
-      const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
-      const sourceChapter = nodeChapterMap.get(edge.sourceId)
-      const targetChapter = nodeChapterMap.get(edge.targetId)
-      const edgeId = edge.relationId || `${edge.sourceId}-${edge.relationType || 'related'}-${edge.targetId}`
-      const isCrossCourse = Boolean(sourceChapter && targetChapter && sourceChapter !== targetChapter)
-
-      return {
-        id: edgeId,
-        source: edge.sourceId,
-        target: edge.targetId,
-        data: {
-          relationType: edge.relationType,
-          label: relation.label,
-          crossCourse: isCrossCourse,
-          sourceChapter: sourceChapter || '',
-          targetChapter: targetChapter || '',
-        },
-        style: {
-          stroke: relation.stroke,
-          lineWidth: relation.lineWidth,
-          lineDash: relation.lineDash,
-          opacity: relation.opacity,
-          endArrow: relation.endArrow,
-        },
-      }
-    })
+  const visibleEdges = edges
+    .filter((edge) => nodeMap.has(edge.sourceId) && nodeMap.has(edge.targetId))
+    .map((edge) => normalizeGraphEdge(edge, nodeMap))
 
   return {
-    nodes: graphNodes,
-    edges: graphEdges,
+    nodes: visibleNodes,
+    edges: visibleEdges,
     meta: {
-      totalNodes: nodes.length,
-      totalEdges: edges.length,
-      visibleNodes: graphNodes.length,
-      visibleEdges: graphEdges.length,
-      rootCount: rootIds.length,
-      expandedCount: expandedIds.length,
-      pinnedCount: pinnedIds.length,
-      adjacency,
-      seedNodeIds: rootIds,
+      totalNodes: Number(options.totalNodes || visibleNodes.length),
+      visibleNodes: visibleNodes.length,
+      visibleEdges: visibleEdges.length,
+      rootCount: visibleNodes.filter((node) => node.data?.isRoot).length,
+      expandedCount: expandedSet.size,
+      rootNodeIds: [...(options.rootNodeIds || [])],
     },
   }
 }
+
+export { clamp }
