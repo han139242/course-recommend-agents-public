@@ -1,5 +1,5 @@
 param(
-    [string]$BundlePath = ".\handoff\mid_version_20260419_121349",
+    [string]$BundlePath = "",
     [switch]$SkipRedis,
     [switch]$SkipBackend
 )
@@ -13,6 +13,61 @@ function Write-Step([string]$Message) {
 
 function Resolve-AbsolutePath([string]$Path) {
     return (Resolve-Path $Path).Path
+}
+
+function Resolve-BundleRoot([string]$RepoRoot, [string]$BundlePath) {
+    $normalized = ""
+    if (-not [string]::IsNullOrWhiteSpace($BundlePath)) {
+        $normalized = $BundlePath.Trim()
+    }
+    if ($normalized -ne "") {
+        return Resolve-AbsolutePath (Join-Path $RepoRoot $normalized)
+    }
+
+    $handoffRoot = Join-Path $RepoRoot "handoff"
+    if (-not (Test-Path $handoffRoot)) {
+        throw "handoff directory not found: $handoffRoot"
+    }
+
+    $latestBundle = Get-ChildItem -Path $handoffRoot -Directory -Filter "mid_version_*" |
+        Sort-Object Name -Descending |
+        Select-Object -First 1
+
+    if (-not $latestBundle) {
+        throw "No handoff bundle found under $handoffRoot"
+    }
+
+    return $latestBundle.FullName
+}
+
+function Invoke-TextCommand([scriptblock]$ScriptBlock) {
+    $output = & $ScriptBlock
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed with exit code $LASTEXITCODE"
+    }
+    return ($output | Out-String).Trim()
+}
+
+function Read-ExpectedGraphSummary([string]$SummaryPath) {
+    if (-not (Test-Path $SummaryPath)) {
+        return @{}
+    }
+
+    $lines = Get-Content $SummaryPath |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -ne "" }
+
+    $result = @{}
+    for ($index = 0; $index -lt ($lines.Count - 1); $index++) {
+        if ($lines[$index] -eq "nodes" -and $lines[$index + 1] -match "^\d+$") {
+            $result["nodes"] = [int]$lines[$index + 1]
+        }
+        if ($lines[$index] -eq "relations" -and $lines[$index + 1] -match "^\d+$") {
+            $result["relations"] = [int]$lines[$index + 1]
+        }
+    }
+
+    return $result
 }
 
 function Wait-ContainerHealthy([string]$ContainerName, [int]$TimeoutSeconds = 120) {
@@ -49,18 +104,22 @@ function Ensure-File([string]$Path) {
 }
 
 $repoRoot = Resolve-AbsolutePath (Join-Path $PSScriptRoot "..")
-$resolvedBundlePath = Resolve-AbsolutePath (Join-Path $repoRoot $BundlePath)
+$resolvedBundlePath = Resolve-BundleRoot $repoRoot $BundlePath
 $composeFile = Join-Path $repoRoot "docker\neo4j\docker-compose.yml"
 $composeEnv = Join-Path $repoRoot "docker\neo4j\.env"
 $mysqlDump = Join-Path $resolvedBundlePath "data\mysql\course_recommend.sql"
 $neo4jDir = Join-Path $resolvedBundlePath "data\neo4j"
 $neo4jDump = Join-Path $neo4jDir "neo4j.dump"
+$neo4jSummary = Join-Path $neo4jDir "graph_summary.txt"
 $redisDump = Join-Path $resolvedBundlePath "data\redis\dump.rdb"
 
 Ensure-File $composeFile
 Ensure-File $composeEnv
 Ensure-File $mysqlDump
 Ensure-File $neo4jDump
+
+Write-Step "Use snapshot bundle"
+Write-Host $resolvedBundlePath -ForegroundColor Yellow
 
 Write-Step "Start MySQL / Redis / Neo4j base services"
 docker compose -f $composeFile --env-file $composeEnv up -d mysql redis neo4j
@@ -109,6 +168,29 @@ try {
 }
 
 Wait-ContainerHealthy "course-recommend-neo4j"
+
+$expectedGraph = Read-ExpectedGraphSummary $neo4jSummary
+if ($expectedGraph.ContainsKey("nodes") -or $expectedGraph.ContainsKey("relations")) {
+    Write-Step "Verify Neo4j snapshot"
+    if ($expectedGraph.ContainsKey("nodes")) {
+        $actualNodes = ((Invoke-TextCommand {
+            docker exec course-recommend-neo4j cypher-shell -u neo4j -p 123456789 --format plain "MATCH (n:KnowledgeNode) RETURN count(n) AS cnt"
+        }) -split "`r?`n" | Select-Object -Last 1).Trim()
+        if ([int]$actualNodes -ne [int]$expectedGraph["nodes"]) {
+            throw "KnowledgeNode count mismatch after restore. expected=$($expectedGraph["nodes"]) actual=$actualNodes"
+        }
+        Write-Host "KnowledgeNode count verified: $actualNodes" -ForegroundColor Green
+    }
+    if ($expectedGraph.ContainsKey("relations")) {
+        $actualRelations = ((Invoke-TextCommand {
+            docker exec course-recommend-neo4j cypher-shell -u neo4j -p 123456789 --format plain "MATCH ()-[r]->() RETURN count(r) AS cnt"
+        }) -split "`r?`n" | Select-Object -Last 1).Trim()
+        if ([int]$actualRelations -ne [int]$expectedGraph["relations"]) {
+            throw "Relation count mismatch after restore. expected=$($expectedGraph["relations"]) actual=$actualRelations"
+        }
+        Write-Host "Relation count verified: $actualRelations" -ForegroundColor Green
+    }
+}
 
 if ((-not $SkipRedis) -and (Test-Path $redisDump)) {
     Write-Step "Restore Redis snapshot"

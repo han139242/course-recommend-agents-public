@@ -7,7 +7,7 @@
 - `docker/neo4j/.env`
 - 已构建好的 `backend/web/dist`
 - 一份可恢复的运行快照：
-  `handoff/mid_version_20260419_121349`
+  `handoff/mid_version_20260419_125921`
 
 如果你想把环境恢复到接近当前开发机的状态，按下面步骤执行。
 
@@ -52,6 +52,11 @@ powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1 
 ## 6. 说明
 
 - 这份仓库是按“私有仓库内部协作”方式提交的，已包含本地环境配置与当前运行快照。
-- `handoff/mid_version_20260419_121349/data/neo4j/neo4j.dump` 是当前图谱快照。
-- `handoff/mid_version_20260419_121349/data/mysql/course_recommend.sql` 是当前 MySQL 快照。
-- `handoff/mid_version_20260419_121349/data/redis/dump.rdb` 是当前 Redis 快照。
+- `handoff/mid_version_20260419_125921/data/neo4j/neo4j.dump` 是当前图谱快照。
+- `handoff/mid_version_20260419_125921/data/mysql/course_recommend.sql` 是当前 MySQL 快照。
+- `handoff/mid_version_20260419_125921/data/redis/dump.rdb` 是当前 Redis 快照。
+IMPORTANT:
+- Plain `docker compose -f docker/neo4j/docker-compose.yml up -d --build` only starts the bootstrap graph and may show fewer nodes.
+- For the exact private environment snapshot, always run `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
+- The latest exact snapshot committed in this repo is `handoff/mid_version_20260419_125921`.
+- Expected restored graph summary: `KnowledgeNode = 1805`, `relations = 4241`.

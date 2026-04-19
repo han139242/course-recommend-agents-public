@@ -237,171 +237,226 @@ function showRecommendedPath() {
       class="ai-proactive-bubble"
       @click="open = true"
     >
-      智能提示：{{ visibleHints[0].title }}
+      <span class="ai-proactive-bubble__icon">&#x2728;</span>
+      <span class="ai-proactive-bubble__text">{{ visibleHints[0].title }}</span>
     </button>
-    <button type="button" class="ai-fab" @click="open = !open">AI</button>
+    <button type="button" class="ai-fab" @click="open = !open">
+      <span class="ai-fab__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1l-1.5 4.5a1.5 1.5 0 0 1-1.42 1H10.92a1.5 1.5 0 0 1-1.42-1L8 13H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/>
+          <circle cx="9.5" cy="9" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="14.5" cy="9" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="ai-fab__pulse"></span>
+    </button>
 
-    <div v-if="open" class="ai-panel">
-      <div class="ai-panel__head">
-        <div class="ai-panel__title">
-          <strong>AI 学习助手</strong>
-          <div class="ai-panel__status-row">
-            <span class="ai-panel__status" :class="`ai-panel__status--${panelStatus.tone}`">
-              {{ panelStatus.label }}
-            </span>
-            <span class="ai-panel__caption">{{ panelStatus.detail }}</span>
-          </div>
-        </div>
-        <button type="button" class="icon-btn" @click="open = false">关闭</button>
-      </div>
-
-      <div v-if="learnerProfile || visibleHints.length || visibleRecommendedPath.length" class="ai-panel__section ai-panel__section--insights">
-        <button
-          type="button"
-          class="ai-panel__fold"
-          :aria-expanded="insightsOpen ? 'true' : 'false'"
-          @click="insightsOpen = !insightsOpen"
-        >
-          <span class="panel-label">学习洞察</span>
-          <span>{{ insightsOpen ? '收起' : `展开 ${insightCount} 条` }}</span>
-        </button>
-      </div>
-
-      <div v-if="insightsOpen && (learnerProfile || visibleHints.length || visibleRecommendedPath.length)" class="ai-panel__insights">
-        <div v-if="learnerProfile" class="ai-learner-card">
-          <span class="ai-learner-card__eyebrow">学习风格</span>
-          <strong>{{ learnerProfile.label || '当前画像' }}</strong>
-          <p>{{ learnerProfile.summary || '系统会根据你最近的学习记录动态调整讲解方式。' }}</p>
-        </div>
-
-        <article
-          v-for="hint in visibleHints"
-          :key="`${hint.reasonCode}-${hint.knowledgeId || hint.title}`"
-          class="ai-hint-card"
-          :class="`ai-hint-card--${hint.severity || 'medium'}`"
-        >
-          <div class="ai-hint-card__meta">
-            <span class="ai-hint-card__severity">{{ hint.severity || '提醒' }}</span>
-            <span class="ai-hint-card__reason">{{ hint.title }}</span>
-          </div>
-          <p>{{ hint.detail }}</p>
-          <button
-            v-if="hint.knowledgeId"
-            type="button"
-            class="inline-link inline-link--ai"
-            @click="emit('focus-knowledge', hint.knowledgeId)"
-          >
-            在图谱中查看
-          </button>
-        </article>
-
-        <section v-if="visibleRecommendedPath.length" class="ai-path-card">
-          <div class="ai-path-card__head">
-            <span class="ai-learner-card__eyebrow">AI 推荐路径</span>
-            <button
-              v-if="recommendedRouteIds.length > 1"
-              type="button"
-              class="inline-link inline-link--ai ai-panel__path-link"
-              @click="showRecommendedPath"
-            >
-              在图谱中查看
-            </button>
-          </div>
-
-          <article
-            v-for="item in visibleRecommendedPath"
-            :key="item.knowledgeId || item.title"
-            class="ai-path-step"
-          >
-            <div class="ai-path-step__meta">
-              <span>{{ item.reasonLabel || item.stage || '推荐' }}</span>
-              <strong v-if="item.score">{{ Math.round(Number(item.score || 0) * 100) }}%</strong>
+    <Transition name="ai-panel-transition">
+      <div v-if="open" class="ai-panel">
+        <div class="ai-panel__head">
+          <div class="ai-panel__brand">
+            <div class="ai-panel__avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a4 4 0 0 1 4 4v1a3 3 0 0 1 3 3v1a2 2 0 0 1-2 2h-1l-1.5 4.5a1.5 1.5 0 0 1-1.42 1H10.92a1.5 1.5 0 0 1-1.42-1L8 13H7a2 2 0 0 1-2-2v-1a3 3 0 0 1 3-3V6a4 4 0 0 1 4-4z"/>
+                <circle cx="9.5" cy="9" r="1" fill="currentColor" stroke="none"/>
+                <circle cx="14.5" cy="9" r="1" fill="currentColor" stroke="none"/>
+              </svg>
             </div>
-            <button
-              type="button"
-              class="ai-path-step__title"
-              @click="emit('focus-knowledge', item.knowledgeId || item.title)"
-            >
-              {{ item.title }}
-            </button>
-            <p>{{ item.detail || '这是当前最值得优先推进的一步。' }}</p>
-          </article>
-        </section>
-      </div>
-
-      <div class="ai-panel__section">
-        <span class="panel-label">对话</span>
-      </div>
-
-      <div ref="messageListRef" class="ai-panel__body">
-        <article
-          v-for="(message, index) in messages"
-          :key="`${index}-${message.role}`"
-          class="ai-message"
-          :class="`ai-message--${message.role}`"
-        >
-          <div class="ai-message__meta">
-            <span class="ai-message__role">{{ message.role === 'assistant' ? 'AI' : '你' }}</span>
-            <span
-              v-if="message.role === 'assistant' && message.agentLabel"
-              class="ai-message__agent"
-            >
-              {{ message.agentLabel }}
-            </span>
-            <span
-              v-if="message.role === 'assistant' && resolveMessageModeLabel(message)"
-              class="ai-message__badge"
-              :class="`ai-message__badge--${message.mode || 'default'}`"
-            >
-              {{ resolveMessageModeLabel(message) }}
-            </span>
+            <div class="ai-panel__title">
+              <strong>AI 学习助手</strong>
+              <div class="ai-panel__status-row">
+                <span class="ai-panel__status" :class="`ai-panel__status--${panelStatus.tone}`">
+                  <span class="ai-panel__status-dot"></span>
+                  {{ panelStatus.label }}
+                </span>
+                <span class="ai-panel__caption">{{ panelStatus.detail }}</span>
+              </div>
+            </div>
           </div>
-          <p>
-            <template
-              v-for="(part, partIndex) in splitMessage(message.content)"
-              :key="`${index}-${partIndex}`"
+          <button type="button" class="ai-panel__close" @click="open = false">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+
+        <div v-if="learnerProfile || visibleHints.length || visibleRecommendedPath.length" class="ai-panel__section ai-panel__section--insights">
+          <button
+            type="button"
+            class="ai-panel__fold"
+            :class="{ 'ai-panel__fold--open': insightsOpen }"
+            :aria-expanded="insightsOpen ? 'true' : 'false'"
+            @click="insightsOpen = !insightsOpen"
+          >
+            <span class="ai-panel__fold-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span class="panel-label">学习洞察</span>
+            </span>
+            <span class="ai-panel__fold-right">
+              <span>{{ insightsOpen ? '收起' : `${insightCount} 条` }}</span>
+              <svg class="ai-panel__fold-arrow" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+            </span>
+          </button>
+        </div>
+
+        <Transition name="ai-insights-transition">
+          <div v-if="insightsOpen && (learnerProfile || visibleHints.length || visibleRecommendedPath.length)" class="ai-panel__insights">
+            <div v-if="learnerProfile" class="ai-learner-card">
+              <span class="ai-learner-card__eyebrow">学习风格</span>
+              <strong>{{ learnerProfile.label || '当前画像' }}</strong>
+              <p>{{ learnerProfile.summary || '系统会根据你最近的学习记录动态调整讲解方式。' }}</p>
+            </div>
+
+            <article
+              v-for="hint in visibleHints"
+              :key="`${hint.reasonCode}-${hint.knowledgeId || hint.title}`"
+              class="ai-hint-card"
+              :class="`ai-hint-card--${hint.severity || 'medium'}`"
             >
+              <div class="ai-hint-card__meta">
+                <span class="ai-hint-card__severity">{{ hint.severity || '提醒' }}</span>
+                <span class="ai-hint-card__reason">{{ hint.title }}</span>
+              </div>
+              <p>{{ hint.detail }}</p>
               <button
-                v-if="part.type === 'link'"
+                v-if="hint.knowledgeId"
                 type="button"
                 class="inline-link inline-link--ai"
-                @click="emit('focus-knowledge', part.value)"
+                @click="emit('focus-knowledge', hint.knowledgeId)"
               >
-                {{ part.value }}
+                在图谱中查看 &rarr;
               </button>
-              <span v-else>{{ part.value }}</span>
-            </template>
-          </p>
-        </article>
-      </div>
+            </article>
 
-      <div class="ai-panel__section ai-panel__section--quick">
-        <span class="panel-label">快捷提问</span>
-      </div>
+            <section v-if="visibleRecommendedPath.length" class="ai-path-card">
+              <div class="ai-path-card__head">
+                <span class="ai-learner-card__eyebrow">AI 推荐路径</span>
+                <button
+                  v-if="recommendedRouteIds.length > 1"
+                  type="button"
+                  class="inline-link inline-link--ai ai-panel__path-link"
+                  @click="showRecommendedPath"
+                >
+                  在图谱中查看 &rarr;
+                </button>
+              </div>
 
-      <div class="ai-panel__quick">
-        <button
-          v-for="prompt in quickPrompts"
-          :key="prompt"
-          type="button"
-          class="quick-prompt"
-          @click="handlePrompt(prompt)"
-        >
-          {{ prompt }}
-        </button>
-      </div>
+              <article
+                v-for="(item, stepIdx) in visibleRecommendedPath"
+                :key="item.knowledgeId || item.title"
+                class="ai-path-step"
+              >
+                <div class="ai-path-step__num">{{ stepIdx + 1 }}</div>
+                <div class="ai-path-step__content">
+                  <div class="ai-path-step__meta">
+                    <span>{{ item.reasonLabel || item.stage || '推荐' }}</span>
+                    <strong v-if="item.score">{{ Math.round(Number(item.score || 0) * 100) }}%</strong>
+                  </div>
+                  <button
+                    type="button"
+                    class="ai-path-step__title"
+                    @click="emit('focus-knowledge', item.knowledgeId || item.title)"
+                  >
+                    {{ item.title }}
+                  </button>
+                  <p>{{ item.detail || '这是当前最值得优先推进的一步。' }}</p>
+                </div>
+              </article>
+            </section>
+          </div>
+        </Transition>
 
-      <div class="ai-panel__composer">
-        <textarea
-          v-model="draft"
-          rows="3"
-          placeholder="输入你想问的问题..."
-          @keydown.ctrl.enter.prevent="submit"
-        ></textarea>
-        <button type="button" class="primary-btn" :disabled="sending" @click="submit">
-          {{ sending ? '发送中...' : '发送' }}
-        </button>
+        <div class="ai-panel__divider">
+          <span class="ai-panel__divider-label">对话</span>
+        </div>
+
+        <div ref="messageListRef" class="ai-panel__body">
+          <div v-if="!messages.length" class="ai-panel__empty">
+            <div class="ai-panel__empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <p>向 AI 助手提问，获取知识讲解、学习建议或控制图谱。</p>
+          </div>
+          <article
+            v-for="(message, index) in messages"
+            :key="`${index}-${message.role}`"
+            class="ai-message"
+            :class="`ai-message--${message.role}`"
+          >
+            <div class="ai-message__bubble">
+              <div class="ai-message__meta">
+                <span class="ai-message__avatar" :class="`ai-message__avatar--${message.role}`">
+                  {{ message.role === 'assistant' ? 'AI' : '我' }}
+                </span>
+                <span
+                  v-if="message.role === 'assistant' && message.agentLabel"
+                  class="ai-message__agent"
+                >
+                  {{ message.agentLabel }}
+                </span>
+                <span
+                  v-if="message.role === 'assistant' && resolveMessageModeLabel(message)"
+                  class="ai-message__badge"
+                  :class="`ai-message__badge--${message.mode || 'default'}`"
+                >
+                  {{ resolveMessageModeLabel(message) }}
+                </span>
+              </div>
+              <p>
+                <template
+                  v-for="(part, partIndex) in splitMessage(message.content)"
+                  :key="`${index}-${partIndex}`"
+                >
+                  <button
+                    v-if="part.type === 'link'"
+                    type="button"
+                    class="inline-link inline-link--ai"
+                    @click="emit('focus-knowledge', part.value)"
+                  >
+                    {{ part.value }}
+                  </button>
+                  <span v-else>{{ part.value }}</span>
+                </template>
+              </p>
+            </div>
+          </article>
+
+          <div v-if="sending" class="ai-typing">
+            <span class="ai-typing__dot"></span>
+            <span class="ai-typing__dot"></span>
+            <span class="ai-typing__dot"></span>
+          </div>
+        </div>
+
+        <div class="ai-panel__section ai-panel__section--quick">
+          <span class="panel-label">快捷提问</span>
+        </div>
+
+        <div class="ai-panel__quick">
+          <button
+            v-for="prompt in quickPrompts"
+            :key="prompt"
+            type="button"
+            class="quick-prompt"
+            @click="handlePrompt(prompt)"
+          >
+            <svg class="quick-prompt__icon" width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12l5-10 5 10M3.5 7.5h5"/></svg>
+            {{ prompt }}
+          </button>
+        </div>
+
+        <div class="ai-panel__composer">
+          <div class="ai-panel__input-wrap">
+            <textarea
+              v-model="draft"
+              rows="2"
+              placeholder="问一个问题... Ctrl+Enter 发送"
+              @keydown.ctrl.enter.prevent="submit"
+            ></textarea>
+          </div>
+          <button type="button" class="ai-send-btn" :disabled="sending || !draft.trim()" @click="submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+          </button>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>

@@ -149,3 +149,7 @@ http://localhost:8080
 
 - `PRIVATE_RESTORE.md`
 - `scripts/restore_private_snapshot.ps1`
+
+IMPORTANT:
+- Plain `docker compose up` only restores the bootstrap graph.
+- For the exact private environment snapshot, including the full Neo4j graph, run `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
