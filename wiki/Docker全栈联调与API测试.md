@@ -2,12 +2,18 @@
 
 本文档说明如何通过 `docker compose` 一键启动 **MySQL、Redis、Neo4j、后端 API**，以及如何用种子账号与示例数据逐项验证当前已实现的 HTTP 接口。
 
+如果你要复现当前私有仓库里的完整运行快照，尤其是完整 Neo4j 图谱，请不要只执行 `docker compose up`，而是直接运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1
+```
+
 ## 1. 启动方式
 
 在仓库根目录执行：
 
 ```bash
-docker compose -f docker/neo4j/docker-compose.yml --env-file docker/neo4j/.env.example up -d --build
+docker compose -f docker/neo4j/docker-compose.yml --env-file docker/neo4j/.env up -d --build
 ```
 
 首次使用可复制环境模板：
@@ -30,7 +36,7 @@ copy docker\neo4j\.env.example docker\neo4j\.env
 ### 1.2 数据库初始化
 
 - **MySQL**：首次启动时自动执行 `backend/migrations` 下 `000001`～`000006` 迁移，并执行 `docker/neo4j/mysql/init/000007_seed_test_data.sql` 写入联调种子数据。
-- **Neo4j**：`neo4j-import` 服务在 Neo4j 就绪后执行 `db/neo4j/bootstrap/knowledge_graph_seed.cypher`。该文件较大，**导入可能持续较长时间**；后端**不阻塞**等待该任务结束即可启动，图谱相关接口在数据尚未导入完成时可能返回空图或 `not_ready` 状态。
+- **Neo4j**：当前 `docker compose up` 只启动 Neo4j 容器本身，不再导入历史 bootstrap 小图谱。若要恢复完整图谱，请执行 `scripts/restore_private_snapshot.ps1`，恢复后预期图谱规模为 `KnowledgeNode = 1805`、`relations = 4241`。
 
 ### 1.3 健康检查
 

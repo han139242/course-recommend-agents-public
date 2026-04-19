@@ -103,6 +103,56 @@ function Ensure-File([string]$Path) {
     }
 }
 
+function Get-PortOwnerInfo([int]$Port) {
+    $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $connection) {
+        return $null
+    }
+
+    $process = Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
+    if (-not $process) {
+        return @{
+            Port = $Port
+            ProcessId = $connection.OwningProcess
+            ProcessName = ""
+            Path = ""
+        }
+    }
+
+    return @{
+        Port = $Port
+        ProcessId = $process.Id
+        ProcessName = $process.ProcessName
+        Path = $process.Path
+    }
+}
+
+function Ensure-BackendPortAvailable([int]$Port) {
+    $owner = Get-PortOwnerInfo $Port
+    if (-not $owner) {
+        return
+    }
+
+    $processName = "$($owner["ProcessName"])"
+    $processPath = "$($owner["Path"])"
+    $processId = [int]$owner["ProcessId"]
+    $isTempGoServer = $processName -eq "server" -and $processPath -match "\\AppData\\Local\\Temp\\go-build.*\\server\.exe$"
+
+    if ($isTempGoServer) {
+        Write-Step "Release occupied backend port $Port"
+        Write-Host "Stopping stale go-run backend process: PID=$processId PATH=$processPath" -ForegroundColor Yellow
+        Stop-Process -Id $processId -Force
+        Start-Sleep -Seconds 2
+        $ownerAfterStop = Get-PortOwnerInfo $Port
+        if (-not $ownerAfterStop) {
+            return
+        }
+    }
+
+    throw "Port $Port is already in use by PID=$processId NAME=$processName PATH=$processPath. Stop that process or rerun with -SkipBackend."
+}
+
 $repoRoot = Resolve-AbsolutePath (Join-Path $PSScriptRoot "..")
 $resolvedBundlePath = Resolve-BundleRoot $repoRoot $BundlePath
 $composeFile = Join-Path $repoRoot "docker\neo4j\docker-compose.yml"
@@ -122,7 +172,7 @@ Write-Step "Use snapshot bundle"
 Write-Host $resolvedBundlePath -ForegroundColor Yellow
 
 Write-Step "Start MySQL / Redis / Neo4j base services"
-docker compose -f $composeFile --env-file $composeEnv up -d mysql redis neo4j
+docker compose -f $composeFile --env-file $composeEnv up -d --remove-orphans mysql redis neo4j
 if ($LASTEXITCODE -ne 0) {
     throw "docker compose up for mysql/redis/neo4j failed"
 }
@@ -205,8 +255,9 @@ if ((-not $SkipRedis) -and (Test-Path $redisDump)) {
 }
 
 if (-not $SkipBackend) {
+    Ensure-BackendPortAvailable 8080
     Write-Step "Start backend container"
-    docker compose -f $composeFile --env-file $composeEnv up -d backend
+    docker compose -f $composeFile --env-file $composeEnv up -d --remove-orphans backend
     if ($LASTEXITCODE -ne 0) {
         throw "docker compose up for backend failed"
     }

@@ -1,6 +1,6 @@
-# 一键拉起：MySQL + Redis + Neo4j（含图谱种子）+ 后端 API
+# 一键拉起：MySQL + Redis + Neo4j + 后端 API
 # 用法（在仓库内）: docker compose -f docker/neo4j/docker-compose.yml --env-file docker/neo4j/.env up -d --build
-# 健康检查: curl http://localhost:8080/healthz 与 http://localhost:8080/readyz
+# 注意：该命令仅启动基础服务，不会导入完整 Neo4j 图谱；完整环境请使用 scripts/restore_private_snapshot.ps1
 
 services:
   mysql:
