@@ -56,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1 
 - `handoff/mid_version_20260419_125921/data/mysql/course_recommend.sql` 是当前 MySQL 快照。
 - `handoff/mid_version_20260419_125921/data/redis/dump.rdb` 是当前 Redis 快照。
 IMPORTANT:
-- Plain `docker compose -f docker/neo4j/docker-compose.yml up -d --build` only starts the bootstrap graph and may show fewer nodes.
+- Plain `docker compose -f docker/neo4j/docker-compose.yml up -d --build` only starts the infrastructure containers and does not import any fallback graph.
 - For the exact private environment snapshot, always run `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
 - The latest exact snapshot committed in this repo is `handoff/mid_version_20260419_125921`.
 - Expected restored graph summary: `KnowledgeNode = 1805`, `relations = 4241`.

@@ -151,5 +151,10 @@ http://localhost:8080
 - `scripts/restore_private_snapshot.ps1`
 
 IMPORTANT:
-- Plain `docker compose up` only restores the bootstrap graph.
+- Plain `docker compose up` only starts the infrastructure containers and does not import any graph snapshot.
 - For the exact private environment snapshot, including the full Neo4j graph, run `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
+
+Exact restore note:
+- `docker compose -f docker/neo4j/docker-compose.yml up -d --build` now starts infrastructure only and does not import any fallback Neo4j graph.
+- The historical smaller bootstrap seed graph has been removed from this repo.
+- To reproduce the same graph as the current private environment, always use `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
