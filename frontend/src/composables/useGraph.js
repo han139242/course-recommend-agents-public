@@ -51,6 +51,13 @@ const CLUSTER_VIEWPORT_PADDING = {
   bottom: 184,
 }
 
+const SCENE_VIEWPORT_PADDING = {
+  left: 170,
+  right: 170,
+  top: 108,
+  bottom: 234,
+}
+
 function resolveNodeIdList(nodeIds = []) {
   const items = Array.isArray(nodeIds) ? nodeIds : [nodeIds]
   return [...new Set(items.map((item) => String(item || '').trim()).filter(Boolean))]
@@ -266,10 +273,11 @@ export function useGraph(options = {}) {
     return { x, y }
   }
 
-  function constrainTransform(nextTransform) {
+  function constrainTransform(nextTransform, constraintOptions = {}) {
     return constrainTransformToViewport(nextTransform, {
       nodes: engine.getNodes(),
       viewport: renderer.getViewportSize(),
+      padding: constraintOptions.padding,
     })
   }
 
@@ -309,6 +317,9 @@ export function useGraph(options = {}) {
         allowZoomOut: options.allowZoomOut !== false,
         boundsPadding: options.boundsPadding ?? 28,
       }),
+      {
+        padding: options.padding || CLUSTER_VIEWPORT_PADDING,
+      },
     )
   }
 
@@ -323,6 +334,16 @@ export function useGraph(options = {}) {
   function clearSettleFitTimers() {
     settleFitTimers.forEach((timer) => window.clearTimeout(timer))
     settleFitTimers = []
+  }
+
+  function cancelViewportAutomation(options = {}) {
+    stopFollowLock()
+    if (!options.preservePendingFocusTask) {
+      pendingFocusTask = null
+    }
+    if (!options.preserveSettleFitTimers) {
+      clearSettleFitTimers()
+    }
   }
 
   function startFollowLock(nodeId, zoomLevel = null, duration = 0, options = {}) {
@@ -418,32 +439,35 @@ export function useGraph(options = {}) {
     })
   }
 
-  async function syncGraph() {
+  async function syncGraph(syncOptions = {}) {
     const syncMeta = engine.syncGraph(options.data?.value || { nodes: [], edges: [] })
     zoom.value = renderer.getTransform().k
 
     if (!initialFitDone && syncMeta?.totalNodes) {
       initialFitDone = true
-      await fitView(0)
+      await fitView(0, { preserveAutomation: true })
       clearSettleFitTimers()
       ;[320, 980].forEach((delay, index) => {
         const timer = window.setTimeout(() => {
-          fitView(index === 0 ? 180 : 220).catch(() => null)
+          fitView(index === 0 ? 180 : 220, { preserveAutomation: true }).catch(() => null)
           settleFitTimers = settleFitTimers.filter((item) => item !== timer)
         }, delay)
         settleFitTimers.push(timer)
       })
     }
 
-    await flushPendingFocusTask()
+    if (syncOptions.flushPendingFocus !== false) {
+      await flushPendingFocusTask()
+    }
   }
 
-  function buildTransformForBounds(bounds, durationZoom = DEFAULT_ZOOM) {
+  function buildTransformForBounds(bounds, overrideZoom = null) {
     const viewport = renderer.getViewportSize()
-    const paddingX = 170
-    const paddingTop = 108
-    const paddingBottom = 234
-    const availableWidth = Math.max(viewport.width - paddingX * 2, 1)
+    const paddingLeft = SCENE_VIEWPORT_PADDING.left
+    const paddingRight = SCENE_VIEWPORT_PADDING.right
+    const paddingTop = SCENE_VIEWPORT_PADDING.top
+    const paddingBottom = SCENE_VIEWPORT_PADDING.bottom
+    const availableWidth = Math.max(viewport.width - paddingLeft - paddingRight, 1)
     const availableHeight = Math.max(viewport.height - paddingTop - paddingBottom, 1)
     const contentWidth = bounds.width + 96
     const contentHeight = bounds.height + 168
@@ -452,7 +476,7 @@ export function useGraph(options = {}) {
       MIN_ZOOM,
       MAX_ZOOM,
     )
-    const nextZoom = clamp(durationZoom || scale, MIN_ZOOM, MAX_ZOOM)
+    const nextZoom = clamp(overrideZoom ?? scale, MIN_ZOOM, MAX_ZOOM)
     const targetCenterY = paddingTop + availableHeight / 2
     return {
       x: viewport.width / 2 - bounds.centerX * nextZoom,
@@ -461,8 +485,11 @@ export function useGraph(options = {}) {
     }
   }
 
-  async function centerGraph(zoomLevel = DEFAULT_ZOOM, duration = 0) {
-    stopFollowLock()
+  async function centerGraph(zoomLevel = DEFAULT_ZOOM, duration = 0, viewOptions = {}) {
+    cancelViewportAutomation({
+      preservePendingFocusTask: Boolean(viewOptions.preserveAutomation),
+      preserveSettleFitTimers: Boolean(viewOptions.preserveAutomation),
+    })
     const bounds = getBounds(engine.getNodes())
     const viewport = renderer.getViewportSize()
     const centerX = bounds?.centerX || 0
@@ -472,17 +499,33 @@ export function useGraph(options = {}) {
         x: viewport.width / 2 - centerX * zoomLevel,
         y: viewport.height / 2 - centerY * zoomLevel,
         k: clamp(zoomLevel, MIN_ZOOM, MAX_ZOOM),
+      }, {
+        padding: SCENE_VIEWPORT_PADDING,
       }),
       duration,
+      {
+        padding: SCENE_VIEWPORT_PADDING,
+      },
     )
     zoom.value = renderer.getTransform().k
   }
 
-  async function fitView(duration = 260) {
-    stopFollowLock()
+  async function fitView(duration = 260, viewOptions = {}) {
+    cancelViewportAutomation({
+      preservePendingFocusTask: Boolean(viewOptions.preserveAutomation),
+      preserveSettleFitTimers: Boolean(viewOptions.preserveAutomation),
+    })
     const bounds = getBounds(engine.getNodes())
     if (!bounds) return
-    await interaction.transformTo(constrainTransform(buildTransformForBounds(bounds)), duration)
+    await interaction.transformTo(
+      constrainTransform(buildTransformForBounds(bounds), {
+        padding: SCENE_VIEWPORT_PADDING,
+      }),
+      duration,
+      {
+        padding: SCENE_VIEWPORT_PADDING,
+      },
+    )
     zoom.value = renderer.getTransform().k
   }
 
@@ -540,9 +583,10 @@ export function useGraph(options = {}) {
       window.clearTimeout(flashTimer)
       flashTimer = 0
     }
+    flashSet.clear()
     flashSet.add(nodeId)
     flashTimer = window.setTimeout(() => {
-      flashSet.delete(nodeId)
+      flashSet.clear()
       flashTimer = 0
     }, 900)
   }
@@ -573,7 +617,7 @@ export function useGraph(options = {}) {
       renderer.init(graphMountRef.value, containerRef.value, buildScene)
       interaction.init(graphMountRef.value)
       await syncGraph()
-      await fitView(0)
+      await fitView(0, { preserveAutomation: true })
     } catch (error) {
       renderError.value = error?.message || '图谱渲染初始化失败。'
     }
@@ -598,7 +642,6 @@ export function useGraph(options = {}) {
         renderError.value = error?.message || '图谱渲染同步失败。'
       })
     },
-    { deep: true },
   )
 
   return {
@@ -614,10 +657,12 @@ export function useGraph(options = {}) {
     zoomOut,
     focusElement,
     softFollowElement,
+    cancelViewportAutomation,
     flashNode,
     getNodeSnapshot,
     getNodeSnapshots,
     getViewportCenterWorld,
+    syncNow: syncGraph,
   }
 }
 

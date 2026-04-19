@@ -30,7 +30,7 @@ function clearTextWidthCache() {
 }
 
 function splitLabelLines(label = '', lineLength = 5, maxLines = 3) {
-  const cleaned = String(label || '').replace(/\s+/g, '').trim()
+  const cleaned = String(label || '').replace(/\s+/g, ' ').trim()
   if (!cleaned) return ['未命名']
 
   const lines = []
@@ -77,11 +77,13 @@ function projectRadiusToScreen(radius, transform = { k: 1 }) {
 
 function hexToRgba(color = '#CBD5E1', alpha = 1) {
   const normalized = String(color || '').trim()
-  if (!normalized.startsWith('#') || (normalized.length !== 7 && normalized.length !== 9)) {
-    return normalized
-  }
+  if (!normalized.startsWith('#')) return normalized
 
-  const hex = normalized.slice(1, 7)
+  let hex = normalized.slice(1)
+  if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
+  else if (hex.length === 4) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3]
+  else if (hex.length !== 6 && hex.length !== 8) return normalized
+
   const red = Number.parseInt(hex.slice(0, 2), 16)
   const green = Number.parseInt(hex.slice(2, 4), 16)
   const blue = Number.parseInt(hex.slice(4, 6), 16)
@@ -799,6 +801,7 @@ function drawNode(ctx, node, stateMap, flashSet, qualityLevel = 'high') {
   ctx.arc(node.x, node.y, radius + 4, 0, Math.PI * 2)
   ctx.fillStyle = style.ringColor || style.badgeColor || '#CBD5E1'
   ctx.fill()
+  ctx.shadowBlur = 0
   ctx.beginPath()
   ctx.arc(node.x, node.y, radius, 0, Math.PI * 2)
   ctx.fillStyle = style.fill || '#E2E8F0'

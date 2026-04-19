@@ -202,17 +202,11 @@ func buildAIConfig() AIConfig {
 		deepseekProvider.ChatModel = "deepseek-chat"
 	}
 
-	primary := AIProviderConfig{}
-	fallback := AIProviderConfig{}
-	switch {
-	case openAIProvider.Enabled():
-		primary = openAIProvider
-		if deepseekProvider.Enabled() {
-			fallback = deepseekProvider
-		}
-	case deepseekProvider.Enabled():
-		primary = deepseekProvider
-	}
+	primary, fallback := resolveAIProviderOrder(
+		strings.TrimSpace(os.Getenv("AI_PROVIDER_PRIORITY")),
+		openAIProvider,
+		deepseekProvider,
+	)
 
 	return AIConfig{
 		APIKey:              primary.APIKey,
@@ -223,6 +217,67 @@ func buildAIConfig() AIConfig {
 		FallbackBaseURL:     fallback.BaseURL,
 		FallbackChatModel:   fallback.ChatModel,
 		FallbackVisionModel: fallback.VisionModel,
+	}
+}
+
+func resolveAIProviderOrder(priority string, openAIProvider AIProviderConfig, deepseekProvider AIProviderConfig) (AIProviderConfig, AIProviderConfig) {
+	providers := map[string]AIProviderConfig{
+		"openai":   openAIProvider,
+		"deepseek": deepseekProvider,
+	}
+
+	order := make([]string, 0, 2)
+	seen := make(map[string]struct{}, 2)
+	hasExplicitPriority := false
+	for _, raw := range strings.Split(priority, ",") {
+		name := normalizeAIProviderName(raw)
+		if name == "" {
+			continue
+		}
+		hasExplicitPriority = true
+		if _, exists := seen[name]; exists {
+			continue
+		}
+		seen[name] = struct{}{}
+		order = append(order, name)
+	}
+
+	if !hasExplicitPriority {
+		for _, name := range []string{"openai", "deepseek"} {
+			if _, exists := seen[name]; exists {
+				continue
+			}
+			order = append(order, name)
+		}
+	}
+
+	selected := make([]AIProviderConfig, 0, 2)
+	for _, name := range order {
+		provider := providers[name]
+		if !provider.Enabled() {
+			continue
+		}
+		selected = append(selected, provider)
+	}
+
+	switch len(selected) {
+	case 0:
+		return AIProviderConfig{}, AIProviderConfig{}
+	case 1:
+		return selected[0], AIProviderConfig{}
+	default:
+		return selected[0], selected[1]
+	}
+}
+
+func normalizeAIProviderName(raw string) string {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "openai", "open_ai":
+		return "openai"
+	case "deepseek", "deep_seek":
+		return "deepseek"
+	default:
+		return ""
 	}
 }
 

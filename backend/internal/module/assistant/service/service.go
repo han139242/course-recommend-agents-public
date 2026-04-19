@@ -16,11 +16,13 @@ import (
 	authdto "github.com/han139242/course-recommend-agents/backend/internal/module/auth/dto"
 	authentity "github.com/han139242/course-recommend-agents/backend/internal/module/auth/entity"
 	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
+	competencydto "github.com/han139242/course-recommend-agents/backend/internal/module/competency/dto"
 	competencyentity "github.com/han139242/course-recommend-agents/backend/internal/module/competency/entity"
 	competencyservice "github.com/han139242/course-recommend-agents/backend/internal/module/competency/service"
 	dashboardservice "github.com/han139242/course-recommend-agents/backend/internal/module/dashboard/service"
 	frontierservice "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/service"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
+	learningdto "github.com/han139242/course-recommend-agents/backend/internal/module/learning/dto"
 	learningservice "github.com/han139242/course-recommend-agents/backend/internal/module/learning/service"
 	recommenddto "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/dto"
 	recommendservice "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/service"
@@ -88,7 +90,10 @@ type assistantAgentProfile struct {
 func New(aiCfg config.AIConfig, authService *authservice.AuthService, learningService *learningservice.Service, competencyService *competencyservice.Service, recommendService *recommendservice.Service, dashboardService *dashboardservice.Service, graphService *graphservice.Service, frontierService *frontierservice.Service, db *gorm.DB) *Service {
 	return &Service{
 		aiCfg:             aiCfg,
-		httpClient:        &http.Client{Timeout: 6 * time.Second},
+		// Use per-request contexts to control provider latency. A global client
+		// timeout causes DeepSeek planning/assessment calls to fail early and
+		// incorrectly fall back to local-only replies.
+		httpClient:        &http.Client{},
 		authService:       authService,
 		learningService:   learningService,
 		competencyService: competencyService,
@@ -146,6 +151,24 @@ func (s *Service) runChatLoop(ctx context.Context, currentUser *authdto.AuthUser
 			AgentLabel: profile.Label,
 		}, nil
 	}
+
+	if len(inferredActions) == 0 && shouldPreferPlainAssistantResponse(messages, isPublic) {
+		content, err := s.requestPlainModel(ctx, messages, resolvePlainChatMaxTokens(maxTokens))
+		if err == nil && strings.TrimSpace(content) != "" {
+			return &assistantdto.ChatResponse{
+				Content:    strings.TrimSpace(content),
+				Agent:      string(profile.Intent),
+				AgentLabel: profile.Label,
+			}, nil
+		}
+	}
+
+	if len(inferredActions) == 0 && !isPublic && shouldPreferStructuredAssistantResponse(profile.Intent) {
+		if structured := s.buildStructuredModelFallbackResponse(ctx, currentUser, messages, maxTokens, profile, isPublic, nil); structured != nil {
+			return structured, nil
+		}
+	}
+
 	if !s.aiCfg.Enabled() {
 		return s.buildLocalFallbackChatResponse(messages, inferredActions, profile), nil
 	}
@@ -153,12 +176,28 @@ func (s *Service) runChatLoop(ctx context.Context, currentUser *authdto.AuthUser
 	for round := 0; round < maxToolRounds; round++ {
 		reply, err := s.requestModel(ctx, messages, maxTokens, profile, isPublic)
 		if err != nil {
+			if len(queuedActions) == 0 && len(inferredActions) == 0 && shouldPreferPlainAssistantResponse(messages, isPublic) {
+				content, plainErr := s.requestPlainModel(ctx, messages, resolvePlainChatMaxTokens(maxTokens))
+				if plainErr == nil && strings.TrimSpace(content) != "" {
+					return &assistantdto.ChatResponse{
+						Content:    strings.TrimSpace(content),
+						Agent:      string(profile.Intent),
+						AgentLabel: profile.Label,
+					}, nil
+				}
+			}
+			if fallback := s.buildStructuredModelFallbackResponse(ctx, currentUser, messages, maxTokens, profile, isPublic, mergeClientActions(queuedActions, inferredActions)); fallback != nil {
+				return fallback, nil
+			}
 			return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 		}
 
 		if len(reply.ToolCalls) == 0 {
 			content := strings.TrimSpace(extractAssistantContent(reply.Content))
 			if content == "" {
+				if fallback := s.buildStructuredModelFallbackResponse(ctx, currentUser, messages, maxTokens, profile, isPublic, mergeClientActions(queuedActions, inferredActions)); fallback != nil {
+					return fallback, nil
+				}
 				return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 			}
 			if round == 0 && len(queuedActions) == 0 {
@@ -198,6 +237,9 @@ func (s *Service) runChatLoop(ctx context.Context, currentUser *authdto.AuthUser
 		}
 	}
 
+	if fallback := s.buildStructuredModelFallbackResponse(ctx, currentUser, messages, maxTokens, profile, isPublic, mergeClientActions(queuedActions, inferredActions)); fallback != nil {
+		return fallback, nil
+	}
 	return s.buildLocalFallbackChatResponse(messages, mergeClientActions(queuedActions, inferredActions), profile), nil
 }
 
@@ -308,7 +350,7 @@ func (s *Service) requestModelWithProvider(ctx context.Context, provider config.
 	}
 
 	baseURL := strings.TrimRight(provider.BaseURL, "/")
-	requestCtx, cancel := context.WithTimeout(ctx, s.chatProviderTimeout())
+	requestCtx, cancel := context.WithTimeout(ctx, s.chatProviderTimeout(provider))
 	defer cancel()
 
 	request, err := http.NewRequestWithContext(requestCtx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
@@ -382,14 +424,42 @@ func (s *Service) providerRetries() int {
 	if len(s.aiCfg.Providers()) > 1 {
 		return 0
 	}
-	return 2
+	return 1
 }
 
-func (s *Service) chatProviderTimeout() time.Duration {
-	if len(s.aiCfg.Providers()) > 1 {
-		return 2 * time.Second
+func (s *Service) chatProviderTimeout(provider config.AIProviderConfig) time.Duration {
+	baseURL := strings.ToLower(strings.TrimSpace(provider.BaseURL))
+
+	switch {
+	case strings.Contains(baseURL, "api.openai.com"):
+		if len(s.aiCfg.Providers()) > 1 {
+			return 8 * time.Second
+		}
+		return 14 * time.Second
+	case strings.Contains(baseURL, "api.deepseek.com"):
+		if len(s.aiCfg.Providers()) > 1 {
+			return 14 * time.Second
+		}
+		return 28 * time.Second
+	case strings.Contains(baseURL, "openclaudecode.cn"):
+		if len(s.aiCfg.Providers()) > 1 {
+			return 14 * time.Second
+		}
+		return 24 * time.Second
+	case len(s.aiCfg.Providers()) > 1:
+		return 12 * time.Second
+	default:
+		return 20 * time.Second
 	}
-	return 3 * time.Second
+}
+
+func shouldPreferStructuredAssistantResponse(intent agentIntent) bool {
+	switch intent {
+	case agentIntentPlanner, agentIntentAssessor:
+		return true
+	default:
+		return false
+	}
 }
 
 func (s *Service) selectModel(provider config.AIProviderConfig, messages []map[string]any) string {
@@ -547,6 +617,61 @@ func containsAnyKeyword(text string, keywords []string) bool {
 	return false
 }
 
+func shouldPreferPlainAssistantResponse(messages []map[string]any, isPublic bool) bool {
+	userMessage := strings.TrimSpace(strings.ToLower(lastUserMessage(messages)))
+	if userMessage == "" {
+		return false
+	}
+
+	explanationSignals := []string{
+		"解释", "讲解", "介绍", "总结", "概括", "是什么", "两句话", "一句话", "为什么", "怎么理解", "对比", "区别",
+	}
+	if !containsAnyKeyword(userMessage, explanationSignals) {
+		return false
+	}
+
+	toolHeavySignals := []string{
+		"学习进度", "掌握度", "错题", "推荐路径", "学习路径", "数据库", "前沿", "论文", "路径", "图谱关系", "最短路径",
+	}
+	if containsAnyKeyword(userMessage, toolHeavySignals) {
+		return false
+	}
+
+	for _, message := range messages {
+		if strings.TrimSpace(stringValue(message["role"])) != "system" {
+			continue
+		}
+		content := strings.TrimSpace(extractAssistantContent(message["content"]))
+		if strings.Contains(content, "当前知识点：") || strings.Contains(content, "课程：") {
+			return true
+		}
+	}
+
+	if isPublic && countConversationMessages(messages) <= 2 {
+		return true
+	}
+
+	return countConversationMessages(messages) <= 1
+}
+
+func resolvePlainChatMaxTokens(maxTokens int) int {
+	if maxTokens > 0 {
+		return maxTokens
+	}
+	return 320
+}
+
+func countConversationMessages(messages []map[string]any) int {
+	total := 0
+	for _, message := range messages {
+		switch strings.TrimSpace(stringValue(message["role"])) {
+		case "user", "assistant":
+			total++
+		}
+	}
+	return total
+}
+
 func buildAgentPrompt(profile assistantAgentProfile, isPublic bool) []string {
 	switch profile.Intent {
 	case agentIntentPlanner:
@@ -578,6 +703,351 @@ func buildAgentPrompt(profile assistantAgentProfile, isPublic bool) []string {
 		}
 		return lines
 	}
+}
+
+func (s *Service) buildStructuredModelFallbackResponse(ctx context.Context, currentUser *authdto.AuthUserView, messages []map[string]any, maxTokens int, profile assistantAgentProfile, isPublic bool, actions []assistantdto.ClientAction) *assistantdto.ChatResponse {
+	if !s.aiCfg.Enabled() {
+		return nil
+	}
+
+	payload := s.buildStructuredModelFallbackPayload(ctx, currentUser, messages, profile, isPublic)
+	if len(payload) == 0 {
+		return nil
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil
+	}
+
+	content, err := s.requestPlainModel(ctx, []map[string]any{
+		{
+			"role":    "system",
+			"content": buildStructuredModelFallbackPrompt(profile, isPublic),
+		},
+		{
+			"role":    "user",
+			"content": string(body),
+		},
+	}, resolvePlainChatMaxTokens(maxTokens))
+	if err != nil || strings.TrimSpace(content) == "" {
+		content = strings.TrimSpace(buildStructuredLocalFallbackReply(payload, profile))
+		if content == "" {
+			return nil
+		}
+		return &assistantdto.ChatResponse{
+			Content:    content,
+			Actions:    dedupeClientActions(actions),
+			Agent:      string(profile.Intent),
+			AgentLabel: profile.Label,
+		}
+	}
+
+	return &assistantdto.ChatResponse{
+		Content:    strings.TrimSpace(content),
+		Actions:    dedupeClientActions(actions),
+		Agent:      string(profile.Intent),
+		AgentLabel: profile.Label,
+	}
+}
+
+func (s *Service) buildStructuredModelFallbackPayload(ctx context.Context, currentUser *authdto.AuthUserView, messages []map[string]any, profile assistantAgentProfile, isPublic bool) map[string]any {
+	payload := map[string]any{
+		"question":    strings.TrimSpace(lastUserMessage(messages)),
+		"pageContext": extractLocalChatContext(messages),
+		"isPublic":    isPublic,
+	}
+
+	if currentUser != nil {
+		payload["currentUser"] = compactCurrentUserPayload(s.toolGetCurrentUser(currentUser))
+	}
+
+	switch profile.Intent {
+	case agentIntentPlanner:
+		if currentUser != nil {
+			if pathPayload, err := s.toolGetRecommendedPath(ctx, `{"scene":"assistant","limit":3}`); err == nil {
+				payload["recommendedPath"] = compactRecommendedPathPayload(pathPayload)
+			}
+			if progressPayload, err := s.toolGetLearningProgress(ctx); err == nil {
+				payload["learningProgress"] = compactLearningProgressPayload(progressPayload)
+			}
+			if competencyPayload, err := s.toolGetCompetencyProfile(ctx, currentUser); err == nil {
+				payload["competencyProfile"] = compactCompetencyPayload(competencyPayload)
+			}
+		}
+	case agentIntentAssessor:
+		if currentUser != nil {
+			if progressPayload, err := s.toolGetLearningProgress(ctx); err == nil {
+				payload["learningProgress"] = compactLearningProgressPayload(progressPayload)
+			}
+			if competencyPayload, err := s.toolGetCompetencyProfile(ctx, currentUser); err == nil {
+				payload["competencyProfile"] = compactCompetencyPayload(competencyPayload)
+			}
+			if dashboardPayload, err := s.toolGetDashboardSummary(ctx, currentUser); err == nil {
+				payload["dashboardSummary"] = compactDashboardPayload(dashboardPayload)
+			}
+		}
+	default:
+		if currentUser != nil {
+			if progressPayload, err := s.toolGetLearningProgress(ctx); err == nil {
+				payload["learningProgress"] = compactLearningProgressPayload(progressPayload)
+			}
+		}
+	}
+
+	if len(payload) == 3 && currentUser == nil {
+		return nil
+	}
+	return payload
+}
+
+func buildStructuredModelFallbackPrompt(profile assistantAgentProfile, isPublic bool) string {
+	lines := []string{
+		fmt.Sprintf("你是 course-recommend-agents 项目内的 %s。", profile.Label),
+		"工具调用当前不可用，但系统已经为你整理了一份结构化上下文 JSON。",
+		"你必须严格依据 JSON 回答，不能编造系统里没有的数据。",
+		"回答使用中文，优先输出：结论、依据、下一步建议。",
+		"如果 JSON 里的字段为空或缺失，要明确说当前系统没有查到对应记录。",
+	}
+
+	switch profile.Intent {
+	case agentIntentPlanner:
+		lines = append(lines,
+			"当前角色侧重：学习规划。",
+			"优先基于 recommendedPath、learningProgress、competencyProfile 给出 2 到 4 步的下一步建议。",
+		)
+	case agentIntentAssessor:
+		lines = append(lines,
+			"当前角色侧重：学习诊断。",
+			"优先指出已有证据支持的强项、薄弱点和风险，不要只给泛泛建议。",
+		)
+	default:
+		lines = append(lines,
+			"当前角色侧重：知识探索。",
+			"优先围绕 pageContext 里的当前知识点、前置知识和相邻关系做解释。",
+		)
+	}
+
+	if isPublic {
+		lines = append(lines, "当前未登录，不能声称掌握了学生个人学习记录。")
+	}
+
+	return strings.Join(lines, "\n")
+}
+
+func compactCurrentUserPayload(payload map[string]any) map[string]any {
+	if len(payload) == 0 {
+		return nil
+	}
+	return map[string]any{
+		"source":      payload["source"],
+		"user":        payload["user"],
+		"generatedAt": payload["generatedAt"],
+	}
+}
+
+func compactRecommendedPathPayload(payload map[string]any) map[string]any {
+	if len(payload) == 0 {
+		return nil
+	}
+	return map[string]any{
+		"source":      payload["source"],
+		"path":        payload["path"],
+		"generatedAt": payload["generatedAt"],
+	}
+}
+
+func compactLearningProgressPayload(payload map[string]any) map[string]any {
+	if len(payload) == 0 {
+		return nil
+	}
+	return map[string]any{
+		"source":           payload["source"],
+		"learningSnapshot": payload["learningSnapshot"],
+		"weakKnowledge":    payload["weakKnowledge"],
+		"strongKnowledge":  payload["strongKnowledge"],
+		"generatedAt":      payload["generatedAt"],
+	}
+}
+
+func compactCompetencyPayload(payload map[string]any) map[string]any {
+	if len(payload) == 0 {
+		return nil
+	}
+	return map[string]any{
+		"source":        payload["source"],
+		"strongestAxes": payload["strongestAxes"],
+		"weakestAxes":   payload["weakestAxes"],
+		"generatedAt":   payload["generatedAt"],
+	}
+}
+
+func compactDashboardPayload(payload map[string]any) map[string]any {
+	if len(payload) == 0 {
+		return nil
+	}
+	return map[string]any{
+		"source":          payload["source"],
+		"summary":         payload["summary"],
+		"recommendedPath": payload["recommendedPath"],
+		"generatedAt":     payload["generatedAt"],
+	}
+}
+
+func buildStructuredLocalFallbackReply(payload map[string]any, profile assistantAgentProfile) string {
+	switch profile.Intent {
+	case agentIntentPlanner:
+		return buildPlannerLocalFallbackReply(payload)
+	case agentIntentAssessor:
+		return buildAssessorLocalFallbackReply(payload)
+	default:
+		return ""
+	}
+}
+
+func buildPlannerLocalFallbackReply(payload map[string]any) string {
+	pathItems := extractRecommendedPathItems(payload["recommendedPath"])
+	weakKnowledge := extractLearningProgressItems(payload["learningProgress"], "weakKnowledge")
+	weakAxes := extractRadarAxes(payload["competencyProfile"], "weakestAxes")
+
+	lines := []string{
+		"在线 AI 当前连接不稳定，我先基于系统里的推荐结果和学习数据给你规划下一步。",
+	}
+
+	if len(pathItems) > 0 {
+		first := pathItems[0]
+		lines = append(lines, "结论：建议先从「"+strings.TrimSpace(first.Title)+"」开始。")
+		if detail := strings.TrimSpace(first.Detail); detail != "" {
+			lines = append(lines, "推荐依据："+detail)
+		}
+		if len(pathItems) > 1 {
+			nextTitles := make([]string, 0, len(pathItems)-1)
+			for _, item := range pathItems[1:] {
+				title := strings.TrimSpace(item.Title)
+				if title == "" {
+					continue
+				}
+				nextTitles = append(nextTitles, title)
+			}
+			if len(nextTitles) > 0 {
+				lines = append(lines, "后续衔接："+strings.Join(nextTitles, " -> "))
+			}
+		}
+	}
+
+	if len(weakKnowledge) > 0 {
+		lines = append(lines, "当前更需要补的知识点："+strings.Join(learningProgressNames(weakKnowledge, 3), "、"))
+	}
+	if len(weakAxes) > 0 {
+		lines = append(lines, "薄弱能力轴："+strings.Join(radarAxisNames(weakAxes, 3), "、"))
+	}
+
+	lines = append(lines, "下一步建议：先完成当前第一推荐节点，再回图谱里展开它的一跳邻居，把前置知识和后续去向一起看清楚。")
+	return strings.Join(lines, "\n\n")
+}
+
+func buildAssessorLocalFallbackReply(payload map[string]any) string {
+	weakKnowledge := extractLearningProgressItems(payload["learningProgress"], "weakKnowledge")
+	strongKnowledge := extractLearningProgressItems(payload["learningProgress"], "strongKnowledge")
+	weakAxes := extractRadarAxes(payload["competencyProfile"], "weakestAxes")
+	strongAxes := extractRadarAxes(payload["competencyProfile"], "strongestAxes")
+
+	lines := []string{
+		"在线 AI 当前连接不稳定，我先基于系统里的学习记录和能力画像给你做一次诊断。",
+	}
+
+	if len(weakKnowledge) > 0 {
+		lines = append(lines, "当前薄弱知识点："+strings.Join(learningProgressNames(weakKnowledge, 3), "、"))
+	}
+	if len(strongKnowledge) > 0 {
+		lines = append(lines, "当前相对稳定的知识点："+strings.Join(learningProgressNames(strongKnowledge, 3), "、"))
+	}
+	if len(weakAxes) > 0 {
+		lines = append(lines, "薄弱能力轴："+strings.Join(radarAxisNames(weakAxes, 3), "、"))
+	}
+	if len(strongAxes) > 0 {
+		lines = append(lines, "优势能力轴："+strings.Join(radarAxisNames(strongAxes, 3), "、"))
+	}
+
+	lines = append(lines, "建议：优先围绕薄弱知识点做一次小范围复习，再结合图谱前置链检查是不是卡在基础概念上。")
+	return strings.Join(lines, "\n\n")
+}
+
+func extractRecommendedPathItems(raw any) []recommenddto.PathItemView {
+	mapped, ok := raw.(map[string]any)
+	if !ok {
+		return nil
+	}
+	items, ok := mapped["path"].([]recommenddto.PathItemView)
+	if !ok {
+		return nil
+	}
+	return items
+}
+
+func extractLearningProgressItems(raw any, key string) []learningdto.LearningProgressItem {
+	mapped, ok := raw.(map[string]any)
+	if !ok {
+		return nil
+	}
+	items, ok := mapped[key].([]learningdto.LearningProgressItem)
+	if !ok {
+		return nil
+	}
+	return items
+}
+
+func extractRadarAxes(raw any, key string) []competencydto.RadarAxis {
+	mapped, ok := raw.(map[string]any)
+	if !ok {
+		return nil
+	}
+	items, ok := mapped[key].([]competencydto.RadarAxis)
+	if !ok {
+		return nil
+	}
+	return items
+}
+
+func learningProgressNames(items []learningdto.LearningProgressItem, limit int) []string {
+	if limit <= 0 || len(items) == 0 {
+		return nil
+	}
+
+	names := make([]string, 0, min(limit, len(items)))
+	for _, item := range items {
+		name := strings.TrimSpace(item.CanonicalName)
+		if name == "" {
+			name = strings.TrimSpace(item.KnowledgeID)
+		}
+		if name == "" {
+			continue
+		}
+		names = append(names, name)
+		if len(names) >= limit {
+			break
+		}
+	}
+	return names
+}
+
+func radarAxisNames(items []competencydto.RadarAxis, limit int) []string {
+	if limit <= 0 || len(items) == 0 {
+		return nil
+	}
+
+	names := make([]string, 0, min(limit, len(items)))
+	for _, item := range items {
+		name := strings.TrimSpace(item.Name)
+		if name == "" {
+			continue
+		}
+		names = append(names, name)
+		if len(names) >= limit {
+			break
+		}
+	}
+	return names
 }
 
 func (s *Service) lookupLearnerProfile(ctx context.Context, isPublic bool) *recommenddto.LearnerProfileView {

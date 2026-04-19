@@ -65,10 +65,16 @@ describe('AiAssistant', () => {
       },
     })
 
-    expect(wrapper.find('.ai-learner-card').exists()).toBe(true)
-    expect(wrapper.text()).toContain('系统型学习者')
+    expect(wrapper.find('.ai-panel__status').exists()).toBe(true)
+    expect(wrapper.find('.ai-learner-card').exists()).toBe(false)
+    expect(wrapper.find('.ai-panel__fold').exists()).toBe(true)
     expect(wrapper.text()).toContain('知识探索助手')
     expect(wrapper.text()).toContain('快捷提问')
+
+    await wrapper.find('.ai-panel__fold').trigger('click')
+
+    expect(wrapper.find('.ai-learner-card').exists()).toBe(true)
+    expect(wrapper.text()).toContain('系统型学习者')
 
     await wrapper.find('.ai-hint-card .inline-link--ai').trigger('click')
 
@@ -85,5 +91,41 @@ describe('AiAssistant', () => {
 
     expect(wrapper.find('.ai-assistant').classes()).toContain('ai-assistant--open')
     expect(wrapper.find('.ai-fab').exists()).toBe(true)
+  })
+
+  it('renders recommended path items and emits graph actions', async () => {
+    const wrapper = mount(AiAssistant, {
+      props: {
+        modelValue: true,
+        isAuthenticated: true,
+        recommendedPath: [
+          {
+            knowledgeId: 'gradient-descent',
+            title: '梯度下降',
+            detail: '先补齐优化主线。',
+            reasonLabel: '补弱推荐',
+            score: 0.86,
+          },
+          {
+            knowledgeId: 'matrix',
+            title: '矩阵',
+            detail: '把线代基础接回来。',
+            stage: '详情页推荐',
+            score: 0.71,
+          },
+        ],
+      },
+    })
+
+    await wrapper.find('.ai-panel__fold').trigger('click')
+
+    expect(wrapper.find('.ai-path-card').exists()).toBe(true)
+    expect(wrapper.findAll('.ai-path-step')).toHaveLength(2)
+
+    await wrapper.find('.ai-path-step__title').trigger('click')
+    await wrapper.find('.ai-panel__path-link').trigger('click')
+
+    expect(wrapper.emitted('focus-knowledge')).toEqual([['gradient-descent']])
+    expect(wrapper.emitted('show-recommend-path')).toEqual([[['gradient-descent', 'matrix']]])
   })
 })

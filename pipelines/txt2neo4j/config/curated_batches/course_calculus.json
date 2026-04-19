@@ -1,0 +1,826 @@
+{
+  "source": "course_calculus",
+  "course_title": "高等数学",
+  "nodes": [
+    {
+      "canonical_name": "高等数学",
+      "entity_type": "topic",
+      "description": "研究极限、微分、积分、级数与微分方程等连续变化规律的数学基础课程。"
+    },
+    {
+      "canonical_name": "极限与连续",
+      "entity_type": "topic",
+      "description": "研究函数与数列在逼近过程中趋向行为及连续性质的微积分基础主题。"
+    },
+    {
+      "canonical_name": "一元微分学",
+      "entity_type": "topic",
+      "description": "研究单变量函数导数、微分及导数应用的基础微分主题。"
+    },
+    {
+      "canonical_name": "一元积分学",
+      "entity_type": "topic",
+      "description": "研究单变量函数积分概念、计算方法与几何应用的积分主题。"
+    },
+    {
+      "canonical_name": "无穷级数",
+      "entity_type": "topic",
+      "description": "研究无穷项求和、收敛性判别与函数展开方法的级数主题。"
+    },
+    {
+      "canonical_name": "多元微分学",
+      "entity_type": "topic",
+      "description": "研究多元函数偏导、全微分、极值与约束优化的微分主题。"
+    },
+    {
+      "canonical_name": "多元积分学",
+      "entity_type": "topic",
+      "description": "研究重积分、曲线曲面积分及坐标变换的多元积分主题。"
+    },
+    {
+      "canonical_name": "向量分析",
+      "entity_type": "topic",
+      "description": "研究向量场、散度、旋度及积分公式的数学分析主题。"
+    },
+    {
+      "canonical_name": "常微分方程",
+      "entity_type": "topic",
+      "description": "研究未知函数及其导数关系方程求解方法的微分方程主题。"
+    },
+    {
+      "canonical_name": "数列极限",
+      "entity_type": "concept",
+      "description": "刻画数列项随下标增大时趋近某一确定值的极限概念。"
+    },
+    {
+      "canonical_name": "函数极限",
+      "entity_type": "concept",
+      "description": "刻画自变量趋向某点时函数值趋近某一确定值的极限概念。"
+    },
+    {
+      "canonical_name": "左极限",
+      "entity_type": "concept",
+      "description": "研究自变量从目标点左侧逼近时函数值的极限行为。"
+    },
+    {
+      "canonical_name": "右极限",
+      "entity_type": "concept",
+      "description": "研究自变量从目标点右侧逼近时函数值的极限行为。"
+    },
+    {
+      "canonical_name": "无穷小",
+      "entity_type": "concept",
+      "description": "在极限过程中绝对值趋于零的变量或函数量。"
+    },
+    {
+      "canonical_name": "无穷大",
+      "entity_type": "concept",
+      "description": "在极限过程中绝对值无限增大的变量或函数量。"
+    },
+    {
+      "canonical_name": "等价无穷小",
+      "entity_type": "concept",
+      "description": "在同一极限过程里比值趋于一的两个无穷小量。"
+    },
+    {
+      "canonical_name": "极限运算法则",
+      "entity_type": "method",
+      "description": "用于推导和计算函数或数列极限的基本代数法则。"
+    },
+    {
+      "canonical_name": "夹逼准则",
+      "entity_type": "method",
+      "description": "通过上下界函数共同收敛来确定目标极限的判别方法。"
+    },
+    {
+      "canonical_name": "洛必达法则",
+      "entity_type": "method",
+      "description": "通过导数比值求解未定式极限的经典计算方法。"
+    },
+    {
+      "canonical_name": "函数连续性",
+      "entity_type": "concept",
+      "description": "描述函数在某点附近变化平滑且无跳跃断裂的性质。"
+    },
+    {
+      "canonical_name": "间断点",
+      "entity_type": "concept",
+      "description": "函数在某点不连续并出现跳跃、无穷或振荡现象的点。"
+    },
+    {
+      "canonical_name": "导数",
+      "entity_type": "concept",
+      "description": "描述函数在某一点附近变化率的基本微积分概念。"
+    },
+    {
+      "canonical_name": "导数定义",
+      "entity_type": "concept",
+      "description": "通过差商极限给出函数导数严格定义的基础概念。"
+    },
+    {
+      "canonical_name": "微分",
+      "entity_type": "concept",
+      "description": "利用线性主部近似刻画函数微小改变量的分析工具。"
+    },
+    {
+      "canonical_name": "可导与连续关系",
+      "entity_type": "concept",
+      "description": "说明函数可导必连续但连续未必可导的性质关系。"
+    },
+    {
+      "canonical_name": "高阶导数",
+      "entity_type": "concept",
+      "description": "对导函数继续求导得到并反映更高阶变化特征的导数。"
+    },
+    {
+      "canonical_name": "反函数求导",
+      "entity_type": "method",
+      "description": "依据原函数导数与函数反演关系求反函数导数的方法。"
+    },
+    {
+      "canonical_name": "隐函数求导",
+      "entity_type": "method",
+      "description": "对隐式方程两边求导并解出目标导数的计算方法。"
+    },
+    {
+      "canonical_name": "参数方程求导",
+      "entity_type": "method",
+      "description": "通过参数对自变量与因变量分别求导得到导数的方法。"
+    },
+    {
+      "canonical_name": "对数求导法",
+      "entity_type": "method",
+      "description": "先取对数再求导以化简幂指混合函数求导的技巧。"
+    },
+    {
+      "canonical_name": "链式法则",
+      "entity_type": "method",
+      "description": "复合函数求导时逐层传递导数的基本法则。"
+    },
+    {
+      "canonical_name": "乘积法则",
+      "entity_type": "method",
+      "description": "用于求两个函数乘积导数的基本求导法则。"
+    },
+    {
+      "canonical_name": "商法则",
+      "entity_type": "method",
+      "description": "用于求两个函数商的导数的基本求导法则。"
+    },
+    {
+      "canonical_name": "罗尔定理",
+      "entity_type": "concept",
+      "description": "满足特定边界条件时函数内部至少存在零导数点的定理。"
+    },
+    {
+      "canonical_name": "拉格朗日中值定理",
+      "entity_type": "concept",
+      "description": "说明区间平均变化率可由某点瞬时变化率实现的定理。"
+    },
+    {
+      "canonical_name": "柯西中值定理",
+      "entity_type": "concept",
+      "description": "推广拉格朗日中值定理并比较两函数变化率的定理。"
+    },
+    {
+      "canonical_name": "泰勒公式",
+      "entity_type": "method",
+      "description": "用函数在一点的导数信息构造局部多项式近似的展开公式。"
+    },
+    {
+      "canonical_name": "麦克劳林公式",
+      "entity_type": "method",
+      "description": "以零点为展开中心的特殊泰勒公式。"
+    },
+    {
+      "canonical_name": "单调性",
+      "entity_type": "concept",
+      "description": "描述函数在区间内始终递增或递减的变化性质。"
+    },
+    {
+      "canonical_name": "极值",
+      "entity_type": "concept",
+      "description": "描述函数在某邻域内取得局部最大值或最小值的性质。"
+    },
+    {
+      "canonical_name": "凹凸性",
+      "entity_type": "concept",
+      "description": "描述函数图像弯曲方向及切线相对位置的曲率性质。"
+    },
+    {
+      "canonical_name": "原函数",
+      "entity_type": "concept",
+      "description": "导数等于给定函数的函数称为该函数的原函数。"
+    },
+    {
+      "canonical_name": "不定积分",
+      "entity_type": "concept",
+      "description": "求给定函数全体原函数的积分运算。"
+    },
+    {
+      "canonical_name": "换元积分法",
+      "entity_type": "method",
+      "description": "通过变量替换把积分化为更易求形式的积分技巧。"
+    },
+    {
+      "canonical_name": "第一类换元法",
+      "entity_type": "method",
+      "description": "直接以新变量代换积分表达式的基础换元积分方法。"
+    },
+    {
+      "canonical_name": "第二类换元法",
+      "entity_type": "method",
+      "description": "借助三角或根式代换简化复杂积分结构的方法。"
+    },
+    {
+      "canonical_name": "分部积分法",
+      "entity_type": "method",
+      "description": "依据乘积求导公式逆向拆分并求解积分的方法。"
+    },
+    {
+      "canonical_name": "定积分定义",
+      "entity_type": "concept",
+      "description": "通过黎曼和极限定义区间累积量的积分概念。"
+    },
+    {
+      "canonical_name": "黎曼和",
+      "entity_type": "concept",
+      "description": "把区间分割后用小矩形面积和逼近定积分的求和表达。"
+    },
+    {
+      "canonical_name": "定积分性质",
+      "entity_type": "concept",
+      "description": "描述定积分线性、区间可加与保序等基本性质。"
+    },
+    {
+      "canonical_name": "微积分基本定理",
+      "entity_type": "concept",
+      "description": "建立导数与定积分互逆联系的核心定理。"
+    },
+    {
+      "canonical_name": "牛顿-莱布尼茨公式",
+      "entity_type": "concept",
+      "description": "利用原函数端点值计算定积分结果的经典公式。"
+    },
+    {
+      "canonical_name": "积分上限函数",
+      "entity_type": "concept",
+      "description": "以上限变量定义的定积分函数及其导数性质。"
+    },
+    {
+      "canonical_name": "反常积分",
+      "entity_type": "concept",
+      "description": "积分区间无界或被积函数无界时的广义积分概念。"
+    },
+    {
+      "canonical_name": "平面图形面积",
+      "entity_type": "application",
+      "description": "利用定积分计算曲线围成平面区域面积的应用任务。"
+    },
+    {
+      "canonical_name": "旋转体体积",
+      "entity_type": "application",
+      "description": "利用定积分计算平面图形绕轴旋转所得立体体积的应用。"
+    },
+    {
+      "canonical_name": "平面曲线弧长",
+      "entity_type": "application",
+      "description": "利用积分公式计算平面曲线长度的几何应用任务。"
+    },
+    {
+      "canonical_name": "数项级数",
+      "entity_type": "concept",
+      "description": "由无穷多个数按序相加形成并研究其收敛性的级数。"
+    },
+    {
+      "canonical_name": "正项级数",
+      "entity_type": "concept",
+      "description": "所有项非负并常用比较方法研究收敛性的数项级数。"
+    },
+    {
+      "canonical_name": "交错级数",
+      "entity_type": "concept",
+      "description": "各项符号交替变化并具有专门收敛判别条件的级数。"
+    },
+    {
+      "canonical_name": "比较判别法",
+      "entity_type": "method",
+      "description": "通过与已知级数比较大小判断收敛性的判别方法。"
+    },
+    {
+      "canonical_name": "比值判别法",
+      "entity_type": "method",
+      "description": "通过相邻项比值极限判断级数收敛性的判别方法。"
+    },
+    {
+      "canonical_name": "根值判别法",
+      "entity_type": "method",
+      "description": "通过项的n次方根极限判断级数收敛性的判别方法。"
+    },
+    {
+      "canonical_name": "绝对收敛",
+      "entity_type": "concept",
+      "description": "取绝对值后的级数仍收敛时原级数具备的收敛性质。"
+    },
+    {
+      "canonical_name": "幂级数",
+      "entity_type": "concept",
+      "description": "以变量幂次为项构成并具有局部展开能力的函数级数。"
+    },
+    {
+      "canonical_name": "收敛半径",
+      "entity_type": "concept",
+      "description": "决定幂级数在多大邻域内收敛的关键尺度参数。"
+    },
+    {
+      "canonical_name": "傅里叶级数",
+      "entity_type": "method",
+      "description": "用三角函数系展开周期函数并逼近其整体行为的级数方法。"
+    },
+    {
+      "canonical_name": "多元函数极限",
+      "entity_type": "concept",
+      "description": "研究自变量向某点多方向逼近时函数值趋向行为的概念。"
+    },
+    {
+      "canonical_name": "多元函数连续性",
+      "entity_type": "concept",
+      "description": "描述多元函数在某点附近变化平滑无突变的性质。"
+    },
+    {
+      "canonical_name": "偏导数",
+      "entity_type": "concept",
+      "description": "多元函数对某一变量单独变化率的度量。"
+    },
+    {
+      "canonical_name": "全微分",
+      "entity_type": "concept",
+      "description": "利用各偏导线性组合描述多元函数局部增量的形式。"
+    },
+    {
+      "canonical_name": "可微性",
+      "entity_type": "concept",
+      "description": "描述多元函数可被线性函数良好近似的局部性质。"
+    },
+    {
+      "canonical_name": "多元链式法则",
+      "entity_type": "method",
+      "description": "复合多元函数求偏导时逐层传播偏导信息的法则。"
+    },
+    {
+      "canonical_name": "方向导数",
+      "entity_type": "concept",
+      "description": "刻画多元函数沿指定方向的瞬时变化率的导数概念。"
+    },
+    {
+      "canonical_name": "梯度",
+      "entity_type": "concept",
+      "description": "由多元函数各偏导数组成并指向函数增长最快方向的向量。"
+    },
+    {
+      "canonical_name": "切平面",
+      "entity_type": "concept",
+      "description": "多元函数图形在某点处最佳线性近似对应的平面。"
+    },
+    {
+      "canonical_name": "多元函数极值",
+      "entity_type": "concept",
+      "description": "多元函数在某邻域内取得局部最大值或最小值的性质。"
+    },
+    {
+      "canonical_name": "条件极值",
+      "entity_type": "concept",
+      "description": "在约束条件限制下研究多元函数最优值的极值问题。"
+    },
+    {
+      "canonical_name": "拉格朗日乘子法",
+      "entity_type": "method",
+      "description": "将约束条件并入目标函数以求解约束优化问题的经典方法。"
+    },
+    {
+      "canonical_name": "二重积分",
+      "entity_type": "concept",
+      "description": "对二维区域上函数累积量进行积分的重积分概念。"
+    },
+    {
+      "canonical_name": "三重积分",
+      "entity_type": "concept",
+      "description": "对三维区域上函数累积量进行积分的重积分概念。"
+    },
+    {
+      "canonical_name": "累次积分",
+      "entity_type": "method",
+      "description": "将重积分转化为多次一元积分依次求解的计算方法。"
+    },
+    {
+      "canonical_name": "极坐标积分",
+      "entity_type": "method",
+      "description": "在极坐标系下求解平面区域积分的重积分计算方法。"
+    },
+    {
+      "canonical_name": "柱坐标积分",
+      "entity_type": "method",
+      "description": "在柱坐标系下求解空间积分的三重积分计算方法。"
+    },
+    {
+      "canonical_name": "球坐标积分",
+      "entity_type": "method",
+      "description": "在球坐标系下求解空间积分的三重积分计算方法。"
+    },
+    {
+      "canonical_name": "雅可比行列式",
+      "entity_type": "concept",
+      "description": "坐标变换中刻画体积伸缩比例的行列式因子。"
+    },
+    {
+      "canonical_name": "曲线积分",
+      "entity_type": "concept",
+      "description": "沿曲线对标量场或向量场进行积分的积分概念。"
+    },
+    {
+      "canonical_name": "第一类曲线积分",
+      "entity_type": "concept",
+      "description": "对曲线上的标量场按弧长元素进行积分的曲线积分。"
+    },
+    {
+      "canonical_name": "第二类曲线积分",
+      "entity_type": "concept",
+      "description": "对向量场沿曲线位移做功形式进行积分的曲线积分。"
+    },
+    {
+      "canonical_name": "曲面积分",
+      "entity_type": "concept",
+      "description": "沿曲面对标量场或向量场进行积分的积分概念。"
+    },
+    {
+      "canonical_name": "第一类曲面积分",
+      "entity_type": "concept",
+      "description": "对曲面上的标量场按面积元素进行积分的曲面积分。"
+    },
+    {
+      "canonical_name": "第二类曲面积分",
+      "entity_type": "concept",
+      "description": "对向量场穿过曲面的通量进行积分的曲面积分。"
+    },
+    {
+      "canonical_name": "向量场",
+      "entity_type": "concept",
+      "description": "为空间每一点分配一个向量并描述方向与大小分布的场。"
+    },
+    {
+      "canonical_name": "保守场",
+      "entity_type": "concept",
+      "description": "线积分与路径无关且可由势函数表示的特殊向量场。"
+    },
+    {
+      "canonical_name": "势函数",
+      "entity_type": "concept",
+      "description": "其梯度可生成保守场的标量函数。"
+    },
+    {
+      "canonical_name": "散度",
+      "entity_type": "concept",
+      "description": "描述向量场在一点附近源汇强度的标量微分算子。"
+    },
+    {
+      "canonical_name": "旋度",
+      "entity_type": "concept",
+      "description": "描述向量场在一点附近旋转趋势的向量微分算子。"
+    },
+    {
+      "canonical_name": "格林公式",
+      "entity_type": "concept",
+      "description": "把平面闭曲线积分与区域二重积分联系起来的公式。"
+    },
+    {
+      "canonical_name": "高斯公式",
+      "entity_type": "concept",
+      "description": "把闭曲面通量积分与体积分联系起来的散度公式。"
+    },
+    {
+      "canonical_name": "斯托克斯公式",
+      "entity_type": "concept",
+      "description": "把空间闭曲线积分与曲面旋度通量联系起来的公式。"
+    },
+    {
+      "canonical_name": "初值问题",
+      "entity_type": "concept",
+      "description": "在给定初始条件下求微分方程特解的问题。"
+    },
+    {
+      "canonical_name": "可分离变量方程",
+      "entity_type": "method",
+      "description": "通过变量分离后两边积分求解的一阶微分方程方法。"
+    },
+    {
+      "canonical_name": "一阶线性微分方程",
+      "entity_type": "method",
+      "description": "系数与未知函数一次线性相关的一阶微分方程求解模型。"
+    },
+    {
+      "canonical_name": "伯努利方程",
+      "entity_type": "method",
+      "description": "可通过变量代换转化为线性方程的非线性一阶方程。"
+    },
+    {
+      "canonical_name": "全微分方程",
+      "entity_type": "method",
+      "description": "可写成某个函数全微分形式并直接积分求解的方程。"
+    },
+    {
+      "canonical_name": "二阶线性微分方程",
+      "entity_type": "method",
+      "description": "含未知函数二阶导数且满足线性叠加结构的微分方程。"
+    },
+    {
+      "canonical_name": "常系数线性微分方程",
+      "entity_type": "method",
+      "description": "系数为常数并可借助特征方程求解的线性微分方程。"
+    },
+    {
+      "canonical_name": "线性微分方程组",
+      "entity_type": "method",
+      "description": "由多个未知函数线性耦合形成的微分方程系统。"
+    },
+    {
+      "canonical_name": "梯度下降",
+      "entity_type": "algorithm",
+      "description": "沿目标函数负梯度方向迭代更新参数的优化算法。"
+    },
+    {
+      "canonical_name": "反向传播",
+      "entity_type": "method",
+      "description": "利用链式法则将输出误差逐层传播并计算参数梯度的训练方法。"
+    },
+    {
+      "canonical_name": "损失函数",
+      "entity_type": "concept",
+      "description": "用于度量模型预测结果与真实目标之间偏差的函数。"
+    },
+    {
+      "canonical_name": "凸优化",
+      "entity_type": "method",
+      "description": "在凸目标和凸约束条件下求解全局最优解的优化方法体系。"
+    },
+    {
+      "canonical_name": "线性回归",
+      "entity_type": "algorithm",
+      "description": "用线性函数拟合输入与连续输出关系的回归模型。"
+    },
+    {
+      "canonical_name": "逻辑回归",
+      "entity_type": "algorithm",
+      "description": "基于对数几率函数建模条件概率的线性分类模型。"
+    },
+    {
+      "canonical_name": "支持向量机",
+      "entity_type": "algorithm",
+      "description": "通过最大间隔超平面进行分类或回归的经典学习算法。"
+    },
+    {
+      "canonical_name": "主成分分析",
+      "entity_type": "algorithm",
+      "description": "通过正交变换提取主要方差方向的经典降维方法。"
+    },
+    {
+      "canonical_name": "Hessian矩阵",
+      "entity_type": "concept",
+      "description": "由二阶偏导数组成并描述函数局部曲率性质的矩阵。"
+    },
+    {
+      "canonical_name": "牛顿法",
+      "entity_type": "algorithm",
+      "description": "利用一阶和二阶导数信息快速逼近最优点或方程根的迭代算法。"
+    }
+  ],
+  "relations": [
+    ["极限与连续", "高等数学", "SUBTOPIC_OF"],
+    ["一元微分学", "高等数学", "SUBTOPIC_OF"],
+    ["一元积分学", "高等数学", "SUBTOPIC_OF"],
+    ["无穷级数", "高等数学", "SUBTOPIC_OF"],
+    ["多元微分学", "高等数学", "SUBTOPIC_OF"],
+    ["多元积分学", "高等数学", "SUBTOPIC_OF"],
+    ["向量分析", "高等数学", "SUBTOPIC_OF"],
+    ["常微分方程", "高等数学", "SUBTOPIC_OF"],
+
+    ["数列极限", "极限与连续", "SUBTOPIC_OF"],
+    ["函数极限", "极限与连续", "SUBTOPIC_OF"],
+    ["左极限", "极限与连续", "SUBTOPIC_OF"],
+    ["右极限", "极限与连续", "SUBTOPIC_OF"],
+    ["无穷小", "极限与连续", "SUBTOPIC_OF"],
+    ["无穷大", "极限与连续", "SUBTOPIC_OF"],
+    ["等价无穷小", "极限与连续", "SUBTOPIC_OF"],
+    ["极限运算法则", "极限与连续", "SUBTOPIC_OF"],
+    ["夹逼准则", "极限与连续", "SUBTOPIC_OF"],
+    ["洛必达法则", "极限与连续", "SUBTOPIC_OF"],
+    ["函数连续性", "极限与连续", "SUBTOPIC_OF"],
+    ["间断点", "极限与连续", "SUBTOPIC_OF"],
+
+    ["导数", "一元微分学", "SUBTOPIC_OF"],
+    ["导数定义", "一元微分学", "SUBTOPIC_OF"],
+    ["微分", "一元微分学", "SUBTOPIC_OF"],
+    ["可导与连续关系", "一元微分学", "SUBTOPIC_OF"],
+    ["高阶导数", "一元微分学", "SUBTOPIC_OF"],
+    ["反函数求导", "一元微分学", "SUBTOPIC_OF"],
+    ["隐函数求导", "一元微分学", "SUBTOPIC_OF"],
+    ["参数方程求导", "一元微分学", "SUBTOPIC_OF"],
+    ["对数求导法", "一元微分学", "SUBTOPIC_OF"],
+    ["链式法则", "一元微分学", "SUBTOPIC_OF"],
+    ["乘积法则", "一元微分学", "SUBTOPIC_OF"],
+    ["商法则", "一元微分学", "SUBTOPIC_OF"],
+    ["罗尔定理", "一元微分学", "SUBTOPIC_OF"],
+    ["拉格朗日中值定理", "一元微分学", "SUBTOPIC_OF"],
+    ["柯西中值定理", "一元微分学", "SUBTOPIC_OF"],
+    ["泰勒公式", "一元微分学", "SUBTOPIC_OF"],
+    ["麦克劳林公式", "一元微分学", "SUBTOPIC_OF"],
+    ["单调性", "一元微分学", "SUBTOPIC_OF"],
+    ["极值", "一元微分学", "SUBTOPIC_OF"],
+    ["凹凸性", "一元微分学", "SUBTOPIC_OF"],
+
+    ["原函数", "一元积分学", "SUBTOPIC_OF"],
+    ["不定积分", "一元积分学", "SUBTOPIC_OF"],
+    ["换元积分法", "一元积分学", "SUBTOPIC_OF"],
+    ["分部积分法", "一元积分学", "SUBTOPIC_OF"],
+    ["定积分定义", "一元积分学", "SUBTOPIC_OF"],
+    ["黎曼和", "一元积分学", "SUBTOPIC_OF"],
+    ["定积分性质", "一元积分学", "SUBTOPIC_OF"],
+    ["微积分基本定理", "一元积分学", "SUBTOPIC_OF"],
+    ["牛顿-莱布尼茨公式", "一元积分学", "SUBTOPIC_OF"],
+    ["积分上限函数", "一元积分学", "SUBTOPIC_OF"],
+    ["反常积分", "一元积分学", "SUBTOPIC_OF"],
+    ["平面图形面积", "一元积分学", "SUBTOPIC_OF"],
+    ["旋转体体积", "一元积分学", "SUBTOPIC_OF"],
+    ["平面曲线弧长", "一元积分学", "SUBTOPIC_OF"],
+    ["第一类换元法", "换元积分法", "PART_OF"],
+    ["第二类换元法", "换元积分法", "PART_OF"],
+
+    ["数项级数", "无穷级数", "SUBTOPIC_OF"],
+    ["正项级数", "无穷级数", "SUBTOPIC_OF"],
+    ["交错级数", "无穷级数", "SUBTOPIC_OF"],
+    ["比较判别法", "无穷级数", "SUBTOPIC_OF"],
+    ["比值判别法", "无穷级数", "SUBTOPIC_OF"],
+    ["根值判别法", "无穷级数", "SUBTOPIC_OF"],
+    ["绝对收敛", "无穷级数", "SUBTOPIC_OF"],
+    ["幂级数", "无穷级数", "SUBTOPIC_OF"],
+    ["收敛半径", "无穷级数", "SUBTOPIC_OF"],
+    ["傅里叶级数", "无穷级数", "SUBTOPIC_OF"],
+
+    ["多元函数极限", "多元微分学", "SUBTOPIC_OF"],
+    ["多元函数连续性", "多元微分学", "SUBTOPIC_OF"],
+    ["偏导数", "多元微分学", "SUBTOPIC_OF"],
+    ["全微分", "多元微分学", "SUBTOPIC_OF"],
+    ["可微性", "多元微分学", "SUBTOPIC_OF"],
+    ["多元链式法则", "多元微分学", "SUBTOPIC_OF"],
+    ["方向导数", "多元微分学", "SUBTOPIC_OF"],
+    ["梯度", "多元微分学", "SUBTOPIC_OF"],
+    ["切平面", "多元微分学", "SUBTOPIC_OF"],
+    ["多元函数极值", "多元微分学", "SUBTOPIC_OF"],
+    ["条件极值", "多元微分学", "SUBTOPIC_OF"],
+    ["拉格朗日乘子法", "多元微分学", "SUBTOPIC_OF"],
+
+    ["二重积分", "多元积分学", "SUBTOPIC_OF"],
+    ["三重积分", "多元积分学", "SUBTOPIC_OF"],
+    ["累次积分", "多元积分学", "SUBTOPIC_OF"],
+    ["极坐标积分", "多元积分学", "SUBTOPIC_OF"],
+    ["柱坐标积分", "多元积分学", "SUBTOPIC_OF"],
+    ["球坐标积分", "多元积分学", "SUBTOPIC_OF"],
+    ["雅可比行列式", "多元积分学", "SUBTOPIC_OF"],
+    ["曲线积分", "多元积分学", "SUBTOPIC_OF"],
+    ["曲面积分", "多元积分学", "SUBTOPIC_OF"],
+    ["第一类曲线积分", "曲线积分", "PART_OF"],
+    ["第二类曲线积分", "曲线积分", "PART_OF"],
+    ["第一类曲面积分", "曲面积分", "PART_OF"],
+    ["第二类曲面积分", "曲面积分", "PART_OF"],
+
+    ["向量场", "向量分析", "SUBTOPIC_OF"],
+    ["保守场", "向量分析", "SUBTOPIC_OF"],
+    ["势函数", "向量分析", "SUBTOPIC_OF"],
+    ["散度", "向量分析", "SUBTOPIC_OF"],
+    ["旋度", "向量分析", "SUBTOPIC_OF"],
+    ["格林公式", "向量分析", "SUBTOPIC_OF"],
+    ["高斯公式", "向量分析", "SUBTOPIC_OF"],
+    ["斯托克斯公式", "向量分析", "SUBTOPIC_OF"],
+
+    ["初值问题", "常微分方程", "SUBTOPIC_OF"],
+    ["可分离变量方程", "常微分方程", "SUBTOPIC_OF"],
+    ["一阶线性微分方程", "常微分方程", "SUBTOPIC_OF"],
+    ["伯努利方程", "常微分方程", "SUBTOPIC_OF"],
+    ["全微分方程", "常微分方程", "SUBTOPIC_OF"],
+    ["二阶线性微分方程", "常微分方程", "SUBTOPIC_OF"],
+    ["常系数线性微分方程", "常微分方程", "SUBTOPIC_OF"],
+    ["线性微分方程组", "常微分方程", "SUBTOPIC_OF"],
+
+    ["数列极限", "函数极限", "RELATED_TO"],
+    ["左极限", "函数连续性", "PREREQUISITE_OF"],
+    ["右极限", "函数连续性", "PREREQUISITE_OF"],
+    ["无穷小", "等价无穷小", "RELATED_TO"],
+    ["函数极限", "极限运算法则", "PREREQUISITE_OF"],
+    ["数列极限", "夹逼准则", "PREREQUISITE_OF"],
+    ["无穷小", "洛必达法则", "PREREQUISITE_OF"],
+    ["函数连续性", "导数", "PREREQUISITE_OF"],
+
+    ["导数定义", "导数", "PREREQUISITE_OF"],
+    ["导数", "微分", "PREREQUISITE_OF"],
+    ["导数", "高阶导数", "PREREQUISITE_OF"],
+    ["链式法则", "隐函数求导", "PREREQUISITE_OF"],
+    ["链式法则", "参数方程求导", "PREREQUISITE_OF"],
+    ["链式法则", "反函数求导", "PREREQUISITE_OF"],
+    ["对数求导法", "链式法则", "USES"],
+    ["罗尔定理", "拉格朗日中值定理", "PREREQUISITE_OF"],
+    ["拉格朗日中值定理", "柯西中值定理", "PREREQUISITE_OF"],
+    ["拉格朗日中值定理", "单调性", "PREREQUISITE_OF"],
+    ["单调性", "极值", "PREREQUISITE_OF"],
+    ["高阶导数", "凹凸性", "PREREQUISITE_OF"],
+    ["高阶导数", "泰勒公式", "PREREQUISITE_OF"],
+    ["泰勒公式", "麦克劳林公式", "PREREQUISITE_OF"],
+
+    ["原函数", "不定积分", "PREREQUISITE_OF"],
+    ["不定积分", "换元积分法", "PREREQUISITE_OF"],
+    ["不定积分", "分部积分法", "PREREQUISITE_OF"],
+    ["黎曼和", "定积分定义", "PREREQUISITE_OF"],
+    ["定积分定义", "定积分性质", "PREREQUISITE_OF"],
+    ["定积分性质", "微积分基本定理", "PREREQUISITE_OF"],
+    ["导数", "微积分基本定理", "PREREQUISITE_OF"],
+    ["微积分基本定理", "牛顿-莱布尼茨公式", "PREREQUISITE_OF"],
+    ["定积分定义", "反常积分", "PREREQUISITE_OF"],
+    ["定积分定义", "平面图形面积", "PREREQUISITE_OF"],
+    ["定积分定义", "旋转体体积", "PREREQUISITE_OF"],
+    ["定积分定义", "平面曲线弧长", "PREREQUISITE_OF"],
+
+    ["数项级数", "正项级数", "PREREQUISITE_OF"],
+    ["数项级数", "交错级数", "PREREQUISITE_OF"],
+    ["正项级数", "比较判别法", "PREREQUISITE_OF"],
+    ["正项级数", "比值判别法", "PREREQUISITE_OF"],
+    ["正项级数", "根值判别法", "PREREQUISITE_OF"],
+    ["正项级数", "绝对收敛", "PREREQUISITE_OF"],
+    ["幂级数", "收敛半径", "PREREQUISITE_OF"],
+    ["泰勒公式", "幂级数", "RELATED_TO"],
+    ["幂级数", "傅里叶级数", "RELATED_TO"],
+
+    ["多元函数极限", "多元函数连续性", "PREREQUISITE_OF"],
+    ["多元函数连续性", "偏导数", "PREREQUISITE_OF"],
+    ["偏导数", "全微分", "PREREQUISITE_OF"],
+    ["全微分", "可微性", "PREREQUISITE_OF"],
+    ["偏导数", "多元链式法则", "PREREQUISITE_OF"],
+    ["偏导数", "方向导数", "PREREQUISITE_OF"],
+    ["方向导数", "梯度", "PREREQUISITE_OF"],
+    ["全微分", "切平面", "RELATED_TO"],
+    ["多元函数极值", "条件极值", "PREREQUISITE_OF"],
+    ["梯度", "拉格朗日乘子法", "PREREQUISITE_OF"],
+
+    ["二重积分", "三重积分", "PREREQUISITE_OF"],
+    ["二重积分", "极坐标积分", "PREREQUISITE_OF"],
+    ["三重积分", "柱坐标积分", "PREREQUISITE_OF"],
+    ["三重积分", "球坐标积分", "PREREQUISITE_OF"],
+    ["雅可比行列式", "极坐标积分", "USES"],
+    ["雅可比行列式", "柱坐标积分", "USES"],
+    ["雅可比行列式", "球坐标积分", "USES"],
+    ["曲线积分", "第一类曲线积分", "PREREQUISITE_OF"],
+    ["曲线积分", "第二类曲线积分", "PREREQUISITE_OF"],
+    ["曲面积分", "第一类曲面积分", "PREREQUISITE_OF"],
+    ["曲面积分", "第二类曲面积分", "PREREQUISITE_OF"],
+
+    ["向量场", "散度", "PREREQUISITE_OF"],
+    ["向量场", "旋度", "PREREQUISITE_OF"],
+    ["保守场", "势函数", "RELATED_TO"],
+    ["第二类曲线积分", "格林公式", "PREREQUISITE_OF"],
+    ["散度", "高斯公式", "PREREQUISITE_OF"],
+    ["旋度", "斯托克斯公式", "PREREQUISITE_OF"],
+    ["第二类曲面积分", "高斯公式", "PREREQUISITE_OF"],
+    ["第二类曲面积分", "斯托克斯公式", "RELATED_TO"],
+
+    ["初值问题", "可分离变量方程", "RELATED_TO"],
+    ["可分离变量方程", "一阶线性微分方程", "RELATED_TO"],
+    ["一阶线性微分方程", "伯努利方程", "RELATED_TO"],
+    ["一阶线性微分方程", "全微分方程", "RELATED_TO"],
+    ["二阶线性微分方程", "常系数线性微分方程", "PREREQUISITE_OF"],
+    ["二阶线性微分方程", "线性微分方程组", "RELATED_TO"],
+    ["导数", "可分离变量方程", "PREREQUISITE_OF"],
+    ["高阶导数", "二阶线性微分方程", "PREREQUISITE_OF"],
+
+    ["导数", "梯度下降", "PREREQUISITE_OF"],
+    ["偏导数", "反向传播", "PREREQUISITE_OF"],
+    ["链式法则", "反向传播", "PREREQUISITE_OF"],
+    ["多元链式法则", "反向传播", "PREREQUISITE_OF"],
+    ["梯度", "梯度下降", "PREREQUISITE_OF"],
+    ["梯度下降", "损失函数", "USES"],
+    ["泰勒公式", "损失函数", "RELATED_TO"],
+    ["导数", "损失函数", "RELATED_TO"],
+    ["极值", "凸优化", "PREREQUISITE_OF"],
+    ["凹凸性", "凸优化", "PREREQUISITE_OF"],
+    ["拉格朗日乘子法", "支持向量机", "RELATED_TO"],
+    ["导数", "线性回归", "PREREQUISITE_OF"],
+    ["偏导数", "逻辑回归", "PREREQUISITE_OF"],
+    ["梯度", "线性回归", "PREREQUISITE_OF"],
+    ["梯度", "逻辑回归", "PREREQUISITE_OF"],
+    ["多元函数极值", "Hessian矩阵", "PREREQUISITE_OF"],
+    ["泰勒公式", "牛顿法", "PREREQUISITE_OF"],
+    ["Hessian矩阵", "牛顿法", "PREREQUISITE_OF"],
+    ["Hessian矩阵", "凸优化", "RELATED_TO"],
+    ["雅可比行列式", "主成分分析", "RELATED_TO"],
+    ["梯度下降", "线性回归", "USES"],
+    ["梯度下降", "逻辑回归", "USES"],
+    ["牛顿法", "逻辑回归", "USES"],
+    ["牛顿法", "凸优化", "RELATED_TO"]
+  ]
+}

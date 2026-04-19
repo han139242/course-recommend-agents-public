@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	assistantdto "github.com/han139242/course-recommend-agents/backend/internal/module/assistant/dto"
 )
 
@@ -52,7 +53,7 @@ func buildLocalFallbackContent(messages []map[string]any, actions []assistantdto
 	case knowledgeName != "":
 		parts = append(parts, fmt.Sprintf("当前聚焦“%s”。如果你愿意，我可以继续围绕它做展开、聚焦、高亮前置链或打开详情。", knowledgeName))
 	default:
-		parts = append(parts, "如果你先在图里选中一个知识点，我可以结合当前节点给你更具体的讲解和操作。")
+		parts = append(parts, "现在是全局图谱视角。你不需要先点击节点，也可以直接问我学习路线、课程关系、先学什么，或者让我按名字帮你定位某个知识点。")
 	}
 
 	if context.CourseTitle != "" {
@@ -67,6 +68,10 @@ func buildLocalFallbackContent(messages []map[string]any, actions []assistantdto
 		} else {
 			parts = append(parts, fmt.Sprintf("下一步建议：先看“%s”的定义和典型应用，再展开它的邻居节点补齐上下文。", knowledgeName))
 		}
+	} else if hasAnyKeyword(question, "下一步", "后续", "怎么学", "路线", "路径") {
+		parts = append(parts, "下一步建议：先从你现在最熟悉的一门课程切入，展开一个核心节点的一跳邻居，再沿前置链和后续去向逐步收窄范围，这样会比直接盯全图更清晰。")
+	} else if hasAnyKeyword(question, "概览", "总览", "图谱", "结构") {
+		parts = append(parts, "全局使用方式：先看课程簇和桥接关系，再挑一个核心节点展开，这样最容易把跨课程联系和学习顺序看明白。")
 	} else if hasAnyKeyword(question, "对比", "区别") && knowledgeName != "" {
 		parts = append(parts, fmt.Sprintf("更适合的比较方式是：把“%s”和它的前置知识、相关知识放在一起，对比定义、作用和图谱位置。", knowledgeName))
 	} else if len(actions) == 0 && knowledgeName != "" {
@@ -75,6 +80,8 @@ func buildLocalFallbackContent(messages []map[string]any, actions []assistantdto
 		} else {
 			parts = append(parts, fmt.Sprintf("你可以接着让我展开“%s”的关联节点，或者打开它的详情页继续看。", knowledgeName))
 		}
+	} else if len(actions) == 0 {
+		parts = append(parts, "你现在可以直接问我“推荐一条学习路线”“帮我概览当前图谱”，或者直接说出一个知识点名称让我帮你定位。")
 	}
 
 	return strings.Join(parts, "\n\n")
@@ -103,7 +110,10 @@ func parseLocalChatContextBlock(context *localChatContext, content string) {
 		case strings.HasPrefix(line, "当前知识点："):
 			context.KnowledgeName = firstNonEmptyString(context.KnowledgeName, strings.TrimSpace(strings.TrimPrefix(line, "当前知识点：")))
 		case strings.HasPrefix(line, "课程："):
-			context.CourseTitle = firstNonEmptyString(context.CourseTitle, strings.TrimSpace(strings.TrimPrefix(line, "课程：")))
+			context.CourseTitle = firstNonEmptyString(
+				context.CourseTitle,
+				coursemeta.NormalizeCourseTitleWithFallback(strings.TrimSpace(strings.TrimPrefix(line, "课程：")), ""),
+			)
 		case strings.HasPrefix(line, "简介："):
 			context.Summary = firstNonEmptyString(context.Summary, strings.TrimSpace(strings.TrimPrefix(line, "简介：")))
 		case strings.HasPrefix(line, "前置知识："):

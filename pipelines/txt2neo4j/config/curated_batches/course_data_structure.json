@@ -1,0 +1,679 @@
+{
+  "source": "course_data_structure",
+  "course_title": "数据结构",
+  "nodes": [
+    {
+      "canonical_name": "数据结构",
+      "entity_type": "topic",
+      "description": "研究数据组织、存储、操作及其算法效率的计算机基础课程。"
+    },
+    {
+      "canonical_name": "线性结构",
+      "entity_type": "topic",
+      "description": "研究元素按线性次序组织与访问的数据结构主题。"
+    },
+    {
+      "canonical_name": "哈希表",
+      "entity_type": "topic",
+      "description": "研究基于键值映射、哈希函数与冲突处理的数据结构主题。"
+    },
+    {
+      "canonical_name": "树结构",
+      "entity_type": "topic",
+      "description": "研究层次组织、树遍历与平衡搜索树的数据结构主题。"
+    },
+    {
+      "canonical_name": "图结构",
+      "entity_type": "topic",
+      "description": "研究节点关系建模、图遍历与经典图算法的数据结构主题。"
+    },
+    {
+      "canonical_name": "排序算法",
+      "entity_type": "topic",
+      "description": "研究不同数据排列方式与代价权衡的算法主题。"
+    },
+    {
+      "canonical_name": "查找算法",
+      "entity_type": "topic",
+      "description": "研究在不同数据组织形式下快速定位目标元素的方法主题。"
+    },
+    {
+      "canonical_name": "算法设计范式",
+      "entity_type": "topic",
+      "description": "研究常见问题求解策略与算法构造思想的主题。"
+    },
+    {
+      "canonical_name": "复杂度分析",
+      "entity_type": "topic",
+      "description": "研究算法时间与空间开销度量方法的分析主题。"
+    },
+
+    {
+      "canonical_name": "数组",
+      "entity_type": "concept",
+      "description": "用连续存储空间保存同类型元素并支持随机访问的线性结构。"
+    },
+    {
+      "canonical_name": "顺序表",
+      "entity_type": "concept",
+      "description": "基于连续存储实现并可按下标访问的线性表结构。"
+    },
+    {
+      "canonical_name": "链表",
+      "entity_type": "concept",
+      "description": "由节点和指针链接组成并适合动态插删的线性结构。"
+    },
+    {
+      "canonical_name": "单链表",
+      "entity_type": "concept",
+      "description": "每个节点仅指向后继节点的链式线性表。"
+    },
+    {
+      "canonical_name": "双向链表",
+      "entity_type": "concept",
+      "description": "每个节点同时维护前驱和后继指针的链式线性表。"
+    },
+    {
+      "canonical_name": "循环链表",
+      "entity_type": "concept",
+      "description": "尾节点重新指向头节点形成环状结构的链表。"
+    },
+    {
+      "canonical_name": "栈",
+      "entity_type": "concept",
+      "description": "遵循后进先出规则进行插入和删除的线性结构。"
+    },
+    {
+      "canonical_name": "队列",
+      "entity_type": "concept",
+      "description": "遵循先进先出规则进行插入和删除的线性结构。"
+    },
+    {
+      "canonical_name": "双端队列",
+      "entity_type": "concept",
+      "description": "允许在两端进行插入和删除操作的线性结构。"
+    },
+
+    {
+      "canonical_name": "哈希函数",
+      "entity_type": "concept",
+      "description": "将关键字映射为存储地址或桶编号的函数。"
+    },
+    {
+      "canonical_name": "哈希冲突",
+      "entity_type": "concept",
+      "description": "不同关键字经过哈希映射后落到同一地址的现象。"
+    },
+    {
+      "canonical_name": "开放寻址法",
+      "entity_type": "method",
+      "description": "冲突发生时在表内继续探测空闲位置的处理方法。"
+    },
+    {
+      "canonical_name": "链地址法",
+      "entity_type": "method",
+      "description": "冲突发生时将同一桶元素链接成链表的处理方法。"
+    },
+    {
+      "canonical_name": "负载因子",
+      "entity_type": "concept",
+      "description": "哈希表元素个数与桶数量比值的稠密度指标。"
+    },
+
+    {
+      "canonical_name": "树",
+      "entity_type": "concept",
+      "description": "由根节点和层次化父子关系组成的非线性结构。"
+    },
+    {
+      "canonical_name": "树遍历",
+      "entity_type": "method",
+      "description": "按特定次序访问树中全部节点的方法。"
+    },
+    {
+      "canonical_name": "前序遍历",
+      "entity_type": "algorithm",
+      "description": "先访问根节点再访问左右子树的树遍历算法。"
+    },
+    {
+      "canonical_name": "中序遍历",
+      "entity_type": "algorithm",
+      "description": "先访问左子树再访问根节点和右子树的树遍历算法。"
+    },
+    {
+      "canonical_name": "后序遍历",
+      "entity_type": "algorithm",
+      "description": "先访问左右子树再访问根节点的树遍历算法。"
+    },
+    {
+      "canonical_name": "层序遍历",
+      "entity_type": "algorithm",
+      "description": "按照树的层次从上到下逐层访问节点的遍历算法。"
+    },
+    {
+      "canonical_name": "二叉树",
+      "entity_type": "concept",
+      "description": "每个节点最多只有两个子节点的树结构。"
+    },
+    {
+      "canonical_name": "满二叉树",
+      "entity_type": "concept",
+      "description": "所有非叶节点都恰有两个子节点的二叉树。"
+    },
+    {
+      "canonical_name": "完全二叉树",
+      "entity_type": "concept",
+      "description": "除最后一层外都填满且最后一层节点尽量靠左的二叉树。"
+    },
+    {
+      "canonical_name": "二叉搜索树",
+      "entity_type": "concept",
+      "description": "左子树键值小于根且右子树键值大于根的二叉树。"
+    },
+    {
+      "canonical_name": "AVL树",
+      "entity_type": "concept",
+      "description": "通过旋转保持左右子树高度差受限的平衡二叉搜索树。"
+    },
+    {
+      "canonical_name": "红黑树",
+      "entity_type": "concept",
+      "description": "通过颜色约束维持近似平衡的二叉搜索树。"
+    },
+    {
+      "canonical_name": "B树",
+      "entity_type": "concept",
+      "description": "适合外存索引并允许多关键字分支的平衡搜索树。"
+    },
+    {
+      "canonical_name": "B+树",
+      "entity_type": "concept",
+      "description": "将关键字集中在叶节点并支持范围查询的平衡搜索树。"
+    },
+    {
+      "canonical_name": "堆",
+      "entity_type": "concept",
+      "description": "满足堆序性质并常用完全二叉树实现的结构。"
+    },
+    {
+      "canonical_name": "优先队列",
+      "entity_type": "concept",
+      "description": "按优先级而非到达顺序出队的抽象数据类型。"
+    },
+    {
+      "canonical_name": "Trie",
+      "entity_type": "concept",
+      "description": "按字符串公共前缀共享路径组织键集合的树结构。"
+    },
+
+    {
+      "canonical_name": "图",
+      "entity_type": "concept",
+      "description": "由顶点与边构成并表达对象关系的非线性结构。"
+    },
+    {
+      "canonical_name": "有向图",
+      "entity_type": "concept",
+      "description": "边具有方向并区分起点和终点的图结构。"
+    },
+    {
+      "canonical_name": "无向图",
+      "entity_type": "concept",
+      "description": "边不区分方向并表示对称关系的图结构。"
+    },
+    {
+      "canonical_name": "邻接矩阵",
+      "entity_type": "concept",
+      "description": "用二维矩阵记录顶点间边关系的图存储方式。"
+    },
+    {
+      "canonical_name": "邻接表",
+      "entity_type": "concept",
+      "description": "用链式列表记录每个顶点邻居信息的图存储方式。"
+    },
+    {
+      "canonical_name": "宽度优先搜索",
+      "entity_type": "algorithm",
+      "description": "按搜索树层次逐层扩展节点并保证最浅解优先发现的图搜索算法。"
+    },
+    {
+      "canonical_name": "深度优先搜索",
+      "entity_type": "algorithm",
+      "description": "沿单条路径尽可能深入再回溯的经典图搜索算法。"
+    },
+    {
+      "canonical_name": "拓扑排序",
+      "entity_type": "algorithm",
+      "description": "对有向无环图顶点给出满足依赖先后顺序的线性排列算法。"
+    },
+    {
+      "canonical_name": "最短路径",
+      "entity_type": "concept",
+      "description": "在图中寻找两点之间总代价最小路径的问题。"
+    },
+    {
+      "canonical_name": "Dijkstra算法",
+      "entity_type": "algorithm",
+      "description": "在非负权图中逐步确定单源最短路径的经典算法。"
+    },
+    {
+      "canonical_name": "Floyd算法",
+      "entity_type": "algorithm",
+      "description": "通过动态规划求解任意两点最短路径的经典算法。"
+    },
+    {
+      "canonical_name": "最小生成树",
+      "entity_type": "concept",
+      "description": "在连通加权图中连接全部顶点且总权值最小的生成树。"
+    },
+    {
+      "canonical_name": "Prim算法",
+      "entity_type": "algorithm",
+      "description": "从一个顶点出发逐步扩展最小生成树的贪心算法。"
+    },
+    {
+      "canonical_name": "Kruskal算法",
+      "entity_type": "algorithm",
+      "description": "按边权从小到大选择且避免成环构造最小生成树的贪心算法。"
+    },
+    {
+      "canonical_name": "并查集",
+      "entity_type": "concept",
+      "description": "支持集合合并与连通性查询的经典不相交集合结构。"
+    },
+
+    {
+      "canonical_name": "排序稳定性",
+      "entity_type": "concept",
+      "description": "排序后相等元素相对次序是否保持不变的性质。"
+    },
+    {
+      "canonical_name": "冒泡排序",
+      "entity_type": "algorithm",
+      "description": "通过反复交换相邻逆序元素将较大值逐步后移的排序算法。"
+    },
+    {
+      "canonical_name": "选择排序",
+      "entity_type": "algorithm",
+      "description": "每轮选择最小元素放到前面位置的排序算法。"
+    },
+    {
+      "canonical_name": "插入排序",
+      "entity_type": "algorithm",
+      "description": "将元素逐个插入到已排序区间合适位置的排序算法。"
+    },
+    {
+      "canonical_name": "归并排序",
+      "entity_type": "algorithm",
+      "description": "通过递归分治和有序子序列合并完成排序的算法。"
+    },
+    {
+      "canonical_name": "快速排序",
+      "entity_type": "algorithm",
+      "description": "通过基准划分数组并递归处理左右子区间的排序算法。"
+    },
+    {
+      "canonical_name": "堆排序",
+      "entity_type": "algorithm",
+      "description": "利用堆结构反复选择极值元素完成排序的算法。"
+    },
+    {
+      "canonical_name": "计数排序",
+      "entity_type": "algorithm",
+      "description": "统计元素出现次数并重建有序序列的非比较排序算法。"
+    },
+    {
+      "canonical_name": "基数排序",
+      "entity_type": "algorithm",
+      "description": "按位或按关键字分组多趟稳定排序得到最终结果的算法。"
+    },
+
+    {
+      "canonical_name": "顺序查找",
+      "entity_type": "algorithm",
+      "description": "按元素存储次序逐个比较直到找到目标的查找算法。"
+    },
+    {
+      "canonical_name": "二分查找",
+      "entity_type": "algorithm",
+      "description": "在有序序列中通过不断折半缩小区间定位目标的查找算法。"
+    },
+    {
+      "canonical_name": "哈希查找",
+      "entity_type": "method",
+      "description": "通过哈希函数直接定位关键字存储位置的查找方法。"
+    },
+    {
+      "canonical_name": "插值查找",
+      "entity_type": "algorithm",
+      "description": "按关键字分布估计探测位置并缩小查找区间的查找算法。"
+    },
+
+    {
+      "canonical_name": "分治",
+      "entity_type": "method",
+      "description": "将问题拆分为若干相似子问题并递归求解再合并结果的方法。"
+    },
+    {
+      "canonical_name": "贪心算法",
+      "entity_type": "method",
+      "description": "每步选择当前最优局部决策并期望得到全局最优解的方法。"
+    },
+    {
+      "canonical_name": "动态规划",
+      "entity_type": "method",
+      "description": "通过分阶段决策和子问题最优性递推求解复杂问题的方法。"
+    },
+    {
+      "canonical_name": "最优子结构",
+      "entity_type": "concept",
+      "description": "一个问题的最优解可由其子问题最优解组合得到的性质。"
+    },
+    {
+      "canonical_name": "重叠子问题",
+      "entity_type": "concept",
+      "description": "问题递归分解后会反复遇到相同子问题的性质。"
+    },
+    {
+      "canonical_name": "回溯搜索",
+      "entity_type": "algorithm",
+      "description": "在约束满足或组合搜索中逐步试探并在冲突时撤销选择的系统搜索算法。"
+    },
+    {
+      "canonical_name": "分支定界法",
+      "entity_type": "algorithm",
+      "description": "通过搜索树分支和上下界剪枝求解组合优化问题的经典算法。"
+    },
+    {
+      "canonical_name": "递归",
+      "entity_type": "method",
+      "description": "函数直接或间接调用自身以分解问题的求解方法。"
+    },
+    {
+      "canonical_name": "剪枝",
+      "entity_type": "method",
+      "description": "在搜索过程中提前舍弃不可能产生最优解分支的优化方法。"
+    },
+    {
+      "canonical_name": "状态转移方程",
+      "entity_type": "concept",
+      "description": "描述子问题解之间递推关系的动态规划表达式。"
+    },
+    {
+      "canonical_name": "编辑距离",
+      "entity_type": "algorithm",
+      "description": "通过插入删除替换操作数衡量两个字符串差异的动态规划算法。"
+    },
+    {
+      "canonical_name": "最长公共子序列",
+      "entity_type": "algorithm",
+      "description": "寻找两个序列共同保持相对顺序最长子序列的动态规划算法。"
+    },
+
+    {
+      "canonical_name": "时间复杂度",
+      "entity_type": "concept",
+      "description": "刻画算法运行时间随输入规模增长变化趋势的指标。"
+    },
+    {
+      "canonical_name": "空间复杂度",
+      "entity_type": "concept",
+      "description": "刻画算法额外存储开销随输入规模增长变化趋势的指标。"
+    },
+    {
+      "canonical_name": "大O记号",
+      "entity_type": "concept",
+      "description": "用于描述算法渐近上界增长率的符号表示。"
+    },
+    {
+      "canonical_name": "最好情况复杂度",
+      "entity_type": "concept",
+      "description": "算法在最理想输入条件下表现出的复杂度。"
+    },
+    {
+      "canonical_name": "最坏情况复杂度",
+      "entity_type": "concept",
+      "description": "算法在最不利输入条件下表现出的复杂度。"
+    },
+    {
+      "canonical_name": "平均情况复杂度",
+      "entity_type": "concept",
+      "description": "算法在不同输入分布上平均表现出的复杂度。"
+    },
+    {
+      "canonical_name": "摊还分析",
+      "entity_type": "method",
+      "description": "把一系列操作总成本平均到单次操作上的复杂度分析方法。"
+    },
+    {
+      "canonical_name": "渐近分析",
+      "entity_type": "method",
+      "description": "研究输入规模趋大时算法增长趋势的复杂度分析方法。"
+    },
+    {
+      "canonical_name": "递归式",
+      "entity_type": "concept",
+      "description": "用递推关系刻画递归算法复杂度的数学表达式。"
+    },
+
+    {
+      "canonical_name": "知识图谱",
+      "entity_type": "topic",
+      "description": "以图结构组织实体、概念及关系的知识表示与推理技术。"
+    },
+    {
+      "canonical_name": "图神经网络",
+      "entity_type": "algorithm",
+      "description": "在图结构上通过邻域聚合和消息传递学习表示的神经网络模型。"
+    },
+    {
+      "canonical_name": "决策树",
+      "entity_type": "algorithm",
+      "description": "以树形判定结构进行分类或回归的经典学习模型。"
+    },
+    {
+      "canonical_name": "向量检索",
+      "entity_type": "method",
+      "description": "基于向量表示和相似度计算从候选集合中检索相关内容的方法。"
+    },
+    {
+      "canonical_name": "强化学习",
+      "entity_type": "method",
+      "description": "通过智能体与环境交互并依据奖励信号优化决策策略的学习范式。"
+    },
+    {
+      "canonical_name": "序列到序列模型",
+      "entity_type": "algorithm",
+      "description": "将输入序列映射为输出序列的通用神经网络建模框架。"
+    }
+  ],
+  "relations": [
+    ["线性结构", "数据结构", "SUBTOPIC_OF"],
+    ["哈希表", "数据结构", "SUBTOPIC_OF"],
+    ["树结构", "数据结构", "SUBTOPIC_OF"],
+    ["图结构", "数据结构", "SUBTOPIC_OF"],
+    ["排序算法", "数据结构", "SUBTOPIC_OF"],
+    ["查找算法", "数据结构", "SUBTOPIC_OF"],
+    ["算法设计范式", "数据结构", "SUBTOPIC_OF"],
+    ["复杂度分析", "数据结构", "SUBTOPIC_OF"],
+
+    ["数组", "线性结构", "SUBTOPIC_OF"],
+    ["顺序表", "线性结构", "SUBTOPIC_OF"],
+    ["链表", "线性结构", "SUBTOPIC_OF"],
+    ["单链表", "线性结构", "SUBTOPIC_OF"],
+    ["双向链表", "线性结构", "SUBTOPIC_OF"],
+    ["循环链表", "线性结构", "SUBTOPIC_OF"],
+    ["栈", "线性结构", "SUBTOPIC_OF"],
+    ["队列", "线性结构", "SUBTOPIC_OF"],
+    ["双端队列", "线性结构", "SUBTOPIC_OF"],
+
+    ["哈希函数", "哈希表", "SUBTOPIC_OF"],
+    ["哈希冲突", "哈希表", "SUBTOPIC_OF"],
+    ["开放寻址法", "哈希表", "SUBTOPIC_OF"],
+    ["链地址法", "哈希表", "SUBTOPIC_OF"],
+    ["负载因子", "哈希表", "SUBTOPIC_OF"],
+
+    ["树", "树结构", "SUBTOPIC_OF"],
+    ["树遍历", "树结构", "SUBTOPIC_OF"],
+    ["前序遍历", "树结构", "SUBTOPIC_OF"],
+    ["中序遍历", "树结构", "SUBTOPIC_OF"],
+    ["后序遍历", "树结构", "SUBTOPIC_OF"],
+    ["层序遍历", "树结构", "SUBTOPIC_OF"],
+    ["二叉树", "树结构", "SUBTOPIC_OF"],
+    ["满二叉树", "树结构", "SUBTOPIC_OF"],
+    ["完全二叉树", "树结构", "SUBTOPIC_OF"],
+    ["二叉搜索树", "树结构", "SUBTOPIC_OF"],
+    ["AVL树", "树结构", "SUBTOPIC_OF"],
+    ["红黑树", "树结构", "SUBTOPIC_OF"],
+    ["B树", "树结构", "SUBTOPIC_OF"],
+    ["B+树", "树结构", "SUBTOPIC_OF"],
+    ["堆", "树结构", "SUBTOPIC_OF"],
+    ["优先队列", "树结构", "SUBTOPIC_OF"],
+    ["Trie", "树结构", "SUBTOPIC_OF"],
+
+    ["图", "图结构", "SUBTOPIC_OF"],
+    ["有向图", "图结构", "SUBTOPIC_OF"],
+    ["无向图", "图结构", "SUBTOPIC_OF"],
+    ["邻接矩阵", "图结构", "SUBTOPIC_OF"],
+    ["邻接表", "图结构", "SUBTOPIC_OF"],
+    ["宽度优先搜索", "图结构", "SUBTOPIC_OF"],
+    ["深度优先搜索", "图结构", "SUBTOPIC_OF"],
+    ["拓扑排序", "图结构", "SUBTOPIC_OF"],
+    ["最短路径", "图结构", "SUBTOPIC_OF"],
+    ["Dijkstra算法", "图结构", "SUBTOPIC_OF"],
+    ["Floyd算法", "图结构", "SUBTOPIC_OF"],
+    ["最小生成树", "图结构", "SUBTOPIC_OF"],
+    ["Prim算法", "图结构", "SUBTOPIC_OF"],
+    ["Kruskal算法", "图结构", "SUBTOPIC_OF"],
+    ["并查集", "图结构", "SUBTOPIC_OF"],
+
+    ["排序稳定性", "排序算法", "SUBTOPIC_OF"],
+    ["冒泡排序", "排序算法", "SUBTOPIC_OF"],
+    ["选择排序", "排序算法", "SUBTOPIC_OF"],
+    ["插入排序", "排序算法", "SUBTOPIC_OF"],
+    ["归并排序", "排序算法", "SUBTOPIC_OF"],
+    ["快速排序", "排序算法", "SUBTOPIC_OF"],
+    ["堆排序", "排序算法", "SUBTOPIC_OF"],
+    ["计数排序", "排序算法", "SUBTOPIC_OF"],
+    ["基数排序", "排序算法", "SUBTOPIC_OF"],
+
+    ["顺序查找", "查找算法", "SUBTOPIC_OF"],
+    ["二分查找", "查找算法", "SUBTOPIC_OF"],
+    ["哈希查找", "查找算法", "SUBTOPIC_OF"],
+    ["插值查找", "查找算法", "SUBTOPIC_OF"],
+
+    ["分治", "算法设计范式", "SUBTOPIC_OF"],
+    ["贪心算法", "算法设计范式", "SUBTOPIC_OF"],
+    ["动态规划", "算法设计范式", "SUBTOPIC_OF"],
+    ["最优子结构", "算法设计范式", "SUBTOPIC_OF"],
+    ["重叠子问题", "算法设计范式", "SUBTOPIC_OF"],
+    ["回溯搜索", "算法设计范式", "SUBTOPIC_OF"],
+    ["分支定界法", "算法设计范式", "SUBTOPIC_OF"],
+    ["递归", "算法设计范式", "SUBTOPIC_OF"],
+    ["剪枝", "算法设计范式", "SUBTOPIC_OF"],
+    ["状态转移方程", "算法设计范式", "SUBTOPIC_OF"],
+    ["编辑距离", "算法设计范式", "SUBTOPIC_OF"],
+    ["最长公共子序列", "算法设计范式", "SUBTOPIC_OF"],
+
+    ["时间复杂度", "复杂度分析", "SUBTOPIC_OF"],
+    ["空间复杂度", "复杂度分析", "SUBTOPIC_OF"],
+    ["大O记号", "复杂度分析", "SUBTOPIC_OF"],
+    ["最好情况复杂度", "复杂度分析", "SUBTOPIC_OF"],
+    ["最坏情况复杂度", "复杂度分析", "SUBTOPIC_OF"],
+    ["平均情况复杂度", "复杂度分析", "SUBTOPIC_OF"],
+    ["摊还分析", "复杂度分析", "SUBTOPIC_OF"],
+    ["渐近分析", "复杂度分析", "SUBTOPIC_OF"],
+    ["递归式", "复杂度分析", "SUBTOPIC_OF"],
+
+    ["数组", "顺序表", "PREREQUISITE_OF"],
+    ["链表", "单链表", "PREREQUISITE_OF"],
+    ["链表", "双向链表", "PREREQUISITE_OF"],
+    ["链表", "循环链表", "PREREQUISITE_OF"],
+    ["队列", "双端队列", "RELATED_TO"],
+    ["栈", "深度优先搜索", "PREREQUISITE_OF"],
+    ["队列", "宽度优先搜索", "PREREQUISITE_OF"],
+
+    ["哈希函数", "哈希冲突", "PREREQUISITE_OF"],
+    ["哈希冲突", "开放寻址法", "PREREQUISITE_OF"],
+    ["哈希冲突", "链地址法", "PREREQUISITE_OF"],
+    ["负载因子", "哈希冲突", "RELATED_TO"],
+    ["哈希表", "哈希查找", "PREREQUISITE_OF"],
+
+    ["树", "树遍历", "PREREQUISITE_OF"],
+    ["树遍历", "前序遍历", "PREREQUISITE_OF"],
+    ["树遍历", "中序遍历", "PREREQUISITE_OF"],
+    ["树遍历", "后序遍历", "PREREQUISITE_OF"],
+    ["树遍历", "层序遍历", "PREREQUISITE_OF"],
+    ["树", "二叉树", "PREREQUISITE_OF"],
+    ["二叉树", "满二叉树", "PREREQUISITE_OF"],
+    ["二叉树", "完全二叉树", "PREREQUISITE_OF"],
+    ["二叉树", "二叉搜索树", "PREREQUISITE_OF"],
+    ["二叉搜索树", "AVL树", "PREREQUISITE_OF"],
+    ["二叉搜索树", "红黑树", "PREREQUISITE_OF"],
+    ["B树", "B+树", "PREREQUISITE_OF"],
+    ["完全二叉树", "堆", "PREREQUISITE_OF"],
+    ["堆", "优先队列", "PREREQUISITE_OF"],
+    ["树", "Trie", "PREREQUISITE_OF"],
+
+    ["图", "有向图", "PREREQUISITE_OF"],
+    ["图", "无向图", "PREREQUISITE_OF"],
+    ["图", "邻接矩阵", "PREREQUISITE_OF"],
+    ["图", "邻接表", "PREREQUISITE_OF"],
+    ["邻接表", "宽度优先搜索", "PREREQUISITE_OF"],
+    ["邻接表", "深度优先搜索", "PREREQUISITE_OF"],
+    ["有向图", "拓扑排序", "PREREQUISITE_OF"],
+    ["图", "最短路径", "PREREQUISITE_OF"],
+    ["最短路径", "Dijkstra算法", "PREREQUISITE_OF"],
+    ["最短路径", "Floyd算法", "PREREQUISITE_OF"],
+    ["图", "最小生成树", "PREREQUISITE_OF"],
+    ["最小生成树", "Prim算法", "PREREQUISITE_OF"],
+    ["最小生成树", "Kruskal算法", "PREREQUISITE_OF"],
+    ["优先队列", "Dijkstra算法", "PREREQUISITE_OF"],
+    ["优先队列", "Prim算法", "PREREQUISITE_OF"],
+    ["并查集", "Kruskal算法", "PREREQUISITE_OF"],
+
+    ["数组", "冒泡排序", "PREREQUISITE_OF"],
+    ["数组", "选择排序", "PREREQUISITE_OF"],
+    ["数组", "插入排序", "PREREQUISITE_OF"],
+    ["分治", "归并排序", "PREREQUISITE_OF"],
+    ["分治", "快速排序", "PREREQUISITE_OF"],
+    ["堆", "堆排序", "PREREQUISITE_OF"],
+    ["排序稳定性", "冒泡排序", "RELATED_TO"],
+    ["排序稳定性", "插入排序", "RELATED_TO"],
+    ["排序稳定性", "归并排序", "RELATED_TO"],
+    ["排序稳定性", "计数排序", "RELATED_TO"],
+    ["排序稳定性", "基数排序", "RELATED_TO"],
+
+    ["数组", "二分查找", "PREREQUISITE_OF"],
+    ["链表", "顺序查找", "RELATED_TO"],
+    ["哈希表", "哈希查找", "USES"],
+    ["二分查找", "插值查找", "RELATED_TO"],
+
+    ["递归", "分治", "PREREQUISITE_OF"],
+    ["贪心算法", "Prim算法", "PREREQUISITE_OF"],
+    ["贪心算法", "Kruskal算法", "PREREQUISITE_OF"],
+    ["贪心算法", "Dijkstra算法", "PREREQUISITE_OF"],
+    ["最优子结构", "动态规划", "PART_OF"],
+    ["重叠子问题", "动态规划", "PART_OF"],
+    ["状态转移方程", "动态规划", "PART_OF"],
+    ["动态规划", "编辑距离", "PREREQUISITE_OF"],
+    ["动态规划", "最长公共子序列", "PREREQUISITE_OF"],
+    ["剪枝", "回溯搜索", "PREREQUISITE_OF"],
+    ["递归", "回溯搜索", "PREREQUISITE_OF"],
+
+    ["大O记号", "渐近分析", "PART_OF"],
+    ["渐近分析", "时间复杂度", "PREREQUISITE_OF"],
+    ["渐近分析", "空间复杂度", "PREREQUISITE_OF"],
+    ["时间复杂度", "最好情况复杂度", "PART_OF"],
+    ["时间复杂度", "最坏情况复杂度", "PART_OF"],
+    ["时间复杂度", "平均情况复杂度", "PART_OF"],
+    ["递归式", "渐近分析", "PREREQUISITE_OF"],
+    ["图", "知识图谱", "PREREQUISITE_OF"],
+    ["图", "图神经网络", "PREREQUISITE_OF"],
+    ["树", "决策树", "PREREQUISITE_OF"],
+    ["哈希表", "向量检索", "PREREQUISITE_OF"],
+    ["动态规划", "强化学习", "PREREQUISITE_OF"],
+    ["编辑距离", "序列到序列模型", "RELATED_TO"],
+    ["最长公共子序列", "序列到序列模型", "RELATED_TO"]
+  ]
+}

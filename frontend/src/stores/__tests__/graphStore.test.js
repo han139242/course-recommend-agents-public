@@ -184,6 +184,29 @@ describe('graphStore', () => {
     expect(graphApi.fetchKnowledgeDetail).toHaveBeenCalledWith('Z')
   })
 
+  it('restores the seed scene when seeds are loaded again after detached reveals and expansions', async () => {
+    const store = useGraphStore()
+    await store.initGraph()
+
+    await store.expandNode('A')
+    await store.revealNodeByRouteKnowledgeId('Z', {
+      anchorPosition: { x: 120, y: 48 },
+      occupiedNodes: [],
+    })
+
+    expect(store.nodesMap.has('Z')).toBe(true)
+    expect(store.expandedNodeIds.has('A')).toBe(true)
+
+    await store.loadSeeds(14, { silent: true })
+
+    expect([...store.rootNodeIds]).toEqual(['A', 'D'])
+    expect(store.nodesMap.size).toBe(2)
+    expect(store.nodesMap.has('Z')).toBe(false)
+    expect(store.expandedNodeIds.size).toBe(0)
+    expect(store.selectedNodeId).toBe(null)
+    expect(store.highlightPath).toEqual([])
+  })
+
   it('loads frontier briefings by stable knowledge id with catalog name fallback', async () => {
     const store = useGraphStore()
     graphApi.fetchFrontierBriefing.mockResolvedValueOnce({
@@ -222,6 +245,25 @@ describe('graphStore', () => {
 
     expect(result).toEqual([])
     expect(graphApi.fetchGraphNeighbors).not.toHaveBeenCalledWith('deep', expect.anything())
+  })
+
+  it('normalizes detail course titles from curated metadata before caching', async () => {
+    const store = useGraphStore()
+    graphApi.fetchKnowledgeDetail.mockResolvedValueOnce({
+      routeKnowledgeId: 'A',
+      canonicalName: '矩阵',
+      chapterTitle: '人工智能基础知识骨架',
+      curatedSource: 'course_ai_intro',
+      prerequisites: [],
+      related: [],
+    })
+
+    await store.initGraph()
+    const detail = await store.ensureNodeDetail('A')
+
+    expect(detail?.chapterTitle).toBe('人工智能导论')
+    expect(store.detailCache.A?.chapterTitle).toBe('人工智能导论')
+    expect(store.detailCache.A?.rawChapterTitle).toBe('人工智能基础知识骨架')
   })
 
   it('blocks expansions that would exceed the visible-node ceiling', async () => {

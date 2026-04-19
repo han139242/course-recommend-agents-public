@@ -1,0 +1,1303 @@
+{
+  "source": "course_ai_engineering",
+  "course_title": "AI工程",
+  "nodes": [
+    {
+      "canonical_name": "AI工程",
+      "entity_type": "topic",
+      "description": "围绕数据、训练、部署、监控和运维流程工程化的大模型与机器学习课程主题。"
+    },
+    {
+      "canonical_name": "数据工程",
+      "entity_type": "topic",
+      "description": "围绕数据采集、处理、存储、流转和服务构建可靠数据基础设施的方法体系。"
+    },
+    {
+      "canonical_name": "特征工程与特征存储",
+      "entity_type": "topic",
+      "description": "围绕特征构造、特征管理与在线离线一致性展开的工程主题。"
+    },
+    {
+      "canonical_name": "ML Pipeline",
+      "entity_type": "topic",
+      "description": "围绕实验组织、超参数搜索、模型选择与可复现实验展开的流程主题。"
+    },
+    {
+      "canonical_name": "分布式训练",
+      "entity_type": "topic",
+      "description": "围绕多卡多机训练并行策略、资源调度与通信优化展开的工程主题。"
+    },
+    {
+      "canonical_name": "模型服务",
+      "entity_type": "topic",
+      "description": "围绕模型部署、在线服务、推理优化与流量调度展开的工程主题。"
+    },
+    {
+      "canonical_name": "模型监控",
+      "entity_type": "method",
+      "description": "持续监测模型性能、输入分布和服务状态以发现异常的方法。"
+    },
+    {
+      "canonical_name": "MLOps",
+      "entity_type": "topic",
+      "description": "将机器学习开发、部署、监控和运维流程工程化和自动化的方法体系。"
+    },
+    {
+      "canonical_name": "压缩与轻量化",
+      "entity_type": "topic",
+      "description": "围绕模型压缩、量化蒸馏和轻量化部署展开的工程主题。"
+    },
+    {
+      "canonical_name": "边缘部署与联邦学习",
+      "entity_type": "topic",
+      "description": "围绕边缘侧部署、联邦训练和隐私协同计算展开的工程主题。"
+    },
+    {
+      "canonical_name": "数据采集",
+      "entity_type": "method",
+      "description": "从业务系统、传感器、日志或外部来源获取训练与分析数据的方法。"
+    },
+    {
+      "canonical_name": "数据清洗",
+      "entity_type": "method",
+      "description": "对缺失、异常、重复和不一致数据进行处理以提升数据质量的方法。"
+    },
+    {
+      "canonical_name": "数据标注",
+      "entity_type": "method",
+      "description": "为原始数据添加类别、边界、属性或语义标签以支持监督学习的方法。"
+    },
+    {
+      "canonical_name": "数据版本控制",
+      "entity_type": "method",
+      "description": "对数据集内容、来源和变更历史进行可追踪管理的方法。"
+    },
+    {
+      "canonical_name": "数据管道",
+      "entity_type": "method",
+      "description": "对数据进行抽取、转换、加载和分发的自动化处理流程。"
+    },
+    {
+      "canonical_name": "数据质量",
+      "entity_type": "concept",
+      "description": "衡量数据完整性、一致性、准确性和可用性的工程属性。"
+    },
+    {
+      "canonical_name": "数据校验",
+      "entity_type": "method",
+      "description": "对数据格式、范围、分布和约束进行自动检查的数据治理方法。"
+    },
+    {
+      "canonical_name": "元数据管理",
+      "entity_type": "concept",
+      "description": "管理数据来源、字段语义、版本和血缘关系的数据治理方法。"
+    },
+    {
+      "canonical_name": "数据血缘",
+      "entity_type": "concept",
+      "description": "追踪数据在采集、加工、训练和服务过程中的流转关系信息。"
+    },
+    {
+      "canonical_name": "数据湖",
+      "entity_type": "concept",
+      "description": "以低成本方式统一存储多源原始数据的大规模数据底座。"
+    },
+    {
+      "canonical_name": "数据仓库",
+      "entity_type": "concept",
+      "description": "面向分析和报表场景组织结构化数据的数据管理系统。"
+    },
+    {
+      "canonical_name": "特征工程",
+      "entity_type": "method",
+      "description": "围绕特征构造、变换、选择与标准化开展的数据表示优化方法。"
+    },
+    {
+      "canonical_name": "特征选择",
+      "entity_type": "method",
+      "description": "从原始特征集合中挑选对任务最有用特征子集的方法。"
+    },
+    {
+      "canonical_name": "特征提取",
+      "entity_type": "method",
+      "description": "从图像中提炼可区分表示以支撑识别、匹配和分析的方法。"
+    },
+    {
+      "canonical_name": "特征缩放",
+      "entity_type": "method",
+      "description": "将特征值映射到相近量纲或数值范围以改善优化稳定性的方法。"
+    },
+    {
+      "canonical_name": "特征编码",
+      "entity_type": "method",
+      "description": "特征编码是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "特征存储",
+      "entity_type": "concept",
+      "description": "统一管理训练与推理阶段特征定义和服务能力的系统组件。"
+    },
+    {
+      "canonical_name": "在线特征",
+      "entity_type": "concept",
+      "description": "面向实时推理请求快速读取的低延迟特征集合。"
+    },
+    {
+      "canonical_name": "离线特征",
+      "entity_type": "concept",
+      "description": "面向训练、回溯分析和批处理任务保存的特征集合。"
+    },
+    {
+      "canonical_name": "机器学习流水线",
+      "entity_type": "method",
+      "description": "将数据处理、训练评估和部署步骤串联成可复用流程的工程方法。"
+    },
+    {
+      "canonical_name": "实验跟踪",
+      "entity_type": "method",
+      "description": "记录模型参数、指标、代码和数据版本以支持复现实验的方法。"
+    },
+    {
+      "canonical_name": "超参数调优",
+      "entity_type": "method",
+      "description": "通过系统搜索或优化策略选择更优超参数配置的方法。"
+    },
+    {
+      "canonical_name": "模型选择",
+      "entity_type": "method",
+      "description": "在候选模型或超参数配置中选择最优方案的方法。"
+    },
+    {
+      "canonical_name": "自动机器学习",
+      "entity_type": "topic",
+      "description": "自动完成模型选择、特征处理、超参数优化和训练流程配置的方法体系。"
+    },
+    {
+      "canonical_name": "神经架构搜索",
+      "entity_type": "method",
+      "description": "通过搜索策略自动发现高性能神经网络结构的方法。"
+    },
+    {
+      "canonical_name": "训练集",
+      "entity_type": "concept",
+      "description": "用于学习模型参数和模式的样本集合。"
+    },
+    {
+      "canonical_name": "验证集",
+      "entity_type": "concept",
+      "description": "用于模型选择、超参数调整和早停判断的样本集合。"
+    },
+    {
+      "canonical_name": "测试集",
+      "entity_type": "concept",
+      "description": "用于最终评估模型泛化性能且不参与训练和调参的样本集合。"
+    },
+    {
+      "canonical_name": "可复现实验",
+      "entity_type": "method",
+      "description": "保证同一代码、数据和参数配置下实验结果可重复的工程实践。"
+    },
+    {
+      "canonical_name": "数据并行",
+      "entity_type": "method",
+      "description": "数据并行是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "模型并行",
+      "entity_type": "method",
+      "description": "模型并行是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "流水线并行",
+      "entity_type": "method",
+      "description": "流水线并行是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "混合精度训练",
+      "entity_type": "method",
+      "description": "混合精度训练是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "ZeRO",
+      "entity_type": "algorithm",
+      "description": "通过状态分片降低大规模训练显存占用的分布式优化技术。"
+    },
+    {
+      "canonical_name": "梯度累积",
+      "entity_type": "method",
+      "description": "通过多次前向反向后再统一更新参数来模拟更大批量训练的方法。"
+    },
+    {
+      "canonical_name": "参数服务器",
+      "entity_type": "concept",
+      "description": "负责收集、聚合和下发模型参数的中心协调组件。"
+    },
+    {
+      "canonical_name": "通信开销",
+      "entity_type": "concept",
+      "description": "分布式训练过程中模型更新传输所消耗的带宽与时延成本。"
+    },
+    {
+      "canonical_name": "弹性训练",
+      "entity_type": "method",
+      "description": "能够容忍节点动态加入退出并保持训练连续性的分布式训练方式。"
+    },
+    {
+      "canonical_name": "资源调度",
+      "entity_type": "method",
+      "description": "资源调度是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "模型服务化",
+      "entity_type": "method",
+      "description": "将模型能力封装为稳定可调用在线服务的工程实现方式。"
+    },
+    {
+      "canonical_name": "模型部署",
+      "entity_type": "method",
+      "description": "将训练完成的模型发布到生产环境提供服务的工程过程。"
+    },
+    {
+      "canonical_name": "在线推理",
+      "entity_type": "application",
+      "description": "模型在请求到达时实时返回预测结果的服务方式。"
+    },
+    {
+      "canonical_name": "批处理推理",
+      "entity_type": "application",
+      "description": "以批量任务方式离线执行模型预测的服务模式。"
+    },
+    {
+      "canonical_name": "推理加速",
+      "entity_type": "topic",
+      "description": "围绕降低大模型生成延迟与显存消耗开展的推理优化主题。"
+    },
+    {
+      "canonical_name": "ONNX",
+      "entity_type": "method",
+      "description": "用于表示跨框架模型计算图并支持部署转换的开放格式标准。"
+    },
+    {
+      "canonical_name": "TensorRT",
+      "entity_type": "algorithm",
+      "description": "针对 NVIDIA 硬件进行深度学习推理优化和编译的高性能引擎。"
+    },
+    {
+      "canonical_name": "模型编译优化",
+      "entity_type": "method",
+      "description": "针对目标硬件平台对模型计算图和算子执行进行优化的方法。"
+    },
+    {
+      "canonical_name": "负载均衡",
+      "entity_type": "method",
+      "description": "负载均衡是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "服务编排",
+      "entity_type": "method",
+      "description": "对服务实例、路由、扩缩容和依赖关系进行统一调度的工程方法。"
+    },
+    {
+      "canonical_name": "数据漂移",
+      "entity_type": "concept",
+      "description": "模型上线后输入数据分布相较训练阶段发生变化的现象。"
+    },
+    {
+      "canonical_name": "概念漂移",
+      "entity_type": "concept",
+      "description": "输入与目标之间映射关系随时间变化导致模型失效的现象。"
+    },
+    {
+      "canonical_name": "性能退化",
+      "entity_type": "method",
+      "description": "性能退化是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "A/B测试",
+      "entity_type": "method",
+      "description": "通过在线对照实验比较不同推荐或检索策略实际效果的方法。"
+    },
+    {
+      "canonical_name": "告警策略",
+      "entity_type": "method",
+      "description": "针对指标异常或服务故障定义阈值与通知机制的运维规则。"
+    },
+    {
+      "canonical_name": "在线评估",
+      "entity_type": "method",
+      "description": "在真实流量环境中持续评估模型效果和业务指标的方法。"
+    },
+    {
+      "canonical_name": "日志追踪",
+      "entity_type": "method",
+      "description": "通过结构化日志和调用链记录定位模型服务问题的运维方法。"
+    },
+    {
+      "canonical_name": "可观测性",
+      "entity_type": "concept",
+      "description": "系统通过日志、指标和链路信息对内部状态可被观察和诊断的能力。"
+    },
+    {
+      "canonical_name": "风险评估",
+      "entity_type": "method",
+      "description": "识别、分析和分级人工智能系统潜在危害与失效场景的方法。"
+    },
+    {
+      "canonical_name": "CI/CD for ML",
+      "entity_type": "method",
+      "description": "将代码、数据和模型变更纳入持续集成与持续交付的工程流程。"
+    },
+    {
+      "canonical_name": "持续训练",
+      "entity_type": "method",
+      "description": "根据新数据和反馈周期性或持续更新模型的训练策略。"
+    },
+    {
+      "canonical_name": "模型注册",
+      "entity_type": "method",
+      "description": "模型注册是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "自动化部署",
+      "entity_type": "method",
+      "description": "自动化部署是在 AI 工程数据、训练、部署或运维中常用的方法。"
+    },
+    {
+      "canonical_name": "工作流编排",
+      "entity_type": "method",
+      "description": "将检索、生成、校验和工具调用组织为多步骤执行流程的方法。"
+    },
+    {
+      "canonical_name": "实验追踪平台",
+      "entity_type": "method",
+      "description": "集中记录实验配置、指标、产物与对比结果的管理平台。"
+    },
+    {
+      "canonical_name": "可复现部署",
+      "entity_type": "method",
+      "description": "保证训练产物、环境配置和服务版本可回放还原的部署能力。"
+    },
+    {
+      "canonical_name": "模型压缩",
+      "entity_type": "topic",
+      "description": "在尽量保持性能的前提下减小模型参数量、计算量和存储开销的方法体系。"
+    },
+    {
+      "canonical_name": "剪枝",
+      "entity_type": "method",
+      "description": "在搜索过程中提前舍弃不可能产生最优解分支的优化方法。"
+    },
+    {
+      "canonical_name": "结构化剪枝",
+      "entity_type": "method",
+      "description": "按通道、层或卷积核等结构单元移除参数以压缩模型的方法。"
+    },
+    {
+      "canonical_name": "非结构化剪枝",
+      "entity_type": "method",
+      "description": "按单个权重粒度移除低重要性参数以获得稀疏模型的方法。"
+    },
+    {
+      "canonical_name": "知识蒸馏",
+      "entity_type": "method",
+      "description": "通过教师模型软目标或中间表示指导学生模型学习的压缩方法。"
+    },
+    {
+      "canonical_name": "教师模型",
+      "entity_type": "concept",
+      "description": "在蒸馏过程中提供知识迁移信号的性能较强模型。"
+    },
+    {
+      "canonical_name": "学生模型",
+      "entity_type": "concept",
+      "description": "在蒸馏过程中接收知识并追求轻量化部署的目标模型。"
+    },
+    {
+      "canonical_name": "量化",
+      "entity_type": "method",
+      "description": "量化是在大模型训练、推理或应用中常用的方法。"
+    },
+    {
+      "canonical_name": "训练后量化",
+      "entity_type": "method",
+      "description": "在模型训练完成后直接降低参数和激活精度的压缩方法。"
+    },
+    {
+      "canonical_name": "量化感知训练",
+      "entity_type": "method",
+      "description": "在训练阶段模拟量化误差以提升低比特部署性能的方法。"
+    },
+    {
+      "canonical_name": "低秩分解压缩",
+      "entity_type": "method",
+      "description": "通过低秩矩阵或张量分解近似原模型参数以减少计算的方法。"
+    },
+    {
+      "canonical_name": "边缘智能",
+      "entity_type": "topic",
+      "description": "在终端或边缘侧完成模型推理、学习和决策的智能计算范式。"
+    },
+    {
+      "canonical_name": "边缘推理",
+      "entity_type": "application",
+      "description": "在边缘设备本地执行模型预测以降低时延和带宽消耗的部署方式。"
+    },
+    {
+      "canonical_name": "边缘设备约束",
+      "entity_type": "concept",
+      "description": "边缘设备在算力、内存、功耗和时延方面对模型部署提出的限制。"
+    },
+    {
+      "canonical_name": "边缘部署",
+      "entity_type": "method",
+      "description": "将模型服务发布到终端或边缘节点执行的工程方式。"
+    },
+    {
+      "canonical_name": "联邦学习",
+      "entity_type": "method",
+      "description": "在数据不出本地前提下通过参数或梯度协同训练模型的方法。"
+    },
+    {
+      "canonical_name": "联邦平均算法",
+      "entity_type": "algorithm",
+      "description": "通过聚合各客户端本地模型参数更新实现全局模型训练的经典联邦算法。"
+    },
+    {
+      "canonical_name": "隐私保护",
+      "entity_type": "topic",
+      "description": "在数据采集、训练和推理过程中保护个人和敏感信息不被滥用的方法体系。"
+    },
+    {
+      "canonical_name": "通信压缩",
+      "entity_type": "method",
+      "description": "通过稀疏化、量化或编码减少分布式训练通信开销的方法。"
+    },
+    {
+      "canonical_name": "设备异构性",
+      "entity_type": "concept",
+      "description": "设备异构性是理解 AI 工程训练、部署或运维流程的重要概念。"
+    }
+  ],
+  "relations": [
+    [
+      "数据工程",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征工程与特征存储",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ML Pipeline",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分布式训练",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型服务",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型监控",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "MLOps",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "压缩与轻量化",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘部署与联邦学习",
+      "AI工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据采集",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据清洗",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据标注",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据版本控制",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据管道",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据质量",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据校验",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "元数据管理",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据血缘",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据湖",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据仓库",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征工程",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征选择",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征提取",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征缩放",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征编码",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征存储",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "在线特征",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "离线特征",
+      "特征工程与特征存储",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器学习流水线",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实验跟踪",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "超参数调优",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型选择",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自动机器学习",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经架构搜索",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练集",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "验证集",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "测试集",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可复现实验",
+      "ML Pipeline",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据并行",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型并行",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "流水线并行",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合精度训练",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ZeRO",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "梯度累积",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "参数服务器",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "通信开销",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "弹性训练",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "资源调度",
+      "分布式训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型服务化",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型部署",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "在线推理",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "批处理推理",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "推理加速",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ONNX",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TensorRT",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型编译优化",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "负载均衡",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "服务编排",
+      "模型服务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据漂移",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "概念漂移",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "性能退化",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "A/B测试",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "告警策略",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "在线评估",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "日志追踪",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可观测性",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "风险评估",
+      "模型监控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CI/CD for ML",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "持续训练",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型注册",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自动化部署",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工作流编排",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实验追踪平台",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可复现部署",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型压缩",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "剪枝",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "结构化剪枝",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "非结构化剪枝",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识蒸馏",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "教师模型",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "学生模型",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "量化",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练后量化",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "量化感知训练",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "低秩分解压缩",
+      "压缩与轻量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘智能",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘推理",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘设备约束",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘部署",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦学习",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦平均算法",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私保护",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "通信压缩",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "设备异构性",
+      "边缘部署与联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据采集",
+      "数据清洗",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据清洗",
+      "数据校验",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据标注",
+      "数据质量",
+      "RELATED_TO"
+    ],
+    [
+      "数据版本控制",
+      "可复现实验",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据管道",
+      "机器学习流水线",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "元数据管理",
+      "数据血缘",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据湖",
+      "数据仓库",
+      "RELATED_TO"
+    ],
+    [
+      "数据质量",
+      "模型监控",
+      "RELATED_TO"
+    ],
+    [
+      "特征工程",
+      "机器学习流水线",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "特征选择",
+      "特征工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征提取",
+      "特征工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征缩放",
+      "特征工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征编码",
+      "特征工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "在线特征",
+      "特征存储",
+      "PART_OF"
+    ],
+    [
+      "离线特征",
+      "特征存储",
+      "PART_OF"
+    ],
+    [
+      "机器学习流水线",
+      "MLOps",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实验跟踪",
+      "可复现实验",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "超参数调优",
+      "模型选择",
+      "RELATED_TO"
+    ],
+    [
+      "自动机器学习",
+      "超参数调优",
+      "RELATED_TO"
+    ],
+    [
+      "神经架构搜索",
+      "自动机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练集",
+      "验证集",
+      "RELATED_TO"
+    ],
+    [
+      "验证集",
+      "测试集",
+      "RELATED_TO"
+    ],
+    [
+      "可复现实验",
+      "模型注册",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据并行",
+      "通信开销",
+      "RELATED_TO"
+    ],
+    [
+      "模型并行",
+      "通信开销",
+      "RELATED_TO"
+    ],
+    [
+      "ZeRO",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "混合精度训练",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "梯度累积",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "参数服务器",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "弹性训练",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "分布式训练",
+      "模型服务化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型服务化",
+      "模型部署",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型部署",
+      "在线推理",
+      "APPLIES_TO"
+    ],
+    [
+      "模型部署",
+      "批处理推理",
+      "APPLIES_TO"
+    ],
+    [
+      "推理加速",
+      "模型服务化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "ONNX",
+      "模型部署",
+      "RELATED_TO"
+    ],
+    [
+      "TensorRT",
+      "推理加速",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型编译优化",
+      "推理加速",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "负载均衡",
+      "模型服务化",
+      "PART_OF"
+    ],
+    [
+      "服务编排",
+      "模型服务化",
+      "PART_OF"
+    ],
+    [
+      "数据漂移",
+      "概念漂移",
+      "RELATED_TO"
+    ],
+    [
+      "概念漂移",
+      "性能退化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "A/B测试",
+      "在线评估",
+      "RELATED_TO"
+    ],
+    [
+      "日志追踪",
+      "可观测性",
+      "PART_OF"
+    ],
+    [
+      "告警策略",
+      "模型监控",
+      "PART_OF"
+    ],
+    [
+      "模型监控",
+      "持续训练",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "CI/CD for ML",
+      "自动化部署",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型注册",
+      "自动化部署",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "工作流编排",
+      "自动化部署",
+      "RELATED_TO"
+    ],
+    [
+      "资源调度",
+      "工作流编排",
+      "RELATED_TO"
+    ],
+    [
+      "模型压缩",
+      "边缘部署",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "剪枝",
+      "模型压缩",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "结构化剪枝",
+      "剪枝",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "非结构化剪枝",
+      "剪枝",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识蒸馏",
+      "模型压缩",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "教师模型",
+      "知识蒸馏",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "学生模型",
+      "知识蒸馏",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "量化",
+      "模型压缩",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练后量化",
+      "量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "量化感知训练",
+      "量化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "低秩分解压缩",
+      "模型压缩",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘推理",
+      "边缘智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘设备约束",
+      "边缘推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "边缘部署",
+      "边缘推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "联邦平均算法",
+      "联邦学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "联邦学习",
+      "隐私保护",
+      "RELATED_TO"
+    ],
+    [
+      "联邦学习",
+      "分布式训练",
+      "RELATED_TO"
+    ],
+    [
+      "通信压缩",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "设备异构性",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "模型部署",
+      "边缘部署",
+      "RELATED_TO"
+    ]
+  ]
+}

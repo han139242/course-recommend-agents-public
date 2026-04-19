@@ -1,6 +1,8 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 
+import { ALL_COURSE_TITLE } from '../../utils/courseMeta'
+
 const props = defineProps({
   modelValue: {
     type: String,
@@ -12,11 +14,11 @@ const props = defineProps({
   },
   courses: {
     type: Array,
-    default: () => ['全部'],
+    default: () => [ALL_COURSE_TITLE],
   },
   courseFilter: {
     type: String,
-    default: '全部',
+    default: ALL_COURSE_TITLE,
   },
 })
 

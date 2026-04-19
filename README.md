@@ -142,3 +142,10 @@ http://localhost:8080
 
 - `MID_VERSION_HANDOFF.md`
 - `scripts/export_handoff_bundle.ps1`
+
+## 私有仓库完整恢复
+
+如果你需要把另一个人的环境恢复到当前这份私有仓库对应的运行状态，请直接参考：
+
+- `PRIVATE_RESTORE.md`
+- `scripts/restore_private_snapshot.ps1`

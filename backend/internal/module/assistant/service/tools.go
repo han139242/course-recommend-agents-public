@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	assistantdto "github.com/han139242/course-recommend-agents/backend/internal/module/assistant/dto"
 	authdto "github.com/han139242/course-recommend-agents/backend/internal/module/auth/dto"
 	competencydto "github.com/han139242/course-recommend-agents/backend/internal/module/competency/dto"
@@ -651,7 +652,7 @@ func (s *Service) toolCheckStudentPriorKnowledge(ctx context.Context, rawArgumen
 		mastered = append(mastered, map[string]any{
 			"knowledgeId":   orderedNodeID,
 			"name":          firstNonEmptyString(strings.TrimSpace(node.Name), strings.TrimSpace(node.CanonicalName), orderedNodeID),
-			"chapterTitle":  strings.TrimSpace(node.ChapterTitle),
+			"chapterTitle":  coursemeta.ResolveNodeCourseTitleWithFallback(node.CuratedSource, node.SourcePath, "", "", "", node.ChapterTitle, ""),
 			"masteryScore":  masteryScore,
 			"correctRate":   progress["correctRate"],
 			"answeredCount": progress["answeredCount"],
@@ -869,6 +870,7 @@ func toolQueueCourseFilterAction(rawArguments string) (map[string]any, []assista
 	}
 
 	courseTitle := strings.TrimSpace(args.CourseTitle)
+	courseTitle = coursemeta.NormalizeCourseTitleWithFallback(courseTitle, "")
 	if courseTitle == "" {
 		return nil, nil, errors.New("courseTitle is required")
 	}

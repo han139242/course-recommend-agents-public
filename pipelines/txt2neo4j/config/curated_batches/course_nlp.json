@@ -1,0 +1,1358 @@
+{
+  "source": "course_nlp",
+  "course_title": "自然语言处理",
+  "nodes": [
+    {
+      "canonical_name": "自然语言处理",
+      "entity_type": "topic",
+      "description": "研究计算机对自然语言进行理解、分析、生成与交互的方法。"
+    },
+    {
+      "canonical_name": "文本预处理",
+      "entity_type": "topic",
+      "description": "围绕文本切分、规范化、句法分析与结构标注展开的自然语言处理主题。"
+    },
+    {
+      "canonical_name": "词表示",
+      "entity_type": "topic",
+      "description": "围绕离散词项映射、分布式表示与上下文建模展开的自然语言处理主题。"
+    },
+    {
+      "canonical_name": "语言模型",
+      "entity_type": "topic",
+      "description": "对词序列出现概率进行建模并支撑语言理解与生成的核心任务。"
+    },
+    {
+      "canonical_name": "序列建模",
+      "entity_type": "method",
+      "description": "针对时序依赖数据学习条件关系和动态模式的方法。"
+    },
+    {
+      "canonical_name": "预训练模型",
+      "entity_type": "topic",
+      "description": "围绕大规模语料预训练、迁移适配与提示范式展开的模型主题。"
+    },
+    {
+      "canonical_name": "NLP任务",
+      "entity_type": "topic",
+      "description": "汇总自然语言理解与生成方向典型任务场景的课程主题。"
+    },
+    {
+      "canonical_name": "评估指标",
+      "entity_type": "topic",
+      "description": "用于衡量自然语言处理模型质量、生成效果与任务性能的指标主题。"
+    },
+    {
+      "canonical_name": "分词",
+      "entity_type": "method",
+      "description": "将连续文本切分为词或子词单元的基础自然语言处理方法。"
+    },
+    {
+      "canonical_name": "分词歧义",
+      "entity_type": "concept",
+      "description": "同一文本片段存在多种合理切分结果的语言分析现象。"
+    },
+    {
+      "canonical_name": "分词器",
+      "entity_type": "method",
+      "description": "将原始文本切分并映射为词元序列的文本预处理组件。"
+    },
+    {
+      "canonical_name": "词元",
+      "entity_type": "concept",
+      "description": "Transformer 输入序列中的最小离散单元，可对应字、子词或特殊标记。"
+    },
+    {
+      "canonical_name": "中文分词",
+      "entity_type": "method",
+      "description": "面向中文连续文本切分词边界并形成词序列的基础处理方法。"
+    },
+    {
+      "canonical_name": "子词分词",
+      "entity_type": "method",
+      "description": "在词与字符之间折中建模词表粒度的分词方法。"
+    },
+    {
+      "canonical_name": "BPE分词",
+      "entity_type": "algorithm",
+      "description": "通过频繁子串合并逐步构造子词词表的经典分词算法。"
+    },
+    {
+      "canonical_name": "SentencePiece",
+      "entity_type": "algorithm",
+      "description": "面向原始文本直接学习子词切分与词表的通用分词算法框架。"
+    },
+    {
+      "canonical_name": "停用词",
+      "entity_type": "concept",
+      "description": "在检索或建模中常被过滤的高频低信息量词项集合。"
+    },
+    {
+      "canonical_name": "词干提取",
+      "entity_type": "method",
+      "description": "通过截断或规则化简词形以获得词干形式的预处理方法。"
+    },
+    {
+      "canonical_name": "词形还原",
+      "entity_type": "method",
+      "description": "根据词法和上下文将词语还原为规范原形的预处理方法。"
+    },
+    {
+      "canonical_name": "词汇表",
+      "entity_type": "concept",
+      "description": "模型或分词器可识别并编码的词元与子词单元集合。"
+    },
+    {
+      "canonical_name": "词性标注",
+      "entity_type": "method",
+      "description": "为文本中的词语标注语法词类的基础语言分析任务。"
+    },
+    {
+      "canonical_name": "句法分析",
+      "entity_type": "method",
+      "description": "分析句子内部成分结构与依赖关系的语言理解方法。"
+    },
+    {
+      "canonical_name": "依存句法分析",
+      "entity_type": "method",
+      "description": "以词与词之间依赖关系表示句法结构的分析方法。"
+    },
+    {
+      "canonical_name": "成分句法分析",
+      "entity_type": "method",
+      "description": "以短语层级结构表示句法树的分析方法。"
+    },
+    {
+      "canonical_name": "语义角色标注",
+      "entity_type": "method",
+      "description": "识别谓词与其论元语义关系的语义分析任务。"
+    },
+    {
+      "canonical_name": "One-hot表示",
+      "entity_type": "method",
+      "description": "将离散词项映射为仅单一维度取一的稀疏向量表示方法。"
+    },
+    {
+      "canonical_name": "词袋模型",
+      "entity_type": "method",
+      "description": "忽略词序仅统计词项出现情况或频次的基础文本表示方法。"
+    },
+    {
+      "canonical_name": "TF-IDF",
+      "entity_type": "method",
+      "description": "结合词频与逆文档频率衡量词项区分能力的文本加权方法。"
+    },
+    {
+      "canonical_name": "词嵌入",
+      "entity_type": "method",
+      "description": "将词语映射为连续向量表示的自然语言处理方法。"
+    },
+    {
+      "canonical_name": "Word2Vec",
+      "entity_type": "algorithm",
+      "description": "通过局部上下文预测或目标词预测学习稠密词向量的经典算法。"
+    },
+    {
+      "canonical_name": "GloVe",
+      "entity_type": "algorithm",
+      "description": "结合全局词共现统计学习词向量表示的经典算法。"
+    },
+    {
+      "canonical_name": "FastText",
+      "entity_type": "algorithm",
+      "description": "通过子词信息增强词向量学习并兼顾未登录词建模的表示算法。"
+    },
+    {
+      "canonical_name": "上下文词向量",
+      "entity_type": "concept",
+      "description": "会随上下文变化而动态调整的词语向量表示。"
+    },
+    {
+      "canonical_name": "ELMo",
+      "entity_type": "algorithm",
+      "description": "基于双向语言模型生成上下文化词表示的预训练模型。"
+    },
+    {
+      "canonical_name": "子词表示",
+      "entity_type": "method",
+      "description": "以子词单元而非完整词语构建文本表示的方法。"
+    },
+    {
+      "canonical_name": "字符级表示",
+      "entity_type": "method",
+      "description": "直接基于字符序列构建词或文本表示以增强鲁棒性的建模方法。"
+    },
+    {
+      "canonical_name": "OOV词",
+      "entity_type": "concept",
+      "description": "未出现在训练词表中而导致编码和表示困难的未登录词。"
+    },
+    {
+      "canonical_name": "文本嵌入模型",
+      "entity_type": "algorithm",
+      "description": "将文本编码为稠密向量表示以支持检索、匹配和聚类的模型。"
+    },
+    {
+      "canonical_name": "n-gram模型",
+      "entity_type": "algorithm",
+      "description": "基于有限历史上下文估计词序列概率的统计语言模型。"
+    },
+    {
+      "canonical_name": "神经语言模型",
+      "entity_type": "method",
+      "description": "通过神经网络估计词序列概率分布并学习语言规律的模型方法。"
+    },
+    {
+      "canonical_name": "掩码语言模型",
+      "entity_type": "method",
+      "description": "通过预测被遮盖词元来学习双向上下文表示的预训练任务。"
+    },
+    {
+      "canonical_name": "因果语言模型",
+      "entity_type": "method",
+      "description": "按照从左到右的自回归方式预测下一个词元的语言建模任务。"
+    },
+    {
+      "canonical_name": "下一个词预测",
+      "entity_type": "method",
+      "description": "根据历史上下文预测下一个词元的自回归训练目标。"
+    },
+    {
+      "canonical_name": "解码策略",
+      "entity_type": "topic",
+      "description": "围绕如何从模型输出分布中选择下一个词元的生成决策方法集合。"
+    },
+    {
+      "canonical_name": "采样解码",
+      "entity_type": "method",
+      "description": "从候选词元概率分布中按一定随机策略抽样生成下一个词元的解码方法。"
+    },
+    {
+      "canonical_name": "束搜索",
+      "entity_type": "algorithm",
+      "description": "在序列生成中保留多个高分候选以近似搜索最优输出的解码算法。"
+    },
+    {
+      "canonical_name": "循环神经网络",
+      "entity_type": "algorithm",
+      "description": "适合处理序列数据的递归式神经网络模型。"
+    },
+    {
+      "canonical_name": "LSTM",
+      "entity_type": "algorithm",
+      "description": "通过门控与细胞状态缓解长期依赖问题的循环网络结构。"
+    },
+    {
+      "canonical_name": "GRU",
+      "entity_type": "algorithm",
+      "description": "以更简洁门控结构建模长程依赖的循环神经网络变体。"
+    },
+    {
+      "canonical_name": "序列到序列模型",
+      "entity_type": "algorithm",
+      "description": "将输入序列映射为输出序列的通用神经网络建模框架。"
+    },
+    {
+      "canonical_name": "编码器-解码器架构",
+      "entity_type": "concept",
+      "description": "由编码器负责理解输入、解码器负责逐步生成输出的经典 Transformer 架构形态。"
+    },
+    {
+      "canonical_name": "注意力机制",
+      "entity_type": "concept",
+      "description": "根据输入不同部分的重要性进行加权建模的机制。"
+    },
+    {
+      "canonical_name": "加性注意力",
+      "entity_type": "method",
+      "description": "通过可学习前馈网络计算查询与键匹配得分的注意力方法。"
+    },
+    {
+      "canonical_name": "点积注意力",
+      "entity_type": "method",
+      "description": "利用查询与键的点积衡量相关性的经典注意力计算方式。"
+    },
+    {
+      "canonical_name": "Transformer",
+      "entity_type": "algorithm",
+      "description": "基于自注意力机制的序列建模架构。"
+    },
+    {
+      "canonical_name": "Transformer编码器",
+      "entity_type": "concept",
+      "description": "由自注意力与前馈网络堆叠组成、侧重双向上下文建模的 Transformer 结构。"
+    },
+    {
+      "canonical_name": "Transformer解码器",
+      "entity_type": "concept",
+      "description": "结合因果掩码与自回归生成机制的 Transformer 序列建模结构。"
+    },
+    {
+      "canonical_name": "自注意力",
+      "entity_type": "method",
+      "description": "让序列内每个位置与同一序列其他位置交互建模上下文依赖的方法。"
+    },
+    {
+      "canonical_name": "多头注意力",
+      "entity_type": "method",
+      "description": "并行使用多个注意力头从不同子空间建模关系的注意力机制。"
+    },
+    {
+      "canonical_name": "交叉注意力",
+      "entity_type": "method",
+      "description": "让解码端从另一序列或外部上下文读取信息的注意力机制。"
+    },
+    {
+      "canonical_name": "位置编码",
+      "entity_type": "method",
+      "description": "为序列中每个词元注入位置信息以弥补自注意力顺序感知不足的方法。"
+    },
+    {
+      "canonical_name": "预训练",
+      "entity_type": "method",
+      "description": "先在大规模通用语料上学习通用表示或生成能力，再迁移到下游任务的训练阶段。"
+    },
+    {
+      "canonical_name": "BERT",
+      "entity_type": "algorithm",
+      "description": "基于双向 Transformer 编码器的预训练语言模型。"
+    },
+    {
+      "canonical_name": "GPT系列",
+      "entity_type": "algorithm",
+      "description": "基于自回归 Transformer 预训练并擅长文本生成的模型家族。"
+    },
+    {
+      "canonical_name": "T5",
+      "entity_type": "algorithm",
+      "description": "以统一文本到文本范式处理多种 NLP 任务的预训练模型。"
+    },
+    {
+      "canonical_name": "RoBERTa",
+      "entity_type": "algorithm",
+      "description": "在 BERT 基础上优化训练策略并提升语言表示能力的预训练模型。"
+    },
+    {
+      "canonical_name": "ALBERT",
+      "entity_type": "algorithm",
+      "description": "通过参数共享和分解嵌入降低规模的轻量化 BERT 变体。"
+    },
+    {
+      "canonical_name": "XLNet",
+      "entity_type": "algorithm",
+      "description": "结合排列语言建模与双向上下文建模优势的预训练模型。"
+    },
+    {
+      "canonical_name": "提示学习",
+      "entity_type": "method",
+      "description": "通过设计输入提示来激发预训练语言模型完成下游任务的方法。"
+    },
+    {
+      "canonical_name": "指令微调",
+      "entity_type": "method",
+      "description": "利用指令数据对预训练语言模型进行任务泛化能力增强的微调方法。"
+    },
+    {
+      "canonical_name": "零样本提示",
+      "entity_type": "method",
+      "description": "不提供示例、仅依赖任务说明让模型直接完成任务的提示方法。"
+    },
+    {
+      "canonical_name": "少样本提示",
+      "entity_type": "method",
+      "description": "在提示中提供少量演示样例以激发模型完成任务的上下文学习方法。"
+    },
+    {
+      "canonical_name": "文本分类",
+      "entity_type": "application",
+      "description": "将文本映射到预定义类别集合的自然语言处理应用任务。"
+    },
+    {
+      "canonical_name": "情感分析",
+      "entity_type": "application",
+      "description": "识别文本中主观情绪、极性或态度倾向的应用任务。"
+    },
+    {
+      "canonical_name": "文档分类",
+      "entity_type": "application",
+      "description": "根据整篇文档主题、类别或属性进行自动归类的任务。"
+    },
+    {
+      "canonical_name": "机器翻译",
+      "entity_type": "application",
+      "description": "自动将一种自然语言转换为另一种自然语言的任务。"
+    },
+    {
+      "canonical_name": "问答系统",
+      "entity_type": "application",
+      "description": "根据用户问题自动返回答案的智能系统。"
+    },
+    {
+      "canonical_name": "信息抽取",
+      "entity_type": "application",
+      "description": "从非结构化文本中抽取实体、关系与事件等结构化信息的任务。"
+    },
+    {
+      "canonical_name": "命名实体识别",
+      "entity_type": "application",
+      "description": "识别文本中人名、地名、机构名等实体边界与类别的任务。"
+    },
+    {
+      "canonical_name": "关系抽取",
+      "entity_type": "method",
+      "description": "从文本中识别实体之间语义关系的知识抽取方法。"
+    },
+    {
+      "canonical_name": "事件抽取",
+      "entity_type": "method",
+      "description": "从文本中识别事件触发词、事件类型及其参与角色的信息抽取方法。"
+    },
+    {
+      "canonical_name": "开放信息抽取",
+      "entity_type": "application",
+      "description": "从开放域文本中直接抽取关系三元组或事实片段的任务。"
+    },
+    {
+      "canonical_name": "文本摘要",
+      "entity_type": "application",
+      "description": "从长文本中提炼关键信息并生成简洁摘要的自然语言处理任务。"
+    },
+    {
+      "canonical_name": "文本生成",
+      "entity_type": "application",
+      "description": "根据给定条件或上下文自动生成自然语言内容的任务。"
+    },
+    {
+      "canonical_name": "对话系统",
+      "entity_type": "application",
+      "description": "围绕多轮交互、上下文理解与回复生成构建的人机对话系统。"
+    },
+    {
+      "canonical_name": "共指消解",
+      "entity_type": "method",
+      "description": "识别文本中指向同一实体的不同提及表达的语言理解任务。"
+    },
+    {
+      "canonical_name": "语义解析",
+      "entity_type": "method",
+      "description": "将自然语言映射为可执行逻辑形式、查询或程序结构的结构化语义任务。"
+    },
+    {
+      "canonical_name": "机器阅读理解",
+      "entity_type": "application",
+      "description": "根据给定文档内容理解问题并生成或抽取答案的任务。"
+    },
+    {
+      "canonical_name": "槽位填充",
+      "entity_type": "application",
+      "description": "从用户输入中识别关键信息字段以支持任务型对话的任务。"
+    },
+    {
+      "canonical_name": "关键词抽取",
+      "entity_type": "application",
+      "description": "从文本中识别最能概括主题的核心词语或短语的任务。"
+    },
+    {
+      "canonical_name": "BLEU",
+      "entity_type": "concept",
+      "description": "基于 n 元组精确匹配与长度惩罚衡量机器译文与参考译文重叠度的自动指标。"
+    },
+    {
+      "canonical_name": "ROUGE",
+      "entity_type": "concept",
+      "description": "基于召回的 n 元组重叠等指标衡量摘要或生成文本与参考文本相似度的自动指标族。"
+    },
+    {
+      "canonical_name": "困惑度",
+      "entity_type": "concept",
+      "description": "语言模型在给定测试语料上的平均不确定性度量，数值越低通常表示拟合越好。"
+    },
+    {
+      "canonical_name": "F1值",
+      "entity_type": "concept",
+      "description": "精确率与召回率调和平均得到的分类综合评估指标。"
+    },
+    {
+      "canonical_name": "准确率",
+      "entity_type": "concept",
+      "description": "分类任务中预测正确样本数占总样本数比例的评估指标。"
+    },
+    {
+      "canonical_name": "精确率",
+      "entity_type": "concept",
+      "description": "预测为正的样本中真正为正的比例。"
+    },
+    {
+      "canonical_name": "召回率",
+      "entity_type": "concept",
+      "description": "真实为正的样本中被正确预测为正的比例。"
+    },
+    {
+      "canonical_name": "人类评估",
+      "entity_type": "method",
+      "description": "由标注者依据量表或偏好对模型输出进行主观质量或安全性判断的评测方式。"
+    },
+    {
+      "canonical_name": "大语言模型",
+      "entity_type": "topic",
+      "description": "以海量语料预训练形成通用语言理解与生成能力的大规模模型。"
+    },
+    {
+      "canonical_name": "检索增强生成",
+      "entity_type": "topic",
+      "description": "通过外部知识检索增强大模型生成质量与事实性的应用范式。"
+    },
+    {
+      "canonical_name": "深度学习",
+      "entity_type": "topic",
+      "description": "基于多层神经网络进行表示学习与任务建模的方法体系。"
+    },
+    {
+      "canonical_name": "知识图谱",
+      "entity_type": "topic",
+      "description": "以图结构组织实体、概念及关系的知识表示与推理技术。"
+    }
+  ],
+  "relations": [
+    [
+      "文本预处理",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词表示",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语言模型",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "序列建模",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "预训练模型",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NLP任务",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "评估指标",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分词",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分词歧义",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分词器",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词元",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "中文分词",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子词分词",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "停用词",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词干提取",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词形还原",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词汇表",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词性标注",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "句法分析",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义角色标注",
+      "文本预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "One-hot表示",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词袋模型",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TF-IDF",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词嵌入",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文词向量",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子词表示",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "字符级表示",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "OOV词",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文本嵌入模型",
+      "词表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "掩码语言模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "因果语言模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "下一个词预测",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "解码策略",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "循环神经网络",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "序列到序列模型",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力机制",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Transformer",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "位置编码",
+      "序列建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "预训练",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "BERT",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GPT系列",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "T5",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RoBERTa",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ALBERT",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "XLNet",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示学习",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "指令微调",
+      "预训练模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文本分类",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器翻译",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "问答系统",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "信息抽取",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文本摘要",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文本生成",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对话系统",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "共指消解",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义解析",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器阅读理解",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "槽位填充",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关键词抽取",
+      "NLP任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "BLEU",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ROUGE",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "困惑度",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "F1值",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "准确率",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "精确率",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "召回率",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人类评估",
+      "评估指标",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "中文分词",
+      "分词",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分词歧义",
+      "分词",
+      "RELATED_TO"
+    ],
+    [
+      "分词器",
+      "词汇表",
+      "USES"
+    ],
+    [
+      "子词分词",
+      "分词",
+      "RELATED_TO"
+    ],
+    [
+      "BPE分词",
+      "子词分词",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SentencePiece",
+      "子词分词",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子词分词",
+      "子词表示",
+      "RELATED_TO"
+    ],
+    [
+      "停用词",
+      "词袋模型",
+      "RELATED_TO"
+    ],
+    [
+      "词干提取",
+      "词形还原",
+      "RELATED_TO"
+    ],
+    [
+      "词性标注",
+      "句法分析",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "依存句法分析",
+      "句法分析",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "成分句法分析",
+      "句法分析",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "句法分析",
+      "语义角色标注",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "句法分析",
+      "信息抽取",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "语义角色标注",
+      "信息抽取",
+      "RELATED_TO"
+    ],
+    [
+      "One-hot表示",
+      "词袋模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "词袋模型",
+      "TF-IDF",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Word2Vec",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GloVe",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "FastText",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ELMo",
+      "上下文词向量",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子词表示",
+      "词嵌入",
+      "RELATED_TO"
+    ],
+    [
+      "字符级表示",
+      "子词表示",
+      "RELATED_TO"
+    ],
+    [
+      "OOV词",
+      "子词表示",
+      "RELATED_TO"
+    ],
+    [
+      "TF-IDF",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "文本嵌入模型",
+      "检索增强生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "n-gram模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经语言模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "下一个词预测",
+      "因果语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "掩码语言模型",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "因果语言模型",
+      "GPT系列",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "解码策略",
+      "文本生成",
+      "RELATED_TO"
+    ],
+    [
+      "采样解码",
+      "解码策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "束搜索",
+      "解码策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "束搜索",
+      "机器翻译",
+      "RELATED_TO"
+    ],
+    [
+      "循环神经网络",
+      "LSTM",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "GRU",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "序列到序列模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "序列到序列模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "注意力机制",
+      "加性注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "注意力机制",
+      "点积注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "点积注意力",
+      "自注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自注意力",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多头注意力",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "Transformer编码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "Transformer解码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "交叉注意力",
+      "Transformer解码器",
+      "PART_OF"
+    ],
+    [
+      "位置编码",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "交叉注意力",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "问答系统",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "信息抽取",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "文本分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "GPT系列",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "T5",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "RoBERTa",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "ALBERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "XLNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "GPT系列",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "T5",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "RoBERTa",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "ALBERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "XLNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "零样本提示",
+      "提示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "少样本提示",
+      "提示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "指令微调",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "BERT",
+      "命名实体识别",
+      "APPLIES_TO"
+    ],
+    [
+      "GPT系列",
+      "文本生成",
+      "APPLIES_TO"
+    ],
+    [
+      "T5",
+      "文本摘要",
+      "APPLIES_TO"
+    ],
+    [
+      "情感分析",
+      "文本分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文档分类",
+      "文本分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "命名实体识别",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关系抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "事件抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "开放信息抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "共指消解",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "共指消解",
+      "信息抽取",
+      "RELATED_TO"
+    ],
+    [
+      "语义解析",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "机器阅读理解",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "槽位填充",
+      "对话系统",
+      "RELATED_TO"
+    ],
+    [
+      "关键词抽取",
+      "文本摘要",
+      "RELATED_TO"
+    ],
+    [
+      "文本生成",
+      "对话系统",
+      "RELATED_TO"
+    ],
+    [
+      "信息抽取",
+      "知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "检索增强生成",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "检索增强生成",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "BLEU",
+      "机器翻译",
+      "APPLIES_TO"
+    ],
+    [
+      "ROUGE",
+      "文本摘要",
+      "APPLIES_TO"
+    ],
+    [
+      "困惑度",
+      "语言模型",
+      "APPLIES_TO"
+    ],
+    [
+      "准确率",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "精确率",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "召回率",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "F1值",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "精确率",
+      "F1值",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "召回率",
+      "F1值",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "人类评估",
+      "BLEU",
+      "RELATED_TO"
+    ],
+    [
+      "深度学习",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "深度学习",
+      "循环神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "大语言模型",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ]
+  ]
+}

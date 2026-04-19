@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
+	graphdto "github.com/han139242/course-recommend-agents/backend/internal/module/graph/dto"
 	"github.com/han139242/course-recommend-agents/backend/internal/module/graph/repository"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
@@ -94,5 +96,25 @@ func TestDetectLearningBottlenecksIncludesWeaknessAndTransfer(t *testing.T) {
 	}
 	if !foundTransfer {
 		t.Fatal("expected transfer insight")
+	}
+}
+
+func TestGraphNodeCourseTitleNormalizesLegacyMetadata(t *testing.T) {
+	node := graphdto.GraphNodeView{
+		CuratedSource: "batch_22_automl_compression_edge_ai",
+		SourcePath:    "curated/batch_22_automl_compression_edge_ai",
+		ChapterTitle:  "人工智能基础知识骨架",
+	}
+
+	title := graphNodeCourseTitle(node, coursemeta.DefaultCourseTitle)
+	if title != "AI工程" {
+		t.Fatalf("expected normalized course title, got %q", title)
+	}
+}
+
+func TestFirstNonEmptyCourseNormalizesAlias(t *testing.T) {
+	title := firstNonEmptyCourse("", "人工智能基础知识骨架", "机器学习")
+	if title != "人工智能导论" {
+		t.Fatalf("expected normalized alias, got %q", title)
 	}
 }

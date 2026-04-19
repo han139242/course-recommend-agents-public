@@ -198,9 +198,12 @@ export function useGraphEngine(options = {}) {
     const node = getNodeById(nodeId)
     if (!node) return
     node.isUserPinned = Boolean(persist)
-    node.fx = Number.isFinite(position.x) ? position.x : node.x
-    node.fy = Number.isFinite(position.y) ? position.y : node.y
-    if (!persist) {
+    if (persist) {
+      node.fx = Number.isFinite(position.x) ? position.x : node.x
+      node.fy = Number.isFinite(position.y) ? position.y : node.y
+    } else {
+      node.x = Number.isFinite(position.x) ? position.x : node.x
+      node.y = Number.isFinite(position.y) ? position.y : node.y
       node.fx = null
       node.fy = null
     }

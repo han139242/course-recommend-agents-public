@@ -1,0 +1,2388 @@
+{
+  "source": "course_deep_learning",
+  "course_title": "深度学习",
+  "nodes": [
+    {
+      "canonical_name": "深度学习",
+      "entity_type": "topic",
+      "description": "基于多层神经网络进行表示学习与任务建模的方法体系。"
+    },
+    {
+      "canonical_name": "神经网络基础",
+      "entity_type": "topic",
+      "description": "围绕神经元、网络结构、前后向传播与表示学习展开的深度学习基础主题。"
+    },
+    {
+      "canonical_name": "优化器与训练策略",
+      "entity_type": "topic",
+      "description": "围绕参数更新规则、学习率控制与稳定训练技巧展开的深度学习主题。"
+    },
+    {
+      "canonical_name": "正则化与归一化",
+      "entity_type": "topic",
+      "description": "围绕抑制过拟合、稳定训练和改善泛化能力的方法主题。"
+    },
+    {
+      "canonical_name": "参数初始化",
+      "entity_type": "method",
+      "description": "在训练开始前为网络权重和偏置设置初始值的方法。"
+    },
+    {
+      "canonical_name": "卷积神经网络",
+      "entity_type": "algorithm",
+      "description": "擅长处理图像等网格结构数据的深度神经网络模型。"
+    },
+    {
+      "canonical_name": "卷积架构演化",
+      "entity_type": "topic",
+      "description": "梳理经典卷积网络从浅层结构到高效架构迭代路径的知识主题。"
+    },
+    {
+      "canonical_name": "序列神经网络",
+      "entity_type": "topic",
+      "description": "研究时序依赖建模、记忆机制与序列生成过程的深度学习主题。"
+    },
+    {
+      "canonical_name": "注意力机制",
+      "entity_type": "concept",
+      "description": "根据输入不同部分的重要性进行加权建模的机制。"
+    },
+    {
+      "canonical_name": "Transformer架构",
+      "entity_type": "topic",
+      "description": "围绕编码器解码器结构、位置建模与预训练范式展开的架构主题。"
+    },
+    {
+      "canonical_name": "生成模型",
+      "entity_type": "topic",
+      "description": "研究学习数据分布并进行采样、重建或合成的深度学习主题。"
+    },
+    {
+      "canonical_name": "自监督学习",
+      "entity_type": "method",
+      "description": "从数据自身构造监督信号进行表示学习的机器学习范式。"
+    },
+    {
+      "canonical_name": "神经网络",
+      "entity_type": "topic",
+      "description": "受生物神经系统启发构建的分布式并行计算模型。"
+    },
+    {
+      "canonical_name": "感知机",
+      "entity_type": "algorithm",
+      "description": "基于线性判别函数的早期神经网络分类模型。"
+    },
+    {
+      "canonical_name": "前馈神经网络",
+      "entity_type": "algorithm",
+      "description": "信息从输入层经隐藏层逐层传递到输出层且无环反馈结构的神经网络模型。"
+    },
+    {
+      "canonical_name": "多层感知机",
+      "entity_type": "algorithm",
+      "description": "由多个全连接层堆叠而成并可拟合非线性映射的前馈神经网络。"
+    },
+    {
+      "canonical_name": "神经元",
+      "entity_type": "concept",
+      "description": "神经网络中接收输入、聚合加权信号并产生输出的基本计算单元。"
+    },
+    {
+      "canonical_name": "权重",
+      "entity_type": "concept",
+      "description": "控制输入特征对神经元输出贡献程度的可学习参数。"
+    },
+    {
+      "canonical_name": "偏置",
+      "entity_type": "concept",
+      "description": "在神经元线性变换后额外平移激活响应的可学习参数。"
+    },
+    {
+      "canonical_name": "激活函数",
+      "entity_type": "concept",
+      "description": "为神经网络引入非线性表达能力的函数。"
+    },
+    {
+      "canonical_name": "Sigmoid函数",
+      "entity_type": "concept",
+      "description": "将实数映射到 0 到 1 区间的经典 S 形激活函数。"
+    },
+    {
+      "canonical_name": "Tanh函数",
+      "entity_type": "concept",
+      "description": "将实数映射到负 1 到 1 区间的双曲正切激活函数。"
+    },
+    {
+      "canonical_name": "ReLU函数",
+      "entity_type": "concept",
+      "description": "对正区间保持线性、负区间截断为零的常用激活函数。"
+    },
+    {
+      "canonical_name": "Softmax函数",
+      "entity_type": "concept",
+      "description": "将实值向量归一化为概率分布的输出层函数。"
+    },
+    {
+      "canonical_name": "前向传播",
+      "entity_type": "method",
+      "description": "按照网络拓扑从输入到输出逐层计算神经元响应的过程。"
+    },
+    {
+      "canonical_name": "反向传播",
+      "entity_type": "method",
+      "description": "利用链式法则将输出误差逐层传播并计算参数梯度的训练方法。"
+    },
+    {
+      "canonical_name": "损失函数",
+      "entity_type": "concept",
+      "description": "用于度量模型预测结果与真实目标之间偏差的函数。"
+    },
+    {
+      "canonical_name": "交叉熵",
+      "entity_type": "concept",
+      "description": "衡量两个概率分布差异并常作为分类任务损失函数的指标。"
+    },
+    {
+      "canonical_name": "万能近似定理",
+      "entity_type": "concept",
+      "description": "说明足够宽的前馈网络可逼近任意连续函数的理论结论。"
+    },
+    {
+      "canonical_name": "表示学习",
+      "entity_type": "method",
+      "description": "自动学习适合下游任务的特征表示的方法体系。"
+    },
+    {
+      "canonical_name": "梯度下降",
+      "entity_type": "algorithm",
+      "description": "沿目标函数负梯度方向迭代更新参数的优化算法。"
+    },
+    {
+      "canonical_name": "随机梯度下降",
+      "entity_type": "algorithm",
+      "description": "基于单样本或小批量样本近似梯度进行参数更新的优化算法。"
+    },
+    {
+      "canonical_name": "小批量梯度下降",
+      "entity_type": "algorithm",
+      "description": "基于小批量样本估计梯度并更新参数的常用优化算法。"
+    },
+    {
+      "canonical_name": "学习率",
+      "entity_type": "concept",
+      "description": "控制每次参数更新步长大小并显著影响收敛速度的超参数。"
+    },
+    {
+      "canonical_name": "批大小",
+      "entity_type": "concept",
+      "description": "单次参数更新时参与梯度估计的样本数量规模。"
+    },
+    {
+      "canonical_name": "Momentum",
+      "entity_type": "method",
+      "description": "在梯度更新中累积历史方向以加速收敛并抑制震荡的方法。"
+    },
+    {
+      "canonical_name": "Nesterov动量",
+      "entity_type": "method",
+      "description": "在前瞻位置估计梯度并改进动量更新精度的优化方法。"
+    },
+    {
+      "canonical_name": "AdaGrad",
+      "entity_type": "algorithm",
+      "description": "按参数历史梯度累计自适应缩放学习率的优化算法。"
+    },
+    {
+      "canonical_name": "RMSProp",
+      "entity_type": "algorithm",
+      "description": "对梯度平方做指数滑动平均以稳定自适应学习率的优化算法。"
+    },
+    {
+      "canonical_name": "Adam",
+      "entity_type": "algorithm",
+      "description": "结合动量与自适应学习率机制的经典一阶优化算法。"
+    },
+    {
+      "canonical_name": "AdamW",
+      "entity_type": "algorithm",
+      "description": "将权重衰减与梯度更新解耦以改善泛化能力的 Adam 变体。"
+    },
+    {
+      "canonical_name": "学习率调度",
+      "entity_type": "method",
+      "description": "按照训练阶段动态调整学习率以兼顾收敛速度和最终性能的方法。"
+    },
+    {
+      "canonical_name": "Warmup",
+      "entity_type": "method",
+      "description": "在训练初期逐步升高学习率以减少不稳定更新的方法。"
+    },
+    {
+      "canonical_name": "余弦退火",
+      "entity_type": "method",
+      "description": "按余弦曲线逐渐衰减学习率以改善后期收敛表现的方法。"
+    },
+    {
+      "canonical_name": "梯度裁剪",
+      "entity_type": "method",
+      "description": "限制梯度范数或数值范围以防止更新过大的训练技巧。"
+    },
+    {
+      "canonical_name": "正则化",
+      "entity_type": "method",
+      "description": "通过约束模型复杂度抑制过拟合并提升泛化能力的方法。"
+    },
+    {
+      "canonical_name": "L1正则化",
+      "entity_type": "method",
+      "description": "通过参数绝对值惩罚促进稀疏解的正则化方法。"
+    },
+    {
+      "canonical_name": "L2正则化",
+      "entity_type": "method",
+      "description": "通过参数平方惩罚抑制权重过大并提升稳定性的正则化方法。"
+    },
+    {
+      "canonical_name": "权重衰减",
+      "entity_type": "method",
+      "description": "通过参数范数惩罚抑制权重过大并改善泛化的正则化方法。"
+    },
+    {
+      "canonical_name": "Dropout",
+      "entity_type": "method",
+      "description": "在训练时随机失活部分神经元以降低过拟合风险的正则化方法。"
+    },
+    {
+      "canonical_name": "批量归一化",
+      "entity_type": "method",
+      "description": "对小批量特征进行标准化以稳定训练和加速收敛的方法。"
+    },
+    {
+      "canonical_name": "层归一化",
+      "entity_type": "method",
+      "description": "对单样本层内特征进行归一化的训练稳定化方法。"
+    },
+    {
+      "canonical_name": "数据增强",
+      "entity_type": "method",
+      "description": "通过变换训练样本生成更多有效数据以提升泛化能力的方法。"
+    },
+    {
+      "canonical_name": "标签平滑",
+      "entity_type": "method",
+      "description": "用软目标替代硬标签以降低过度自信和过拟合的方法。"
+    },
+    {
+      "canonical_name": "早停",
+      "entity_type": "method",
+      "description": "在验证性能不再提升时提前终止训练以抑制过拟合的方法。"
+    },
+    {
+      "canonical_name": "过拟合",
+      "entity_type": "concept",
+      "description": "模型过度拟合训练数据而导致泛化性能下降的现象。"
+    },
+    {
+      "canonical_name": "Xavier初始化",
+      "entity_type": "method",
+      "description": "根据输入输出维度缩放参数方差以稳定信号传播的初始化方法。"
+    },
+    {
+      "canonical_name": "He初始化",
+      "entity_type": "method",
+      "description": "针对 ReLU 类激活函数设计的参数初始化方法。"
+    },
+    {
+      "canonical_name": "LSUV初始化",
+      "entity_type": "method",
+      "description": "逐层调节权重统计量使激活方差稳定的初始化方法。"
+    },
+    {
+      "canonical_name": "卷积运算",
+      "entity_type": "method",
+      "description": "利用局部感受野与共享参数在空间上提取模式的线性运算。"
+    },
+    {
+      "canonical_name": "卷积核",
+      "entity_type": "concept",
+      "description": "在卷积层中滑动扫描输入并提取局部特征的小型权重张量。"
+    },
+    {
+      "canonical_name": "步长",
+      "entity_type": "concept",
+      "description": "卷积核或池化窗口每次移动的空间距离参数。"
+    },
+    {
+      "canonical_name": "填充",
+      "entity_type": "concept",
+      "description": "在输入边界补零或其他值以控制输出尺寸的操作。"
+    },
+    {
+      "canonical_name": "感受野",
+      "entity_type": "concept",
+      "description": "网络某个神经元能够观察到的输入空间区域范围。"
+    },
+    {
+      "canonical_name": "特征图",
+      "entity_type": "concept",
+      "description": "卷积层输出的通道化激活表示，用于编码局部模式响应。"
+    },
+    {
+      "canonical_name": "通道",
+      "entity_type": "concept",
+      "description": "表示特征张量不同语义维度或滤波器响应集合的维度。"
+    },
+    {
+      "canonical_name": "池化",
+      "entity_type": "method",
+      "description": "对局部区域做聚合下采样以压缩特征并增强不变性的操作。"
+    },
+    {
+      "canonical_name": "最大池化",
+      "entity_type": "method",
+      "description": "在局部窗口内取最大响应以保留显著特征的池化方法。"
+    },
+    {
+      "canonical_name": "平均池化",
+      "entity_type": "method",
+      "description": "在局部窗口内求平均值以平滑特征响应的池化方法。"
+    },
+    {
+      "canonical_name": "共享权重",
+      "entity_type": "concept",
+      "description": "同一卷积核在不同空间位置复用参数的结构约束。"
+    },
+    {
+      "canonical_name": "局部连接",
+      "entity_type": "concept",
+      "description": "神经元只连接输入局部邻域以提取局部模式的结构设计。"
+    },
+    {
+      "canonical_name": "1x1卷积",
+      "entity_type": "method",
+      "description": "利用单点卷积完成通道混合和维度变换的轻量卷积操作。"
+    },
+    {
+      "canonical_name": "转置卷积",
+      "entity_type": "method",
+      "description": "常用于上采样和生成任务的可学习反卷积操作。"
+    },
+    {
+      "canonical_name": "深度可分离卷积",
+      "entity_type": "method",
+      "description": "将空间卷积与通道卷积分解以降低计算量的卷积方法。"
+    },
+    {
+      "canonical_name": "LeNet",
+      "entity_type": "algorithm",
+      "description": "早期将卷积与池化成功用于手写数字识别的经典卷积网络。"
+    },
+    {
+      "canonical_name": "AlexNet",
+      "entity_type": "algorithm",
+      "description": "推动深度卷积网络在 ImageNet 上突破的重要经典架构。"
+    },
+    {
+      "canonical_name": "VGG",
+      "entity_type": "algorithm",
+      "description": "使用连续小卷积核堆叠构建深层视觉表示的经典网络。"
+    },
+    {
+      "canonical_name": "GoogLeNet",
+      "entity_type": "algorithm",
+      "description": "通过 Inception 模块并行聚合多尺度特征的经典卷积架构。"
+    },
+    {
+      "canonical_name": "Inception模块",
+      "entity_type": "concept",
+      "description": "并行组合多种卷积尺度以提升表达力与效率的结构单元。"
+    },
+    {
+      "canonical_name": "ResNet",
+      "entity_type": "algorithm",
+      "description": "通过残差学习缓解深层网络退化问题的经典卷积架构。"
+    },
+    {
+      "canonical_name": "DenseNet",
+      "entity_type": "algorithm",
+      "description": "通过跨层密集连接强化特征复用与梯度传播的卷积架构。"
+    },
+    {
+      "canonical_name": "SENet",
+      "entity_type": "algorithm",
+      "description": "通过通道注意力重标定特征响应的重要卷积架构改进。"
+    },
+    {
+      "canonical_name": "MobileNet",
+      "entity_type": "algorithm",
+      "description": "面向移动端和边缘设备的轻量级卷积网络架构。"
+    },
+    {
+      "canonical_name": "EfficientNet",
+      "entity_type": "algorithm",
+      "description": "联合深度、宽度与分辨率缩放提升效率的卷积网络家族。"
+    },
+    {
+      "canonical_name": "残差块",
+      "entity_type": "concept",
+      "description": "通过恒等捷径连接实现残差学习的基本网络模块。"
+    },
+    {
+      "canonical_name": "稠密连接",
+      "entity_type": "concept",
+      "description": "将前面各层特征显式连接到后续层输入的连接方式。"
+    },
+    {
+      "canonical_name": "复合缩放",
+      "entity_type": "method",
+      "description": "联合调整网络深度宽度和输入分辨率的模型缩放策略。"
+    },
+    {
+      "canonical_name": "循环神经网络",
+      "entity_type": "algorithm",
+      "description": "适合处理序列数据的递归式神经网络模型。"
+    },
+    {
+      "canonical_name": "循环展开",
+      "entity_type": "concept",
+      "description": "将循环网络沿时间维展开为共享参数的前馈计算图。"
+    },
+    {
+      "canonical_name": "时间反向传播",
+      "entity_type": "method",
+      "description": "在时间展开图上反向传播梯度训练循环网络的方法。"
+    },
+    {
+      "canonical_name": "隐状态",
+      "entity_type": "concept",
+      "description": "循环网络在时间步之间传递历史信息的内部表示。"
+    },
+    {
+      "canonical_name": "序列建模",
+      "entity_type": "method",
+      "description": "针对时序依赖数据学习条件关系和动态模式的方法。"
+    },
+    {
+      "canonical_name": "LSTM",
+      "entity_type": "algorithm",
+      "description": "通过门控与细胞状态缓解长期依赖问题的循环网络结构。"
+    },
+    {
+      "canonical_name": "GRU",
+      "entity_type": "algorithm",
+      "description": "以更简洁门控结构建模长程依赖的循环神经网络变体。"
+    },
+    {
+      "canonical_name": "遗忘门",
+      "entity_type": "concept",
+      "description": "控制 LSTM 历史记忆保留与丢弃比例的门控单元。"
+    },
+    {
+      "canonical_name": "输入门",
+      "entity_type": "concept",
+      "description": "控制新信息写入 LSTM 细胞状态强度的门控单元。"
+    },
+    {
+      "canonical_name": "输出门",
+      "entity_type": "concept",
+      "description": "控制 LSTM 当前隐状态对外暴露程度的门控单元。"
+    },
+    {
+      "canonical_name": "细胞状态",
+      "entity_type": "concept",
+      "description": "在 LSTM 中沿时间传递长期记忆信息的内部状态。"
+    },
+    {
+      "canonical_name": "更新门",
+      "entity_type": "concept",
+      "description": "在 GRU 中控制旧状态与新状态融合比例的门控单元。"
+    },
+    {
+      "canonical_name": "重置门",
+      "entity_type": "concept",
+      "description": "在 GRU 中控制历史信息参与当前候选状态计算程度的门控单元。"
+    },
+    {
+      "canonical_name": "双向RNN",
+      "entity_type": "algorithm",
+      "description": "同时利用前向和后向上下文信息进行序列建模的循环网络。"
+    },
+    {
+      "canonical_name": "序列到序列模型",
+      "entity_type": "algorithm",
+      "description": "将输入序列映射为输出序列的通用神经网络建模框架。"
+    },
+    {
+      "canonical_name": "教师强制",
+      "entity_type": "method",
+      "description": "训练序列生成模型时用真实前一时刻输出喂给解码器的方法。"
+    },
+    {
+      "canonical_name": "加性注意力",
+      "entity_type": "method",
+      "description": "通过可学习前馈网络计算查询与键匹配得分的注意力方法。"
+    },
+    {
+      "canonical_name": "点积注意力",
+      "entity_type": "method",
+      "description": "利用查询与键的点积衡量相关性的经典注意力计算方式。"
+    },
+    {
+      "canonical_name": "缩放点积注意力",
+      "entity_type": "method",
+      "description": "通过查询与键的点积相似度并结合缩放与 softmax 计算注意力权重的方法。"
+    },
+    {
+      "canonical_name": "自注意力",
+      "entity_type": "method",
+      "description": "让序列内每个位置与同一序列其他位置交互建模上下文依赖的方法。"
+    },
+    {
+      "canonical_name": "多头注意力",
+      "entity_type": "method",
+      "description": "并行使用多个注意力头从不同子空间建模关系的注意力机制。"
+    },
+    {
+      "canonical_name": "注意力头",
+      "entity_type": "concept",
+      "description": "多头注意力中独立建模一种关注模式并输出子空间表示的单个注意力分支。"
+    },
+    {
+      "canonical_name": "查询向量",
+      "entity_type": "concept",
+      "description": "注意力机制中用于发起匹配请求并选择关注信息的向量表示。"
+    },
+    {
+      "canonical_name": "键向量",
+      "entity_type": "concept",
+      "description": "注意力机制中用于被查询匹配并参与相关性计算的向量表示。"
+    },
+    {
+      "canonical_name": "值向量",
+      "entity_type": "concept",
+      "description": "注意力机制中在权重加权后被聚合输出的内容向量表示。"
+    },
+    {
+      "canonical_name": "注意力分数",
+      "entity_type": "concept",
+      "description": "由查询与键之间相似度计算得到并用于后续归一化的注意力匹配分值。"
+    },
+    {
+      "canonical_name": "注意力权重",
+      "entity_type": "concept",
+      "description": "对注意力分数归一化后得到的概率性权重，用于加权聚合值向量。"
+    },
+    {
+      "canonical_name": "缩放因子",
+      "entity_type": "concept",
+      "description": "在缩放点积注意力中用于稳定数值范围和梯度分布的缩放项。"
+    },
+    {
+      "canonical_name": "注意力掩码",
+      "entity_type": "method",
+      "description": "通过屏蔽特定位置来约束注意力可见范围与信息流向的方法。"
+    },
+    {
+      "canonical_name": "因果掩码",
+      "entity_type": "method",
+      "description": "禁止当前位置看到未来词元以实现自回归生成的掩码机制。"
+    },
+    {
+      "canonical_name": "交叉注意力",
+      "entity_type": "method",
+      "description": "让解码端从另一序列或外部上下文读取信息的注意力机制。"
+    },
+    {
+      "canonical_name": "Transformer",
+      "entity_type": "algorithm",
+      "description": "基于自注意力机制的序列建模架构。"
+    },
+    {
+      "canonical_name": "Transformer编码器",
+      "entity_type": "concept",
+      "description": "由自注意力与前馈网络堆叠组成、侧重双向上下文建模的 Transformer 结构。"
+    },
+    {
+      "canonical_name": "Transformer解码器",
+      "entity_type": "concept",
+      "description": "结合因果掩码与自回归生成机制的 Transformer 序列建模结构。"
+    },
+    {
+      "canonical_name": "编码器-解码器架构",
+      "entity_type": "concept",
+      "description": "由编码器负责理解输入、解码器负责逐步生成输出的经典 Transformer 架构形态。"
+    },
+    {
+      "canonical_name": "位置编码",
+      "entity_type": "method",
+      "description": "为序列中每个词元注入位置信息以弥补自注意力顺序感知不足的方法。"
+    },
+    {
+      "canonical_name": "绝对位置编码",
+      "entity_type": "method",
+      "description": "为每个序列位置分配固定或可学习绝对索引表示的位置建模方法。"
+    },
+    {
+      "canonical_name": "相对位置编码",
+      "entity_type": "method",
+      "description": "通过词元之间相对距离建模位置信息的位置表示方法。"
+    },
+    {
+      "canonical_name": "旋转位置编码",
+      "entity_type": "method",
+      "description": "通过旋转变换将相对位置信息注入注意力计算的高效位置编码方法。"
+    },
+    {
+      "canonical_name": "前馈网络",
+      "entity_type": "concept",
+      "description": "位于注意力子层之后并对每个位置独立进行非线性变换的网络模块。"
+    },
+    {
+      "canonical_name": "预训练",
+      "entity_type": "method",
+      "description": "先在大规模通用语料上学习通用表示或生成能力，再迁移到下游任务的训练阶段。"
+    },
+    {
+      "canonical_name": "自编码器",
+      "entity_type": "algorithm",
+      "description": "通过编码和解码重构输入数据以学习紧凑表示的神经网络模型。"
+    },
+    {
+      "canonical_name": "稀疏自编码器",
+      "entity_type": "algorithm",
+      "description": "通过稀疏性约束学习更具判别性和可解释性的自编码器变体。"
+    },
+    {
+      "canonical_name": "生成对抗网络",
+      "entity_type": "algorithm",
+      "description": "通过生成器与判别器对抗训练学习数据分布的经典生成模型。"
+    },
+    {
+      "canonical_name": "生成器",
+      "entity_type": "concept",
+      "description": "在生成模型中负责从潜变量或条件信息产生样本的模型组件。"
+    },
+    {
+      "canonical_name": "判别器",
+      "entity_type": "concept",
+      "description": "在对抗生成框架中用于判断样本真伪或来源的模型组件。"
+    },
+    {
+      "canonical_name": "变分自编码器",
+      "entity_type": "algorithm",
+      "description": "结合变分推断与自编码器结构学习潜变量生成模型的方法。"
+    },
+    {
+      "canonical_name": "潜变量模型",
+      "entity_type": "concept",
+      "description": "通过不可直接观测的潜在变量解释数据生成过程的模型范式。"
+    },
+    {
+      "canonical_name": "重参数化技巧",
+      "entity_type": "method",
+      "description": "将随机采样过程改写为可微形式以支持梯度优化的方法。"
+    },
+    {
+      "canonical_name": "证据下界",
+      "entity_type": "concept",
+      "description": "变分推断中用于近似最大化对数似然的优化目标。"
+    },
+    {
+      "canonical_name": "扩散模型",
+      "entity_type": "algorithm",
+      "description": "通过逐步加噪与反向去噪过程生成高质量样本的生成模型。"
+    },
+    {
+      "canonical_name": "前向扩散过程",
+      "entity_type": "method",
+      "description": "在扩散模型中逐步向数据添加噪声的过程。"
+    },
+    {
+      "canonical_name": "反向去噪过程",
+      "entity_type": "method",
+      "description": "在扩散模型中从噪声逐步恢复样本的生成过程。"
+    },
+    {
+      "canonical_name": "噪声预测",
+      "entity_type": "method",
+      "description": "在扩散模型训练中预测加入噪声成分以实现去噪生成的方法。"
+    },
+    {
+      "canonical_name": "流模型",
+      "entity_type": "topic",
+      "description": "通过可逆变换显式建模概率密度并实现采样的生成模型主题。"
+    },
+    {
+      "canonical_name": "正态化流",
+      "entity_type": "algorithm",
+      "description": "利用一系列可逆映射将简单分布变换为复杂分布的生成模型。"
+    },
+    {
+      "canonical_name": "可逆变换",
+      "entity_type": "concept",
+      "description": "既可前向映射也可精确求逆并保留概率计算能力的变换。"
+    },
+    {
+      "canonical_name": "KL散度",
+      "entity_type": "concept",
+      "description": "衡量一个概率分布相对于另一个概率分布信息差异的指标。"
+    },
+    {
+      "canonical_name": "对比学习",
+      "entity_type": "method",
+      "description": "通过拉近正样本、拉远负样本表示距离学习判别性表征的方法。"
+    },
+    {
+      "canonical_name": "对比损失",
+      "entity_type": "concept",
+      "description": "拉近正样本表示并拉远负样本表示的自监督训练目标。"
+    },
+    {
+      "canonical_name": "正样本对",
+      "entity_type": "concept",
+      "description": "在对比学习中应当被映射到相近表示空间的样本配对。"
+    },
+    {
+      "canonical_name": "负样本对",
+      "entity_type": "concept",
+      "description": "在对比学习中应当被拉开表示距离的样本配对。"
+    },
+    {
+      "canonical_name": "SimCLR",
+      "entity_type": "algorithm",
+      "description": "依赖强数据增强和大批量对比损失的经典自监督算法。"
+    },
+    {
+      "canonical_name": "MoCo",
+      "entity_type": "algorithm",
+      "description": "通过动量编码器和队列字典稳定构造负样本的对比学习算法。"
+    },
+    {
+      "canonical_name": "BYOL",
+      "entity_type": "algorithm",
+      "description": "不显式使用负样本而通过在线网络与目标网络对齐表示的算法。"
+    },
+    {
+      "canonical_name": "动量编码器",
+      "entity_type": "concept",
+      "description": "用指数滑动平均更新参数以稳定目标表示的编码器结构。"
+    },
+    {
+      "canonical_name": "投影头",
+      "entity_type": "concept",
+      "description": "位于主干表征之后用于对比学习目标空间映射的小网络模块。"
+    },
+    {
+      "canonical_name": "掩码预训练",
+      "entity_type": "method",
+      "description": "通过遮蔽部分输入再恢复其内容学习通用表示的预训练方法。"
+    },
+    {
+      "canonical_name": "掩码语言模型",
+      "entity_type": "method",
+      "description": "通过预测被遮盖词元来学习双向上下文表示的预训练任务。"
+    },
+    {
+      "canonical_name": "掩码自编码器",
+      "entity_type": "algorithm",
+      "description": "对可见局部编码并重建被遮蔽区域的自监督模型。"
+    },
+    {
+      "canonical_name": "MAE",
+      "entity_type": "algorithm",
+      "description": "在视觉 Transformer 上使用高比例遮蔽重建的自监督预训练算法。"
+    },
+    {
+      "canonical_name": "CLIP",
+      "entity_type": "algorithm",
+      "description": "通过图文对比学习实现视觉与语言统一表示的经典多模态模型。"
+    },
+    {
+      "canonical_name": "图像分类",
+      "entity_type": "application",
+      "description": "识别图像所属类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "目标检测",
+      "entity_type": "application",
+      "description": "在图像中定位并识别目标类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "图像分割",
+      "entity_type": "application",
+      "description": "对图像像素进行语义或实例级划分的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "文本分类",
+      "entity_type": "application",
+      "description": "将文本映射到预定义类别集合的自然语言处理应用任务。"
+    },
+    {
+      "canonical_name": "机器翻译",
+      "entity_type": "application",
+      "description": "自动将一种自然语言转换为另一种自然语言的任务。"
+    },
+    {
+      "canonical_name": "问答系统",
+      "entity_type": "application",
+      "description": "根据用户问题自动返回答案的智能系统。"
+    },
+    {
+      "canonical_name": "BERT",
+      "entity_type": "algorithm",
+      "description": "基于双向 Transformer 编码器的预训练语言模型。"
+    },
+    {
+      "canonical_name": "大语言模型",
+      "entity_type": "topic",
+      "description": "以海量语料预训练形成通用语言理解与生成能力的大规模模型。"
+    },
+    {
+      "canonical_name": "视觉 Transformer",
+      "entity_type": "algorithm",
+      "description": "将 Transformer 架构应用于图像表示学习与视觉任务建模的方法。"
+    },
+    {
+      "canonical_name": "语音识别",
+      "entity_type": "application",
+      "description": "将语音信号转换为文本或符号序列的任务。"
+    },
+    {
+      "canonical_name": "矩阵乘法",
+      "entity_type": "concept",
+      "description": "用于组合线性变换和执行特征映射计算的基本矩阵运算。"
+    },
+    {
+      "canonical_name": "链式法则",
+      "entity_type": "method",
+      "description": "复合函数求导时逐层传递导数的基本法则。"
+    },
+    {
+      "canonical_name": "偏导数",
+      "entity_type": "concept",
+      "description": "多元函数对某一变量单独变化率的度量。"
+    }
+  ],
+  "relations": [
+    [
+      "神经网络基础",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "优化器与训练策略",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "正则化与归一化",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "参数初始化",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积神经网络",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积架构演化",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "序列神经网络",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力机制",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Transformer架构",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生成模型",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自监督学习",
+      "深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经网络",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "感知机",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "前馈神经网络",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多层感知机",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经元",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "权重",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "偏置",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "激活函数",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "前向传播",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反向传播",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "损失函数",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "万能近似定理",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "表示学习",
+      "神经网络基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "梯度下降",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "随机梯度下降",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "小批量梯度下降",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "学习率",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "批大小",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Momentum",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Nesterov动量",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AdaGrad",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RMSProp",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Adam",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AdamW",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "学习率调度",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "梯度裁剪",
+      "优化器与训练策略",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "正则化",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "批量归一化",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "层归一化",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据增强",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "标签平滑",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "早停",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "过拟合",
+      "正则化与归一化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Xavier初始化",
+      "参数初始化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "He初始化",
+      "参数初始化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LSUV初始化",
+      "参数初始化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积运算",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积核",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "步长",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "填充",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "感受野",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征图",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "通道",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "池化",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "共享权重",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "局部连接",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "1x1卷积",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "转置卷积",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "深度可分离卷积",
+      "卷积神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LeNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AlexNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "VGG",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GoogLeNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ResNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DenseNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SENet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "MobileNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "EfficientNet",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "复合缩放",
+      "卷积架构演化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "循环神经网络",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "循环展开",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时间反向传播",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐状态",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "序列建模",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LSTM",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GRU",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "遗忘门",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "输入门",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "输出门",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "细胞状态",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "更新门",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "重置门",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "双向RNN",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "序列到序列模型",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "教师强制",
+      "序列神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "加性注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "点积注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "缩放点积注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多头注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力头",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "查询向量",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "键向量",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "值向量",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力分数",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力权重",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "缩放因子",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力掩码",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "因果掩码",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "交叉注意力",
+      "注意力机制",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Transformer",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Transformer编码器",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Transformer解码器",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "位置编码",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "前馈网络",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "预训练",
+      "Transformer架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自编码器",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生成对抗网络",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生成器",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "判别器",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "变分自编码器",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "潜变量模型",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "重参数化技巧",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "证据下界",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "扩散模型",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "前向扩散过程",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反向去噪过程",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "噪声预测",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "流模型",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可逆变换",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "KL散度",
+      "生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对比学习",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对比损失",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "正样本对",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "负样本对",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "动量编码器",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "投影头",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "掩码预训练",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CLIP",
+      "自监督学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多层感知机",
+      "前馈神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Sigmoid函数",
+      "激活函数",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Tanh函数",
+      "激活函数",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ReLU函数",
+      "激活函数",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Softmax函数",
+      "激活函数",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "交叉熵",
+      "损失函数",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "感知机",
+      "多层感知机",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "神经元",
+      "感知机",
+      "PART_OF"
+    ],
+    [
+      "权重",
+      "感知机",
+      "PART_OF"
+    ],
+    [
+      "偏置",
+      "感知机",
+      "PART_OF"
+    ],
+    [
+      "激活函数",
+      "多层感知机",
+      "PART_OF"
+    ],
+    [
+      "前向传播",
+      "多层感知机",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "前向传播",
+      "反向传播",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "损失函数",
+      "反向传播",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "反向传播",
+      "深度学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多层感知机",
+      "深度学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "表示学习",
+      "深度学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "万能近似定理",
+      "多层感知机",
+      "RELATED_TO"
+    ],
+    [
+      "矩阵乘法",
+      "多层感知机",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "链式法则",
+      "反向传播",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "偏导数",
+      "反向传播",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "梯度下降",
+      "随机梯度下降",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "学习率",
+      "梯度下降",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "批大小",
+      "小批量梯度下降",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "梯度下降",
+      "Momentum",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Momentum",
+      "Nesterov动量",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "梯度下降",
+      "AdaGrad",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "梯度下降",
+      "RMSProp",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "AdaGrad",
+      "Adam",
+      "RELATED_TO"
+    ],
+    [
+      "RMSProp",
+      "Adam",
+      "RELATED_TO"
+    ],
+    [
+      "Adam",
+      "AdamW",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Warmup",
+      "学习率调度",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "余弦退火",
+      "学习率调度",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "学习率",
+      "学习率调度",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "梯度裁剪",
+      "梯度爆炸",
+      "RELATED_TO"
+    ],
+    [
+      "梯度下降",
+      "反向传播",
+      "RELATED_TO"
+    ],
+    [
+      "随机梯度下降",
+      "深度学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "L1正则化",
+      "正则化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "L2正则化",
+      "正则化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "权重衰减",
+      "正则化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Dropout",
+      "正则化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Sigmoid函数",
+      "Xavier初始化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Tanh函数",
+      "Xavier初始化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "ReLU函数",
+      "He初始化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Dropout",
+      "过拟合",
+      "RELATED_TO"
+    ],
+    [
+      "早停",
+      "过拟合",
+      "RELATED_TO"
+    ],
+    [
+      "权重衰减",
+      "过拟合",
+      "RELATED_TO"
+    ],
+    [
+      "批量归一化",
+      "梯度消失",
+      "RELATED_TO"
+    ],
+    [
+      "批量归一化",
+      "卷积神经网络",
+      "APPLIES_TO"
+    ],
+    [
+      "层归一化",
+      "Transformer",
+      "APPLIES_TO"
+    ],
+    [
+      "数据增强",
+      "图像分类",
+      "RELATED_TO"
+    ],
+    [
+      "数据增强",
+      "目标检测",
+      "RELATED_TO"
+    ],
+    [
+      "数据增强",
+      "图像分割",
+      "RELATED_TO"
+    ],
+    [
+      "卷积核",
+      "卷积运算",
+      "PART_OF"
+    ],
+    [
+      "步长",
+      "卷积运算",
+      "PART_OF"
+    ],
+    [
+      "填充",
+      "卷积运算",
+      "PART_OF"
+    ],
+    [
+      "局部连接",
+      "卷积运算",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "共享权重",
+      "卷积运算",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积运算",
+      "卷积神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "感受野",
+      "卷积神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "特征图",
+      "卷积神经网络",
+      "PART_OF"
+    ],
+    [
+      "通道",
+      "卷积神经网络",
+      "PART_OF"
+    ],
+    [
+      "池化",
+      "卷积神经网络",
+      "PART_OF"
+    ],
+    [
+      "最大池化",
+      "池化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "平均池化",
+      "池化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "1x1卷积",
+      "Inception模块",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Inception模块",
+      "GoogLeNet",
+      "PART_OF"
+    ],
+    [
+      "残差连接",
+      "ResNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "残差块",
+      "ResNet",
+      "PART_OF"
+    ],
+    [
+      "稠密连接",
+      "DenseNet",
+      "PART_OF"
+    ],
+    [
+      "深度可分离卷积",
+      "MobileNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "复合缩放",
+      "EfficientNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "LeNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "AlexNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "VGG",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "GoogLeNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "ResNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "DenseNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "SENet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "MobileNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "EfficientNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "图像分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "目标检测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "图像分割",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "转置卷积",
+      "图像分割",
+      "RELATED_TO"
+    ],
+    [
+      "SENet",
+      "图像分类",
+      "APPLIES_TO"
+    ],
+    [
+      "隐状态",
+      "循环神经网络",
+      "PART_OF"
+    ],
+    [
+      "循环展开",
+      "时间反向传播",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "时间反向传播",
+      "循环神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "LSTM",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "GRU",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "双向RNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "循环神经网络",
+      "序列到序列模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "输入门",
+      "LSTM",
+      "PART_OF"
+    ],
+    [
+      "遗忘门",
+      "LSTM",
+      "PART_OF"
+    ],
+    [
+      "输出门",
+      "LSTM",
+      "PART_OF"
+    ],
+    [
+      "细胞状态",
+      "LSTM",
+      "PART_OF"
+    ],
+    [
+      "更新门",
+      "GRU",
+      "PART_OF"
+    ],
+    [
+      "重置门",
+      "GRU",
+      "PART_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "序列到序列模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "教师强制",
+      "序列到序列模型",
+      "RELATED_TO"
+    ],
+    [
+      "序列建模",
+      "文本分类",
+      "APPLIES_TO"
+    ],
+    [
+      "循环神经网络",
+      "文本分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "序列到序列模型",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "LSTM",
+      "语音识别",
+      "APPLIES_TO"
+    ],
+    [
+      "点积注意力",
+      "缩放点积注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "缩放点积注意力",
+      "自注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自注意力",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多头注意力",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "注意力头",
+      "多头注意力",
+      "PART_OF"
+    ],
+    [
+      "查询向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "键向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "值向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "注意力分数",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "注意力权重",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "缩放因子",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "注意力掩码",
+      "缩放点积注意力",
+      "APPLIES_TO"
+    ],
+    [
+      "因果掩码",
+      "Transformer解码器",
+      "APPLIES_TO"
+    ],
+    [
+      "绝对位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "相对位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "旋转位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "位置编码",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer编码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "Transformer解码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "交叉注意力",
+      "Transformer解码器",
+      "PART_OF"
+    ],
+    [
+      "前馈网络",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "残差连接",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "层归一化",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "交叉注意力",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "交叉注意力",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "Transformer",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "问答系统",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多头注意力",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "矩阵乘法",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "稀疏自编码器",
+      "自编码器",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自编码器",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "生成器",
+      "生成对抗网络",
+      "PART_OF"
+    ],
+    [
+      "判别器",
+      "生成对抗网络",
+      "PART_OF"
+    ],
+    [
+      "潜变量模型",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "重参数化技巧",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "证据下界",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "KL散度",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "前向扩散过程",
+      "扩散模型",
+      "PART_OF"
+    ],
+    [
+      "反向去噪过程",
+      "扩散模型",
+      "PART_OF"
+    ],
+    [
+      "噪声预测",
+      "扩散模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "正态化流",
+      "流模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可逆变换",
+      "正态化流",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "生成模型",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自编码器",
+      "表示学习",
+      "RELATED_TO"
+    ],
+    [
+      "变分自编码器",
+      "表示学习",
+      "RELATED_TO"
+    ],
+    [
+      "对比损失",
+      "对比学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "正样本对",
+      "对比学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "负样本对",
+      "对比学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对比学习",
+      "SimCLR",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对比学习",
+      "MoCo",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对比学习",
+      "BYOL",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "动量编码器",
+      "MoCo",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "动量编码器",
+      "BYOL",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "投影头",
+      "SimCLR",
+      "PART_OF"
+    ],
+    [
+      "掩码预训练",
+      "掩码语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "掩码预训练",
+      "掩码自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "掩码自编码器",
+      "MAE",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "掩码语言模型",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "视觉 Transformer",
+      "MAE",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对比学习",
+      "CLIP",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自监督学习",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对比学习",
+      "表示学习",
+      "RELATED_TO"
+    ],
+    [
+      "CLIP",
+      "视觉 Transformer",
+      "RELATED_TO"
+    ]
+  ]
+}

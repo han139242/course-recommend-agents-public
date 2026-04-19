@@ -74,6 +74,8 @@ type CatalogNodeView struct {
 	CanonicalName    string `json:"canonicalName"`
 	ChapterTitle     string `json:"chapterTitle"`
 	EntityType       string `json:"entityType"`
+	SourcePath       string `json:"sourcePath"`
+	CuratedSource    string `json:"curatedSource"`
 }
 
 // PrerequisiteIndexEdgeView represents a lightweight prerequisite edge.

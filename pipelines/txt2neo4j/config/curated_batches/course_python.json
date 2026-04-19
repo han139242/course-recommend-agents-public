@@ -1,0 +1,579 @@
+{
+  "source": "course_python",
+  "course_title": "Python编程",
+  "nodes": [
+    {
+      "canonical_name": "Python编程",
+      "entity_type": "topic",
+      "description": "围绕Python语言语法、工程实践与AI开发工具链展开的程序设计课程。"
+    },
+    {
+      "canonical_name": "基础语法",
+      "entity_type": "topic",
+      "description": "学习Python解释执行方式、基本数据表示与表达式书写规则的入门主题。"
+    },
+    {
+      "canonical_name": "控制流",
+      "entity_type": "topic",
+      "description": "学习条件分支、循环迭代与推导式组织程序执行路径的核心主题。"
+    },
+    {
+      "canonical_name": "函数编程",
+      "entity_type": "topic",
+      "description": "学习函数抽象、参数组织与高阶函数表达能力的编程主题。"
+    },
+    {
+      "canonical_name": "面向对象编程",
+      "entity_type": "topic",
+      "description": "学习类、对象、继承与多态组织复杂程序结构的编程主题。"
+    },
+    {
+      "canonical_name": "Python数据结构",
+      "entity_type": "topic",
+      "description": "学习列表字典等内置容器及其使用语义的数据组织主题。"
+    },
+    {
+      "canonical_name": "文件IO与异常处理",
+      "entity_type": "topic",
+      "description": "学习文件读写、资源管理与错误恢复机制的工程基础主题。"
+    },
+    {
+      "canonical_name": "模块与包管理",
+      "entity_type": "topic",
+      "description": "学习代码拆分复用、依赖安装与运行环境隔离的工程主题。"
+    },
+    {
+      "canonical_name": "科学计算生态",
+      "entity_type": "topic",
+      "description": "学习Python在数值计算、数据分析与实验可视化中的工具生态。"
+    },
+    {
+      "canonical_name": "并发编程基础",
+      "entity_type": "topic",
+      "description": "学习线程进程与异步协程提升程序吞吐和响应能力的主题。"
+    },
+
+    {
+      "canonical_name": "解释器",
+      "entity_type": "concept",
+      "description": "负责读取并执行Python代码、管理运行时对象与状态的执行环境。"
+    },
+    {
+      "canonical_name": "变量",
+      "entity_type": "concept",
+      "description": "用于绑定对象引用并在程序中复用数据的基本命名机制。"
+    },
+    {
+      "canonical_name": "数据类型",
+      "entity_type": "concept",
+      "description": "用于区分对象表示形式、可用操作与语义约束的分类体系。"
+    },
+    {
+      "canonical_name": "字符串",
+      "entity_type": "concept",
+      "description": "用于表示文本序列并支持切片拼接等操作的基础数据类型。"
+    },
+    {
+      "canonical_name": "运算符",
+      "entity_type": "concept",
+      "description": "用于执行算术比较逻辑与成员判断等计算的符号集合。"
+    },
+    {
+      "canonical_name": "表达式",
+      "entity_type": "concept",
+      "description": "由变量常量和运算符组成并能求值产生结果的语法结构。"
+    },
+    {
+      "canonical_name": "赋值语句",
+      "entity_type": "concept",
+      "description": "将表达式结果绑定到变量名上以保存程序状态的基本语句。"
+    },
+    {
+      "canonical_name": "缩进规则",
+      "entity_type": "concept",
+      "description": "通过统一缩进层级界定代码块范围的Python语法规则。"
+    },
+
+    {
+      "canonical_name": "条件语句",
+      "entity_type": "concept",
+      "description": "根据布尔表达式结果选择不同执行分支的控制结构。"
+    },
+    {
+      "canonical_name": "for循环",
+      "entity_type": "concept",
+      "description": "用于遍历可迭代对象并逐项处理元素的循环结构。"
+    },
+    {
+      "canonical_name": "while循环",
+      "entity_type": "concept",
+      "description": "在条件满足时重复执行代码块并适合状态驱动流程的循环结构。"
+    },
+    {
+      "canonical_name": "列表推导式",
+      "entity_type": "method",
+      "description": "以紧凑语法从可迭代对象生成新列表的构造方式。"
+    },
+    {
+      "canonical_name": "生成器表达式",
+      "entity_type": "method",
+      "description": "按需惰性地产生元素并节省内存的推导式写法。"
+    },
+    {
+      "canonical_name": "可迭代对象",
+      "entity_type": "concept",
+      "description": "能够被for循环逐项访问并返回元素序列的对象类型。"
+    },
+    {
+      "canonical_name": "迭代器",
+      "entity_type": "concept",
+      "description": "保存遍历状态并按需产生下一个元素的对象协议实现。"
+    },
+
+    {
+      "canonical_name": "函数定义",
+      "entity_type": "concept",
+      "description": "使用def封装可复用逻辑并暴露统一调用接口的语法结构。"
+    },
+    {
+      "canonical_name": "参数传递",
+      "entity_type": "concept",
+      "description": "在函数调用时向形参绑定实参对象引用的机制。"
+    },
+    {
+      "canonical_name": "默认参数",
+      "entity_type": "concept",
+      "description": "为函数参数预设缺省值以简化常见调用方式的机制。"
+    },
+    {
+      "canonical_name": "可变参数",
+      "entity_type": "concept",
+      "description": "使用可变长度位置或关键字参数接收不定数量输入的机制。"
+    },
+    {
+      "canonical_name": "作用域",
+      "entity_type": "concept",
+      "description": "规定变量名在局部全局与嵌套环境中可见范围的规则。"
+    },
+    {
+      "canonical_name": "递归",
+      "entity_type": "method",
+      "description": "函数直接或间接调用自身以分解问题的求解方法。"
+    },
+    {
+      "canonical_name": "Lambda表达式",
+      "entity_type": "method",
+      "description": "用于定义轻量匿名函数并常配合高阶操作使用的语法。"
+    },
+    {
+      "canonical_name": "闭包",
+      "entity_type": "concept",
+      "description": "内部函数捕获外层作用域变量并延续其生命周期的结构。"
+    },
+    {
+      "canonical_name": "装饰器",
+      "entity_type": "method",
+      "description": "在不修改原函数主体时为其附加行为的高阶包装机制。"
+    },
+
+    {
+      "canonical_name": "类",
+      "entity_type": "concept",
+      "description": "描述对象属性与行为模板并支持实例化复用的抽象结构。"
+    },
+    {
+      "canonical_name": "实例对象",
+      "entity_type": "concept",
+      "description": "依据类创建并拥有独立状态与行为的具体运行时对象。"
+    },
+    {
+      "canonical_name": "实例属性",
+      "entity_type": "concept",
+      "description": "用于保存对象状态并支撑对象建模的数据成员。"
+    },
+    {
+      "canonical_name": "方法",
+      "entity_type": "concept",
+      "description": "定义在类内部并操作实例状态或类状态的函数。"
+    },
+    {
+      "canonical_name": "继承",
+      "entity_type": "concept",
+      "description": "通过复用父类属性和方法构建层次化类型关系的机制。"
+    },
+    {
+      "canonical_name": "多态",
+      "entity_type": "concept",
+      "description": "同一接口在不同对象上表现出差异化行为的面向对象特性。"
+    },
+    {
+      "canonical_name": "封装",
+      "entity_type": "concept",
+      "description": "通过受控接口隐藏内部实现细节并保护对象状态的设计原则。"
+    },
+    {
+      "canonical_name": "魔术方法",
+      "entity_type": "concept",
+      "description": "用特殊命名协议定制对象打印比较运算等行为的内置钩子。"
+    },
+
+    {
+      "canonical_name": "列表",
+      "entity_type": "concept",
+      "description": "按顺序存放可变元素并支持索引切片追加的常用容器。"
+    },
+    {
+      "canonical_name": "元组",
+      "entity_type": "concept",
+      "description": "按顺序存放不可变元素并适合轻量结构化数据表示的容器。"
+    },
+    {
+      "canonical_name": "字典",
+      "entity_type": "concept",
+      "description": "基于键值映射高效访问数据的哈希容器。"
+    },
+    {
+      "canonical_name": "集合",
+      "entity_type": "concept",
+      "description": "存放不重复元素并支持交并差等运算的无序容器。"
+    },
+    {
+      "canonical_name": "切片",
+      "entity_type": "concept",
+      "description": "通过起止步长参数抽取序列子段的通用访问语法。"
+    },
+    {
+      "canonical_name": "可变与不可变对象",
+      "entity_type": "concept",
+      "description": "区分对象能否原地修改并影响参数传递语义的重要概念。"
+    },
+
+    {
+      "canonical_name": "文件对象",
+      "entity_type": "concept",
+      "description": "封装文件句柄并提供读取写入定位等操作接口的运行时对象。"
+    },
+    {
+      "canonical_name": "上下文管理器",
+      "entity_type": "method",
+      "description": "通过with语法自动申请和释放资源的协议化对象模式。"
+    },
+    {
+      "canonical_name": "异常处理",
+      "entity_type": "method",
+      "description": "使用try等结构捕获运行错误并维持程序健壮性的机制。"
+    },
+    {
+      "canonical_name": "自定义异常",
+      "entity_type": "concept",
+      "description": "为特定业务错误定义专用异常类型以提高可诊断性的方式。"
+    },
+    {
+      "canonical_name": "JSON读写",
+      "entity_type": "method",
+      "description": "使用结构化文本格式在程序与外部系统之间交换数据的方法。"
+    },
+
+    {
+      "canonical_name": "模块",
+      "entity_type": "concept",
+      "description": "将相关函数类和常量组织到单文件中以支持复用的代码单元。"
+    },
+    {
+      "canonical_name": "包",
+      "entity_type": "concept",
+      "description": "通过目录结构管理多个相关模块并形成命名空间的组织方式。"
+    },
+    {
+      "canonical_name": "导入机制",
+      "entity_type": "method",
+      "description": "解析模块路径并将符号绑定到当前作用域的加载流程。"
+    },
+    {
+      "canonical_name": "标准库",
+      "entity_type": "concept",
+      "description": "Python随解释器提供的通用模块集合和基础能力。"
+    },
+    {
+      "canonical_name": "pip",
+      "entity_type": "method",
+      "description": "用于安装升级卸载第三方包的Python包管理工具。"
+    },
+    {
+      "canonical_name": "虚拟环境",
+      "entity_type": "method",
+      "description": "为项目隔离解释器依赖与脚本入口的独立运行环境。"
+    },
+    {
+      "canonical_name": "依赖管理",
+      "entity_type": "method",
+      "description": "对项目所需第三方库版本进行声明锁定与同步的工程实践。"
+    },
+
+    {
+      "canonical_name": "NumPy",
+      "entity_type": "concept",
+      "description": "提供高性能多维数组与向量化数值计算能力的科学计算基础库。"
+    },
+    {
+      "canonical_name": "ndarray",
+      "entity_type": "concept",
+      "description": "NumPy提供的同构多维数组对象，是高效数值计算的核心载体。"
+    },
+    {
+      "canonical_name": "广播机制",
+      "entity_type": "concept",
+      "description": "在维度兼容时自动扩展数组形状以完成逐元素运算的规则。"
+    },
+    {
+      "canonical_name": "向量化计算",
+      "entity_type": "method",
+      "description": "利用底层批量运算替代Python显式循环以提升效率的方法。"
+    },
+    {
+      "canonical_name": "Pandas",
+      "entity_type": "concept",
+      "description": "面向表格数据分析的库，提供清洗转换聚合与时间序列能力。"
+    },
+    {
+      "canonical_name": "Series",
+      "entity_type": "concept",
+      "description": "Pandas中的一维带索引数据结构，适合表示单个字段序列。"
+    },
+    {
+      "canonical_name": "DataFrame",
+      "entity_type": "concept",
+      "description": "Pandas中的二维表格数据结构，适合组织特征与样本数据。"
+    },
+    {
+      "canonical_name": "Matplotlib",
+      "entity_type": "concept",
+      "description": "用于绘制折线图散点图直方图等统计图形的基础可视化库。"
+    },
+    {
+      "canonical_name": "SciPy",
+      "entity_type": "concept",
+      "description": "在NumPy之上提供优化积分统计等科学计算算法的库。"
+    },
+    {
+      "canonical_name": "数据清洗",
+      "entity_type": "method",
+      "description": "对缺失、异常、重复和不一致数据进行处理以提升数据质量的方法。"
+    },
+    {
+      "canonical_name": "特征工程",
+      "entity_type": "method",
+      "description": "围绕特征构造、变换、选择与标准化开展的数据表示优化方法。"
+    },
+    {
+      "canonical_name": "误差分析",
+      "entity_type": "method",
+      "description": "对错误案例按类型、子群体或输入特征进行归纳以定位模型薄弱环节的诊断过程。"
+    },
+    {
+      "canonical_name": "矩阵",
+      "entity_type": "concept",
+      "description": "按行列组织数值并用于表达线性变换和数据表示的基本数学对象。"
+    },
+    {
+      "canonical_name": "矩阵乘法",
+      "entity_type": "concept",
+      "description": "用于组合线性变换和执行特征映射计算的基本矩阵运算。"
+    },
+
+    {
+      "canonical_name": "多线程",
+      "entity_type": "method",
+      "description": "在同一进程中并发执行多个线程以提升I/O场景吞吐的方法。"
+    },
+    {
+      "canonical_name": "GIL",
+      "entity_type": "concept",
+      "description": "限制同一进程同一时刻仅一个线程执行字节码的解释器锁机制。"
+    },
+    {
+      "canonical_name": "多进程",
+      "entity_type": "method",
+      "description": "通过多个独立进程并行执行任务以利用多核计算资源的方法。"
+    },
+    {
+      "canonical_name": "异步IO",
+      "entity_type": "method",
+      "description": "通过事件循环和非阻塞等待提升高并发I/O效率的编程方式。"
+    },
+    {
+      "canonical_name": "协程",
+      "entity_type": "concept",
+      "description": "可暂停与恢复的轻量执行单元，是异步编程的核心抽象。"
+    },
+    {
+      "canonical_name": "事件循环",
+      "entity_type": "concept",
+      "description": "负责调度协程任务、I/O事件与回调执行次序的运行机制。"
+    }
+  ],
+  "relations": [
+    ["基础语法", "Python编程", "SUBTOPIC_OF"],
+    ["控制流", "Python编程", "SUBTOPIC_OF"],
+    ["函数编程", "Python编程", "SUBTOPIC_OF"],
+    ["面向对象编程", "Python编程", "SUBTOPIC_OF"],
+    ["Python数据结构", "Python编程", "SUBTOPIC_OF"],
+    ["文件IO与异常处理", "Python编程", "SUBTOPIC_OF"],
+    ["模块与包管理", "Python编程", "SUBTOPIC_OF"],
+    ["科学计算生态", "Python编程", "SUBTOPIC_OF"],
+    ["并发编程基础", "Python编程", "SUBTOPIC_OF"],
+
+    ["解释器", "基础语法", "SUBTOPIC_OF"],
+    ["变量", "基础语法", "SUBTOPIC_OF"],
+    ["数据类型", "基础语法", "SUBTOPIC_OF"],
+    ["字符串", "基础语法", "SUBTOPIC_OF"],
+    ["运算符", "基础语法", "SUBTOPIC_OF"],
+    ["表达式", "基础语法", "SUBTOPIC_OF"],
+    ["赋值语句", "基础语法", "SUBTOPIC_OF"],
+    ["缩进规则", "基础语法", "SUBTOPIC_OF"],
+
+    ["条件语句", "控制流", "SUBTOPIC_OF"],
+    ["for循环", "控制流", "SUBTOPIC_OF"],
+    ["while循环", "控制流", "SUBTOPIC_OF"],
+    ["列表推导式", "控制流", "SUBTOPIC_OF"],
+    ["生成器表达式", "控制流", "SUBTOPIC_OF"],
+    ["可迭代对象", "控制流", "SUBTOPIC_OF"],
+    ["迭代器", "控制流", "SUBTOPIC_OF"],
+
+    ["函数定义", "函数编程", "SUBTOPIC_OF"],
+    ["参数传递", "函数编程", "SUBTOPIC_OF"],
+    ["默认参数", "函数编程", "SUBTOPIC_OF"],
+    ["可变参数", "函数编程", "SUBTOPIC_OF"],
+    ["作用域", "函数编程", "SUBTOPIC_OF"],
+    ["递归", "函数编程", "SUBTOPIC_OF"],
+    ["Lambda表达式", "函数编程", "SUBTOPIC_OF"],
+    ["闭包", "函数编程", "SUBTOPIC_OF"],
+    ["装饰器", "函数编程", "SUBTOPIC_OF"],
+
+    ["类", "面向对象编程", "SUBTOPIC_OF"],
+    ["实例对象", "面向对象编程", "SUBTOPIC_OF"],
+    ["实例属性", "面向对象编程", "SUBTOPIC_OF"],
+    ["方法", "面向对象编程", "SUBTOPIC_OF"],
+    ["继承", "面向对象编程", "SUBTOPIC_OF"],
+    ["多态", "面向对象编程", "SUBTOPIC_OF"],
+    ["封装", "面向对象编程", "SUBTOPIC_OF"],
+    ["魔术方法", "面向对象编程", "SUBTOPIC_OF"],
+
+    ["列表", "Python数据结构", "SUBTOPIC_OF"],
+    ["元组", "Python数据结构", "SUBTOPIC_OF"],
+    ["字典", "Python数据结构", "SUBTOPIC_OF"],
+    ["集合", "Python数据结构", "SUBTOPIC_OF"],
+    ["切片", "Python数据结构", "SUBTOPIC_OF"],
+    ["可变与不可变对象", "Python数据结构", "SUBTOPIC_OF"],
+
+    ["文件对象", "文件IO与异常处理", "SUBTOPIC_OF"],
+    ["上下文管理器", "文件IO与异常处理", "SUBTOPIC_OF"],
+    ["异常处理", "文件IO与异常处理", "SUBTOPIC_OF"],
+    ["自定义异常", "文件IO与异常处理", "SUBTOPIC_OF"],
+    ["JSON读写", "文件IO与异常处理", "SUBTOPIC_OF"],
+
+    ["模块", "模块与包管理", "SUBTOPIC_OF"],
+    ["包", "模块与包管理", "SUBTOPIC_OF"],
+    ["导入机制", "模块与包管理", "SUBTOPIC_OF"],
+    ["标准库", "模块与包管理", "SUBTOPIC_OF"],
+    ["pip", "模块与包管理", "SUBTOPIC_OF"],
+    ["虚拟环境", "模块与包管理", "SUBTOPIC_OF"],
+    ["依赖管理", "模块与包管理", "SUBTOPIC_OF"],
+
+    ["NumPy", "科学计算生态", "SUBTOPIC_OF"],
+    ["ndarray", "科学计算生态", "SUBTOPIC_OF"],
+    ["广播机制", "科学计算生态", "SUBTOPIC_OF"],
+    ["向量化计算", "科学计算生态", "SUBTOPIC_OF"],
+    ["Pandas", "科学计算生态", "SUBTOPIC_OF"],
+    ["Series", "科学计算生态", "SUBTOPIC_OF"],
+    ["DataFrame", "科学计算生态", "SUBTOPIC_OF"],
+    ["Matplotlib", "科学计算生态", "SUBTOPIC_OF"],
+    ["SciPy", "科学计算生态", "SUBTOPIC_OF"],
+    ["数据清洗", "科学计算生态", "SUBTOPIC_OF"],
+    ["特征工程", "科学计算生态", "SUBTOPIC_OF"],
+    ["误差分析", "科学计算生态", "SUBTOPIC_OF"],
+    ["矩阵", "科学计算生态", "SUBTOPIC_OF"],
+    ["矩阵乘法", "科学计算生态", "SUBTOPIC_OF"],
+
+    ["多线程", "并发编程基础", "SUBTOPIC_OF"],
+    ["GIL", "并发编程基础", "SUBTOPIC_OF"],
+    ["多进程", "并发编程基础", "SUBTOPIC_OF"],
+    ["异步IO", "并发编程基础", "SUBTOPIC_OF"],
+    ["协程", "并发编程基础", "SUBTOPIC_OF"],
+    ["事件循环", "并发编程基础", "SUBTOPIC_OF"],
+
+    ["解释器", "变量", "PREREQUISITE_OF"],
+    ["数据类型", "运算符", "PREREQUISITE_OF"],
+    ["数据类型", "字符串", "PREREQUISITE_OF"],
+    ["运算符", "表达式", "PREREQUISITE_OF"],
+    ["表达式", "条件语句", "PREREQUISITE_OF"],
+    ["缩进规则", "条件语句", "PREREQUISITE_OF"],
+
+    ["可迭代对象", "for循环", "PREREQUISITE_OF"],
+    ["可迭代对象", "列表推导式", "PREREQUISITE_OF"],
+    ["迭代器", "生成器表达式", "PREREQUISITE_OF"],
+    ["for循环", "while循环", "RELATED_TO"],
+    ["列表推导式", "生成器表达式", "RELATED_TO"],
+    ["列表", "列表推导式", "PREREQUISITE_OF"],
+
+    ["函数定义", "参数传递", "PREREQUISITE_OF"],
+    ["参数传递", "默认参数", "PREREQUISITE_OF"],
+    ["参数传递", "可变参数", "PREREQUISITE_OF"],
+    ["作用域", "闭包", "PREREQUISITE_OF"],
+    ["闭包", "装饰器", "PREREQUISITE_OF"],
+    ["函数定义", "递归", "PREREQUISITE_OF"],
+    ["函数定义", "Lambda表达式", "PREREQUISITE_OF"],
+
+    ["类", "实例对象", "PREREQUISITE_OF"],
+    ["类", "实例属性", "PREREQUISITE_OF"],
+    ["类", "方法", "PREREQUISITE_OF"],
+    ["类", "继承", "PREREQUISITE_OF"],
+    ["继承", "多态", "PREREQUISITE_OF"],
+    ["封装", "实例属性", "RELATED_TO"],
+    ["方法", "魔术方法", "PREREQUISITE_OF"],
+
+    ["列表", "元组", "RELATED_TO"],
+    ["列表", "切片", "PREREQUISITE_OF"],
+    ["字符串", "切片", "PREREQUISITE_OF"],
+    ["可变与不可变对象", "列表", "RELATED_TO"],
+    ["可变与不可变对象", "元组", "RELATED_TO"],
+
+    ["文件对象", "上下文管理器", "PREREQUISITE_OF"],
+    ["异常处理", "自定义异常", "PREREQUISITE_OF"],
+    ["文件对象", "JSON读写", "PREREQUISITE_OF"],
+    ["上下文管理器", "异常处理", "RELATED_TO"],
+    ["标准库", "JSON读写", "PREREQUISITE_OF"],
+
+    ["模块", "包", "PREREQUISITE_OF"],
+    ["模块", "导入机制", "PREREQUISITE_OF"],
+    ["包", "依赖管理", "PREREQUISITE_OF"],
+    ["虚拟环境", "依赖管理", "PREREQUISITE_OF"],
+    ["pip", "依赖管理", "RELATED_TO"],
+    ["导入机制", "NumPy", "PREREQUISITE_OF"],
+    ["导入机制", "Pandas", "PREREQUISITE_OF"],
+
+    ["矩阵", "NumPy", "PREREQUISITE_OF"],
+    ["NumPy", "ndarray", "PREREQUISITE_OF"],
+    ["ndarray", "广播机制", "PREREQUISITE_OF"],
+    ["ndarray", "向量化计算", "PREREQUISITE_OF"],
+    ["NumPy", "矩阵乘法", "RELATED_TO"],
+    ["NumPy", "特征工程", "APPLIES_TO"],
+    ["Series", "DataFrame", "PREREQUISITE_OF"],
+    ["Pandas", "数据清洗", "APPLIES_TO"],
+    ["Pandas", "特征工程", "APPLIES_TO"],
+    ["DataFrame", "数据清洗", "RELATED_TO"],
+    ["DataFrame", "特征工程", "RELATED_TO"],
+    ["Matplotlib", "误差分析", "APPLIES_TO"],
+    ["Pandas", "NumPy", "RELATED_TO"],
+    ["NumPy", "SciPy", "PREREQUISITE_OF"],
+    ["SciPy", "矩阵", "RELATED_TO"],
+    ["矩阵乘法", "特征工程", "RELATED_TO"],
+    ["向量化计算", "特征工程", "APPLIES_TO"],
+
+    ["多线程", "GIL", "RELATED_TO"],
+    ["GIL", "多进程", "RELATED_TO"],
+    ["协程", "异步IO", "PREREQUISITE_OF"],
+    ["事件循环", "异步IO", "PREREQUISITE_OF"],
+    ["多线程", "多进程", "RELATED_TO"]
+  ]
+}

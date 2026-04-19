@@ -39,6 +39,13 @@ func TestInferClientActions(t *testing.T) {
 			wantActions: 1,
 		},
 		{
+			name:        "view prerequisite chain naturally",
+			message:     "\u770b\u4e00\u4e0b\u5f3a\u5316\u5b66\u4e60\u7684\u524d\u7f6e\u77e5\u8bc6\u94fe",
+			wantType:    "highlight_prerequisite_chain",
+			wantTarget:  "\u5f3a\u5316\u5b66\u4e60",
+			wantActions: 1,
+		},
+		{
 			name:        "open knowledge detail",
 			message:     "\u6253\u5f00 \u6df1\u5ea6\u5b66\u4e60 \u7684\u8be6\u60c5\u9875",
 			wantType:    "open_knowledge_detail",
@@ -49,7 +56,21 @@ func TestInferClientActions(t *testing.T) {
 			name:        "filter course",
 			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u4eba\u5de5\u667a\u80fd\u8bfe\u7a0b\u77e5\u8bc6\u56fe\u8c31",
 			wantType:    "filter_course",
-			wantCourse:  "\u4eba\u5de5\u667a\u80fd\u8bfe\u7a0b",
+			wantCourse:  "\u77e5\u8bc6\u56fe\u8c31",
+			wantActions: 1,
+		},
+		{
+			name:        "filter course legacy alias",
+			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u4eba\u5de5\u667a\u80fd\u57fa\u7840\u77e5\u8bc6\u9aa8\u67b6",
+			wantType:    "filter_course",
+			wantCourse:  "\u4eba\u5de5\u667a\u80fd\u5bfc\u8bba",
+			wantActions: 1,
+		},
+		{
+			name:        "switch graph to course naturally",
+			message:     "\u5e2e\u6211\u628a\u56fe\u8c31\u5207\u5230\u5f3a\u5316\u5b66\u4e60",
+			wantType:    "filter_course",
+			wantCourse:  "\u5f3a\u5316\u5b66\u4e60",
 			wantActions: 1,
 		},
 		{
@@ -69,6 +90,12 @@ func TestInferClientActions(t *testing.T) {
 			message:     "\u5c55\u5f00 Transformer \u7684\u5173\u8054\u8282\u70b9\u5e76\u805a\u7126\u5230\u56fe\u91cc",
 			wantType:    "expand_knowledge",
 			wantTarget:  "Transformer",
+			wantActions: 2,
+		},
+		{
+			name:        "zoom graph and focus",
+			message:     "\u8bf7\u5e2e\u6211\u7f29\u653e\u56fe\u8c31\u5e76\u805a\u7126\u673a\u5668\u5b66\u4e60",
+			wantType:    "fit_graph_view",
 			wantActions: 2,
 		},
 		{
@@ -109,6 +136,14 @@ func TestInferClientActions(t *testing.T) {
 				}
 				if actions[1].Target != "Transformer" {
 					t.Fatalf("expected second action target %q, got %q", "Transformer", actions[1].Target)
+				}
+			}
+			if testCase.name == "zoom graph and focus" {
+				if actions[1].Type != "focus_knowledge" {
+					t.Fatalf("expected second action type %q, got %q", "focus_knowledge", actions[1].Type)
+				}
+				if actions[1].Target != "机器学习" {
+					t.Fatalf("expected second action target %q, got %q", "机器学习", actions[1].Target)
 				}
 			}
 		})

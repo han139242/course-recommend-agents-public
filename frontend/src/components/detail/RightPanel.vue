@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import BridgeView from './BridgeView.vue'
 import { useUserStore } from '../../stores/userStore'
 import { useGraphStore } from '../../stores/graphStore'
+import { DEFAULT_COURSE_TITLE, normalizeCourseTitle } from '../../utils/courseMeta'
 
 const props = defineProps({
   collapsed: Boolean,
@@ -56,14 +57,14 @@ function getStatusMeta(routeKnowledgeId) {
 }
 
 const crossCourseRecommends = computed(() => {
-  const currentCourse = props.detail?.chapterTitle || ''
+  const currentCourse = normalizeCourseTitle(props.detail?.chapterTitle, DEFAULT_COURSE_TITLE)
   return (props.recommendedPath || [])
     .map((item) => {
       const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
       return {
         ...item,
-        sourceCourse: item.sourceCourse || currentCourse || '',
-        targetCourse: item.targetCourse || node?.chapterTitle || '',
+        sourceCourse: normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE),
+        targetCourse: normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
       }
     })
     .filter((item) => {

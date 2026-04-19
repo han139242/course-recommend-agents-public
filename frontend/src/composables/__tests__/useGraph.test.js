@@ -98,6 +98,40 @@ describe('useGraph viewport constraints', () => {
     expect(screenBottom).toBeLessThanOrEqual(520 - 120)
   })
 
+  it('can center a small scene inside an asymmetric padded viewport for fit-view actions', () => {
+    const nodes = [
+      {
+        id: 'seed-left',
+        x: -80,
+        y: -40,
+        view: { style: { collisionRadius: 52 } },
+      },
+      {
+        id: 'seed-right',
+        x: 84,
+        y: 60,
+        view: { style: { collisionRadius: 52 } },
+      },
+    ]
+
+    const constrained = __graphViewTestUtils.constrainTransformToViewport(
+      { x: 0, y: 0, k: 1 },
+      {
+        nodes,
+        viewport: { width: 1200, height: 820 },
+        padding: { left: 170, right: 170, top: 108, bottom: 234 },
+      },
+    )
+
+    const bounds = __graphViewTestUtils.getBounds(nodes)
+    const centerX = bounds.centerX * constrained.k + constrained.x
+    const centerY = bounds.centerY * constrained.k + constrained.y
+    const expectedCenterY = 108 + (820 - 108 - 234) / 2
+
+    expect(Math.round(centerX)).toBe(Math.round(1200 / 2))
+    expect(Math.round(centerY)).toBe(Math.round(expectedCenterY))
+  })
+
   it('zooms out slightly when an expanded cluster is too large for the safe viewport', () => {
     const bounds = {
       minX: -240,

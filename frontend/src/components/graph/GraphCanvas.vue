@@ -40,6 +40,7 @@ const emit = defineEmits([
 const userStore = useUserStore()
 const tooltip = ref({ visible: false, x: 0, y: 0, node: null, progress: null })
 const contextMenu = ref({ visible: false, x: 0, y: 0, node: null })
+const legendOpen = ref(false)
 
 function findGraphNode(nodeId) {
   return props.graphData.nodes.find((item) => item.id === nodeId) || null
@@ -127,10 +128,12 @@ const {
   zoomOut,
   focusElement,
   softFollowElement,
+  cancelViewportAutomation,
   flashNode,
   getNodeSnapshot,
   getNodeSnapshots,
   getViewportCenterWorld,
+  syncNow,
 } = useGraph({
   data: computed(() => props.graphData),
   stateMap: computed(() => props.stateMap),
@@ -176,9 +179,11 @@ defineExpose({
   closeContextMenu,
   focusElement,
   softFollowElement,
+  cancelViewportAutomation,
   getNodeSnapshot,
   getNodeSnapshots,
   getViewportCenterWorld,
+  syncNow,
 })
 </script>
 
@@ -211,24 +216,36 @@ defineExpose({
       @fullscreen="toggleFullscreen"
     />
 
-    <div class="graph-legend">
-      <div class="graph-legend__group">
-        <span class="graph-legend__title">状态</span>
-        <span class="graph-legend__item"><i class="graph-dot graph-dot--mastered"></i>已掌握</span>
-        <span class="graph-legend__item"><i class="graph-dot graph-dot--learning"></i>学习中</span>
-        <span class="graph-legend__item"><i class="graph-dot graph-dot--weak"></i>薄弱</span>
-      </div>
-      <div class="graph-legend__group">
-        <span class="graph-legend__title">交互</span>
-        <span class="graph-legend__item">单击知识点：聚焦与查看详情</span>
-        <span class="graph-legend__item">双击知识点：展开 / 收回关联节点</span>
-        <span class="graph-legend__item">拖拽节点：局部重排且保持位置</span>
-      </div>
-      <div class="graph-legend__group">
-        <span class="graph-legend__title">关系</span>
-        <span class="graph-legend__item">实线箭头：前置 / 相关 / 应用</span>
-        <span class="graph-legend__item">虚线箭头：属于 / 组成 / 使用</span>
-        <span class="graph-legend__item">同对节点多关系：自动分弧</span>
+    <div class="graph-overlay-stack">
+      <button
+        type="button"
+        class="graph-legend-toggle"
+        :aria-expanded="legendOpen ? 'true' : 'false'"
+        @click="legendOpen = !legendOpen"
+      >
+        <span class="graph-legend-toggle__title">图例与交互</span>
+        <span class="graph-legend-toggle__meta">{{ legendOpen ? '收起' : '展开' }}</span>
+      </button>
+
+      <div v-if="legendOpen" class="graph-legend">
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">状态</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--mastered"></i>已掌握</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--learning"></i>学习中</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--weak"></i>薄弱</span>
+        </div>
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">交互</span>
+          <span class="graph-legend__item">单击知识点：聚焦与查看详情</span>
+          <span class="graph-legend__item">双击知识点：展开 / 收回关联节点</span>
+          <span class="graph-legend__item">拖拽节点：局部重排且保持位置</span>
+        </div>
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">关系</span>
+          <span class="graph-legend__item">实线箭头：前置 / 相关 / 应用</span>
+          <span class="graph-legend__item">虚线箭头：属于 / 组成 / 使用</span>
+          <span class="graph-legend__item">同对节点多关系：自动分弧</span>
+        </div>
       </div>
     </div>
 

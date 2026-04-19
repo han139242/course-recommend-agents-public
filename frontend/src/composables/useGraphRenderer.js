@@ -1,4 +1,5 @@
 import { drawScene } from '../utils/graphDraw'
+import { MAX_ZOOM, MIN_ZOOM } from '../utils/graphLayout'
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2
@@ -103,7 +104,7 @@ export function useGraphRenderer() {
     transform = {
       x: Number(nextTransform.x || 0),
       y: Number(nextTransform.y || 0),
-      k: clamp(Number(nextTransform.k || 1), 0.3, 3),
+      k: clamp(Number(nextTransform.k || 1), MIN_ZOOM, MAX_ZOOM),
     }
   }
 
@@ -152,7 +153,7 @@ export function useGraphRenderer() {
     const to = {
       x: Number(nextTransform.x || 0),
       y: Number(nextTransform.y || 0),
-      k: clamp(Number(nextTransform.k || 1), 0.3, 3),
+      k: clamp(Number(nextTransform.k || 1), MIN_ZOOM, MAX_ZOOM),
     }
     const start = performance.now()
 

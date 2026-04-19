@@ -3,6 +3,7 @@ package service
 import (
 	"strings"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	assistantdto "github.com/han139242/course-recommend-agents/backend/internal/module/assistant/dto"
 )
 
@@ -16,7 +17,7 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 	normalized := normalizeActionText(latestUser)
 	primaryTarget := ""
 
-	if target := extractActionTarget(normalized, "高亮"); target != "" && containsAny(normalized, "前置链", "前置知识链", "先修链", "前置路径") {
+	if target := inferPrerequisiteChainTarget(normalized); target != "" {
 		primaryTarget = firstResolvedTarget(primaryTarget, target)
 		actions = append(actions, assistantdto.ClientAction{
 			Type:   "highlight_prerequisite_chain",
@@ -25,8 +26,8 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 		})
 	}
 
-	if containsAny(normalized, "打开", "查看") {
-		if target := resolveCompoundActionTarget(extractActionTarget(normalized, "打开", "查看"), primaryTarget); target != "" && containsAny(normalized, "详情页", "详情") {
+	if containsAny(normalized, "打开", "查看", "看一下", "看下", "看看", "看一眼") {
+		if target := resolveCompoundActionTarget(extractActionTarget(normalized, "打开", "查看", "看一下", "看下", "看看", "看一眼"), primaryTarget); target != "" && containsAny(normalized, "详情页", "详情", "详情面板") {
 			primaryTarget = firstResolvedTarget(primaryTarget, target)
 			actions = append(actions, assistantdto.ClientAction{
 				Type:   "open_knowledge_detail",
@@ -44,6 +45,23 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 		})
 	}
 
+	if containsAny(
+		normalized,
+		"适配视图",
+		"适配当前图谱",
+		"适配图谱",
+		"fit view",
+		"完整视图",
+		"缩放到全图",
+		"缩放图谱",
+		"缩放视图",
+		"看全图",
+		"看完整图",
+		"居中全图",
+	) {
+		actions = append(actions, assistantdto.ClientAction{Type: "fit_graph_view"})
+	}
+
 	if containsAny(normalized, "聚焦", "定位", "选中") {
 		if target := resolveCompoundActionTarget(extractActionTarget(normalized, "聚焦", "定位", "选中"), primaryTarget); target != "" {
 			actions = append(actions, assistantdto.ClientAction{
@@ -54,17 +72,11 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 		}
 	}
 
-	if containsAny(normalized, "按课程筛选", "筛选课程", "课程筛选") {
-		if courseTitle := cleanCourseTitle(extractActionTarget(normalized, "按课程筛选", "筛选课程", "课程筛选", "筛选")); courseTitle != "" {
-			actions = append(actions, assistantdto.ClientAction{
-				Type:        "filter_course",
-				CourseTitle: courseTitle,
-			})
-		}
-	}
-
-	if containsAny(normalized, "适配视图", "适配当前图谱", "适配图谱", "fit view", "完整视图", "缩放到全图", "居中全图") {
-		actions = append(actions, assistantdto.ClientAction{Type: "fit_graph_view"})
+	if courseTitle := inferCourseFilterTarget(normalized); courseTitle != "" {
+		actions = append(actions, assistantdto.ClientAction{
+			Type:        "filter_course",
+			CourseTitle: courseTitle,
+		})
 	}
 
 	if containsAny(normalized, "重置场景", "重置图谱", "恢复全局", "恢复默认视图", "清空高亮", "重置页面") {
@@ -131,6 +143,10 @@ func normalizeActionText(input string) string {
 }
 
 func extractActionTarget(message string, keywords ...string) string {
+	return cleanActionTarget(extractRawActionTarget(message, keywords...))
+}
+
+func extractRawActionTarget(message string, keywords ...string) string {
 	bestIndex := -1
 	candidate := ""
 
@@ -146,7 +162,7 @@ func extractActionTarget(message string, keywords ...string) string {
 		candidate = message[index+len(keyword):]
 	}
 
-	return cleanActionTarget(candidate)
+	return candidate
 }
 
 func cleanActionTarget(candidate string) string {
@@ -210,12 +226,53 @@ func cleanActionTarget(candidate string) string {
 }
 
 func cleanCourseTitle(candidate string) string {
+	raw := strings.TrimSpace(strings.Trim(candidate, "\"'“”‘’()（）[]【】"))
+	if normalized := coursemeta.NormalizeCourseTitleWithFallback(raw, ""); normalized != "" {
+		return normalized
+	}
 	text := cleanActionTarget(candidate)
+	if normalized := coursemeta.NormalizeCourseTitleWithFallback(text, ""); normalized != "" {
+		return normalized
+	}
 	text = strings.TrimSpace(strings.TrimSuffix(text, "课程知识图谱"))
 	text = strings.TrimSpace(strings.TrimSuffix(text, "课程图谱"))
 	text = strings.TrimSpace(strings.TrimSuffix(text, "知识图谱"))
 	text = strings.TrimSpace(strings.TrimSuffix(text, "图谱"))
-	return strings.TrimSpace(text)
+	return coursemeta.NormalizeCourseTitleWithFallback(text, "")
+}
+
+func inferPrerequisiteChainTarget(message string) string {
+	if !containsAny(message, "前置链", "前置知识链", "先修链", "前置路径", "前置关系", "先修关系") {
+		return ""
+	}
+
+	target := extractActionTarget(message, "高亮", "看一下", "看下", "看看", "看一眼", "查看", "帮我看", "带我看")
+	if target == "" {
+		target = extractActionTarget(message, "聚焦", "定位")
+	}
+	return cleanActionTarget(target)
+}
+
+func inferCourseFilterTarget(message string) string {
+	if courseTitle := cleanCourseTitle(extractRawActionTarget(message, "按课程筛选", "筛选课程", "课程筛选", "筛选")); courseTitle != "" {
+		return courseTitle
+	}
+
+	if !containsAny(message, "图谱", "课程", "课程视图") {
+		return ""
+	}
+
+	return cleanCourseTitle(extractRawActionTarget(
+		message,
+		"图谱切换到",
+		"图谱切到",
+		"切换到课程",
+		"切到课程",
+		"课程切换到",
+		"课程切到",
+		"切换到",
+		"切到",
+	))
 }
 
 func containsAny(input string, keywords ...string) bool {

@@ -1,11 +1,13 @@
-﻿export function buildGraphStateMap({
+import { ALL_COURSE_TITLE } from '../utils/courseMeta'
+
+export function buildGraphStateMap({
   nodes = [],
   edges = [],
   focusedNodeId = null,
   selectedNodeId = null,
   highlightFilter = null,
   highlightPath = [],
-  courseFilter = '全部',
+  courseFilter = ALL_COURSE_TITLE,
   progressMap = {},
   bookmarks = [],
 }) {
@@ -48,7 +50,7 @@
       const weak = mastery < 30 && answeredCount > 0
       const matched =
         (highlightFilter === 'mastered' && mastery >= 80) ||
-        (highlightFilter === 'learning' && mastery >= 40 && mastery < 80) ||
+        (highlightFilter === 'learning' && mastery >= 30 && mastery < 80) ||
         (highlightFilter === 'weak' && weak) ||
         (highlightFilter === 'bookmarked' && bookmarked)
 
@@ -60,7 +62,7 @@
     const id = node.id
     const routeKnowledgeId = node.data?.routeKnowledgeId
     const chapterTitle = node.data?.chapterTitle
-    const courseMatched = courseFilter === '全部' || courseFilter === chapterTitle
+    const courseMatched = courseFilter === ALL_COURSE_TITLE || courseFilter === chapterTitle
     const activeByFocus = !focusedNodeId || adjacencyNodes.has(id)
     const activeByFilter = !highlightFilter || filterMatches.has(id)
     const active = courseMatched && activeByFocus && activeByFilter
@@ -82,9 +84,7 @@
     const targetCourse = targetNode?.data?.chapterTitle || ''
     const crossCourse = Boolean(sourceCourse && targetCourse && sourceCourse !== targetCourse)
     const courseMatched =
-      courseFilter === '全部' ||
-      sourceCourse === courseFilter ||
-      targetCourse === courseFilter
+      courseFilter === ALL_COURSE_TITLE || sourceCourse === courseFilter || targetCourse === courseFilter
     const activeByFocus = !focusedNodeId || adjacencyEdges.has(id)
     const activeByFilter = !highlightFilter || (filterMatches.has(edge.source) && filterMatches.has(edge.target))
     const inPath = Boolean(sourceRoute && targetRoute) && pathEdgePairs.has(`${sourceRoute}->${targetRoute}`)

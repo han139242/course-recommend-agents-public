@@ -1,0 +1,957 @@
+{
+  "source": "course_ai_intro",
+  "course_title": "人工智能导论",
+  "nodes": [
+    {
+      "canonical_name": "人工智能导论",
+      "entity_type": "topic",
+      "description": "系统介绍知识表示、推理、搜索、智能体与智能计算等AI核心思想的基础课程。"
+    },
+    {
+      "canonical_name": "人工智能",
+      "entity_type": "topic",
+      "description": "研究使机器表现出感知、认知、学习、推理与决策能力的综合学科。"
+    },
+    {
+      "canonical_name": "知识表示",
+      "entity_type": "topic",
+      "description": "研究如何形式化表达知识并支持存储、推理与应用的人工智能核心方向。"
+    },
+    {
+      "canonical_name": "推理",
+      "entity_type": "topic",
+      "description": "基于已有知识和规则得到新结论或决策结果的过程。"
+    },
+    {
+      "canonical_name": "确定性推理",
+      "entity_type": "topic",
+      "description": "在规则和事实明确给定条件下得到确定结论的推理方法体系。"
+    },
+    {
+      "canonical_name": "不确定性推理",
+      "entity_type": "topic",
+      "description": "在信息不完备或存在噪声条件下进行结论推断的方法体系。"
+    },
+    {
+      "canonical_name": "搜索",
+      "entity_type": "topic",
+      "description": "在状态空间或解空间中寻找满足目标条件解的方法体系。"
+    },
+    {
+      "canonical_name": "搜索策略",
+      "entity_type": "topic",
+      "description": "围绕状态空间、启发信息与约束条件组织问题求解的搜索方法主题。"
+    },
+    {
+      "canonical_name": "规划",
+      "entity_type": "topic",
+      "description": "为达到目标自动构造行动序列或策略的研究方向。"
+    },
+    {
+      "canonical_name": "规划方法",
+      "entity_type": "topic",
+      "description": "围绕状态表示、动作建模与计划生成构造行动序列的方法主题。"
+    },
+    {
+      "canonical_name": "博弈与决策",
+      "entity_type": "topic",
+      "description": "研究对抗环境中的策略选择、收益评估与行动规划的人工智能主题。"
+    },
+    {
+      "canonical_name": "专家系统",
+      "entity_type": "topic",
+      "description": "模拟领域专家求解问题能力的知识密集型智能系统。"
+    },
+    {
+      "canonical_name": "知识工程",
+      "entity_type": "topic",
+      "description": "围绕知识获取、表示、组织、验证、维护与应用构建智能系统的工程方法体系。"
+    },
+    {
+      "canonical_name": "智能体",
+      "entity_type": "topic",
+      "description": "能够感知环境并采取行动以实现目标的自主实体。"
+    },
+    {
+      "canonical_name": "多智能体系统",
+      "entity_type": "topic",
+      "description": "由多个相互作用智能体构成的协同决策与协作系统。"
+    },
+    {
+      "canonical_name": "智能计算",
+      "entity_type": "topic",
+      "description": "借鉴进化与群体智能机制进行搜索优化和近似求解的方法主题。"
+    },
+
+    {
+      "canonical_name": "命题逻辑",
+      "entity_type": "concept",
+      "description": "以命题及逻辑联结词为基础描述真假关系的形式逻辑体系。"
+    },
+    {
+      "canonical_name": "一阶谓词逻辑表示法",
+      "entity_type": "method",
+      "description": "用谓词逻辑形式化表示对象、属性与关系的知识表示方法。"
+    },
+    {
+      "canonical_name": "谓词",
+      "entity_type": "concept",
+      "description": "用于刻画对象性质或对象间关系的逻辑符号。"
+    },
+    {
+      "canonical_name": "量词",
+      "entity_type": "concept",
+      "description": "用于表达对象范围和存在性约束的谓词逻辑符号。"
+    },
+    {
+      "canonical_name": "合取范式",
+      "entity_type": "concept",
+      "description": "由若干析取子句进行合取得到的逻辑公式标准形式。"
+    },
+    {
+      "canonical_name": "Horn子句",
+      "entity_type": "concept",
+      "description": "至多包含一个正文字的子句形式，是逻辑程序设计与规则推理的重要基础。"
+    },
+    {
+      "canonical_name": "产生式表示法",
+      "entity_type": "method",
+      "description": "使用 if-then 规则表示知识与推理过程的方法。"
+    },
+    {
+      "canonical_name": "框架表示法",
+      "entity_type": "method",
+      "description": "用槽和值组织概念结构与属性信息的知识表示方法。"
+    },
+    {
+      "canonical_name": "槽",
+      "entity_type": "concept",
+      "description": "框架表示中用于存放属性名、默认值和约束信息的结构单元。"
+    },
+    {
+      "canonical_name": "语义网络表示法",
+      "entity_type": "method",
+      "description": "用节点和边表示概念及语义关系的知识表示方法。"
+    },
+    {
+      "canonical_name": "描述逻辑",
+      "entity_type": "method",
+      "description": "用于形式化概念、角色与个体并支持可判定推理的逻辑体系。"
+    },
+    {
+      "canonical_name": "本体",
+      "entity_type": "concept",
+      "description": "对领域概念、关系与约束进行共享形式化描述的知识组织模型。"
+    },
+    {
+      "canonical_name": "知识图谱",
+      "entity_type": "topic",
+      "description": "以图结构组织实体、概念及关系的知识表示与推理技术。"
+    },
+
+    {
+      "canonical_name": "演绎推理",
+      "entity_type": "method",
+      "description": "依据一般规则推出具体结论的推理方式。"
+    },
+    {
+      "canonical_name": "归结原理",
+      "entity_type": "method",
+      "description": "通过对子句进行归结消解实现自动定理证明的经典推理方法。"
+    },
+    {
+      "canonical_name": "合一",
+      "entity_type": "method",
+      "description": "寻找使两个逻辑表达式一致的替换过程，是自动推理的重要步骤。"
+    },
+    {
+      "canonical_name": "前向链推理",
+      "entity_type": "algorithm",
+      "description": "从已知事实出发不断触发规则得到新结论的数据驱动推理策略。"
+    },
+    {
+      "canonical_name": "后向链推理",
+      "entity_type": "algorithm",
+      "description": "从目标结论反向搜索支持规则和事实的目标驱动推理策略。"
+    },
+    {
+      "canonical_name": "默认推理",
+      "entity_type": "method",
+      "description": "在缺乏反例时采用默认假设进行推理的常识推理方法。"
+    },
+    {
+      "canonical_name": "非单调推理",
+      "entity_type": "method",
+      "description": "允许在新知识出现后撤回先前结论的推理方式。"
+    },
+    {
+      "canonical_name": "常识推理",
+      "entity_type": "topic",
+      "description": "模拟人类常识知识使用与补全能力的推理研究方向。"
+    },
+    {
+      "canonical_name": "一致性检验",
+      "entity_type": "method",
+      "description": "检测知识库或逻辑理论是否包含矛盾的验证方法。"
+    },
+    {
+      "canonical_name": "实例推理",
+      "entity_type": "method",
+      "description": "基于类、属性和约束判断个体实例归属与关系的推理任务。"
+    },
+    {
+      "canonical_name": "分类推理",
+      "entity_type": "method",
+      "description": "依据概念定义和包含关系自动构建或验证概念层次结构的推理任务。"
+    },
+
+    {
+      "canonical_name": "概率推理",
+      "entity_type": "method",
+      "description": "在不确定条件下基于概率模型进行推断的方法。"
+    },
+    {
+      "canonical_name": "贝叶斯定理",
+      "entity_type": "concept",
+      "description": "描述先验概率、似然与后验概率之间关系的基本公式。"
+    },
+    {
+      "canonical_name": "条件概率",
+      "entity_type": "concept",
+      "description": "在已知某事件发生条件下另一事件发生的概率。"
+    },
+    {
+      "canonical_name": "先验概率",
+      "entity_type": "concept",
+      "description": "在观察数据之前对事件或假设成立概率的先验判断。"
+    },
+    {
+      "canonical_name": "后验概率",
+      "entity_type": "concept",
+      "description": "结合观测数据后更新得到的事件或假设概率。"
+    },
+    {
+      "canonical_name": "似然",
+      "entity_type": "concept",
+      "description": "在给定参数条件下观测数据出现可能性的度量。"
+    },
+    {
+      "canonical_name": "贝叶斯网络",
+      "entity_type": "algorithm",
+      "description": "以有向无环图表示随机变量条件依赖关系的概率图模型。"
+    },
+    {
+      "canonical_name": "证据理论",
+      "entity_type": "method",
+      "description": "通过证据分配与组合规则处理不确定信息融合的推理理论。"
+    },
+    {
+      "canonical_name": "信任函数",
+      "entity_type": "concept",
+      "description": "用于度量命题在证据理论下可信程度的下限函数。"
+    },
+    {
+      "canonical_name": "模糊集合",
+      "entity_type": "concept",
+      "description": "允许元素以不同隶属度属于集合的扩展集合概念。"
+    },
+    {
+      "canonical_name": "隶属函数",
+      "entity_type": "concept",
+      "description": "刻画元素属于模糊集合程度的函数。"
+    },
+    {
+      "canonical_name": "模糊规则",
+      "entity_type": "method",
+      "description": "以模糊条件和模糊结论构造的 if-then 规则表示方式。"
+    },
+    {
+      "canonical_name": "模糊推理",
+      "entity_type": "method",
+      "description": "基于模糊集合和模糊规则进行近似推断的方法。"
+    },
+
+    {
+      "canonical_name": "状态空间搜索",
+      "entity_type": "method",
+      "description": "将问题表示为状态及状态转移图并在其中寻找目标状态的经典求解方法。"
+    },
+    {
+      "canonical_name": "盲目搜索",
+      "entity_type": "method",
+      "description": "不利用领域启发信息，仅依据问题定义展开搜索的基本策略。"
+    },
+    {
+      "canonical_name": "宽度优先搜索",
+      "entity_type": "algorithm",
+      "description": "按搜索树层次逐层扩展节点并保证最浅解优先发现的图搜索算法。"
+    },
+    {
+      "canonical_name": "深度优先搜索",
+      "entity_type": "algorithm",
+      "description": "沿单条路径尽可能深入再回溯的经典图搜索算法。"
+    },
+    {
+      "canonical_name": "一致代价搜索",
+      "entity_type": "algorithm",
+      "description": "总是扩展当前路径代价最小节点并能求得最优解的搜索算法。"
+    },
+    {
+      "canonical_name": "迭代加深搜索",
+      "entity_type": "algorithm",
+      "description": "通过逐步增加深度限制兼顾深度优先低空间占用与广度优先完备性的搜索算法。"
+    },
+    {
+      "canonical_name": "启发式搜索",
+      "entity_type": "method",
+      "description": "利用启发信息降低搜索空间并提高求解效率的搜索方法。"
+    },
+    {
+      "canonical_name": "最佳优先搜索",
+      "entity_type": "algorithm",
+      "description": "基于评估函数优先扩展最有希望节点的启发式搜索框架。"
+    },
+    {
+      "canonical_name": "启发函数",
+      "entity_type": "concept",
+      "description": "用于估计当前状态到目标状态代价或距离的函数。"
+    },
+    {
+      "canonical_name": "可采纳启发式",
+      "entity_type": "concept",
+      "description": "永不高估到目标最优代价的启发函数性质。"
+    },
+    {
+      "canonical_name": "一致启发式",
+      "entity_type": "concept",
+      "description": "满足三角不等式并保证评估函数单调性的启发函数性质。"
+    },
+    {
+      "canonical_name": "A*搜索算法",
+      "entity_type": "algorithm",
+      "description": "结合路径代价与启发估价函数的经典最优启发式搜索算法。"
+    },
+    {
+      "canonical_name": "约束满足问题",
+      "entity_type": "topic",
+      "description": "在变量、取值域和约束条件下寻找满足全部约束赋值的求解问题。"
+    },
+    {
+      "canonical_name": "回溯搜索",
+      "entity_type": "algorithm",
+      "description": "在约束满足或组合搜索中逐步试探并在冲突时撤销选择的系统搜索算法。"
+    },
+    {
+      "canonical_name": "局部搜索",
+      "entity_type": "method",
+      "description": "通过在当前候选解邻域内不断改进来寻找满意解的搜索方法。"
+    },
+    {
+      "canonical_name": "爬山算法",
+      "entity_type": "algorithm",
+      "description": "每一步都朝评价更优邻域状态移动的贪心局部搜索算法。"
+    },
+    {
+      "canonical_name": "模拟退火",
+      "entity_type": "algorithm",
+      "description": "通过以一定概率接受较差解来跳出局部最优的随机优化搜索算法。"
+    },
+    {
+      "canonical_name": "状态表示",
+      "entity_type": "concept",
+      "description": "对问题求解过程中系统所处情形进行形式化描述的表示方式。"
+    },
+    {
+      "canonical_name": "动作表示",
+      "entity_type": "concept",
+      "description": "对动作前提条件、执行效果和代价进行结构化表达的表示方式。"
+    },
+    {
+      "canonical_name": "STRIPS表示",
+      "entity_type": "method",
+      "description": "用前提、增加表和删除表描述动作与状态变化的经典规划表示方法。"
+    },
+    {
+      "canonical_name": "前向规划",
+      "entity_type": "algorithm",
+      "description": "从初始状态出发不断应用动作生成后继状态直到达到目标的规划策略。"
+    },
+    {
+      "canonical_name": "后向规划",
+      "entity_type": "algorithm",
+      "description": "从目标条件反向回推所需前提并逐步构造计划的规划策略。"
+    },
+    {
+      "canonical_name": "部分序规划",
+      "entity_type": "algorithm",
+      "description": "允许动作仅保持必要先后约束而不完全线性排序的规划方法。"
+    },
+    {
+      "canonical_name": "路径规划",
+      "entity_type": "method",
+      "description": "为智能体或机器人寻找满足约束条件的可行路径的方法。"
+    },
+
+    {
+      "canonical_name": "博弈搜索",
+      "entity_type": "method",
+      "description": "在对抗环境中基于博弈树进行决策求解的方法。"
+    },
+    {
+      "canonical_name": "博弈树",
+      "entity_type": "concept",
+      "description": "用于表示对抗博弈中状态转移和玩家行动分支的树结构。"
+    },
+    {
+      "canonical_name": "极小极大算法",
+      "entity_type": "algorithm",
+      "description": "在对抗决策中通过交替最大化和最小化收益估计选择行动的算法。"
+    },
+    {
+      "canonical_name": "Alpha-Beta剪枝",
+      "entity_type": "algorithm",
+      "description": "通过剪除不可能影响最优决策分支来加速极大极小搜索的算法。"
+    },
+    {
+      "canonical_name": "蒙特卡洛树搜索",
+      "entity_type": "algorithm",
+      "description": "通过随机模拟与搜索树扩展进行决策的启发式搜索算法。"
+    },
+    {
+      "canonical_name": "启发式评估函数",
+      "entity_type": "concept",
+      "description": "在博弈搜索中用于近似估计局面优劣的函数。"
+    },
+    {
+      "canonical_name": "对策规划",
+      "entity_type": "method",
+      "description": "在多方对抗或竞争环境中结合博弈分析与规划进行行动设计的方法。"
+    },
+    {
+      "canonical_name": "博弈论",
+      "entity_type": "topic",
+      "description": "研究多个决策主体在相互影响条件下策略选择与收益关系的理论。"
+    },
+    {
+      "canonical_name": "非合作博弈",
+      "entity_type": "method",
+      "description": "研究各参与方独立优化自身收益时策略互动关系的博弈模型。"
+    },
+    {
+      "canonical_name": "纳什均衡",
+      "entity_type": "concept",
+      "description": "在其他参与方策略固定时任一主体都无利可图单独改变策略的稳定状态。"
+    },
+    {
+      "canonical_name": "效用函数",
+      "entity_type": "concept",
+      "description": "用于刻画决策主体偏好和收益大小的函数表示。"
+    },
+
+    {
+      "canonical_name": "知识库",
+      "entity_type": "concept",
+      "description": "用于组织、存储和管理领域知识及规则的核心知识资源。"
+    },
+    {
+      "canonical_name": "事实",
+      "entity_type": "concept",
+      "description": "知识库中被视为已知为真的基本陈述。"
+    },
+    {
+      "canonical_name": "规则库",
+      "entity_type": "concept",
+      "description": "存放规则形式知识并支撑自动推理的规则集合。"
+    },
+    {
+      "canonical_name": "推理机",
+      "entity_type": "concept",
+      "description": "在知识库基础上执行规则匹配与推理控制的核心组件。"
+    },
+    {
+      "canonical_name": "工作记忆",
+      "entity_type": "concept",
+      "description": "在推理过程中临时保存当前事实、目标和中间结果的动态存储区。"
+    },
+    {
+      "canonical_name": "规则匹配",
+      "entity_type": "method",
+      "description": "将当前事实状态与规则前提条件进行匹配的推理过程。"
+    },
+    {
+      "canonical_name": "冲突消解",
+      "entity_type": "method",
+      "description": "当多条规则同时可触发时选择执行顺序或优先级的控制方法。"
+    },
+    {
+      "canonical_name": "解释机制",
+      "entity_type": "concept",
+      "description": "向用户说明推理过程、依据和结论来源的系统能力。"
+    },
+    {
+      "canonical_name": "可信度因子",
+      "entity_type": "concept",
+      "description": "用于刻画规则或结论可信程度的启发式不确定性表示方式。"
+    },
+    {
+      "canonical_name": "知识获取",
+      "entity_type": "method",
+      "description": "从领域专家、文档或数据中提炼并结构化领域知识的方法。"
+    },
+    {
+      "canonical_name": "领域专家",
+      "entity_type": "concept",
+      "description": "在特定领域拥有丰富经验和判断能力的人类知识来源。"
+    },
+    {
+      "canonical_name": "知识验证",
+      "entity_type": "method",
+      "description": "检验知识库中规则、事实和结构是否正确、完整与一致的方法。"
+    },
+    {
+      "canonical_name": "知识维护",
+      "entity_type": "method",
+      "description": "对知识库进行更新、修订、扩充与版本管理的方法。"
+    },
+    {
+      "canonical_name": "知识编辑器",
+      "entity_type": "concept",
+      "description": "用于录入、编辑、组织和管理知识条目或规则的工具组件。"
+    },
+    {
+      "canonical_name": "案例推理",
+      "entity_type": "method",
+      "description": "通过检索和复用历史相似案例解决新问题的知识推理方法。"
+    },
+    {
+      "canonical_name": "案例库",
+      "entity_type": "concept",
+      "description": "存放历史案例及其问题描述、解决方案和结果的知识资源。"
+    },
+    {
+      "canonical_name": "案例检索",
+      "entity_type": "method",
+      "description": "依据相似性度量从案例库中查找相关历史案例的方法。"
+    },
+    {
+      "canonical_name": "案例复用",
+      "entity_type": "method",
+      "description": "将已有案例的解决方案迁移到当前问题并加以适配的方法。"
+    },
+    {
+      "canonical_name": "案例修正",
+      "entity_type": "method",
+      "description": "根据新问题反馈调整已复用案例解答的修订过程。"
+    },
+    {
+      "canonical_name": "案例保存",
+      "entity_type": "method",
+      "description": "将新问题及其有效解答存入案例库以支持后续复用的方法。"
+    },
+    {
+      "canonical_name": "黑板模型",
+      "entity_type": "method",
+      "description": "由多个知识源围绕共享黑板协同求解复杂问题的系统组织模式。"
+    },
+
+    {
+      "canonical_name": "自主性",
+      "entity_type": "concept",
+      "description": "智能体无需持续外部干预即可自主感知、决策和行动的能力。"
+    },
+    {
+      "canonical_name": "反应性",
+      "entity_type": "concept",
+      "description": "智能体能够及时感知环境变化并做出响应的特性。"
+    },
+    {
+      "canonical_name": "社会性",
+      "entity_type": "concept",
+      "description": "智能体能够与其他智能体或人类进行交互协作的特性。"
+    },
+    {
+      "canonical_name": "反应式Agent",
+      "entity_type": "concept",
+      "description": "依据当前感知直接触发行为规则并快速响应环境变化的智能体结构。"
+    },
+    {
+      "canonical_name": "慎思式Agent",
+      "entity_type": "concept",
+      "description": "依赖内部知识表示、目标推理与规划过程进行决策的智能体结构。"
+    },
+    {
+      "canonical_name": "复合式Agent",
+      "entity_type": "concept",
+      "description": "融合快速反应和深思规划能力并协调多个模块协同决策的智能体结构。"
+    },
+    {
+      "canonical_name": "BDI架构",
+      "entity_type": "concept",
+      "description": "以信念、欲望和意图组织智能体决策循环的经典认知架构。"
+    },
+    {
+      "canonical_name": "信念",
+      "entity_type": "concept",
+      "description": "智能体对环境状态、自身知识和外部事实的内部表征。"
+    },
+    {
+      "canonical_name": "欲望",
+      "entity_type": "concept",
+      "description": "智能体希望达到的目标、偏好或潜在行动倾向。"
+    },
+    {
+      "canonical_name": "意图",
+      "entity_type": "concept",
+      "description": "智能体在多种目标中承诺执行并持续维护的行动计划。"
+    },
+    {
+      "canonical_name": "协作",
+      "entity_type": "concept",
+      "description": "多个智能体通过共享信息和协调行动共同完成任务的行为模式。"
+    },
+    {
+      "canonical_name": "竞争",
+      "entity_type": "concept",
+      "description": "多个智能体在资源、目标或收益上存在冲突时的对抗行为模式。"
+    },
+    {
+      "canonical_name": "通信协议",
+      "entity_type": "method",
+      "description": "规定多智能体之间消息交换格式、时序和语义的交互规则。"
+    },
+    {
+      "canonical_name": "分布式决策",
+      "entity_type": "method",
+      "description": "由多个智能体在局部信息条件下共同完成决策的求解方式。"
+    },
+    {
+      "canonical_name": "协同规划",
+      "entity_type": "method",
+      "description": "多个智能体联合构造行动方案以满足整体目标的规划方法。"
+    },
+    {
+      "canonical_name": "任务分配",
+      "entity_type": "method",
+      "description": "将整体任务合理分解并分派给不同智能体执行的方法。"
+    },
+    {
+      "canonical_name": "协调机制",
+      "entity_type": "method",
+      "description": "用于解决多智能体行动冲突、资源竞争和目标耦合的协调方法。"
+    },
+    {
+      "canonical_name": "一致性算法",
+      "entity_type": "algorithm",
+      "description": "使多个智能体状态或估计逐步趋于一致的分布式协调算法。"
+    },
+
+    {
+      "canonical_name": "进化算法",
+      "entity_type": "topic",
+      "description": "借鉴自然选择和遗传机制通过种群迭代搜索解空间的智能优化方法。"
+    },
+    {
+      "canonical_name": "遗传算法",
+      "entity_type": "algorithm",
+      "description": "通过选择、交叉和变异迭代改进候选解种群的经典进化算法。"
+    },
+    {
+      "canonical_name": "染色体编码",
+      "entity_type": "method",
+      "description": "将候选解表示为可进行遗传操作处理的符号串形式的方法。"
+    },
+    {
+      "canonical_name": "适应度函数",
+      "entity_type": "concept",
+      "description": "用于评价个体解优劣并指导进化方向的目标函数。"
+    },
+    {
+      "canonical_name": "选择算子",
+      "entity_type": "method",
+      "description": "依据个体适应度挑选父代或保留优秀解的遗传操作机制。"
+    },
+    {
+      "canonical_name": "基本遗传算法交叉",
+      "entity_type": "algorithm",
+      "description": "重组父代染色体片段生成新个体以扩大搜索空间的遗传操作。"
+    },
+    {
+      "canonical_name": "基本遗传算法变异",
+      "entity_type": "algorithm",
+      "description": "随机扰动染色体局部基因以维持种群多样性的遗传操作。"
+    },
+    {
+      "canonical_name": "群体设定",
+      "entity_type": "concept",
+      "description": "初始化种群规模、个体分布与编码范围以启动进化搜索的步骤。"
+    },
+    {
+      "canonical_name": "群智能算法",
+      "entity_type": "topic",
+      "description": "借鉴群体协作和局部交互机制求解优化问题的方法类别。"
+    },
+    {
+      "canonical_name": "蚁群算法",
+      "entity_type": "algorithm",
+      "description": "通过信息素更新与路径选择协同搜索组合优化解的群智能算法。"
+    },
+    {
+      "canonical_name": "信息素",
+      "entity_type": "concept",
+      "description": "蚁群算法中记录路径优劣并影响后续搜索概率的共享信号。"
+    },
+    {
+      "canonical_name": "路径启发信息",
+      "entity_type": "concept",
+      "description": "蚁群算法中依据局部代价或距离引导搜索方向的先验信息。"
+    },
+    {
+      "canonical_name": "粒子群优化算法",
+      "entity_type": "algorithm",
+      "description": "通过粒子位置与速度协同更新逼近最优解的群智能优化算法。"
+    },
+    {
+      "canonical_name": "粒子速度",
+      "entity_type": "concept",
+      "description": "粒子群优化中控制粒子移动方向和步长的状态变量。"
+    },
+    {
+      "canonical_name": "粒子位置",
+      "entity_type": "concept",
+      "description": "粒子群优化中表示当前候选解所在坐标的状态变量。"
+    }
+  ],
+  "relations": [
+    ["人工智能导论", "人工智能", "SUBTOPIC_OF"],
+    ["知识表示", "人工智能导论", "SUBTOPIC_OF"],
+    ["推理", "人工智能导论", "SUBTOPIC_OF"],
+    ["搜索", "人工智能导论", "SUBTOPIC_OF"],
+    ["规划", "人工智能导论", "SUBTOPIC_OF"],
+    ["专家系统", "人工智能导论", "SUBTOPIC_OF"],
+    ["知识工程", "人工智能导论", "SUBTOPIC_OF"],
+    ["智能体", "人工智能导论", "SUBTOPIC_OF"],
+    ["多智能体系统", "人工智能导论", "SUBTOPIC_OF"],
+    ["智能计算", "人工智能导论", "SUBTOPIC_OF"],
+    ["博弈与决策", "人工智能导论", "SUBTOPIC_OF"],
+    ["确定性推理", "推理", "SUBTOPIC_OF"],
+    ["不确定性推理", "推理", "SUBTOPIC_OF"],
+    ["搜索策略", "搜索", "SUBTOPIC_OF"],
+    ["规划方法", "规划", "SUBTOPIC_OF"],
+    ["知识表示", "推理", "PREREQUISITE_OF"],
+    ["知识表示", "专家系统", "PREREQUISITE_OF"],
+    ["搜索", "规划", "RELATED_TO"],
+    ["规划", "智能体", "RELATED_TO"],
+    ["博弈与决策", "搜索", "RELATED_TO"],
+
+    ["命题逻辑", "知识表示", "SUBTOPIC_OF"],
+    ["一阶谓词逻辑表示法", "知识表示", "SUBTOPIC_OF"],
+    ["产生式表示法", "知识表示", "SUBTOPIC_OF"],
+    ["框架表示法", "知识表示", "SUBTOPIC_OF"],
+    ["语义网络表示法", "知识表示", "SUBTOPIC_OF"],
+    ["描述逻辑", "知识表示", "SUBTOPIC_OF"],
+    ["本体", "知识表示", "SUBTOPIC_OF"],
+    ["知识图谱", "知识表示", "SUBTOPIC_OF"],
+    ["谓词", "一阶谓词逻辑表示法", "PART_OF"],
+    ["量词", "一阶谓词逻辑表示法", "PART_OF"],
+    ["命题逻辑", "一阶谓词逻辑表示法", "PREREQUISITE_OF"],
+    ["合取范式", "命题逻辑", "SUBTOPIC_OF"],
+    ["Horn子句", "产生式表示法", "RELATED_TO"],
+    ["Horn子句", "归结原理", "PREREQUISITE_OF"],
+    ["合取范式", "归结原理", "PREREQUISITE_OF"],
+    ["槽", "框架表示法", "PART_OF"],
+    ["语义网络表示法", "知识图谱", "RELATED_TO"],
+    ["描述逻辑", "本体", "RELATED_TO"],
+    ["本体", "知识图谱", "PREREQUISITE_OF"],
+    ["产生式表示法", "前向链推理", "RELATED_TO"],
+    ["产生式表示法", "后向链推理", "RELATED_TO"],
+    ["知识表示", "知识图谱", "PREREQUISITE_OF"],
+
+    ["演绎推理", "确定性推理", "SUBTOPIC_OF"],
+    ["归结原理", "演绎推理", "SUBTOPIC_OF"],
+    ["合一", "归结原理", "PREREQUISITE_OF"],
+    ["前向链推理", "演绎推理", "SUBTOPIC_OF"],
+    ["后向链推理", "演绎推理", "SUBTOPIC_OF"],
+    ["默认推理", "非单调推理", "SUBTOPIC_OF"],
+    ["非单调推理", "确定性推理", "SUBTOPIC_OF"],
+    ["常识推理", "非单调推理", "RELATED_TO"],
+    ["一致性检验", "确定性推理", "SUBTOPIC_OF"],
+    ["实例推理", "确定性推理", "SUBTOPIC_OF"],
+    ["分类推理", "确定性推理", "SUBTOPIC_OF"],
+    ["描述逻辑", "一致性检验", "RELATED_TO"],
+    ["本体", "一致性检验", "RELATED_TO"],
+    ["本体", "实例推理", "RELATED_TO"],
+    ["本体", "分类推理", "RELATED_TO"],
+
+    ["概率推理", "不确定性推理", "SUBTOPIC_OF"],
+    ["模糊推理", "不确定性推理", "SUBTOPIC_OF"],
+    ["证据理论", "不确定性推理", "SUBTOPIC_OF"],
+    ["贝叶斯定理", "概率推理", "SUBTOPIC_OF"],
+    ["条件概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["先验概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["后验概率", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["似然", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["贝叶斯网络", "概率推理", "SUBTOPIC_OF"],
+    ["条件概率", "贝叶斯网络", "PREREQUISITE_OF"],
+    ["贝叶斯定理", "贝叶斯网络", "PREREQUISITE_OF"],
+    ["信任函数", "证据理论", "PREREQUISITE_OF"],
+    ["可信度因子", "证据理论", "RELATED_TO"],
+    ["模糊集合", "模糊推理", "PREREQUISITE_OF"],
+    ["隶属函数", "模糊集合", "PREREQUISITE_OF"],
+    ["模糊规则", "模糊推理", "SUBTOPIC_OF"],
+    ["隶属函数", "模糊规则", "PREREQUISITE_OF"],
+    ["模糊推理", "可信度因子", "RELATED_TO"],
+
+    ["状态空间搜索", "搜索策略", "SUBTOPIC_OF"],
+    ["盲目搜索", "状态空间搜索", "SUBTOPIC_OF"],
+    ["宽度优先搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["深度优先搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["一致代价搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["迭代加深搜索", "盲目搜索", "SUBTOPIC_OF"],
+    ["启发式搜索", "搜索策略", "SUBTOPIC_OF"],
+    ["最佳优先搜索", "启发式搜索", "SUBTOPIC_OF"],
+    ["启发函数", "启发式搜索", "PREREQUISITE_OF"],
+    ["启发函数", "A*搜索算法", "PREREQUISITE_OF"],
+    ["可采纳启发式", "启发函数", "SUBTOPIC_OF"],
+    ["一致启发式", "启发函数", "SUBTOPIC_OF"],
+    ["可采纳启发式", "A*搜索算法", "PREREQUISITE_OF"],
+    ["一致启发式", "A*搜索算法", "PREREQUISITE_OF"],
+    ["最佳优先搜索", "A*搜索算法", "PREREQUISITE_OF"],
+    ["一致代价搜索", "A*搜索算法", "RELATED_TO"],
+    ["约束满足问题", "搜索策略", "SUBTOPIC_OF"],
+    ["回溯搜索", "约束满足问题", "SUBTOPIC_OF"],
+    ["局部搜索", "搜索策略", "SUBTOPIC_OF"],
+    ["爬山算法", "局部搜索", "SUBTOPIC_OF"],
+    ["模拟退火", "局部搜索", "SUBTOPIC_OF"],
+    ["状态表示", "状态空间搜索", "PREREQUISITE_OF"],
+    ["状态表示", "规划方法", "PREREQUISITE_OF"],
+    ["动作表示", "规划方法", "PREREQUISITE_OF"],
+    ["STRIPS表示", "规划方法", "SUBTOPIC_OF"],
+    ["前向规划", "规划方法", "SUBTOPIC_OF"],
+    ["后向规划", "规划方法", "SUBTOPIC_OF"],
+    ["部分序规划", "规划方法", "SUBTOPIC_OF"],
+    ["状态表示", "STRIPS表示", "PREREQUISITE_OF"],
+    ["动作表示", "STRIPS表示", "PREREQUISITE_OF"],
+    ["STRIPS表示", "前向规划", "PREREQUISITE_OF"],
+    ["STRIPS表示", "后向规划", "PREREQUISITE_OF"],
+    ["动作表示", "前向规划", "PREREQUISITE_OF"],
+    ["动作表示", "后向规划", "PREREQUISITE_OF"],
+    ["前向规划", "路径规划", "RELATED_TO"],
+    ["后向规划", "路径规划", "RELATED_TO"],
+    ["局部搜索", "路径规划", "RELATED_TO"],
+
+    ["博弈搜索", "博弈与决策", "SUBTOPIC_OF"],
+    ["博弈论", "博弈与决策", "SUBTOPIC_OF"],
+    ["对策规划", "博弈与决策", "SUBTOPIC_OF"],
+    ["效用函数", "博弈与决策", "SUBTOPIC_OF"],
+    ["博弈树", "博弈搜索", "PREREQUISITE_OF"],
+    ["极小极大算法", "博弈搜索", "SUBTOPIC_OF"],
+    ["启发式评估函数", "极小极大算法", "PREREQUISITE_OF"],
+    ["极小极大算法", "Alpha-Beta剪枝", "PREREQUISITE_OF"],
+    ["蒙特卡洛树搜索", "博弈搜索", "SUBTOPIC_OF"],
+    ["蒙特卡洛树搜索", "博弈树", "RELATED_TO"],
+    ["非合作博弈", "博弈论", "SUBTOPIC_OF"],
+    ["纳什均衡", "非合作博弈", "SUBTOPIC_OF"],
+    ["对策规划", "规划方法", "RELATED_TO"],
+    ["对策规划", "博弈搜索", "RELATED_TO"],
+
+    ["知识库", "专家系统", "PART_OF"],
+    ["推理机", "专家系统", "PART_OF"],
+    ["工作记忆", "专家系统", "PART_OF"],
+    ["解释机制", "专家系统", "PART_OF"],
+    ["事实", "知识库", "PART_OF"],
+    ["规则库", "知识库", "PART_OF"],
+    ["规则匹配", "推理机", "RELATED_TO"],
+    ["冲突消解", "推理机", "RELATED_TO"],
+    ["规则库", "前向链推理", "PREREQUISITE_OF"],
+    ["规则库", "后向链推理", "PREREQUISITE_OF"],
+    ["事实", "前向链推理", "PREREQUISITE_OF"],
+    ["工作记忆", "前向链推理", "PREREQUISITE_OF"],
+    ["工作记忆", "后向链推理", "PREREQUISITE_OF"],
+    ["规则匹配", "前向链推理", "PREREQUISITE_OF"],
+    ["规则匹配", "后向链推理", "PREREQUISITE_OF"],
+    ["冲突消解", "前向链推理", "PREREQUISITE_OF"],
+    ["冲突消解", "后向链推理", "PREREQUISITE_OF"],
+    ["可信度因子", "专家系统", "RELATED_TO"],
+    ["知识获取", "知识工程", "SUBTOPIC_OF"],
+    ["知识验证", "知识工程", "SUBTOPIC_OF"],
+    ["知识维护", "知识工程", "SUBTOPIC_OF"],
+    ["领域专家", "知识获取", "PREREQUISITE_OF"],
+    ["知识编辑器", "知识工程", "PART_OF"],
+    ["知识编辑器", "知识库", "RELATED_TO"],
+    ["知识验证", "一致性检验", "RELATED_TO"],
+    ["知识维护", "知识库", "RELATED_TO"],
+    ["案例推理", "知识工程", "SUBTOPIC_OF"],
+    ["案例库", "案例推理", "PREREQUISITE_OF"],
+    ["案例检索", "案例推理", "SUBTOPIC_OF"],
+    ["案例复用", "案例推理", "SUBTOPIC_OF"],
+    ["案例修正", "案例推理", "SUBTOPIC_OF"],
+    ["案例保存", "案例推理", "SUBTOPIC_OF"],
+    ["案例检索", "案例复用", "PREREQUISITE_OF"],
+    ["案例复用", "案例修正", "PREREQUISITE_OF"],
+    ["案例修正", "案例保存", "PREREQUISITE_OF"],
+    ["黑板模型", "知识工程", "SUBTOPIC_OF"],
+    ["黑板模型", "专家系统", "RELATED_TO"],
+
+    ["自主性", "智能体", "PART_OF"],
+    ["反应性", "智能体", "PART_OF"],
+    ["社会性", "智能体", "PART_OF"],
+    ["反应式Agent", "智能体", "SUBTOPIC_OF"],
+    ["慎思式Agent", "智能体", "SUBTOPIC_OF"],
+    ["复合式Agent", "智能体", "SUBTOPIC_OF"],
+    ["BDI架构", "智能体", "SUBTOPIC_OF"],
+    ["信念", "BDI架构", "PART_OF"],
+    ["欲望", "BDI架构", "PART_OF"],
+    ["意图", "BDI架构", "PART_OF"],
+    ["反应性", "反应式Agent", "RELATED_TO"],
+    ["规划", "慎思式Agent", "RELATED_TO"],
+    ["反应式Agent", "复合式Agent", "RELATED_TO"],
+    ["慎思式Agent", "复合式Agent", "RELATED_TO"],
+    ["智能体", "多智能体系统", "PREREQUISITE_OF"],
+    ["协作", "多智能体系统", "SUBTOPIC_OF"],
+    ["竞争", "多智能体系统", "SUBTOPIC_OF"],
+    ["通信协议", "多智能体系统", "SUBTOPIC_OF"],
+    ["分布式决策", "多智能体系统", "SUBTOPIC_OF"],
+    ["协同规划", "多智能体系统", "SUBTOPIC_OF"],
+    ["任务分配", "多智能体系统", "SUBTOPIC_OF"],
+    ["协调机制", "多智能体系统", "SUBTOPIC_OF"],
+    ["一致性算法", "多智能体系统", "SUBTOPIC_OF"],
+    ["通信协议", "协调机制", "PREREQUISITE_OF"],
+    ["任务分配", "协同规划", "PREREQUISITE_OF"],
+    ["协调机制", "协作", "RELATED_TO"],
+    ["协调机制", "竞争", "RELATED_TO"],
+    ["分布式决策", "协同规划", "RELATED_TO"],
+    ["协同规划", "规划方法", "RELATED_TO"],
+    ["社会性", "通信协议", "PREREQUISITE_OF"],
+    ["竞争", "非合作博弈", "RELATED_TO"],
+
+    ["进化算法", "智能计算", "SUBTOPIC_OF"],
+    ["群智能算法", "智能计算", "SUBTOPIC_OF"],
+    ["遗传算法", "进化算法", "SUBTOPIC_OF"],
+    ["染色体编码", "遗传算法", "SUBTOPIC_OF"],
+    ["适应度函数", "遗传算法", "SUBTOPIC_OF"],
+    ["选择算子", "遗传算法", "SUBTOPIC_OF"],
+    ["基本遗传算法交叉", "遗传算法", "SUBTOPIC_OF"],
+    ["基本遗传算法变异", "遗传算法", "SUBTOPIC_OF"],
+    ["群体设定", "遗传算法", "SUBTOPIC_OF"],
+    ["染色体编码", "遗传算法", "PREREQUISITE_OF"],
+    ["适应度函数", "遗传算法", "PREREQUISITE_OF"],
+    ["选择算子", "基本遗传算法交叉", "RELATED_TO"],
+    ["选择算子", "基本遗传算法变异", "RELATED_TO"],
+    ["蚁群算法", "群智能算法", "SUBTOPIC_OF"],
+    ["信息素", "蚁群算法", "PREREQUISITE_OF"],
+    ["路径启发信息", "蚁群算法", "PREREQUISITE_OF"],
+    ["粒子群优化算法", "群智能算法", "SUBTOPIC_OF"],
+    ["粒子速度", "粒子群优化算法", "PART_OF"],
+    ["粒子位置", "粒子群优化算法", "PART_OF"],
+    ["局部搜索", "智能计算", "RELATED_TO"],
+    ["模拟退火", "智能计算", "RELATED_TO"],
+    ["蚁群算法", "路径规划", "RELATED_TO"],
+
+    ["贝叶斯定理", "朴素贝叶斯", "PREREQUISITE_OF"],
+    ["状态表示", "强化学习", "PREREQUISITE_OF"],
+    ["蒙特卡洛树搜索", "强化学习", "RELATED_TO"],
+    ["多智能体系统", "多智能体强化学习", "PREREQUISITE_OF"],
+    ["路径规划", "机器人学", "RELATED_TO"],
+    ["粒子群优化算法", "调度优化", "RELATED_TO"]
+  ]
+}

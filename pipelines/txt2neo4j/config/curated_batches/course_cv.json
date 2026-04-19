@@ -1,0 +1,1408 @@
+{
+  "source": "course_cv",
+  "course_title": "计算机视觉",
+  "nodes": [
+    {
+      "canonical_name": "计算机视觉",
+      "entity_type": "topic",
+      "description": "研究使计算机获取、处理并理解图像与视频信息的方法。"
+    },
+    {
+      "canonical_name": "图像基础",
+      "entity_type": "topic",
+      "description": "围绕像素表示、滤波增强与基础几何边缘操作展开的视觉基础主题。"
+    },
+    {
+      "canonical_name": "特征描述子",
+      "entity_type": "topic",
+      "description": "围绕手工特征提取、局部描述与不变性表示展开的视觉主题。"
+    },
+    {
+      "canonical_name": "图像分类",
+      "entity_type": "application",
+      "description": "识别图像所属类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "目标检测",
+      "entity_type": "application",
+      "description": "在图像中定位并识别目标类别的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "图像分割",
+      "entity_type": "application",
+      "description": "对图像像素进行语义或实例级划分的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "目标跟踪",
+      "entity_type": "application",
+      "description": "在视频序列中持续定位并关联目标轨迹的计算机视觉任务。"
+    },
+    {
+      "canonical_name": "人脸识别",
+      "entity_type": "topic",
+      "description": "面向身份验证与检索的人脸特征建模和判别学习主题。"
+    },
+    {
+      "canonical_name": "姿态估计",
+      "entity_type": "topic",
+      "description": "围绕人体关键点定位与骨架结构恢复展开的视觉任务主题。"
+    },
+    {
+      "canonical_name": "3D视觉",
+      "entity_type": "topic",
+      "description": "围绕场景几何恢复、深度建模与三维表示学习展开的视觉主题。"
+    },
+    {
+      "canonical_name": "视觉 Transformer",
+      "entity_type": "algorithm",
+      "description": "将 Transformer 架构应用于图像表示学习与视觉任务建模的方法。"
+    },
+    {
+      "canonical_name": "像素",
+      "entity_type": "concept",
+      "description": "构成数字图像的最小采样单元，携带亮度或颜色等基础信息。"
+    },
+    {
+      "canonical_name": "色彩空间",
+      "entity_type": "concept",
+      "description": "组织颜色表示方式并定义颜色分量含义的数学表示体系。"
+    },
+    {
+      "canonical_name": "RGB",
+      "entity_type": "concept",
+      "description": "以红绿蓝三通道组合表达颜色信息的经典色彩空间。"
+    },
+    {
+      "canonical_name": "HSV",
+      "entity_type": "concept",
+      "description": "以色调、饱和度和明度表示颜色的感知式色彩空间。"
+    },
+    {
+      "canonical_name": "图像预处理",
+      "entity_type": "method",
+      "description": "在视觉任务前对图像进行去噪、归一化、裁剪和尺度调整等处理的方法。"
+    },
+    {
+      "canonical_name": "图像增强",
+      "entity_type": "method",
+      "description": "通过变换训练图像提升模型泛化能力和数据多样性的方法。"
+    },
+    {
+      "canonical_name": "图像滤波",
+      "entity_type": "method",
+      "description": "通过局部邻域运算抑制噪声或增强结构信息的图像处理方法。"
+    },
+    {
+      "canonical_name": "高斯滤波",
+      "entity_type": "method",
+      "description": "利用高斯核平滑图像并抑制高频噪声的经典滤波方法。"
+    },
+    {
+      "canonical_name": "中值滤波",
+      "entity_type": "method",
+      "description": "以邻域像素中值替换当前像素以抑制椒盐噪声的滤波方法。"
+    },
+    {
+      "canonical_name": "卷积运算",
+      "entity_type": "method",
+      "description": "利用局部感受野与共享参数在空间上提取模式的线性运算。"
+    },
+    {
+      "canonical_name": "边缘检测",
+      "entity_type": "method",
+      "description": "识别图像中灰度或颜色突变边界的经典视觉分析方法。"
+    },
+    {
+      "canonical_name": "Sobel算子",
+      "entity_type": "method",
+      "description": "利用一阶梯度近似检测图像边缘方向和强度的经典算子。"
+    },
+    {
+      "canonical_name": "Canny边缘检测",
+      "entity_type": "algorithm",
+      "description": "结合平滑、梯度、非极大值抑制和双阈值连接的边缘检测算法。"
+    },
+    {
+      "canonical_name": "形态学操作",
+      "entity_type": "method",
+      "description": "基于结构元素对图像形状进行变换和分析的处理方法。"
+    },
+    {
+      "canonical_name": "腐蚀",
+      "entity_type": "method",
+      "description": "缩小前景区域并去除细小噪声的基础形态学操作。"
+    },
+    {
+      "canonical_name": "膨胀",
+      "entity_type": "method",
+      "description": "扩展前景区域并连接邻近结构的基础形态学操作。"
+    },
+    {
+      "canonical_name": "角点检测",
+      "entity_type": "method",
+      "description": "检测图像中局部显著变化点以支持匹配和跟踪的方法。"
+    },
+    {
+      "canonical_name": "特征提取",
+      "entity_type": "method",
+      "description": "从图像中提炼可区分表示以支撑识别、匹配和分析的方法。"
+    },
+    {
+      "canonical_name": "局部特征描述子",
+      "entity_type": "concept",
+      "description": "用于编码图像局部区域纹理和结构信息的特征表示。"
+    },
+    {
+      "canonical_name": "SIFT",
+      "entity_type": "algorithm",
+      "description": "对尺度和旋转具有较强鲁棒性的经典局部特征检测与描述算法。"
+    },
+    {
+      "canonical_name": "SURF",
+      "entity_type": "algorithm",
+      "description": "在速度和鲁棒性之间取得平衡的经典局部特征算法。"
+    },
+    {
+      "canonical_name": "ORB",
+      "entity_type": "algorithm",
+      "description": "结合 FAST 角点与 BRIEF 描述子的高效局部特征算法。"
+    },
+    {
+      "canonical_name": "HOG",
+      "entity_type": "method",
+      "description": "统计局部梯度方向分布以描述目标形状轮廓的特征表示方法。"
+    },
+    {
+      "canonical_name": "LBP",
+      "entity_type": "method",
+      "description": "通过邻域灰度比较编码纹理模式的轻量局部纹理描述方法。"
+    },
+    {
+      "canonical_name": "Harris角点",
+      "entity_type": "method",
+      "description": "依据局部灰度变化矩阵检测稳定角点响应的经典方法。"
+    },
+    {
+      "canonical_name": "尺度不变性",
+      "entity_type": "concept",
+      "description": "特征在目标尺寸变化时仍保持稳定辨识能力的性质。"
+    },
+    {
+      "canonical_name": "旋转不变性",
+      "entity_type": "concept",
+      "description": "特征在图像发生旋转时仍能保持一致表达的性质。"
+    },
+    {
+      "canonical_name": "卷积神经网络",
+      "entity_type": "algorithm",
+      "description": "擅长处理图像等网格结构数据的深度神经网络模型。"
+    },
+    {
+      "canonical_name": "LeNet",
+      "entity_type": "algorithm",
+      "description": "早期将卷积与池化成功用于手写数字识别的经典卷积网络。"
+    },
+    {
+      "canonical_name": "AlexNet",
+      "entity_type": "algorithm",
+      "description": "推动深度卷积网络在 ImageNet 上突破的重要经典架构。"
+    },
+    {
+      "canonical_name": "VGG",
+      "entity_type": "algorithm",
+      "description": "使用连续小卷积核堆叠构建深层视觉表示的经典网络。"
+    },
+    {
+      "canonical_name": "GoogLeNet",
+      "entity_type": "algorithm",
+      "description": "通过 Inception 模块并行聚合多尺度特征的经典卷积架构。"
+    },
+    {
+      "canonical_name": "ResNet",
+      "entity_type": "algorithm",
+      "description": "通过残差学习缓解深层网络退化问题的经典卷积架构。"
+    },
+    {
+      "canonical_name": "DenseNet",
+      "entity_type": "algorithm",
+      "description": "通过跨层密集连接强化特征复用与梯度传播的卷积架构。"
+    },
+    {
+      "canonical_name": "Inception模块",
+      "entity_type": "concept",
+      "description": "并行组合多种卷积尺度以提升表达力与效率的结构单元。"
+    },
+    {
+      "canonical_name": "SENet",
+      "entity_type": "algorithm",
+      "description": "通过通道注意力重标定特征响应的重要卷积架构改进。"
+    },
+    {
+      "canonical_name": "MobileNet",
+      "entity_type": "algorithm",
+      "description": "面向移动端和边缘设备的轻量级卷积网络架构。"
+    },
+    {
+      "canonical_name": "EfficientNet",
+      "entity_type": "algorithm",
+      "description": "联合深度、宽度与分辨率缩放提升效率的卷积网络家族。"
+    },
+    {
+      "canonical_name": "迁移学习",
+      "entity_type": "method",
+      "description": "将源任务或源领域知识迁移到目标任务的学习方法。"
+    },
+    {
+      "canonical_name": "数据增强",
+      "entity_type": "method",
+      "description": "通过变换训练样本生成更多有效数据以提升泛化能力的方法。"
+    },
+    {
+      "canonical_name": "批量归一化",
+      "entity_type": "method",
+      "description": "对小批量特征进行标准化以稳定训练和加速收敛的方法。"
+    },
+    {
+      "canonical_name": "候选区域",
+      "entity_type": "concept",
+      "description": "用于目标检测中缩小搜索范围的潜在目标区域集合。"
+    },
+    {
+      "canonical_name": "交并比",
+      "entity_type": "concept",
+      "description": "衡量预测区域与真实区域重叠程度的常用视觉评价指标。"
+    },
+    {
+      "canonical_name": "非极大值抑制",
+      "entity_type": "method",
+      "description": "在候选结果中保留局部最优响应并去除冗余响应的方法。"
+    },
+    {
+      "canonical_name": "平均精度均值",
+      "entity_type": "concept",
+      "description": "综合评估目标检测模型在多类别上性能的指标。"
+    },
+    {
+      "canonical_name": "锚框",
+      "entity_type": "concept",
+      "description": "在不同尺度和长宽比上预设的候选框模板概念。"
+    },
+    {
+      "canonical_name": "一阶段检测",
+      "entity_type": "method",
+      "description": "直接在密集位置回归类别与边界框的目标检测范式。"
+    },
+    {
+      "canonical_name": "两阶段检测",
+      "entity_type": "method",
+      "description": "先生成候选区域再分类回归的目标检测范式。"
+    },
+    {
+      "canonical_name": "检测头",
+      "entity_type": "concept",
+      "description": "负责输出类别概率、边界框或掩码预测的网络输出模块。"
+    },
+    {
+      "canonical_name": "R-CNN",
+      "entity_type": "algorithm",
+      "description": "先提取候选区域再逐区域分类的早期深度目标检测算法。"
+    },
+    {
+      "canonical_name": "Fast R-CNN",
+      "entity_type": "algorithm",
+      "description": "共享卷积特征并对候选区域统一分类回归的检测算法。"
+    },
+    {
+      "canonical_name": "Faster R-CNN",
+      "entity_type": "algorithm",
+      "description": "通过区域建议网络生成候选框的经典两阶段检测算法。"
+    },
+    {
+      "canonical_name": "YOLO系列",
+      "entity_type": "algorithm",
+      "description": "将检测视作单次回归问题并强调实时性的目标检测算法家族。"
+    },
+    {
+      "canonical_name": "SSD",
+      "entity_type": "algorithm",
+      "description": "在多尺度特征图上直接预测目标类别和边界框的检测算法。"
+    },
+    {
+      "canonical_name": "Anchor-Free检测",
+      "entity_type": "method",
+      "description": "不依赖锚框而直接预测目标中心或关键点的检测方法。"
+    },
+    {
+      "canonical_name": "特征金字塔",
+      "entity_type": "concept",
+      "description": "在多尺度层次上组织特征以增强目标检测和分割能力的表示结构。"
+    },
+    {
+      "canonical_name": "语义分割",
+      "entity_type": "application",
+      "description": "为图像中每个像素分配语义类别标签的视觉任务。"
+    },
+    {
+      "canonical_name": "实例分割",
+      "entity_type": "application",
+      "description": "同时区分类别并区分同类不同个体像素区域的视觉任务。"
+    },
+    {
+      "canonical_name": "全景分割",
+      "entity_type": "application",
+      "description": "统一建模语义分割和实例分割结果的综合像素级视觉任务。"
+    },
+    {
+      "canonical_name": "FCN",
+      "entity_type": "algorithm",
+      "description": "将全连接层替换为卷积层以实现像素级预测的分割网络。"
+    },
+    {
+      "canonical_name": "U-Net",
+      "entity_type": "algorithm",
+      "description": "采用编码器解码器与跳跃连接结构的经典分割网络。"
+    },
+    {
+      "canonical_name": "DeepLab",
+      "entity_type": "algorithm",
+      "description": "结合空洞卷积与多尺度上下文建模的语义分割算法系列。"
+    },
+    {
+      "canonical_name": "PSPNet",
+      "entity_type": "algorithm",
+      "description": "通过金字塔池化模块聚合全局上下文信息的分割网络。"
+    },
+    {
+      "canonical_name": "编码器-解码器架构",
+      "entity_type": "concept",
+      "description": "由编码器负责理解输入、解码器负责逐步生成输出的经典 Transformer 架构形态。"
+    },
+    {
+      "canonical_name": "上采样操作",
+      "entity_type": "method",
+      "description": "将低分辨率特征恢复到更高空间分辨率的重建方法。"
+    },
+    {
+      "canonical_name": "转置卷积",
+      "entity_type": "method",
+      "description": "常用于上采样和生成任务的可学习反卷积操作。"
+    },
+    {
+      "canonical_name": "空洞卷积",
+      "entity_type": "method",
+      "description": "在卷积核元素间插入空洞以扩大感受野的卷积方法。"
+    },
+    {
+      "canonical_name": "Mask R-CNN",
+      "entity_type": "algorithm",
+      "description": "在 Faster R-CNN 基础上增加掩码分支的实例分割算法。"
+    },
+    {
+      "canonical_name": "光流",
+      "entity_type": "concept",
+      "description": "描述图像序列中像素或区域运动模式的视觉表示。"
+    },
+    {
+      "canonical_name": "Siamese网络",
+      "entity_type": "algorithm",
+      "description": "通过双分支共享参数结构比较样本相似性的网络架构。"
+    },
+    {
+      "canonical_name": "SORT",
+      "entity_type": "algorithm",
+      "description": "结合卡尔曼滤波和匈牙利匹配的轻量多目标跟踪算法。"
+    },
+    {
+      "canonical_name": "DeepSORT",
+      "entity_type": "algorithm",
+      "description": "在 SORT 基础上加入外观特征以提升跟踪鲁棒性的算法。"
+    },
+    {
+      "canonical_name": "卡尔曼滤波",
+      "entity_type": "algorithm",
+      "description": "在线估计线性高斯动态系统隐状态的经典递推算法。"
+    },
+    {
+      "canonical_name": "运动模型",
+      "entity_type": "concept",
+      "description": "刻画目标随时间演化规律并支撑状态预测的动态模型。"
+    },
+    {
+      "canonical_name": "数据关联",
+      "entity_type": "method",
+      "description": "将当前检测结果与历史轨迹进行匹配分配的跟踪步骤。"
+    },
+    {
+      "canonical_name": "FaceNet",
+      "entity_type": "algorithm",
+      "description": "通过度量学习直接优化人脸嵌入空间的人脸识别算法。"
+    },
+    {
+      "canonical_name": "ArcFace",
+      "entity_type": "algorithm",
+      "description": "通过角度间隔损失增强类间可分性的人脸识别算法。"
+    },
+    {
+      "canonical_name": "关键点检测",
+      "entity_type": "method",
+      "description": "定位人体或物体结构性关键点坐标的视觉方法。"
+    },
+    {
+      "canonical_name": "OpenPose",
+      "entity_type": "algorithm",
+      "description": "面向多人场景的人体关键点和骨架估计经典算法。"
+    },
+    {
+      "canonical_name": "HRNet",
+      "entity_type": "algorithm",
+      "description": "在高分辨率表示上持续并行融合特征的姿态估计算法。"
+    },
+    {
+      "canonical_name": "深度估计",
+      "entity_type": "application",
+      "description": "从单目或多目图像中恢复场景深度信息的视觉任务。"
+    },
+    {
+      "canonical_name": "点云处理",
+      "entity_type": "method",
+      "description": "对三维点集进行建模、分割和几何分析的方法。"
+    },
+    {
+      "canonical_name": "立体匹配",
+      "entity_type": "method",
+      "description": "在双目图像间寻找对应像素并恢复视差深度的方法。"
+    },
+    {
+      "canonical_name": "NeRF",
+      "entity_type": "algorithm",
+      "description": "用神经辐射场隐式表示三维场景并实现新视角合成的算法。"
+    },
+    {
+      "canonical_name": "ViT",
+      "entity_type": "algorithm",
+      "description": "将图像切分为 patch 后用 Transformer 建模的视觉分类算法。"
+    },
+    {
+      "canonical_name": "DeiT",
+      "entity_type": "algorithm",
+      "description": "通过数据蒸馏和高效训练策略优化的视觉 Transformer 算法。"
+    },
+    {
+      "canonical_name": "Swin Transformer",
+      "entity_type": "algorithm",
+      "description": "采用滑动窗口自注意力构建层次化视觉表示的算法。"
+    },
+    {
+      "canonical_name": "自注意力",
+      "entity_type": "method",
+      "description": "让序列内每个位置与同一序列其他位置交互建模上下文依赖的方法。"
+    },
+    {
+      "canonical_name": "多头注意力",
+      "entity_type": "method",
+      "description": "并行使用多个注意力头从不同子空间建模关系的注意力机制。"
+    },
+    {
+      "canonical_name": "位置编码",
+      "entity_type": "method",
+      "description": "为序列中每个词元注入位置信息以弥补自注意力顺序感知不足的方法。"
+    },
+    {
+      "canonical_name": "CLIP",
+      "entity_type": "algorithm",
+      "description": "通过图文对比学习实现视觉与语言统一表示的经典多模态模型。"
+    },
+    {
+      "canonical_name": "深度学习",
+      "entity_type": "topic",
+      "description": "基于多层神经网络进行表示学习与任务建模的方法体系。"
+    },
+    {
+      "canonical_name": "多模态学习",
+      "entity_type": "topic",
+      "description": "联合建模文本、图像、语音、视频等多种模态信息的学习方向。"
+    },
+    {
+      "canonical_name": "图像描述生成",
+      "entity_type": "application",
+      "description": "根据图像内容自动生成自然语言描述的多模态任务。"
+    },
+    {
+      "canonical_name": "视觉问答",
+      "entity_type": "application",
+      "description": "基于图像内容理解并回答自然语言问题的多模态任务。"
+    }
+  ],
+  "relations": [
+    [
+      "图像基础",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征描述子",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像分类",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "目标检测",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像分割",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "目标跟踪",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人脸识别",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "姿态估计",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "3D视觉",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "视觉 Transformer",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "像素",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "色彩空间",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像预处理",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像增强",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积运算",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘检测",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "角点检测",
+      "图像基础",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征提取",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "局部特征描述子",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "HOG",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LBP",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "尺度不变性",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "旋转不变性",
+      "特征描述子",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积神经网络",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LeNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AlexNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "VGG",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GoogLeNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ResNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DenseNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Inception模块",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SENet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "MobileNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "EfficientNet",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "迁移学习",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据增强",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "批量归一化",
+      "图像分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "候选区域",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "交并比",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "非极大值抑制",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "平均精度均值",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "锚框",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "一阶段检测",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "两阶段检测",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "检测头",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "YOLO系列",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SSD",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Anchor-Free检测",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征金字塔",
+      "目标检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义分割",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实例分割",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "全景分割",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "编码器-解码器架构",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上采样操作",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "转置卷积",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "空洞卷积",
+      "图像分割",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "光流",
+      "目标跟踪",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Siamese网络",
+      "目标跟踪",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卡尔曼滤波",
+      "目标跟踪",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "运动模型",
+      "目标跟踪",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据关联",
+      "目标跟踪",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "FaceNet",
+      "人脸识别",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ArcFace",
+      "人脸识别",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关键点检测",
+      "姿态估计",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "OpenPose",
+      "姿态估计",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "HRNet",
+      "姿态估计",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "深度估计",
+      "3D视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "点云处理",
+      "3D视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "立体匹配",
+      "3D视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NeRF",
+      "3D视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ViT",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DeiT",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Swin Transformer",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自注意力",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多头注意力",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "位置编码",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CLIP",
+      "视觉 Transformer",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RGB",
+      "色彩空间",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "HSV",
+      "色彩空间",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像滤波",
+      "图像预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "高斯滤波",
+      "图像滤波",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "中值滤波",
+      "图像滤波",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "卷积运算",
+      "图像滤波",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积运算",
+      "边缘检测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Sobel算子",
+      "边缘检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Canny边缘检测",
+      "边缘检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "形态学操作",
+      "图像预处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "腐蚀",
+      "形态学操作",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "膨胀",
+      "形态学操作",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像增强",
+      "图像分类",
+      "RELATED_TO"
+    ],
+    [
+      "图像增强",
+      "目标检测",
+      "RELATED_TO"
+    ],
+    [
+      "角点检测",
+      "特征提取",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "局部特征描述子",
+      "SIFT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "局部特征描述子",
+      "SURF",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "局部特征描述子",
+      "ORB",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Harris角点",
+      "角点检测",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "尺度不变性",
+      "SIFT",
+      "RELATED_TO"
+    ],
+    [
+      "尺度不变性",
+      "SURF",
+      "RELATED_TO"
+    ],
+    [
+      "旋转不变性",
+      "SIFT",
+      "RELATED_TO"
+    ],
+    [
+      "旋转不变性",
+      "ORB",
+      "RELATED_TO"
+    ],
+    [
+      "HOG",
+      "图像分类",
+      "APPLIES_TO"
+    ],
+    [
+      "LBP",
+      "人脸识别",
+      "APPLIES_TO"
+    ],
+    [
+      "卷积神经网络",
+      "图像分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "LeNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "AlexNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "VGG",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "GoogLeNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "ResNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "DenseNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "MobileNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卷积神经网络",
+      "EfficientNet",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Inception模块",
+      "GoogLeNet",
+      "PART_OF"
+    ],
+    [
+      "SENet",
+      "图像分类",
+      "APPLIES_TO"
+    ],
+    [
+      "迁移学习",
+      "图像分类",
+      "RELATED_TO"
+    ],
+    [
+      "数据增强",
+      "图像分类",
+      "RELATED_TO"
+    ],
+    [
+      "批量归一化",
+      "ResNet",
+      "RELATED_TO"
+    ],
+    [
+      "交并比",
+      "目标检测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "非极大值抑制",
+      "目标检测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "平均精度均值",
+      "目标检测",
+      "RELATED_TO"
+    ],
+    [
+      "候选区域",
+      "R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "候选区域",
+      "Faster R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "锚框",
+      "SSD",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "锚框",
+      "Faster R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "一阶段检测",
+      "YOLO系列",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "一阶段检测",
+      "SSD",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "两阶段检测",
+      "R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "两阶段检测",
+      "Fast R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "两阶段检测",
+      "Faster R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "检测头",
+      "YOLO系列",
+      "PART_OF"
+    ],
+    [
+      "检测头",
+      "SSD",
+      "PART_OF"
+    ],
+    [
+      "Anchor-Free检测",
+      "目标检测",
+      "RELATED_TO"
+    ],
+    [
+      "特征金字塔",
+      "目标检测",
+      "RELATED_TO"
+    ],
+    [
+      "卷积神经网络",
+      "目标检测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "FCN",
+      "语义分割",
+      "APPLIES_TO"
+    ],
+    [
+      "U-Net",
+      "语义分割",
+      "APPLIES_TO"
+    ],
+    [
+      "DeepLab",
+      "语义分割",
+      "APPLIES_TO"
+    ],
+    [
+      "PSPNet",
+      "语义分割",
+      "APPLIES_TO"
+    ],
+    [
+      "编码器-解码器架构",
+      "U-Net",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "上采样操作",
+      "图像分割",
+      "RELATED_TO"
+    ],
+    [
+      "转置卷积",
+      "上采样操作",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "空洞卷积",
+      "DeepLab",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "语义分割",
+      "全景分割",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实例分割",
+      "全景分割",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Faster R-CNN",
+      "Mask R-CNN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Mask R-CNN",
+      "实例分割",
+      "APPLIES_TO"
+    ],
+    [
+      "光流",
+      "目标跟踪",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Siamese网络",
+      "目标跟踪",
+      "APPLIES_TO"
+    ],
+    [
+      "运动模型",
+      "卡尔曼滤波",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "卡尔曼滤波",
+      "SORT",
+      "RELATED_TO"
+    ],
+    [
+      "数据关联",
+      "SORT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "SORT",
+      "DeepSORT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "DeepSORT",
+      "目标跟踪",
+      "APPLIES_TO"
+    ],
+    [
+      "FaceNet",
+      "人脸识别",
+      "APPLIES_TO"
+    ],
+    [
+      "ArcFace",
+      "人脸识别",
+      "APPLIES_TO"
+    ],
+    [
+      "关键点检测",
+      "姿态估计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "OpenPose",
+      "姿态估计",
+      "APPLIES_TO"
+    ],
+    [
+      "HRNet",
+      "姿态估计",
+      "APPLIES_TO"
+    ],
+    [
+      "立体匹配",
+      "深度估计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "深度估计",
+      "3D视觉",
+      "APPLIES_TO"
+    ],
+    [
+      "点云处理",
+      "3D视觉",
+      "RELATED_TO"
+    ],
+    [
+      "NeRF",
+      "3D视觉",
+      "APPLIES_TO"
+    ],
+    [
+      "自注意力",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多头注意力",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "位置编码",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "视觉 Transformer",
+      "图像分类",
+      "APPLIES_TO"
+    ],
+    [
+      "视觉 Transformer",
+      "目标检测",
+      "APPLIES_TO"
+    ],
+    [
+      "视觉 Transformer",
+      "图像分割",
+      "APPLIES_TO"
+    ],
+    [
+      "CLIP",
+      "视觉 Transformer",
+      "RELATED_TO"
+    ],
+    [
+      "深度学习",
+      "卷积神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "深度学习",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多模态学习",
+      "图像描述生成",
+      "RELATED_TO"
+    ],
+    [
+      "多模态学习",
+      "视觉问答",
+      "RELATED_TO"
+    ],
+    [
+      "图像描述生成",
+      "视觉 Transformer",
+      "RELATED_TO"
+    ],
+    [
+      "视觉问答",
+      "视觉 Transformer",
+      "RELATED_TO"
+    ]
+  ]
+}

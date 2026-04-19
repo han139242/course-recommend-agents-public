@@ -1,0 +1,321 @@
+{
+  "plan_name": "ai_course_expansion_v1",
+  "description": "根据 docs/知识图谱扩充方案.md 整理的 15 门课程扩图计划，用于追踪每门课程的目标规模、覆盖方向与跨课程关系重点。",
+  "default_relation_types": [
+    "SUBTOPIC_OF",
+    "PREREQUISITE_OF",
+    "RELATED_TO",
+    "PART_OF",
+    "USES",
+    "APPLIES_TO"
+  ],
+  "courses": [
+    {
+      "source": "course_calculus",
+      "course_title": "高等数学",
+      "category": "数学与编程基础",
+      "target_node_range": [100, 120],
+      "current_status": "coverage_insufficient",
+      "coverage_focus": [
+        "极限与连续",
+        "一元微分",
+        "一元积分",
+        "多元微分",
+        "多元积分",
+        "无穷级数",
+        "常微分方程",
+        "向量分析"
+      ],
+      "cross_course_focus": [
+        "偏导数 -> 反向传播",
+        "链式法则 -> 梯度下降",
+        "泰勒展开 -> 损失函数近似",
+        "凸优化 -> 损失函数优化"
+      ]
+    },
+    {
+      "source": "course_linear_algebra",
+      "course_title": "线性代数",
+      "category": "数学与编程基础",
+      "target_node_range": [80, 100],
+      "current_status": "almost_missing",
+      "coverage_focus": [
+        "行列式",
+        "矩阵",
+        "向量空间",
+        "线性方程组",
+        "特征值与特征向量",
+        "二次型",
+        "内积空间",
+        "矩阵分解",
+        "线性变换"
+      ],
+      "cross_course_focus": [
+        "矩阵乘法 -> 全连接层",
+        "特征值分解 -> PCA",
+        "SVD -> 推荐系统/降维",
+        "向量空间 -> 词嵌入"
+      ]
+    },
+    {
+      "source": "course_probability",
+      "course_title": "概率与统计",
+      "category": "数学与编程基础",
+      "target_node_range": [100, 120],
+      "current_status": "coverage_insufficient",
+      "coverage_focus": [
+        "概率基础",
+        "随机变量",
+        "常见分布",
+        "数字特征",
+        "大数定律与中心极限定理",
+        "参数估计",
+        "假设检验",
+        "回归分析",
+        "贝叶斯统计"
+      ],
+      "cross_course_focus": [
+        "贝叶斯定理 -> 朴素贝叶斯",
+        "最大似然估计 -> 逻辑回归",
+        "正态分布 -> 高斯混合模型",
+        "假设检验 -> 模型评估"
+      ]
+    },
+    {
+      "source": "course_data_structure",
+      "course_title": "数据结构",
+      "category": "数学与编程基础",
+      "target_node_range": [80, 100],
+      "current_status": "missing",
+      "coverage_focus": [
+        "线性结构",
+        "哈希表",
+        "树",
+        "图",
+        "排序",
+        "查找",
+        "算法设计范式",
+        "复杂度分析"
+      ],
+      "cross_course_focus": [
+        "图 -> 知识图谱/图神经网络",
+        "树 -> 决策树",
+        "动态规划 -> 强化学习/序列对齐",
+        "哈希表 -> 向量检索"
+      ]
+    },
+    {
+      "source": "course_python",
+      "course_title": "Python编程",
+      "category": "数学与编程基础",
+      "target_node_range": [60, 80],
+      "current_status": "missing",
+      "coverage_focus": [
+        "基础语法",
+        "控制流",
+        "函数",
+        "面向对象",
+        "数据结构",
+        "文件IO与异常处理",
+        "模块与包管理",
+        "科学计算库",
+        "并发编程基础"
+      ],
+      "cross_course_focus": [
+        "NumPy -> 矩阵运算/特征工程",
+        "Pandas -> 数据预处理",
+        "Matplotlib -> 误差分析/可视化",
+        "SciPy -> 数值优化"
+      ]
+    },
+    {
+      "source": "course_ai_intro",
+      "course_title": "人工智能导论",
+      "category": "AI核心课程",
+      "target_node_range": [120, 150],
+      "current_status": "scattered_multi_batch",
+      "coverage_focus": [
+        "知识表示",
+        "确定性推理",
+        "不确定性推理",
+        "搜索策略",
+        "博弈",
+        "专家系统",
+        "智能体",
+        "智能计算"
+      ]
+    },
+    {
+      "source": "course_machine_learning",
+      "course_title": "机器学习",
+      "category": "AI核心课程",
+      "target_node_range": [150, 180],
+      "current_status": "needs_major_expansion",
+      "coverage_focus": [
+        "学习范式",
+        "线性模型",
+        "支持向量机",
+        "决策树",
+        "集成学习",
+        "朴素贝叶斯",
+        "K近邻",
+        "聚类",
+        "降维",
+        "特征工程",
+        "模型评估",
+        "正则化",
+        "偏差-方差权衡",
+        "EM算法",
+        "概率图模型"
+      ]
+    },
+    {
+      "source": "course_deep_learning",
+      "course_title": "深度学习",
+      "category": "AI核心课程",
+      "target_node_range": [150, 180],
+      "current_status": "needs_major_expansion",
+      "coverage_focus": [
+        "神经网络基础",
+        "优化器",
+        "正则化技术",
+        "初始化",
+        "CNN",
+        "RNN/LSTM/GRU",
+        "注意力机制",
+        "Transformer",
+        "生成模型",
+        "自监督学习"
+      ]
+    },
+    {
+      "source": "course_nlp",
+      "course_title": "自然语言处理",
+      "category": "应用方向",
+      "target_node_range": [100, 130],
+      "current_status": "needs_expansion",
+      "coverage_focus": [
+        "文本预处理",
+        "词表示",
+        "语言模型",
+        "序列建模",
+        "预训练模型",
+        "NLP任务",
+        "评估指标"
+      ]
+    },
+    {
+      "source": "course_cv",
+      "course_title": "计算机视觉",
+      "category": "应用方向",
+      "target_node_range": [100, 130],
+      "current_status": "needs_expansion",
+      "coverage_focus": [
+        "图像基础",
+        "特征描述子",
+        "图像分类",
+        "目标检测",
+        "语义分割",
+        "实例分割",
+        "目标跟踪",
+        "人脸识别",
+        "姿态估计",
+        "3D视觉",
+        "视觉Transformer"
+      ]
+    },
+    {
+      "source": "course_rl",
+      "course_title": "强化学习",
+      "category": "应用方向",
+      "target_node_range": [80, 100],
+      "current_status": "needs_expansion",
+      "coverage_focus": [
+        "基础概念",
+        "动态规划",
+        "蒙特卡洛方法",
+        "时序差分",
+        "Deep RL",
+        "策略梯度",
+        "Actor-Critic",
+        "基于模型的RL",
+        "多智能体RL",
+        "逆向RL/离线RL/分层RL",
+        "探索与利用"
+      ]
+    },
+    {
+      "source": "course_knowledge_graph",
+      "course_title": "知识图谱",
+      "category": "应用方向",
+      "target_node_range": [80, 100],
+      "current_status": "needs_expansion",
+      "coverage_focus": [
+        "知识表示",
+        "知识抽取",
+        "知识表示学习",
+        "知识推理",
+        "知识融合",
+        "图数据库",
+        "图神经网络",
+        "图任务",
+        "知识图谱应用"
+      ]
+    },
+    {
+      "source": "course_llm",
+      "course_title": "大模型",
+      "category": "应用方向",
+      "target_node_range": [120, 150],
+      "current_status": "needs_expansion",
+      "coverage_focus": [
+        "Transformer深入",
+        "预训练范式",
+        "代表模型",
+        "对齐技术",
+        "高效微调",
+        "提示工程",
+        "RAG",
+        "Agent",
+        "多模态大模型",
+        "推理与部署"
+      ]
+    },
+    {
+      "source": "course_ai_engineering",
+      "course_title": "AI工程",
+      "category": "工程与治理",
+      "target_node_range": [80, 100],
+      "current_status": "light_coverage",
+      "coverage_focus": [
+        "数据工程",
+        "特征工程与特征存储",
+        "ML Pipeline",
+        "分布式训练",
+        "模型服务",
+        "模型监控",
+        "MLOps",
+        "模型压缩",
+        "边缘部署",
+        "联邦学习"
+      ]
+    },
+    {
+      "source": "course_ai_ethics",
+      "course_title": "AI伦理",
+      "category": "工程与治理",
+      "target_node_range": [60, 80],
+      "current_status": "light_coverage",
+      "coverage_focus": [
+        "公平性",
+        "可解释性",
+        "隐私保护",
+        "对抗安全",
+        "模型安全",
+        "AI治理",
+        "价值对齐",
+        "可信AI"
+      ]
+    }
+  ]
+}

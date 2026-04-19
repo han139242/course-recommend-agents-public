@@ -1,0 +1,637 @@
+{
+  "source": "course_linear_algebra",
+  "course_title": "线性代数",
+  "nodes": [
+    {
+      "canonical_name": "线性代数",
+      "entity_type": "topic",
+      "description": "研究向量、矩阵与线性变换的数学基础，是机器学习和深度学习的重要前置知识。"
+    },
+    {
+      "canonical_name": "行列式",
+      "entity_type": "topic",
+      "description": "研究行列式定义、性质及其在线性方程组求解中作用的线性代数主题。"
+    },
+    {
+      "canonical_name": "矩阵理论",
+      "entity_type": "topic",
+      "description": "研究矩阵表示、运算、性质及结构特征的线性代数主题。"
+    },
+    {
+      "canonical_name": "向量空间",
+      "entity_type": "topic",
+      "description": "研究向量空间结构、基与维数等抽象线性结构的线性代数主题。"
+    },
+    {
+      "canonical_name": "线性方程组",
+      "entity_type": "topic",
+      "description": "研究线性方程组表示、消元求解与解空间结构的线性代数主题。"
+    },
+    {
+      "canonical_name": "特征值与特征向量",
+      "entity_type": "topic",
+      "description": "研究线性变换不变方向及矩阵谱性质的线性代数主题。"
+    },
+    {
+      "canonical_name": "二次型",
+      "entity_type": "topic",
+      "description": "研究二次型表示、化简与正定性判别的线性代数主题。"
+    },
+    {
+      "canonical_name": "内积空间",
+      "entity_type": "topic",
+      "description": "研究内积、正交、范数及最小二乘方法的线性代数主题。"
+    },
+    {
+      "canonical_name": "矩阵分解方法",
+      "entity_type": "topic",
+      "description": "研究将矩阵拆解为特定结构乘积形式的计算与分析方法的线性代数主题。"
+    },
+    {
+      "canonical_name": "线性变换",
+      "entity_type": "topic",
+      "description": "研究线性映射、核像结构及几何变换表示的线性代数主题。"
+    },
+    {
+      "canonical_name": "余子式",
+      "entity_type": "concept",
+      "description": "从矩阵中划去某行某列后所得子式对应的行列式量。"
+    },
+    {
+      "canonical_name": "代数余子式",
+      "entity_type": "concept",
+      "description": "在余子式基础上附加符号因子得到的行列式展开系数。"
+    },
+    {
+      "canonical_name": "行列式展开",
+      "entity_type": "method",
+      "description": "利用某行或某列的代数余子式计算行列式的方法。"
+    },
+    {
+      "canonical_name": "行列式性质",
+      "entity_type": "concept",
+      "description": "描述行列式在线性、交换与倍乘变换下规律的性质集合。"
+    },
+    {
+      "canonical_name": "克拉默法则",
+      "entity_type": "method",
+      "description": "利用行列式比值求解满秩线性方程组未知量的方法。"
+    },
+    {
+      "canonical_name": "向量",
+      "entity_type": "concept",
+      "description": "表示大小和方向或多维数值特征的基本数学对象。"
+    },
+    {
+      "canonical_name": "矩阵",
+      "entity_type": "concept",
+      "description": "按行列组织数值并用于表达线性变换和数据表示的基本数学对象。"
+    },
+    {
+      "canonical_name": "矩阵加法",
+      "entity_type": "concept",
+      "description": "按对应元素相加构造新矩阵的基本矩阵运算。"
+    },
+    {
+      "canonical_name": "矩阵数乘",
+      "entity_type": "concept",
+      "description": "用标量乘每个矩阵元素得到新矩阵的基本运算。"
+    },
+    {
+      "canonical_name": "矩阵乘法",
+      "entity_type": "concept",
+      "description": "用于组合线性变换和执行特征映射计算的基本矩阵运算。"
+    },
+    {
+      "canonical_name": "转置矩阵",
+      "entity_type": "concept",
+      "description": "将矩阵行列互换得到并反映对称结构的矩阵形式。"
+    },
+    {
+      "canonical_name": "单位矩阵",
+      "entity_type": "concept",
+      "description": "主对角线为一且其余元素为零的乘法恒等矩阵。"
+    },
+    {
+      "canonical_name": "对角矩阵",
+      "entity_type": "concept",
+      "description": "非对角元素全为零并由对角元刻画性质的特殊矩阵。"
+    },
+    {
+      "canonical_name": "可逆矩阵",
+      "entity_type": "concept",
+      "description": "存在逆矩阵并可恢复原线性映射信息的方阵。"
+    },
+    {
+      "canonical_name": "逆矩阵",
+      "entity_type": "concept",
+      "description": "与原方阵相乘得到单位矩阵的矩阵。"
+    },
+    {
+      "canonical_name": "矩阵的秩",
+      "entity_type": "concept",
+      "description": "刻画矩阵线性无关行列数量和信息维度的数值。"
+    },
+    {
+      "canonical_name": "初等变换",
+      "entity_type": "method",
+      "description": "通过交换、倍乘与倍加操作化简矩阵的基本变换。"
+    },
+    {
+      "canonical_name": "对称矩阵",
+      "entity_type": "concept",
+      "description": "转置后与原矩阵相同并常用于二次型表示的方阵。"
+    },
+    {
+      "canonical_name": "线性相关",
+      "entity_type": "concept",
+      "description": "向量组中某向量可由其他向量线性表示的关系。"
+    },
+    {
+      "canonical_name": "线性无关",
+      "entity_type": "concept",
+      "description": "向量组中不存在非平凡线性组合得到零向量的性质。"
+    },
+    {
+      "canonical_name": "基",
+      "entity_type": "concept",
+      "description": "既能生成空间又线性无关的最小向量组。"
+    },
+    {
+      "canonical_name": "维数",
+      "entity_type": "concept",
+      "description": "刻画向量空间中基所含向量个数的数值。"
+    },
+    {
+      "canonical_name": "子空间",
+      "entity_type": "concept",
+      "description": "对加法和数乘封闭并包含零向量的向量空间子集。"
+    },
+    {
+      "canonical_name": "生成集",
+      "entity_type": "concept",
+      "description": "通过线性组合能够张成目标空间的向量集合。"
+    },
+    {
+      "canonical_name": "坐标",
+      "entity_type": "concept",
+      "description": "向量在给定基下对应的分量表示。"
+    },
+    {
+      "canonical_name": "基变换",
+      "entity_type": "method",
+      "description": "在不同基之间转换向量坐标表示的方法。"
+    },
+    {
+      "canonical_name": "零空间",
+      "entity_type": "concept",
+      "description": "满足矩阵乘积为零向量的全部向量所成的子空间。"
+    },
+    {
+      "canonical_name": "列空间",
+      "entity_type": "concept",
+      "description": "由矩阵各列向量张成的向量子空间。"
+    },
+    {
+      "canonical_name": "增广矩阵",
+      "entity_type": "concept",
+      "description": "将系数矩阵与常数列拼接后表示线性方程组的矩阵。"
+    },
+    {
+      "canonical_name": "高斯消元法",
+      "entity_type": "method",
+      "description": "通过初等行变换逐步消去未知量求解线性方程组的方法。"
+    },
+    {
+      "canonical_name": "行阶梯形矩阵",
+      "entity_type": "concept",
+      "description": "非零行逐级右移并便于回代求解的矩阵形式。"
+    },
+    {
+      "canonical_name": "行最简阶梯形矩阵",
+      "entity_type": "concept",
+      "description": "主元归一且主元列其余元素为零的标准阶梯形矩阵。"
+    },
+    {
+      "canonical_name": "齐次线性方程组",
+      "entity_type": "concept",
+      "description": "常数项全为零的线性方程组。"
+    },
+    {
+      "canonical_name": "非齐次线性方程组",
+      "entity_type": "concept",
+      "description": "常数项不全为零的线性方程组。"
+    },
+    {
+      "canonical_name": "解空间",
+      "entity_type": "concept",
+      "description": "全部解向量构成的几何或代数集合。"
+    },
+    {
+      "canonical_name": "基础解系",
+      "entity_type": "concept",
+      "description": "齐次线性方程组解空间的一组基向量。"
+    },
+    {
+      "canonical_name": "特征值",
+      "entity_type": "concept",
+      "description": "描述线性变换在特定方向上缩放性质的重要量。"
+    },
+    {
+      "canonical_name": "特征向量",
+      "entity_type": "concept",
+      "description": "在线性变换下方向保持不变的非零向量。"
+    },
+    {
+      "canonical_name": "特征多项式",
+      "entity_type": "concept",
+      "description": "由行列式方程构造并用于求解矩阵特征值的多项式。"
+    },
+    {
+      "canonical_name": "相似矩阵",
+      "entity_type": "concept",
+      "description": "表示同一线性变换在不同基下矩阵形式的矩阵关系。"
+    },
+    {
+      "canonical_name": "矩阵对角化",
+      "entity_type": "method",
+      "description": "将矩阵相似变换为对角矩阵以简化计算的方法。"
+    },
+    {
+      "canonical_name": "特征值分解",
+      "entity_type": "method",
+      "description": "利用特征值和特征向量将可对角化矩阵分解的方式。"
+    },
+    {
+      "canonical_name": "Jordan标准形",
+      "entity_type": "concept",
+      "description": "用于描述不可完全对角化矩阵结构的标准块对角形式。"
+    },
+    {
+      "canonical_name": "二次型矩阵",
+      "entity_type": "concept",
+      "description": "用对称矩阵表示二次型系数结构的矩阵。"
+    },
+    {
+      "canonical_name": "标准型",
+      "entity_type": "concept",
+      "description": "通过变量替换将二次型化为平方和差形式的结果。"
+    },
+    {
+      "canonical_name": "惯性定理",
+      "entity_type": "concept",
+      "description": "说明二次型正负平方项个数在合同变换下保持不变的定理。"
+    },
+    {
+      "canonical_name": "正定矩阵",
+      "entity_type": "concept",
+      "description": "对任意非零向量都产生正二次型值的对称矩阵。"
+    },
+    {
+      "canonical_name": "半正定矩阵",
+      "entity_type": "concept",
+      "description": "对任意向量产生非负二次型值的对称矩阵。"
+    },
+    {
+      "canonical_name": "Sylvester判别法",
+      "entity_type": "method",
+      "description": "利用顺序主子式符号判断矩阵正定性的判别方法。"
+    },
+    {
+      "canonical_name": "内积",
+      "entity_type": "concept",
+      "description": "刻画向量夹角、长度与投影关系的双线性或半双线性运算。"
+    },
+    {
+      "canonical_name": "范数",
+      "entity_type": "concept",
+      "description": "用于度量向量或矩阵大小的数学函数。"
+    },
+    {
+      "canonical_name": "正交",
+      "entity_type": "concept",
+      "description": "两个向量内积为零所满足的垂直关系。"
+    },
+    {
+      "canonical_name": "标准正交基",
+      "entity_type": "concept",
+      "description": "各基向量两两正交且模长为一的基。"
+    },
+    {
+      "canonical_name": "Gram-Schmidt正交化",
+      "entity_type": "method",
+      "description": "将线性无关向量组转化为正交或标准正交基的方法。"
+    },
+    {
+      "canonical_name": "正交矩阵",
+      "entity_type": "concept",
+      "description": "列向量构成标准正交基且逆等于转置的方阵。"
+    },
+    {
+      "canonical_name": "最小二乘法",
+      "entity_type": "method",
+      "description": "通过最小化残差平方和求近似解的参数估计方法。"
+    },
+    {
+      "canonical_name": "正交补",
+      "entity_type": "concept",
+      "description": "与给定子空间全部向量都正交的向量集合。"
+    },
+    {
+      "canonical_name": "矩阵分解",
+      "entity_type": "method",
+      "description": "将矩阵拆解为多个具有特定性质矩阵乘积的数学方法。"
+    },
+    {
+      "canonical_name": "LU分解",
+      "entity_type": "method",
+      "description": "将矩阵分解为下三角矩阵与上三角矩阵乘积的方法。"
+    },
+    {
+      "canonical_name": "QR分解",
+      "entity_type": "method",
+      "description": "将矩阵分解为正交矩阵与上三角矩阵乘积的方法。"
+    },
+    {
+      "canonical_name": "奇异值分解",
+      "entity_type": "method",
+      "description": "将任意矩阵分解为正交矩阵与对角矩阵乘积的经典方法。"
+    },
+    {
+      "canonical_name": "奇异值",
+      "entity_type": "concept",
+      "description": "刻画矩阵在各正交方向伸缩强度的非负数值。"
+    },
+    {
+      "canonical_name": "Cholesky分解",
+      "entity_type": "method",
+      "description": "将正定矩阵分解为下三角矩阵及其转置乘积的方法。"
+    },
+    {
+      "canonical_name": "低秩近似",
+      "entity_type": "method",
+      "description": "用较低秩矩阵逼近原矩阵以压缩信息和计算的方法。"
+    },
+    {
+      "canonical_name": "变换矩阵",
+      "entity_type": "concept",
+      "description": "线性变换在给定基下对应的矩阵表示。"
+    },
+    {
+      "canonical_name": "核",
+      "entity_type": "concept",
+      "description": "被线性变换映射到零向量的全部向量组成的集合。"
+    },
+    {
+      "canonical_name": "像",
+      "entity_type": "concept",
+      "description": "线性变换能够到达的全部输出向量组成的集合。"
+    },
+    {
+      "canonical_name": "同构",
+      "entity_type": "concept",
+      "description": "保持线性结构且可逆的线性变换关系。"
+    },
+    {
+      "canonical_name": "投影变换",
+      "entity_type": "method",
+      "description": "将向量映射到某子空间上的线性变换。"
+    },
+    {
+      "canonical_name": "旋转变换",
+      "entity_type": "method",
+      "description": "保持长度和角度并改变方向的线性几何变换。"
+    },
+    {
+      "canonical_name": "不变子空间",
+      "entity_type": "concept",
+      "description": "在线性变换作用下仍映射到自身内部的子空间。"
+    },
+    {
+      "canonical_name": "主成分分析",
+      "entity_type": "algorithm",
+      "description": "通过正交变换提取主要方差方向的经典降维方法。"
+    },
+    {
+      "canonical_name": "降维",
+      "entity_type": "method",
+      "description": "在保留主要信息的前提下降低特征维数的方法。"
+    },
+    {
+      "canonical_name": "词嵌入",
+      "entity_type": "method",
+      "description": "将词语映射为连续向量表示的自然语言处理方法。"
+    },
+    {
+      "canonical_name": "多层感知机",
+      "entity_type": "algorithm",
+      "description": "由多个全连接层堆叠而成并可拟合非线性映射的前馈神经网络。"
+    },
+    {
+      "canonical_name": "推荐系统",
+      "entity_type": "topic",
+      "description": "根据用户兴趣、上下文和目标对候选内容进行筛选与排序的智能系统。"
+    },
+    {
+      "canonical_name": "向量检索",
+      "entity_type": "method",
+      "description": "基于向量表示和相似度计算从候选集合中检索相关内容的方法。"
+    },
+    {
+      "canonical_name": "低秩分解压缩",
+      "entity_type": "method",
+      "description": "通过低秩矩阵或张量分解近似原模型参数以减少计算的方法。"
+    },
+    {
+      "canonical_name": "线性回归",
+      "entity_type": "algorithm",
+      "description": "用线性函数拟合输入与连续输出关系的回归模型。"
+    },
+    {
+      "canonical_name": "逻辑回归",
+      "entity_type": "algorithm",
+      "description": "基于对数几率函数建模条件概率的线性分类模型。"
+    }
+  ],
+  "relations": [
+    ["行列式", "线性代数", "SUBTOPIC_OF"],
+    ["矩阵理论", "线性代数", "SUBTOPIC_OF"],
+    ["向量空间", "线性代数", "SUBTOPIC_OF"],
+    ["线性方程组", "线性代数", "SUBTOPIC_OF"],
+    ["特征值与特征向量", "线性代数", "SUBTOPIC_OF"],
+    ["二次型", "线性代数", "SUBTOPIC_OF"],
+    ["内积空间", "线性代数", "SUBTOPIC_OF"],
+    ["矩阵分解方法", "线性代数", "SUBTOPIC_OF"],
+    ["线性变换", "线性代数", "SUBTOPIC_OF"],
+
+    ["余子式", "行列式", "SUBTOPIC_OF"],
+    ["代数余子式", "行列式", "SUBTOPIC_OF"],
+    ["行列式展开", "行列式", "SUBTOPIC_OF"],
+    ["行列式性质", "行列式", "SUBTOPIC_OF"],
+    ["克拉默法则", "行列式", "SUBTOPIC_OF"],
+
+    ["向量", "矩阵理论", "SUBTOPIC_OF"],
+    ["矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["矩阵加法", "矩阵理论", "SUBTOPIC_OF"],
+    ["矩阵数乘", "矩阵理论", "SUBTOPIC_OF"],
+    ["矩阵乘法", "矩阵理论", "SUBTOPIC_OF"],
+    ["转置矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["单位矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["对角矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["可逆矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["逆矩阵", "矩阵理论", "SUBTOPIC_OF"],
+    ["矩阵的秩", "矩阵理论", "SUBTOPIC_OF"],
+    ["初等变换", "矩阵理论", "SUBTOPIC_OF"],
+    ["对称矩阵", "矩阵理论", "SUBTOPIC_OF"],
+
+    ["线性相关", "向量空间", "SUBTOPIC_OF"],
+    ["线性无关", "向量空间", "SUBTOPIC_OF"],
+    ["基", "向量空间", "SUBTOPIC_OF"],
+    ["维数", "向量空间", "SUBTOPIC_OF"],
+    ["子空间", "向量空间", "SUBTOPIC_OF"],
+    ["生成集", "向量空间", "SUBTOPIC_OF"],
+    ["坐标", "向量空间", "SUBTOPIC_OF"],
+    ["基变换", "向量空间", "SUBTOPIC_OF"],
+    ["零空间", "向量空间", "SUBTOPIC_OF"],
+    ["列空间", "向量空间", "SUBTOPIC_OF"],
+
+    ["增广矩阵", "线性方程组", "SUBTOPIC_OF"],
+    ["高斯消元法", "线性方程组", "SUBTOPIC_OF"],
+    ["行阶梯形矩阵", "线性方程组", "SUBTOPIC_OF"],
+    ["行最简阶梯形矩阵", "线性方程组", "SUBTOPIC_OF"],
+    ["齐次线性方程组", "线性方程组", "SUBTOPIC_OF"],
+    ["非齐次线性方程组", "线性方程组", "SUBTOPIC_OF"],
+    ["解空间", "线性方程组", "SUBTOPIC_OF"],
+    ["基础解系", "线性方程组", "SUBTOPIC_OF"],
+
+    ["特征值", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["特征向量", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["特征多项式", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["相似矩阵", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["矩阵对角化", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["特征值分解", "特征值与特征向量", "SUBTOPIC_OF"],
+    ["Jordan标准形", "特征值与特征向量", "SUBTOPIC_OF"],
+
+    ["二次型矩阵", "二次型", "SUBTOPIC_OF"],
+    ["标准型", "二次型", "SUBTOPIC_OF"],
+    ["惯性定理", "二次型", "SUBTOPIC_OF"],
+    ["正定矩阵", "二次型", "SUBTOPIC_OF"],
+    ["半正定矩阵", "二次型", "SUBTOPIC_OF"],
+    ["Sylvester判别法", "二次型", "SUBTOPIC_OF"],
+
+    ["内积", "内积空间", "SUBTOPIC_OF"],
+    ["范数", "内积空间", "SUBTOPIC_OF"],
+    ["正交", "内积空间", "SUBTOPIC_OF"],
+    ["标准正交基", "内积空间", "SUBTOPIC_OF"],
+    ["Gram-Schmidt正交化", "内积空间", "SUBTOPIC_OF"],
+    ["正交矩阵", "内积空间", "SUBTOPIC_OF"],
+    ["最小二乘法", "内积空间", "SUBTOPIC_OF"],
+    ["正交补", "内积空间", "SUBTOPIC_OF"],
+
+    ["矩阵分解", "矩阵分解方法", "SUBTOPIC_OF"],
+    ["LU分解", "矩阵分解", "SUBTOPIC_OF"],
+    ["QR分解", "矩阵分解", "SUBTOPIC_OF"],
+    ["奇异值分解", "矩阵分解方法", "SUBTOPIC_OF"],
+    ["奇异值", "奇异值分解", "SUBTOPIC_OF"],
+    ["Cholesky分解", "矩阵分解", "SUBTOPIC_OF"],
+    ["低秩近似", "矩阵分解", "SUBTOPIC_OF"],
+
+    ["变换矩阵", "线性变换", "SUBTOPIC_OF"],
+    ["核", "线性变换", "SUBTOPIC_OF"],
+    ["像", "线性变换", "SUBTOPIC_OF"],
+    ["同构", "线性变换", "SUBTOPIC_OF"],
+    ["投影变换", "线性变换", "SUBTOPIC_OF"],
+    ["旋转变换", "线性变换", "SUBTOPIC_OF"],
+    ["不变子空间", "线性变换", "SUBTOPIC_OF"],
+
+    ["余子式", "代数余子式", "PREREQUISITE_OF"],
+    ["代数余子式", "行列式展开", "PREREQUISITE_OF"],
+    ["行列式性质", "行列式展开", "PREREQUISITE_OF"],
+    ["行列式展开", "克拉默法则", "PREREQUISITE_OF"],
+    ["克拉默法则", "线性方程组", "APPLIES_TO"],
+
+    ["向量", "矩阵", "PREREQUISITE_OF"],
+    ["矩阵", "矩阵乘法", "PREREQUISITE_OF"],
+    ["转置矩阵", "对称矩阵", "PREREQUISITE_OF"],
+    ["可逆矩阵", "逆矩阵", "PREREQUISITE_OF"],
+    ["初等变换", "矩阵的秩", "PREREQUISITE_OF"],
+    ["矩阵的秩", "线性方程组", "PREREQUISITE_OF"],
+    ["矩阵乘法", "线性变换", "PREREQUISITE_OF"],
+    ["矩阵乘法", "矩阵分解", "PREREQUISITE_OF"],
+
+    ["线性相关", "线性无关", "RELATED_TO"],
+    ["生成集", "基", "PREREQUISITE_OF"],
+    ["线性无关", "基", "PREREQUISITE_OF"],
+    ["基", "维数", "PREREQUISITE_OF"],
+    ["基", "坐标", "PREREQUISITE_OF"],
+    ["坐标", "基变换", "PREREQUISITE_OF"],
+    ["子空间", "零空间", "PREREQUISITE_OF"],
+    ["子空间", "列空间", "PREREQUISITE_OF"],
+    ["基变换", "相似矩阵", "PREREQUISITE_OF"],
+
+    ["增广矩阵", "高斯消元法", "PREREQUISITE_OF"],
+    ["高斯消元法", "行阶梯形矩阵", "PREREQUISITE_OF"],
+    ["行阶梯形矩阵", "行最简阶梯形矩阵", "PREREQUISITE_OF"],
+    ["齐次线性方程组", "解空间", "PREREQUISITE_OF"],
+    ["非齐次线性方程组", "解空间", "PREREQUISITE_OF"],
+    ["齐次线性方程组", "基础解系", "PREREQUISITE_OF"],
+    ["基础解系", "解空间", "RELATED_TO"],
+    ["矩阵的秩", "解空间", "PREREQUISITE_OF"],
+
+    ["特征多项式", "特征值", "PREREQUISITE_OF"],
+    ["特征值", "特征向量", "RELATED_TO"],
+    ["特征值", "矩阵对角化", "PREREQUISITE_OF"],
+    ["特征向量", "矩阵对角化", "PREREQUISITE_OF"],
+    ["相似矩阵", "矩阵对角化", "PREREQUISITE_OF"],
+    ["矩阵对角化", "特征值分解", "PREREQUISITE_OF"],
+    ["矩阵对角化", "Jordan标准形", "RELATED_TO"],
+
+    ["对称矩阵", "二次型矩阵", "RELATED_TO"],
+    ["二次型矩阵", "标准型", "PREREQUISITE_OF"],
+    ["标准型", "惯性定理", "PREREQUISITE_OF"],
+    ["标准型", "正定矩阵", "PREREQUISITE_OF"],
+    ["Sylvester判别法", "正定矩阵", "PREREQUISITE_OF"],
+    ["正定矩阵", "半正定矩阵", "RELATED_TO"],
+    ["特征值", "正定矩阵", "PREREQUISITE_OF"],
+
+    ["内积", "范数", "PREREQUISITE_OF"],
+    ["内积", "正交", "PREREQUISITE_OF"],
+    ["正交", "Gram-Schmidt正交化", "PREREQUISITE_OF"],
+    ["Gram-Schmidt正交化", "标准正交基", "PREREQUISITE_OF"],
+    ["正交", "正交矩阵", "PREREQUISITE_OF"],
+    ["子空间", "正交补", "PREREQUISITE_OF"],
+    ["正交", "正交补", "PREREQUISITE_OF"],
+    ["标准正交基", "QR分解", "PREREQUISITE_OF"],
+    ["QR分解", "最小二乘法", "PREREQUISITE_OF"],
+
+    ["正定矩阵", "Cholesky分解", "PREREQUISITE_OF"],
+    ["矩阵乘法", "LU分解", "PREREQUISITE_OF"],
+    ["矩阵乘法", "QR分解", "PREREQUISITE_OF"],
+    ["奇异值", "奇异值分解", "RELATED_TO"],
+    ["特征值分解", "奇异值分解", "RELATED_TO"],
+    ["奇异值分解", "低秩近似", "PREREQUISITE_OF"],
+
+    ["矩阵", "变换矩阵", "PREREQUISITE_OF"],
+    ["变换矩阵", "核", "PREREQUISITE_OF"],
+    ["变换矩阵", "像", "PREREQUISITE_OF"],
+    ["核", "同构", "PREREQUISITE_OF"],
+    ["像", "同构", "PREREQUISITE_OF"],
+    ["变换矩阵", "投影变换", "PREREQUISITE_OF"],
+    ["变换矩阵", "旋转变换", "PREREQUISITE_OF"],
+    ["特征向量", "不变子空间", "PREREQUISITE_OF"],
+    ["不变子空间", "矩阵对角化", "PREREQUISITE_OF"],
+
+    ["矩阵乘法", "多层感知机", "PREREQUISITE_OF"],
+    ["矩阵乘法", "线性回归", "PREREQUISITE_OF"],
+    ["矩阵乘法", "逻辑回归", "PREREQUISITE_OF"],
+    ["最小二乘法", "线性回归", "PREREQUISITE_OF"],
+    ["特征值分解", "主成分分析", "PREREQUISITE_OF"],
+    ["主成分分析", "降维", "APPLIES_TO"],
+    ["奇异值分解", "主成分分析", "RELATED_TO"],
+    ["奇异值分解", "推荐系统", "PREREQUISITE_OF"],
+    ["低秩近似", "推荐系统", "APPLIES_TO"],
+    ["低秩近似", "低秩分解压缩", "PREREQUISITE_OF"],
+    ["向量空间", "词嵌入", "PREREQUISITE_OF"],
+    ["向量空间", "向量检索", "PREREQUISITE_OF"]
+  ]
+}

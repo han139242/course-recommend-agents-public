@@ -48,11 +48,23 @@ const totalProgress = computed(() => {
 })
 
 const weeklyTrend = computed(() => {
-  const base = Math.max(stats.value.mastered, 1)
-  return Array.from({ length: 7 }, (_, index) => ({
-    label: `D${index + 1}`,
-    value: Math.max(12, Math.min(100, ((base * 7 + index * 9 + stats.value.learning * 3) % 86) + 14)),
-  }))
+  const { total, mastered, learning, weak } = stats.value
+  if (!total) {
+    return Array.from({ length: 7 }, (_, i) => ({ label: `D${i + 1}`, value: 0 }))
+  }
+  const masteredPct = Math.round((mastered / total) * 100)
+  const learningPct = Math.round((learning / total) * 100)
+  const weakPct = Math.round((weak / Math.max(total, 1)) * 100)
+  const baseActivity = Math.min(100, masteredPct + learningPct * 0.6)
+  return [
+    { label: '已掌握', value: masteredPct },
+    { label: '学习中', value: learningPct },
+    { label: '薄弱', value: weakPct },
+    { label: '收藏', value: Math.min(100, Math.round((props.bookmarks.length / Math.max(total, 1)) * 100)) },
+    { label: '总覆盖', value: Math.min(100, Math.round(((mastered + learning) / total) * 100)) },
+    { label: '活跃度', value: Math.min(100, Math.round(baseActivity)) },
+    { label: '总进度', value: Math.min(100, Math.round(((mastered + learning * 0.6) / total) * 100)) },
+  ]
 })
 </script>
 

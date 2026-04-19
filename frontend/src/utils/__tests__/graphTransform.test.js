@@ -74,4 +74,48 @@ describe('graphTransform', () => {
     expect(result.meta.rootCount).toBe(1)
     expect(result.meta.expandedCount).toBe(1)
   })
+
+  it('normalizes course titles from source metadata before rendering node and edge data', () => {
+    const nodes = [
+      {
+        id: 'intro',
+        routeKnowledgeId: 'intro',
+        name: '知识表示',
+        canonicalName: '知识表示',
+        chapterTitle: '人工智能基础知识骨架',
+        curatedSource: 'curated_ai_professional_ontology',
+        entityType: 'topic',
+        x: 0,
+        y: 0,
+      },
+      {
+        id: 'llm',
+        routeKnowledgeId: 'llm',
+        name: 'Transformer',
+        canonicalName: 'Transformer',
+        chapterTitle: '人工智能课程知识图谱',
+        sourcePath: 'curated/batch_29_transformer_llm_full_route',
+        entityType: 'topic',
+        x: 120,
+        y: 30,
+      },
+    ]
+    const edges = [
+      {
+        id: 'intro:RELATED_TO:llm',
+        relationId: 'intro:RELATED_TO:llm',
+        sourceId: 'intro',
+        targetId: 'llm',
+        relationType: 'RELATED_TO',
+      },
+    ]
+
+    const result = transformGraphData(nodes, edges)
+
+    expect(result.nodes.find((node) => node.id === 'intro')?.data.chapterTitle).toBe('人工智能导论')
+    expect(result.nodes.find((node) => node.id === 'llm')?.data.chapterTitle).toBe('大模型')
+    expect(result.edges[0]?.data.crossCourse).toBe(true)
+    expect(result.edges[0]?.data.sourceCourse).toBe('人工智能导论')
+    expect(result.edges[0]?.data.targetCourse).toBe('大模型')
+  })
 })

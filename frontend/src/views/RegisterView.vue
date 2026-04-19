@@ -19,7 +19,7 @@ async function submit() {
 
   try {
     await userStore.register(form.email, form.password, 'student')
-    router.push('/')
+    router.push('/dashboard')
   } catch (registerError) {
     error.value = registerError?.message || '注册暂时不可用，请联系管理员创建账号。'
   } finally {
@@ -42,6 +42,7 @@ async function submit() {
       <label>
         密码
         <input v-model="form.password" type="password" placeholder="至少 6 位密码" />
+        <span class="muted-text">密码至少 6 位，建议包含数字和字母</span>
       </label>
 
       <p v-if="error" class="form-error">{{ error }}</p>

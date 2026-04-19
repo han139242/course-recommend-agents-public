@@ -7,7 +7,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .curated_graph import merge_curated_graph
+from .curated_graph import merge_curated_graph, resolve_seed_path, resolve_seed_paths_from_pattern
 from .frontier_pipeline import run_frontier_pipeline
 from .neo4j_import import import_bundle, import_frontier_bundle
 from .pipeline import run_pipeline
@@ -53,6 +53,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="",
         help="Curated seed filename or batch name under config/curated_batches",
     )
+    parser.add_argument(
+        "--import-curated-glob",
+        default="",
+        help="Glob pattern under config/curated_batches for batch importing curated JSON files, e.g. course_*.json",
+    )
     parser.add_argument("--neo4j-uri", default=os.getenv("NEO4J_URI", "bolt://127.0.0.1:7687"))
     parser.add_argument("--neo4j-user", default=os.getenv("NEO4J_USER", "neo4j"))
     parser.add_argument("--neo4j-password", default=os.getenv("NEO4J_PASSWORD", ""))
@@ -65,8 +70,8 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    if not args.input and not args.frontier_input and not args.import_curated_seed:
-        parser.error("At least one of --input, --frontier-input, or --import-curated-seed is required.")
+    if not args.input and not args.frontier_input and not args.import_curated_seed and not args.import_curated_glob:
+        parser.error("At least one of --input, --frontier-input, --import-curated-seed, or --import-curated-glob is required.")
 
     bundle = None
     frontier_bundle = None
@@ -99,15 +104,36 @@ def main() -> None:
                 database=args.neo4j_database,
             )
 
-    curated_report = None
+    curated_reports: list[dict] = []
+    curated_seed_paths: list[Path] = []
+    seen_curated_paths: set[Path] = set()
+
     if args.import_curated_seed:
-        curated_report = merge_curated_graph(
-            uri=args.neo4j_uri,
-            username=args.neo4j_user,
-            password=args.neo4j_password,
-            database=args.neo4j_database,
-            seed_name_or_path=args.curated_seed_name or None,
+        seed_path = resolve_seed_path(args.curated_seed_name or None).resolve()
+        if seed_path not in seen_curated_paths:
+            seen_curated_paths.add(seed_path)
+            curated_seed_paths.append(seed_path)
+
+    if args.import_curated_glob:
+        for seed_path in resolve_seed_paths_from_pattern(args.import_curated_glob):
+            resolved = seed_path.resolve()
+            if resolved in seen_curated_paths:
+                continue
+            seen_curated_paths.add(resolved)
+            curated_seed_paths.append(resolved)
+
+    for seed_path in curated_seed_paths:
+        curated_reports.append(
+            merge_curated_graph(
+                uri=args.neo4j_uri,
+                username=args.neo4j_user,
+                password=args.neo4j_password,
+                database=args.neo4j_database,
+                seed_name_or_path=str(seed_path),
+            )
         )
+
+    curated_report = curated_reports[0] if len(curated_reports) == 1 else None
 
     print(
         json.dumps(
@@ -123,7 +149,9 @@ def main() -> None:
                 "frontier_papers": len(frontier_bundle.papers) if frontier_bundle else 0,
                 "frontier_topics": len(frontier_bundle.topics) if frontier_bundle else 0,
                 "frontier_digests": len(frontier_bundle.digests) if frontier_bundle else 0,
+                "curated_seed_paths": [str(path) for path in curated_seed_paths],
                 "curated_report": curated_report,
+                "curated_reports": curated_reports,
             },
             ensure_ascii=False,
             indent=2,

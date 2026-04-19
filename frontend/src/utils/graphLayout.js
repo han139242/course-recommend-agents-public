@@ -465,9 +465,14 @@ export function attachExpansionBias(engineNodes = [], anchorPoint = { x: 0, y: 0
   engineNodes.forEach((node) => {
     if (!idSet.has(node.id)) return
     node.expandAnchor = {
+      anchorId: null,
       x: anchorPoint.x,
       y: anchorPoint.y,
-      strength: 0.05,
+      targetX: node.x,
+      targetY: node.y,
+      radius: Math.hypot(node.x - anchorPoint.x, node.y - anchorPoint.y) || 80,
+      radialStrength: 0.05,
+      targetStrength: 0.064,
       expiresAt,
     }
   })

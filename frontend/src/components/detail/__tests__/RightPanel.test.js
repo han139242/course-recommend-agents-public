@@ -70,4 +70,64 @@ describe('RightPanel', () => {
 
     expect(wrapper.emitted('select-related')).toEqual([['B']])
   })
+
+  it('normalizes legacy course labels in cross-course recommendations', () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+
+    const userStore = useUserStore()
+    const graphStore = useGraphStore()
+
+    userStore.bookmarks = []
+    graphStore.catalogNodes = [
+      {
+        id: 'B',
+        routeKnowledgeId: 'B',
+        name: 'BERT',
+        canonicalName: 'BERT',
+        chapterTitle: '自然语言处理',
+        entityType: 'concept',
+      },
+    ]
+
+    const wrapper = mount(RightPanel, {
+      global: {
+        plugins: [pinia],
+        stubs: {
+          RouterLink: {
+            template: '<a><slot /></a>',
+          },
+        },
+      },
+      props: {
+        collapsed: false,
+        detail: {
+          routeKnowledgeId: 'A',
+          canonicalName: '知识表示',
+          chapterTitle: '人工智能导论',
+          entityType: 'concept',
+          prerequisites: [],
+          related: [],
+        },
+        progress: {
+          masteryScore: 55,
+        },
+        nextNodes: [],
+        recommendedPath: [
+          {
+            knowledgeId: 'B',
+            title: 'BERT',
+            reasonCode: 'cross_course_transfer',
+            reasonLabel: '跨课程迁移',
+            sourceCourse: '人工智能基础知识骨架',
+            targetCourse: '自然语言处理及其应用',
+            masteryScore: 30,
+          },
+        ],
+      },
+    })
+
+    expect(wrapper.text()).toContain('人工智能导论')
+    expect(wrapper.text()).toContain('自然语言处理')
+  })
 })

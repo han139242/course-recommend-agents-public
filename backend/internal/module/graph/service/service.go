@@ -206,6 +206,8 @@ func buildCatalogResponse(nodes []graphentity.Node, edges []graphentity.Edge) *g
 			CanonicalName:    node.CanonicalName,
 			ChapterTitle:     node.ChapterTitle,
 			EntityType:       node.EntityType,
+			SourcePath:       node.SourcePath,
+			CuratedSource:    node.CuratedSource,
 		})
 	}
 

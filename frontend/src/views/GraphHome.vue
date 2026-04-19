@@ -7,6 +7,7 @@ import LeftPanel from '../components/sidebar/LeftPanel.vue'
 import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../utils/courseMeta'
 
 const GraphCanvas = defineAsyncComponent(() => import('../components/graph/GraphCanvas.vue'))
 const RightPanel = defineAsyncComponent(() => import('../components/detail/RightPanel.vue'))
@@ -29,6 +30,7 @@ const recommendationMeta = ref({
   insights: [],
   learnerProfile: null,
 })
+let recommendationRequestId = 0
 
 const sceneMeta = computed(() => graphStore.graphData?.meta || { totalNodes: 0, visibleNodes: 0, visibleEdges: 0, rootCount: 0, expandedCount: 0 })
 
@@ -60,6 +62,42 @@ const stateMap = computed(() =>
 
 const selectedProgress = computed(() => userStore.getProgressMeta(graphStore.selectedRouteKnowledgeId))
 const knowledgeMentions = computed(() => graphStore.rawNodes.map((node) => node.routeKnowledgeId).filter(Boolean))
+
+function getCourseLabel(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
+}
+
+function getRecommendationTarget(node) {
+  const preferred = String(node?.canonicalName || node?.name || '').trim()
+  return preferred || getCourseLabel(node)
+}
+
+function applyRecommendationState(payload) {
+  recommendationMeta.value = payload || {
+    path: [],
+    insights: [],
+    learnerProfile: null,
+  }
+  recommendedPath.value = payload?.path || []
+}
+
+async function refreshRecommendationContext(routeKnowledgeId) {
+  const requestId = ++recommendationRequestId
+
+  if (routeKnowledgeId) {
+    await graphStore.ensureNodeDetail(routeKnowledgeId)
+    const detail = graphStore.detailCache[routeKnowledgeId]
+    const target = getRecommendationTarget(detail)
+    const recommendation = await graphStore.ensureRecommendedPath(target, routeKnowledgeId, 'detail')
+    if (requestId !== recommendationRequestId) return
+    applyRecommendationState(recommendation)
+    return
+  }
+
+  const recommendation = await graphStore.ensureRecommendedPath('', '', 'assistant')
+  if (requestId !== recommendationRequestId) return
+  applyRecommendationState(recommendation)
+}
 
 async function bootstrapPage() {
   await Promise.all([
@@ -386,10 +424,11 @@ async function handleRelatedSelect(routeKnowledgeId) {
 }
 
 function handleOpenAi() {
-  if (!graphStore.selectedRouteKnowledgeId) return
   aiAutoPrompt.value = {
     id: Date.now(),
-    text: `请围绕“${graphStore.selectedRouteKnowledgeId}”做一段易懂讲解，并指出我下一步该学什么。`,
+    text: graphStore.selectedRouteKnowledgeId
+      ? `请围绕“${graphStore.selectedRouteKnowledgeId}”做一段易懂讲解，并指出我下一步该学什么。`
+      : '请先概览当前知识图谱，并给我一个适合现在开始的学习建议。',
   }
   aiOpen.value = true
 }
@@ -397,36 +436,28 @@ function handleOpenAi() {
 async function handleSceneReset() {
   searchValue.value = ''
   graphStore.setCourseFilter('全部')
-  await graphStore.collapseAllCourses()
+  graphCanvasRef.value?.cancelViewportAutomation?.()
   graphStore.clearSelection()
-  await graphCanvasRef.value?.fitView?.()
+  await graphStore.loadSeeds(14, { silent: true })
+  await nextTick()
+  await new Promise((resolve) => window.requestAnimationFrame(resolve))
+  await graphCanvasRef.value?.syncNow?.({ flushPendingFocus: false })
+  await graphCanvasRef.value?.fitView?.(0)
 }
 
 watch(
   () => graphStore.selectedRouteKnowledgeId,
   async (routeKnowledgeId) => {
-    if (!routeKnowledgeId) {
-      recommendedPath.value = []
-      recommendationMeta.value = {
-        path: [],
-        insights: [],
-        learnerProfile: null,
-      }
-      return
-    }
-
-    await graphStore.ensureNodeDetail(routeKnowledgeId)
-    const detail = graphStore.detailCache[routeKnowledgeId]
-    const target = detail?.chapterTitle || detail?.canonicalName || detail?.name || ''
-    const recommendation = await graphStore.ensureRecommendedPath(target, routeKnowledgeId, 'detail')
-    recommendationMeta.value = recommendation || {
-      path: [],
-      insights: [],
-      learnerProfile: null,
-    }
-    recommendedPath.value = recommendation?.path || []
+    await refreshRecommendationContext(routeKnowledgeId)
   },
   { immediate: true },
+)
+
+watch(
+  () => userStore.isAuthenticated,
+  async () => {
+    await refreshRecommendationContext(graphStore.selectedRouteKnowledgeId)
+  },
 )
 
 let onKeydown = null
@@ -454,12 +485,12 @@ onMounted(() => {
 
     if (event.key === ' ') {
       event.preventDefault()
-      graphCanvasRef.value?.fitView?.()
+      Promise.resolve(graphCanvasRef.value?.fitView?.()).catch(() => null)
     }
 
     if (event.key === '0') {
       event.preventDefault()
-      handleSceneReset()
+      handleSceneReset().catch(() => null)
     }
 
     if (event.key === '[') {
@@ -507,10 +538,13 @@ onBeforeUnmount(() => {
 
       <div class="topbar__actions">
         <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">登录</RouterLink>
-        <RouterLink v-else class="profile-chip" to="/">
-          <span class="profile-chip__dot"></span>
-          <span>{{ userStore.user?.username || userStore.user?.email || '已登录' }}</span>
-        </RouterLink>
+        <template v-else>
+          <RouterLink class="secondary-btn" to="/dashboard">仪表盘</RouterLink>
+          <RouterLink class="profile-chip" to="/">
+            <span class="profile-chip__dot"></span>
+            <span>{{ userStore.user?.username || userStore.user?.email || '已登录' }}</span>
+          </RouterLink>
+        </template>
       </div>
     </header>
 
@@ -597,9 +631,11 @@ onBeforeUnmount(() => {
       :is-authenticated="userStore.isAuthenticated"
       :auto-prompt="aiAutoPrompt"
       :knowledge-mentions="knowledgeMentions"
+      :recommended-path="recommendedPath"
       :proactive-hints="recommendationMeta.insights || []"
       :learner-profile="recommendationMeta.learnerProfile || null"
       @focus-knowledge="handleRelatedSelect"
+      @show-recommend-path="handleShowPath"
       @run-actions="handleAssistantActions"
     />
 
@@ -610,4 +646,3 @@ onBeforeUnmount(() => {
     </div>
   </section>
 </template>
-

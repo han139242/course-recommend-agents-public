@@ -136,8 +136,27 @@ def load_curated_registry() -> tuple[dict[str, dict], set[tuple[str, str, str]]]
     for path in paths:
         payload = load_json_file(path)
         source = payload["source"]
+        course_title = str(payload.get("course_title", "")).strip()
         for node in payload.get("nodes", []):
-            registry[node["canonical_name"]] = {**node, "source": source}
+            canonical_name = str(node.get("canonical_name", "")).strip()
+            if not canonical_name:
+                continue
+            existing = registry.get(canonical_name)
+            if not existing:
+                registry[canonical_name] = {
+                    **node,
+                    "canonical_name": canonical_name,
+                    "source": source,
+                    "course_title": course_title,
+                }
+                continue
+            existing_aliases = existing.get("aliases", [])
+            node_aliases = node.get("aliases", [])
+            existing["aliases"] = unique_list(existing_aliases + node_aliases + [canonical_name])
+            if not str(existing.get("description", "")).strip() and str(node.get("description", "")).strip():
+                existing["description"] = node["description"]
+            if not str(existing.get("course_title", "")).strip() and course_title:
+                existing["course_title"] = course_title
         for relation in payload.get("relations", []):
             if len(relation) != 3:
                 continue
@@ -272,7 +291,7 @@ def overlay_curated_nodes(driver, database: str, curated_registry: dict[str, dic
                 "entity_type": item["entity_type"],
                 "source_structure_id": f"curated::{canonical_name}",
                 "source_path": f"curated/{item['source']}",
-                "chapter_title": "人工智能课程知识图谱",
+                "chapter_title": item.get("course_title") or "人工智能课程知识图谱",
                 "description": item.get("description", "").strip(),
                 "aliases": unique_list((existing.aliases if existing else []) + item.get("aliases", []) + [canonical_name]),
                 "facets": [],
@@ -298,7 +317,47 @@ def overlay_curated_nodes(driver, database: str, curated_registry: dict[str, dic
                 """
                 UNWIND $rows AS row
                 MERGE (n:KnowledgeNode {node_id: row.node_id})
-                SET n += row
+                ON CREATE SET n += row
+                SET
+                  n.name = coalesce(n.name, row.name),
+                  n.raw_name = coalesce(n.raw_name, row.raw_name),
+                  n.canonical_name = coalesce(n.canonical_name, row.canonical_name),
+                  n.entity_type = coalesce(n.entity_type, row.entity_type),
+                  n.source_structure_id = coalesce(n.source_structure_id, row.source_structure_id),
+                  n.source_path = coalesce(n.source_path, row.source_path),
+                  n.chapter_title = CASE
+                    WHEN trim(coalesce(n.chapter_title, '')) = '' THEN row.chapter_title
+                    ELSE n.chapter_title
+                  END,
+                  n.description = CASE
+                    WHEN trim(coalesce(n.description, '')) = '' THEN row.description
+                    ELSE n.description
+                  END,
+                  n.aliases = CASE
+                    WHEN size(coalesce(n.aliases, [])) = 0 THEN row.aliases
+                    ELSE n.aliases
+                  END,
+                  n.facets = CASE
+                    WHEN size(coalesce(n.facets, [])) = 0 THEN row.facets
+                    ELSE n.facets
+                  END,
+                  n.confidence = coalesce(n.confidence, row.confidence),
+                  n.review_status = coalesce(n.review_status, row.review_status),
+                  n.quality_issues = CASE
+                    WHEN size(coalesce(n.quality_issues, [])) = 0 THEN row.quality_issues
+                    ELSE n.quality_issues
+                  END,
+                  n.source_line_no = coalesce(n.source_line_no, row.source_line_no),
+                  n.source_kind = coalesce(n.source_kind, row.source_kind),
+                  n.quality_tier = coalesce(n.quality_tier, row.quality_tier),
+                  n.normalized_name = coalesce(n.normalized_name, row.normalized_name),
+                  n.curated_source = coalesce(n.curated_source, row.curated_source),
+                  n.legacy_source_paths = CASE
+                    WHEN size(coalesce(n.legacy_source_paths, [])) = 0 THEN row.legacy_source_paths
+                    ELSE n.legacy_source_paths
+                  END,
+                  n.graph_namespace = coalesce(n.graph_namespace, row.graph_namespace),
+                  n.data_standard = coalesce(n.data_standard, row.data_standard)
                 """,
                 rows=batch,
             )

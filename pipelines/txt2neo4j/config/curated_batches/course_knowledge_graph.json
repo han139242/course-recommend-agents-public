@@ -1,0 +1,1128 @@
+{
+  "source": "course_knowledge_graph",
+  "course_title": "知识图谱",
+  "nodes": [
+    {
+      "canonical_name": "知识图谱",
+      "entity_type": "topic",
+      "description": "以图结构组织实体、概念及关系的知识表示与推理技术。"
+    },
+    {
+      "canonical_name": "知识表示",
+      "entity_type": "topic",
+      "description": "研究如何形式化表达知识并支持存储、推理与应用的人工智能核心方向。"
+    },
+    {
+      "canonical_name": "知识抽取",
+      "entity_type": "topic",
+      "description": "围绕从文本或结构化数据中获取实体关系和事件知识展开的主题。"
+    },
+    {
+      "canonical_name": "知识表示学习",
+      "entity_type": "topic",
+      "description": "围绕实体关系向量化建模、图嵌入与结构语义联合表示展开的主题。"
+    },
+    {
+      "canonical_name": "知识推理",
+      "entity_type": "topic",
+      "description": "围绕规则、路径与图表示方法在知识图谱上进行推断的主题。"
+    },
+    {
+      "canonical_name": "知识融合",
+      "entity_type": "method",
+      "description": "将多源异构知识进行对齐、消歧和合并以提升一致性的构建方法。"
+    },
+    {
+      "canonical_name": "图数据库",
+      "entity_type": "topic",
+      "description": "围绕图数据存储、查询语言与图模式管理展开的知识主题。"
+    },
+    {
+      "canonical_name": "图神经网络",
+      "entity_type": "algorithm",
+      "description": "在图结构上通过邻域聚合和消息传递学习表示的神经网络模型。"
+    },
+    {
+      "canonical_name": "图任务",
+      "entity_type": "topic",
+      "description": "以节点、边和整图为对象定义预测分析目标的知识图谱主题。"
+    },
+    {
+      "canonical_name": "知识图谱应用",
+      "entity_type": "topic",
+      "description": "面向问答、推荐、搜索等落地场景的知识图谱应用主题。"
+    },
+    {
+      "canonical_name": "三元组",
+      "entity_type": "concept",
+      "description": "由头实体、关系和尾实体组成的知识图谱基本表示单元。"
+    },
+    {
+      "canonical_name": "RDF",
+      "entity_type": "concept",
+      "description": "以资源、属性和值组织知识三元组的语义网基础数据模型。"
+    },
+    {
+      "canonical_name": "RDF Schema",
+      "entity_type": "concept",
+      "description": "用于定义 RDF 资源类别、属性层次和域值约束的模式语言。"
+    },
+    {
+      "canonical_name": "OWL",
+      "entity_type": "concept",
+      "description": "基于描述逻辑构建复杂本体和语义约束的语义网语言。"
+    },
+    {
+      "canonical_name": "属性图",
+      "entity_type": "concept",
+      "description": "以节点、关系及其属性表达图结构知识的图数据模型。"
+    },
+    {
+      "canonical_name": "本体",
+      "entity_type": "concept",
+      "description": "对领域概念、关系与约束进行共享形式化描述的知识组织模型。"
+    },
+    {
+      "canonical_name": "本体建模",
+      "entity_type": "method",
+      "description": "定义概念层次、关系约束与语义规则的知识图谱建模方法。"
+    },
+    {
+      "canonical_name": "模式层",
+      "entity_type": "concept",
+      "description": "定义知识图谱概念、关系、约束和类型结构的上层知识结构。"
+    },
+    {
+      "canonical_name": "数据层",
+      "entity_type": "concept",
+      "description": "承载具体实体、属性和值等实例化知识的知识图谱底层结构。"
+    },
+    {
+      "canonical_name": "语义网",
+      "entity_type": "topic",
+      "description": "以机器可理解方式组织网络知识资源的语义化体系。"
+    },
+    {
+      "canonical_name": "描述逻辑",
+      "entity_type": "method",
+      "description": "用于形式化概念、角色与个体并支持可判定推理的逻辑体系。"
+    },
+    {
+      "canonical_name": "开世界假设",
+      "entity_type": "concept",
+      "description": "若知识库中缺少相关陈述则不默认其真伪的知识建模假设。"
+    },
+    {
+      "canonical_name": "闭世界假设",
+      "entity_type": "concept",
+      "description": "若知识库中无法证明某命题为真则默认其为假的知识建模假设。"
+    },
+    {
+      "canonical_name": "信息抽取",
+      "entity_type": "application",
+      "description": "从非结构化文本中抽取实体、关系与事件等结构化信息的任务。"
+    },
+    {
+      "canonical_name": "实体抽取",
+      "entity_type": "method",
+      "description": "从文本中识别出具有独立语义指称对象的知识抽取方法。"
+    },
+    {
+      "canonical_name": "命名实体识别",
+      "entity_type": "application",
+      "description": "识别文本中人名、地名、机构名等实体边界与类别的任务。"
+    },
+    {
+      "canonical_name": "关系抽取",
+      "entity_type": "method",
+      "description": "从文本中识别实体之间语义关系的知识抽取方法。"
+    },
+    {
+      "canonical_name": "事件抽取",
+      "entity_type": "method",
+      "description": "从文本中识别事件触发词、事件类型及其参与角色的信息抽取方法。"
+    },
+    {
+      "canonical_name": "开放信息抽取",
+      "entity_type": "application",
+      "description": "从开放域文本中直接抽取关系三元组或事实片段的任务。"
+    },
+    {
+      "canonical_name": "实体链接",
+      "entity_type": "method",
+      "description": "将文本中的实体提及映射到知识库中标准实体的知识图谱构建方法。"
+    },
+    {
+      "canonical_name": "实体消歧",
+      "entity_type": "method",
+      "description": "区分同名或歧义实体并确定真实指代对象的处理方法。"
+    },
+    {
+      "canonical_name": "关系模式发现",
+      "entity_type": "method",
+      "description": "从大量关系实例中归纳抽取潜在关系类型和结构模式的方法。"
+    },
+    {
+      "canonical_name": "图嵌入",
+      "entity_type": "method",
+      "description": "将图中的节点、边或子图映射为低维向量表示的方法。"
+    },
+    {
+      "canonical_name": "图表示学习",
+      "entity_type": "method",
+      "description": "针对图结构数据学习节点、边或整图向量表示的方法。"
+    },
+    {
+      "canonical_name": "知识图谱表示学习",
+      "entity_type": "topic",
+      "description": "针对知识图谱结构与语义学习实体和关系表示的研究方向。"
+    },
+    {
+      "canonical_name": "TransE",
+      "entity_type": "algorithm",
+      "description": "通过平移假设建模实体与关系向量空间的经典知识图谱嵌入算法。"
+    },
+    {
+      "canonical_name": "TransR",
+      "entity_type": "algorithm",
+      "description": "在独立关系空间中投影实体表示以增强关系建模能力的算法。"
+    },
+    {
+      "canonical_name": "RotatE",
+      "entity_type": "algorithm",
+      "description": "用复数空间旋转操作表达关系变换模式的知识图谱嵌入算法。"
+    },
+    {
+      "canonical_name": "ComplEx",
+      "entity_type": "algorithm",
+      "description": "利用复向量双线性打分建模非对称关系的嵌入算法。"
+    },
+    {
+      "canonical_name": "DistMult",
+      "entity_type": "algorithm",
+      "description": "通过对角双线性评分函数建模实体关系相容性的嵌入算法。"
+    },
+    {
+      "canonical_name": "负采样",
+      "entity_type": "method",
+      "description": "构造伪三元组作为负例以训练知识图谱表示学习模型的方法。"
+    },
+    {
+      "canonical_name": "评分函数",
+      "entity_type": "concept",
+      "description": "用于衡量知识三元组成立程度并指导优化的模型打分形式。"
+    },
+    {
+      "canonical_name": "实体表示",
+      "entity_type": "concept",
+      "description": "对实体语义和结构信息进行向量化编码后的表示形式。"
+    },
+    {
+      "canonical_name": "关系表示",
+      "entity_type": "concept",
+      "description": "对关系语义类型和变换规律进行向量化编码后的表示形式。"
+    },
+    {
+      "canonical_name": "知识图谱推理",
+      "entity_type": "method",
+      "description": "在知识图谱上完成链接预测、规则挖掘或多跳问答等推理与查询任务的方法。"
+    },
+    {
+      "canonical_name": "规则推理",
+      "entity_type": "method",
+      "description": "基于显式逻辑规则在知识图谱上推出新事实的推理方法。"
+    },
+    {
+      "canonical_name": "路径推理",
+      "entity_type": "method",
+      "description": "利用实体间关系路径模式发现潜在语义联系的推理方法。"
+    },
+    {
+      "canonical_name": "多跳推理",
+      "entity_type": "method",
+      "description": "跨越多条边和多个中间实体完成链式推断的推理方式。"
+    },
+    {
+      "canonical_name": "规则挖掘",
+      "entity_type": "method",
+      "description": "从已有图谱事实中自动发现可泛化逻辑规则的挖掘方法。"
+    },
+    {
+      "canonical_name": "一致性检验",
+      "entity_type": "method",
+      "description": "检测知识库或逻辑理论是否包含矛盾的验证方法。"
+    },
+    {
+      "canonical_name": "实例推理",
+      "entity_type": "method",
+      "description": "基于类、属性和约束判断个体实例归属与关系的推理任务。"
+    },
+    {
+      "canonical_name": "分类推理",
+      "entity_type": "method",
+      "description": "依据概念定义和包含关系自动构建或验证概念层次结构的推理任务。"
+    },
+    {
+      "canonical_name": "可微分推理",
+      "entity_type": "method",
+      "description": "把推理过程表示为可反向传播的计算图，以用梯度方法优化推理参数或结构。"
+    },
+    {
+      "canonical_name": "知识补全",
+      "entity_type": "method",
+      "description": "通过推断缺失实体、关系或属性补全知识图谱内容的方法。"
+    },
+    {
+      "canonical_name": "实体对齐",
+      "entity_type": "method",
+      "description": "识别不同知识源中指向同一真实实体记录的对齐方法。"
+    },
+    {
+      "canonical_name": "模式匹配",
+      "entity_type": "method",
+      "description": "识别不同知识源模式结构相似性并完成映射对齐的方法。"
+    },
+    {
+      "canonical_name": "冲突消解",
+      "entity_type": "method",
+      "description": "当多条规则同时可触发时选择执行顺序或优先级的控制方法。"
+    },
+    {
+      "canonical_name": "置信度融合",
+      "entity_type": "method",
+      "description": "依据来源可靠性和证据强度综合确定知识可信度的方法。"
+    },
+    {
+      "canonical_name": "多源异构知识",
+      "entity_type": "concept",
+      "description": "来自不同结构、领域和质量标准的多样化知识集合。"
+    },
+    {
+      "canonical_name": "Neo4j",
+      "entity_type": "algorithm",
+      "description": "采用属性图模型和 Cypher 查询语言的主流图数据库系统。"
+    },
+    {
+      "canonical_name": "RDF存储",
+      "entity_type": "method",
+      "description": "针对 RDF 三元组数据进行索引、压缩与高效查询的存储方式。"
+    },
+    {
+      "canonical_name": "SPARQL",
+      "entity_type": "concept",
+      "description": "面向 RDF 数据图模式匹配与查询的标准语义查询语言。"
+    },
+    {
+      "canonical_name": "Cypher",
+      "entity_type": "concept",
+      "description": "面向属性图模式匹配和图遍历操作的声明式查询语言。"
+    },
+    {
+      "canonical_name": "图查询",
+      "entity_type": "method",
+      "description": "在图结构数据上执行模式匹配、遍历和分析的查询操作。"
+    },
+    {
+      "canonical_name": "SPARQL查询",
+      "entity_type": "method",
+      "description": "使用 SPARQL 对 RDF 图执行三元组模式检索的查询方法。"
+    },
+    {
+      "canonical_name": "Cypher查询",
+      "entity_type": "method",
+      "description": "使用 Cypher 对属性图执行匹配和路径检索的查询方法。"
+    },
+    {
+      "canonical_name": "消息传递机制",
+      "entity_type": "concept",
+      "description": "图神经网络中节点通过邻居信息聚合实现表示更新的基本机制。"
+    },
+    {
+      "canonical_name": "图卷积网络",
+      "entity_type": "algorithm",
+      "description": "通过图卷积操作对节点邻域特征进行聚合的经典图神经网络模型。"
+    },
+    {
+      "canonical_name": "GraphSAGE",
+      "entity_type": "algorithm",
+      "description": "通过采样邻域并聚合邻居特征实现归纳学习的图神经网络模型。"
+    },
+    {
+      "canonical_name": "图注意力网络",
+      "entity_type": "algorithm",
+      "description": "通过注意力机制自适应分配邻居权重的图神经网络模型。"
+    },
+    {
+      "canonical_name": "GIN",
+      "entity_type": "algorithm",
+      "description": "通过更强邻域聚合能力逼近图同构测试的图神经网络模型。"
+    },
+    {
+      "canonical_name": "注意力机制",
+      "entity_type": "concept",
+      "description": "根据输入不同部分的重要性进行加权建模的机制。"
+    },
+    {
+      "canonical_name": "链接预测",
+      "entity_type": "application",
+      "description": "预测图中潜在边是否存在及其可能类型的图学习任务。"
+    },
+    {
+      "canonical_name": "节点分类",
+      "entity_type": "application",
+      "description": "根据节点属性和图结构为节点分配类别标签的图学习任务。"
+    },
+    {
+      "canonical_name": "图分类",
+      "entity_type": "application",
+      "description": "为整张图预测类别标签或结构属性的图学习任务。"
+    },
+    {
+      "canonical_name": "社区发现",
+      "entity_type": "application",
+      "description": "识别图中连接紧密节点群体结构的图分析任务。"
+    },
+    {
+      "canonical_name": "子图表示",
+      "entity_type": "concept",
+      "description": "用于表达局部图结构模式和语义信息的子图级表示。"
+    },
+    {
+      "canonical_name": "关系预测",
+      "entity_type": "application",
+      "description": "预测实体之间可能关系类型或强度的知识图谱任务。"
+    },
+    {
+      "canonical_name": "知识库问答",
+      "entity_type": "application",
+      "description": "基于文档或知识库检索并结合生成模型回答问题的应用任务。"
+    },
+    {
+      "canonical_name": "推荐系统",
+      "entity_type": "topic",
+      "description": "根据用户兴趣、上下文和目标对候选内容进行筛选与排序的智能系统。"
+    },
+    {
+      "canonical_name": "语义搜索",
+      "entity_type": "application",
+      "description": "利用知识结构和语义关系提升检索相关性的搜索应用。"
+    },
+    {
+      "canonical_name": "大语言模型",
+      "entity_type": "topic",
+      "description": "以海量语料预训练形成通用语言理解与生成能力的大规模模型。"
+    },
+    {
+      "canonical_name": "问答系统",
+      "entity_type": "application",
+      "description": "根据用户问题自动返回答案的智能系统。"
+    },
+    {
+      "canonical_name": "检索增强生成",
+      "entity_type": "topic",
+      "description": "通过外部知识检索增强大模型生成质量与事实性的应用范式。"
+    }
+  ],
+  "relations": [
+    [
+      "知识表示",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识抽取",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识表示学习",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识推理",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识融合",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图数据库",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图神经网络",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图任务",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识图谱应用",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "三元组",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RDF",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "属性图",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "本体",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模式层",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据层",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义网",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "描述逻辑",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "开世界假设",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "闭世界假设",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "信息抽取",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体抽取",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关系抽取",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "事件抽取",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体链接",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体消歧",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关系模式发现",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识融合",
+      "知识抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图嵌入",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图表示学习",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识图谱表示学习",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "负采样",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "评分函数",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体表示",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关系表示",
+      "知识表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识图谱推理",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "一致性检验",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实例推理",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分类推理",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可微分推理",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识补全",
+      "知识推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体对齐",
+      "知识融合",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模式匹配",
+      "知识融合",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "冲突消解",
+      "知识融合",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "置信度融合",
+      "知识融合",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多源异构知识",
+      "知识融合",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Neo4j",
+      "图数据库",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RDF存储",
+      "图数据库",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图查询",
+      "图数据库",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "消息传递机制",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力机制",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "链接预测",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "节点分类",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图分类",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "社区发现",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子图表示",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关系预测",
+      "图任务",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识库问答",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "推荐系统",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义搜索",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "大语言模型",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "问答系统",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "检索增强生成",
+      "知识图谱应用",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RDF",
+      "三元组",
+      "RELATED_TO"
+    ],
+    [
+      "RDF Schema",
+      "RDF",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "OWL",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "属性图",
+      "图数据库",
+      "RELATED_TO"
+    ],
+    [
+      "本体",
+      "模式层",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "本体建模",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "本体建模",
+      "模式层",
+      "RELATED_TO"
+    ],
+    [
+      "语义网",
+      "知识融合",
+      "RELATED_TO"
+    ],
+    [
+      "描述逻辑",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "开世界假设",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "闭世界假设",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "信息抽取",
+      "知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实体抽取",
+      "命名实体识别",
+      "RELATED_TO"
+    ],
+    [
+      "关系抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "事件抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "开放信息抽取",
+      "信息抽取",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实体链接",
+      "命名实体识别",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实体消歧",
+      "实体链接",
+      "RELATED_TO"
+    ],
+    [
+      "实体链接",
+      "知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "关系抽取",
+      "知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "关系抽取",
+      "知识融合",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实体链接",
+      "知识融合",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实体对齐",
+      "实体链接",
+      "RELATED_TO"
+    ],
+    [
+      "多源异构知识",
+      "知识融合",
+      "RELATED_TO"
+    ],
+    [
+      "图表示学习",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图嵌入",
+      "图表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图表示学习",
+      "知识图谱",
+      "RELATED_TO"
+    ],
+    [
+      "TransE",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TransR",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RotatE",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ComplEx",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DistMult",
+      "知识图谱表示学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "负采样",
+      "TransE",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "评分函数",
+      "TransE",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "评分函数",
+      "DistMult",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "评分函数",
+      "ComplEx",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实体表示",
+      "图嵌入",
+      "PART_OF"
+    ],
+    [
+      "关系表示",
+      "图嵌入",
+      "PART_OF"
+    ],
+    [
+      "知识图谱推理",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "规则推理",
+      "知识图谱推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "路径推理",
+      "知识图谱推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多跳推理",
+      "知识图谱推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "规则挖掘",
+      "规则推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "一致性检验",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "实例推理",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "分类推理",
+      "本体",
+      "RELATED_TO"
+    ],
+    [
+      "可微分推理",
+      "知识图谱推理",
+      "RELATED_TO"
+    ],
+    [
+      "知识补全",
+      "知识图谱",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识补全",
+      "链接预测",
+      "RELATED_TO"
+    ],
+    [
+      "知识补全",
+      "图嵌入",
+      "RELATED_TO"
+    ],
+    [
+      "知识补全",
+      "图神经网络",
+      "RELATED_TO"
+    ],
+    [
+      "图数据库",
+      "知识图谱",
+      "PART_OF"
+    ],
+    [
+      "SPARQL",
+      "RDF存储",
+      "RELATED_TO"
+    ],
+    [
+      "Cypher",
+      "Neo4j",
+      "RELATED_TO"
+    ],
+    [
+      "SPARQL查询",
+      "图查询",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Cypher查询",
+      "图查询",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SPARQL",
+      "SPARQL查询",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Cypher",
+      "Cypher查询",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "图神经网络",
+      "知识图谱",
+      "RELATED_TO"
+    ],
+    [
+      "消息传递机制",
+      "图神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "图卷积网络",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GraphSAGE",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图注意力网络",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力机制",
+      "图注意力网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "GIN",
+      "图神经网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图卷积网络",
+      "节点分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "GraphSAGE",
+      "节点分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "图注意力网络",
+      "节点分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "图神经网络",
+      "链接预测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "子图表示",
+      "图神经网络",
+      "RELATED_TO"
+    ],
+    [
+      "图嵌入",
+      "链接预测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "知识库问答",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "知识图谱",
+      "知识库问答",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "知识图谱",
+      "推荐系统",
+      "RELATED_TO"
+    ],
+    [
+      "知识图谱",
+      "语义搜索",
+      "RELATED_TO"
+    ],
+    [
+      "知识图谱",
+      "检索增强生成",
+      "RELATED_TO"
+    ],
+    [
+      "大语言模型",
+      "知识库问答",
+      "APPLIES_TO"
+    ],
+    [
+      "知识图谱",
+      "大语言模型",
+      "RELATED_TO"
+    ]
+  ]
+}

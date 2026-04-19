@@ -1,0 +1,836 @@
+{
+  "source": "course_probability",
+  "course_title": "概率与统计",
+  "nodes": [
+    {
+      "canonical_name": "概率与统计",
+      "entity_type": "topic",
+      "description": "研究随机现象建模、统计推断与数据规律分析的数学基础课程。"
+    },
+    {
+      "canonical_name": "概率基础",
+      "entity_type": "topic",
+      "description": "研究事件、概率定义与条件概率等基础概念的概率论主题。"
+    },
+    {
+      "canonical_name": "随机变量与分布",
+      "entity_type": "topic",
+      "description": "研究随机变量表示、分布形式与多维随机对象的概率论主题。"
+    },
+    {
+      "canonical_name": "常见分布",
+      "entity_type": "topic",
+      "description": "研究离散与连续常见概率分布性质及适用场景的概率论主题。"
+    },
+    {
+      "canonical_name": "数字特征",
+      "entity_type": "topic",
+      "description": "研究期望、方差及相关统计量刻画随机变量特征的概率论主题。"
+    },
+    {
+      "canonical_name": "大数定律与中心极限定理",
+      "entity_type": "topic",
+      "description": "研究样本均值收敛规律与极限分布的概率统计主题。"
+    },
+    {
+      "canonical_name": "参数估计",
+      "entity_type": "topic",
+      "description": "研究从样本数据估计总体参数方法与性质的统计推断主题。"
+    },
+    {
+      "canonical_name": "假设检验",
+      "entity_type": "topic",
+      "description": "研究基于样本证据判断总体假设是否成立的统计推断主题。"
+    },
+    {
+      "canonical_name": "回归分析",
+      "entity_type": "topic",
+      "description": "研究变量关系建模、参数估计与诊断分析的统计建模主题。"
+    },
+    {
+      "canonical_name": "贝叶斯统计",
+      "entity_type": "topic",
+      "description": "研究先验知识与观测数据联合更新推断的统计建模主题。"
+    },
+
+    {
+      "canonical_name": "样本空间",
+      "entity_type": "concept",
+      "description": "随机试验所有可能结果构成的集合。"
+    },
+    {
+      "canonical_name": "随机事件",
+      "entity_type": "concept",
+      "description": "样本空间子集对应的可观察结果集合。"
+    },
+    {
+      "canonical_name": "事件运算",
+      "entity_type": "concept",
+      "description": "对事件进行并交补等集合运算的规则。"
+    },
+    {
+      "canonical_name": "古典概率",
+      "entity_type": "concept",
+      "description": "在等可能结果前提下按有利结果比例定义的概率。"
+    },
+    {
+      "canonical_name": "几何概率",
+      "entity_type": "concept",
+      "description": "在连续区域上按长度面积体积比例定义的概率。"
+    },
+    {
+      "canonical_name": "条件概率",
+      "entity_type": "concept",
+      "description": "在已知某事件发生条件下另一事件发生的概率。"
+    },
+    {
+      "canonical_name": "联合概率",
+      "entity_type": "concept",
+      "description": "多个事件同时发生的概率。"
+    },
+    {
+      "canonical_name": "边缘概率",
+      "entity_type": "concept",
+      "description": "对联合分布中部分变量求和或积分得到的单变量概率。"
+    },
+    {
+      "canonical_name": "全概率公式",
+      "entity_type": "method",
+      "description": "按完备事件组分解目标事件概率的计算公式。"
+    },
+    {
+      "canonical_name": "贝叶斯定理",
+      "entity_type": "concept",
+      "description": "描述先验概率、似然与后验概率之间关系的基本公式。"
+    },
+    {
+      "canonical_name": "独立性",
+      "entity_type": "concept",
+      "description": "一个事件发生不改变另一个事件概率的性质。"
+    },
+    {
+      "canonical_name": "条件独立性",
+      "entity_type": "concept",
+      "description": "在给定条件变量后两个变量相互独立的性质。"
+    },
+
+    {
+      "canonical_name": "随机变量",
+      "entity_type": "concept",
+      "description": "用于描述随机试验结果数值化表示的基本概率论概念。"
+    },
+    {
+      "canonical_name": "离散型随机变量",
+      "entity_type": "concept",
+      "description": "取值可数并以概率质量描述的随机变量。"
+    },
+    {
+      "canonical_name": "连续型随机变量",
+      "entity_type": "concept",
+      "description": "取值连续并以概率密度描述的随机变量。"
+    },
+    {
+      "canonical_name": "概率分布",
+      "entity_type": "concept",
+      "description": "描述随机变量可能取值及其概率规律的数学对象。"
+    },
+    {
+      "canonical_name": "分布函数",
+      "entity_type": "concept",
+      "description": "给出随机变量不超过某值概率的函数。"
+    },
+    {
+      "canonical_name": "概率质量函数",
+      "entity_type": "concept",
+      "description": "离散型随机变量各取值对应概率的函数。"
+    },
+    {
+      "canonical_name": "概率密度函数",
+      "entity_type": "concept",
+      "description": "连续型随机变量在局部区间上的概率强度函数。"
+    },
+    {
+      "canonical_name": "联合分布",
+      "entity_type": "concept",
+      "description": "多个随机变量同时取值规律的概率描述。"
+    },
+    {
+      "canonical_name": "边缘分布",
+      "entity_type": "concept",
+      "description": "从联合分布中消去部分变量得到的分布。"
+    },
+    {
+      "canonical_name": "条件分布",
+      "entity_type": "concept",
+      "description": "在给定部分变量取值条件下其他变量的分布。"
+    },
+    {
+      "canonical_name": "随机向量",
+      "entity_type": "concept",
+      "description": "由多个随机变量组成的向量型随机对象。"
+    },
+
+    {
+      "canonical_name": "0-1分布",
+      "entity_type": "concept",
+      "description": "只取0和1两个值的最简单离散分布。"
+    },
+    {
+      "canonical_name": "二项分布",
+      "entity_type": "concept",
+      "description": "描述多次独立伯努利试验成功次数的离散分布。"
+    },
+    {
+      "canonical_name": "泊松分布",
+      "entity_type": "concept",
+      "description": "描述单位时间或区域内稀有事件发生次数的离散分布。"
+    },
+    {
+      "canonical_name": "几何分布",
+      "entity_type": "concept",
+      "description": "描述首次成功出现前失败次数的离散分布。"
+    },
+    {
+      "canonical_name": "超几何分布",
+      "entity_type": "concept",
+      "description": "描述不放回抽样中样本成功个数的离散分布。"
+    },
+    {
+      "canonical_name": "均匀分布",
+      "entity_type": "concept",
+      "description": "在给定区间或区域内等可能取值的分布。"
+    },
+    {
+      "canonical_name": "正态分布",
+      "entity_type": "concept",
+      "description": "由均值和方差决定且呈钟形曲线的连续分布。"
+    },
+    {
+      "canonical_name": "指数分布",
+      "entity_type": "concept",
+      "description": "描述等待时间并具有无记忆性的连续分布。"
+    },
+    {
+      "canonical_name": "Gamma分布",
+      "entity_type": "concept",
+      "description": "由形状和尺度参数决定的连续正值分布。"
+    },
+    {
+      "canonical_name": "Beta分布",
+      "entity_type": "concept",
+      "description": "定义在零到一区间并常用于概率建模的连续分布。"
+    },
+    {
+      "canonical_name": "卡方分布",
+      "entity_type": "concept",
+      "description": "由标准正态变量平方和构成的连续分布。"
+    },
+    {
+      "canonical_name": "t分布",
+      "entity_type": "concept",
+      "description": "小样本均值推断中常用的对称厚尾分布。"
+    },
+    {
+      "canonical_name": "F分布",
+      "entity_type": "concept",
+      "description": "由两个卡方变量标准化比值构成的连续分布。"
+    },
+    {
+      "canonical_name": "多元正态分布",
+      "entity_type": "concept",
+      "description": "高维随机向量联合服从正态规律的连续分布。"
+    },
+
+    {
+      "canonical_name": "期望",
+      "entity_type": "concept",
+      "description": "随机变量取值按概率加权后的平均水平。"
+    },
+    {
+      "canonical_name": "方差",
+      "entity_type": "concept",
+      "description": "刻画随机变量偏离期望波动程度的量。"
+    },
+    {
+      "canonical_name": "标准差",
+      "entity_type": "concept",
+      "description": "方差开平方得到的波动尺度。"
+    },
+    {
+      "canonical_name": "协方差",
+      "entity_type": "concept",
+      "description": "衡量两个随机变量共同变化方向与强度的量。"
+    },
+    {
+      "canonical_name": "相关系数",
+      "entity_type": "concept",
+      "description": "标准化后的协方差，用于衡量线性相关程度。"
+    },
+    {
+      "canonical_name": "协方差矩阵",
+      "entity_type": "concept",
+      "description": "汇总随机向量各分量协方差关系的矩阵。"
+    },
+    {
+      "canonical_name": "矩",
+      "entity_type": "concept",
+      "description": "刻画分布形状与位置特征的一类加权期望。"
+    },
+    {
+      "canonical_name": "条件期望",
+      "entity_type": "concept",
+      "description": "在给定条件信息下随机变量的平均水平。"
+    },
+    {
+      "canonical_name": "条件方差",
+      "entity_type": "concept",
+      "description": "在给定条件信息下随机变量的波动程度。"
+    },
+    {
+      "canonical_name": "偏度",
+      "entity_type": "concept",
+      "description": "刻画分布左右不对称程度的统计量。"
+    },
+    {
+      "canonical_name": "峰度",
+      "entity_type": "concept",
+      "description": "刻画分布尾部厚度与尖峭程度的统计量。"
+    },
+    {
+      "canonical_name": "矩母函数",
+      "entity_type": "concept",
+      "description": "通过指数型期望编码全部矩信息的函数。"
+    },
+
+    {
+      "canonical_name": "马尔可夫不等式",
+      "entity_type": "concept",
+      "description": "利用期望给出非负随机变量尾概率上界的不等式。"
+    },
+    {
+      "canonical_name": "切比雪夫不等式",
+      "entity_type": "concept",
+      "description": "利用方差给出随机变量偏离均值概率上界的不等式。"
+    },
+    {
+      "canonical_name": "大数定律",
+      "entity_type": "concept",
+      "description": "说明样本均值随样本量增大收敛到总体均值的定理族。"
+    },
+    {
+      "canonical_name": "弱大数定律",
+      "entity_type": "concept",
+      "description": "在概率意义下说明样本均值收敛到期望的定理。"
+    },
+    {
+      "canonical_name": "强大数定律",
+      "entity_type": "concept",
+      "description": "几乎处处说明样本均值收敛到期望的定理。"
+    },
+    {
+      "canonical_name": "中心极限定理",
+      "entity_type": "concept",
+      "description": "说明标准化样本和近似服从正态分布的极限定理。"
+    },
+    {
+      "canonical_name": "正态近似",
+      "entity_type": "method",
+      "description": "用正态分布近似离散统计量分布的计算方法。"
+    },
+
+    {
+      "canonical_name": "抽样分布",
+      "entity_type": "concept",
+      "description": "统计量在重复抽样下所服从的概率分布。"
+    },
+    {
+      "canonical_name": "统计量",
+      "entity_type": "concept",
+      "description": "仅由样本观测值构成且不含未知参数的函数。"
+    },
+    {
+      "canonical_name": "点估计",
+      "entity_type": "method",
+      "description": "用单个数值近似总体参数的估计方法。"
+    },
+    {
+      "canonical_name": "矩估计",
+      "entity_type": "method",
+      "description": "通过样本矩匹配总体矩求参数的估计方法。"
+    },
+    {
+      "canonical_name": "最大似然估计",
+      "entity_type": "method",
+      "description": "通过最大化观测数据似然函数估计模型参数的方法。"
+    },
+    {
+      "canonical_name": "最大后验估计",
+      "entity_type": "method",
+      "description": "在结合先验分布基础上最大化后验概率估计参数的方法。"
+    },
+    {
+      "canonical_name": "无偏性",
+      "entity_type": "concept",
+      "description": "估计量期望等于真实参数的性质。"
+    },
+    {
+      "canonical_name": "一致性",
+      "entity_type": "concept",
+      "description": "样本量增大时估计量收敛到真实参数的性质。"
+    },
+    {
+      "canonical_name": "有效性",
+      "entity_type": "concept",
+      "description": "在无偏估计类中具有更小方差的性质。"
+    },
+    {
+      "canonical_name": "充分统计量",
+      "entity_type": "concept",
+      "description": "包含参数全部样本信息的统计量。"
+    },
+    {
+      "canonical_name": "Fisher信息",
+      "entity_type": "concept",
+      "description": "衡量样本对参数可辨识程度的信息量。"
+    },
+    {
+      "canonical_name": "区间估计",
+      "entity_type": "method",
+      "description": "用一个数值区间估计总体参数范围的方法。"
+    },
+    {
+      "canonical_name": "置信区间",
+      "entity_type": "concept",
+      "description": "以给定置信水平给出的参数或指标估计不确定范围，用于表达估计精度。"
+    },
+
+    {
+      "canonical_name": "统计假设检验",
+      "entity_type": "method",
+      "description": "在随机性与样本量约束下判断观测差异是否超出偶然波动范围的统计推断方法。"
+    },
+    {
+      "canonical_name": "原假设",
+      "entity_type": "concept",
+      "description": "假设检验中作为基准待检验的初始假设。"
+    },
+    {
+      "canonical_name": "备择假设",
+      "entity_type": "concept",
+      "description": "与原假设对立并在拒绝原假设后接受的假设。"
+    },
+    {
+      "canonical_name": "显著性水平",
+      "entity_type": "concept",
+      "description": "预先设定允许犯第一类错误的概率上限。"
+    },
+    {
+      "canonical_name": "p值",
+      "entity_type": "concept",
+      "description": "在零假设成立前提下观测到当前或更极端结果的概率，常用于假设检验报告。"
+    },
+    {
+      "canonical_name": "检验功效",
+      "entity_type": "concept",
+      "description": "在备择假设为真时正确拒绝原假设的概率。"
+    },
+    {
+      "canonical_name": "第一类错误",
+      "entity_type": "concept",
+      "description": "原假设为真却被错误拒绝的判断错误。"
+    },
+    {
+      "canonical_name": "第二类错误",
+      "entity_type": "concept",
+      "description": "原假设为假却未被拒绝的判断错误。"
+    },
+    {
+      "canonical_name": "单侧检验",
+      "entity_type": "method",
+      "description": "只关注参数向一个方向偏离的假设检验。"
+    },
+    {
+      "canonical_name": "双侧检验",
+      "entity_type": "method",
+      "description": "同时关注参数向两个方向偏离的假设检验。"
+    },
+    {
+      "canonical_name": "Z检验",
+      "entity_type": "method",
+      "description": "基于正态分布对均值或比例进行的假设检验方法。"
+    },
+    {
+      "canonical_name": "t检验",
+      "entity_type": "method",
+      "description": "基于t分布进行小样本均值比较的假设检验方法。"
+    },
+    {
+      "canonical_name": "卡方检验",
+      "entity_type": "method",
+      "description": "基于卡方分布进行拟合优度或独立性分析的检验方法。"
+    },
+    {
+      "canonical_name": "F检验",
+      "entity_type": "method",
+      "description": "基于F分布比较方差或回归模型整体显著性的检验方法。"
+    },
+
+    {
+      "canonical_name": "一元线性回归",
+      "entity_type": "algorithm",
+      "description": "用一个自变量解释因变量线性变化关系的回归模型。"
+    },
+    {
+      "canonical_name": "多元线性回归",
+      "entity_type": "algorithm",
+      "description": "用多个自变量共同解释因变量线性变化的回归模型。"
+    },
+    {
+      "canonical_name": "最小二乘法",
+      "entity_type": "method",
+      "description": "通过最小化残差平方和求近似解的参数估计方法。"
+    },
+    {
+      "canonical_name": "残差",
+      "entity_type": "concept",
+      "description": "观测值与模型拟合值之间的差异。"
+    },
+    {
+      "canonical_name": "残差分析",
+      "entity_type": "method",
+      "description": "通过分析残差模式检验模型假设的诊断方法。"
+    },
+    {
+      "canonical_name": "决定系数",
+      "entity_type": "concept",
+      "description": "衡量回归模型解释因变量变异程度的指标。"
+    },
+    {
+      "canonical_name": "自变量",
+      "entity_type": "concept",
+      "description": "在回归模型中用于解释或预测的输入变量。"
+    },
+    {
+      "canonical_name": "因变量",
+      "entity_type": "concept",
+      "description": "在回归模型中被解释或预测的输出变量。"
+    },
+    {
+      "canonical_name": "多重共线性",
+      "entity_type": "concept",
+      "description": "多个自变量之间高度线性相关的现象。"
+    },
+    {
+      "canonical_name": "异方差性",
+      "entity_type": "concept",
+      "description": "残差方差随自变量变化而不恒定的现象。"
+    },
+    {
+      "canonical_name": "线性回归",
+      "entity_type": "algorithm",
+      "description": "用线性函数拟合输入与连续输出关系的回归模型。"
+    },
+    {
+      "canonical_name": "逻辑回归",
+      "entity_type": "algorithm",
+      "description": "基于对数几率函数建模条件概率的线性分类模型。"
+    },
+
+    {
+      "canonical_name": "先验概率",
+      "entity_type": "concept",
+      "description": "在观察数据之前对事件或假设成立概率的先验判断。"
+    },
+    {
+      "canonical_name": "后验概率",
+      "entity_type": "concept",
+      "description": "结合观测数据后更新得到的事件或假设概率。"
+    },
+    {
+      "canonical_name": "似然",
+      "entity_type": "concept",
+      "description": "在给定参数条件下观测数据出现可能性的度量。"
+    },
+    {
+      "canonical_name": "共轭先验",
+      "entity_type": "concept",
+      "description": "与似然结合后仍保持同族后验分布的先验分布。"
+    },
+    {
+      "canonical_name": "后验预测",
+      "entity_type": "concept",
+      "description": "利用后验分布对未来观测进行预测的分布。"
+    },
+    {
+      "canonical_name": "贝叶斯估计",
+      "entity_type": "method",
+      "description": "基于后验分布对未知参数进行估计的方法。"
+    },
+    {
+      "canonical_name": "贝叶斯决策",
+      "entity_type": "method",
+      "description": "利用后验分布和损失函数选择最优行动的决策方法。"
+    },
+    {
+      "canonical_name": "朴素贝叶斯",
+      "entity_type": "algorithm",
+      "description": "基于条件独立假设和贝叶斯定理的概率分类算法。"
+    },
+    {
+      "canonical_name": "贝叶斯网络",
+      "entity_type": "algorithm",
+      "description": "以有向无环图表示随机变量条件依赖关系的概率图模型。"
+    },
+    {
+      "canonical_name": "马尔可夫网络",
+      "entity_type": "algorithm",
+      "description": "以无向图表达变量依赖关系的概率图模型。"
+    },
+    {
+      "canonical_name": "概率图模型",
+      "entity_type": "topic",
+      "description": "用图结构表达随机变量依赖关系的概率建模框架。"
+    },
+    {
+      "canonical_name": "高斯混合模型",
+      "entity_type": "algorithm",
+      "description": "由多个高斯分量加权组合形成的概率生成模型。"
+    },
+    {
+      "canonical_name": "EM算法",
+      "entity_type": "algorithm",
+      "description": "在含隐变量模型中交替估计隐变量与参数的迭代算法。"
+    },
+
+    {
+      "canonical_name": "模型评估",
+      "entity_type": "method",
+      "description": "通过指标与实验设计评估学习模型泛化性能的方法体系。"
+    },
+    {
+      "canonical_name": "交叉验证",
+      "entity_type": "method",
+      "description": "通过重复划分训练集与验证集估计模型泛化性能的评估方法。"
+    }
+  ],
+  "relations": [
+    ["概率基础", "概率与统计", "SUBTOPIC_OF"],
+    ["随机变量与分布", "概率与统计", "SUBTOPIC_OF"],
+    ["常见分布", "概率与统计", "SUBTOPIC_OF"],
+    ["数字特征", "概率与统计", "SUBTOPIC_OF"],
+    ["大数定律与中心极限定理", "概率与统计", "SUBTOPIC_OF"],
+    ["参数估计", "概率与统计", "SUBTOPIC_OF"],
+    ["假设检验", "概率与统计", "SUBTOPIC_OF"],
+    ["回归分析", "概率与统计", "SUBTOPIC_OF"],
+    ["贝叶斯统计", "概率与统计", "SUBTOPIC_OF"],
+
+    ["样本空间", "概率基础", "SUBTOPIC_OF"],
+    ["随机事件", "概率基础", "SUBTOPIC_OF"],
+    ["事件运算", "概率基础", "SUBTOPIC_OF"],
+    ["古典概率", "概率基础", "SUBTOPIC_OF"],
+    ["几何概率", "概率基础", "SUBTOPIC_OF"],
+    ["条件概率", "概率基础", "SUBTOPIC_OF"],
+    ["联合概率", "概率基础", "SUBTOPIC_OF"],
+    ["边缘概率", "概率基础", "SUBTOPIC_OF"],
+    ["全概率公式", "概率基础", "SUBTOPIC_OF"],
+    ["贝叶斯定理", "概率基础", "SUBTOPIC_OF"],
+    ["独立性", "概率基础", "SUBTOPIC_OF"],
+    ["条件独立性", "概率基础", "SUBTOPIC_OF"],
+
+    ["随机变量", "随机变量与分布", "SUBTOPIC_OF"],
+    ["离散型随机变量", "随机变量与分布", "SUBTOPIC_OF"],
+    ["连续型随机变量", "随机变量与分布", "SUBTOPIC_OF"],
+    ["概率分布", "随机变量与分布", "SUBTOPIC_OF"],
+    ["分布函数", "随机变量与分布", "SUBTOPIC_OF"],
+    ["概率质量函数", "随机变量与分布", "SUBTOPIC_OF"],
+    ["概率密度函数", "随机变量与分布", "SUBTOPIC_OF"],
+    ["联合分布", "随机变量与分布", "SUBTOPIC_OF"],
+    ["边缘分布", "随机变量与分布", "SUBTOPIC_OF"],
+    ["条件分布", "随机变量与分布", "SUBTOPIC_OF"],
+    ["随机向量", "随机变量与分布", "SUBTOPIC_OF"],
+
+    ["0-1分布", "常见分布", "SUBTOPIC_OF"],
+    ["二项分布", "常见分布", "SUBTOPIC_OF"],
+    ["泊松分布", "常见分布", "SUBTOPIC_OF"],
+    ["几何分布", "常见分布", "SUBTOPIC_OF"],
+    ["超几何分布", "常见分布", "SUBTOPIC_OF"],
+    ["均匀分布", "常见分布", "SUBTOPIC_OF"],
+    ["正态分布", "常见分布", "SUBTOPIC_OF"],
+    ["指数分布", "常见分布", "SUBTOPIC_OF"],
+    ["Gamma分布", "常见分布", "SUBTOPIC_OF"],
+    ["Beta分布", "常见分布", "SUBTOPIC_OF"],
+    ["卡方分布", "常见分布", "SUBTOPIC_OF"],
+    ["t分布", "常见分布", "SUBTOPIC_OF"],
+    ["F分布", "常见分布", "SUBTOPIC_OF"],
+    ["多元正态分布", "常见分布", "SUBTOPIC_OF"],
+
+    ["期望", "数字特征", "SUBTOPIC_OF"],
+    ["方差", "数字特征", "SUBTOPIC_OF"],
+    ["标准差", "数字特征", "SUBTOPIC_OF"],
+    ["协方差", "数字特征", "SUBTOPIC_OF"],
+    ["相关系数", "数字特征", "SUBTOPIC_OF"],
+    ["协方差矩阵", "数字特征", "SUBTOPIC_OF"],
+    ["矩", "数字特征", "SUBTOPIC_OF"],
+    ["条件期望", "数字特征", "SUBTOPIC_OF"],
+    ["条件方差", "数字特征", "SUBTOPIC_OF"],
+    ["偏度", "数字特征", "SUBTOPIC_OF"],
+    ["峰度", "数字特征", "SUBTOPIC_OF"],
+    ["矩母函数", "数字特征", "SUBTOPIC_OF"],
+
+    ["马尔可夫不等式", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["切比雪夫不等式", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["大数定律", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["弱大数定律", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["强大数定律", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["中心极限定理", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+    ["正态近似", "大数定律与中心极限定理", "SUBTOPIC_OF"],
+
+    ["抽样分布", "参数估计", "SUBTOPIC_OF"],
+    ["统计量", "参数估计", "SUBTOPIC_OF"],
+    ["点估计", "参数估计", "SUBTOPIC_OF"],
+    ["矩估计", "参数估计", "SUBTOPIC_OF"],
+    ["最大似然估计", "参数估计", "SUBTOPIC_OF"],
+    ["最大后验估计", "参数估计", "SUBTOPIC_OF"],
+    ["无偏性", "参数估计", "SUBTOPIC_OF"],
+    ["一致性", "参数估计", "SUBTOPIC_OF"],
+    ["有效性", "参数估计", "SUBTOPIC_OF"],
+    ["充分统计量", "参数估计", "SUBTOPIC_OF"],
+    ["Fisher信息", "参数估计", "SUBTOPIC_OF"],
+    ["区间估计", "参数估计", "SUBTOPIC_OF"],
+    ["置信区间", "参数估计", "SUBTOPIC_OF"],
+
+    ["统计假设检验", "假设检验", "SUBTOPIC_OF"],
+    ["原假设", "假设检验", "SUBTOPIC_OF"],
+    ["备择假设", "假设检验", "SUBTOPIC_OF"],
+    ["显著性水平", "假设检验", "SUBTOPIC_OF"],
+    ["p值", "假设检验", "SUBTOPIC_OF"],
+    ["检验功效", "假设检验", "SUBTOPIC_OF"],
+    ["第一类错误", "假设检验", "SUBTOPIC_OF"],
+    ["第二类错误", "假设检验", "SUBTOPIC_OF"],
+    ["单侧检验", "假设检验", "SUBTOPIC_OF"],
+    ["双侧检验", "假设检验", "SUBTOPIC_OF"],
+    ["Z检验", "假设检验", "SUBTOPIC_OF"],
+    ["t检验", "假设检验", "SUBTOPIC_OF"],
+    ["卡方检验", "假设检验", "SUBTOPIC_OF"],
+    ["F检验", "假设检验", "SUBTOPIC_OF"],
+
+    ["一元线性回归", "回归分析", "SUBTOPIC_OF"],
+    ["多元线性回归", "回归分析", "SUBTOPIC_OF"],
+    ["最小二乘法", "回归分析", "SUBTOPIC_OF"],
+    ["残差", "回归分析", "SUBTOPIC_OF"],
+    ["残差分析", "回归分析", "SUBTOPIC_OF"],
+    ["决定系数", "回归分析", "SUBTOPIC_OF"],
+    ["自变量", "回归分析", "SUBTOPIC_OF"],
+    ["因变量", "回归分析", "SUBTOPIC_OF"],
+    ["多重共线性", "回归分析", "SUBTOPIC_OF"],
+    ["异方差性", "回归分析", "SUBTOPIC_OF"],
+    ["线性回归", "回归分析", "SUBTOPIC_OF"],
+    ["逻辑回归", "回归分析", "SUBTOPIC_OF"],
+
+    ["先验概率", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["后验概率", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["似然", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["共轭先验", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["后验预测", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["贝叶斯估计", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["贝叶斯决策", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["朴素贝叶斯", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["贝叶斯网络", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["马尔可夫网络", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["概率图模型", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["高斯混合模型", "贝叶斯统计", "SUBTOPIC_OF"],
+    ["EM算法", "贝叶斯统计", "SUBTOPIC_OF"],
+
+    ["模型评估", "假设检验", "RELATED_TO"],
+    ["交叉验证", "模型评估", "RELATED_TO"],
+
+    ["样本空间", "随机事件", "PREREQUISITE_OF"],
+    ["随机事件", "事件运算", "PREREQUISITE_OF"],
+    ["联合概率", "边缘概率", "PREREQUISITE_OF"],
+    ["联合概率", "条件概率", "PREREQUISITE_OF"],
+    ["边缘概率", "条件概率", "PREREQUISITE_OF"],
+    ["条件概率", "全概率公式", "PREREQUISITE_OF"],
+    ["全概率公式", "贝叶斯定理", "PREREQUISITE_OF"],
+    ["独立性", "条件独立性", "PREREQUISITE_OF"],
+
+    ["随机变量", "离散型随机变量", "PREREQUISITE_OF"],
+    ["随机变量", "连续型随机变量", "PREREQUISITE_OF"],
+    ["随机变量", "概率分布", "PREREQUISITE_OF"],
+    ["概率分布", "分布函数", "PREREQUISITE_OF"],
+    ["离散型随机变量", "概率质量函数", "PREREQUISITE_OF"],
+    ["连续型随机变量", "概率密度函数", "PREREQUISITE_OF"],
+    ["联合分布", "边缘分布", "PREREQUISITE_OF"],
+    ["联合分布", "条件分布", "PREREQUISITE_OF"],
+    ["随机变量", "随机向量", "PREREQUISITE_OF"],
+
+    ["0-1分布", "二项分布", "PREREQUISITE_OF"],
+    ["二项分布", "泊松分布", "RELATED_TO"],
+    ["正态分布", "多元正态分布", "PREREQUISITE_OF"],
+    ["Gamma分布", "卡方分布", "PREREQUISITE_OF"],
+    ["卡方分布", "t分布", "PREREQUISITE_OF"],
+    ["卡方分布", "F分布", "PREREQUISITE_OF"],
+    ["正态分布", "高斯混合模型", "PREREQUISITE_OF"],
+
+    ["期望", "方差", "PREREQUISITE_OF"],
+    ["方差", "标准差", "PREREQUISITE_OF"],
+    ["期望", "协方差", "PREREQUISITE_OF"],
+    ["协方差", "相关系数", "PREREQUISITE_OF"],
+    ["协方差", "协方差矩阵", "PREREQUISITE_OF"],
+    ["期望", "条件期望", "PREREQUISITE_OF"],
+    ["方差", "条件方差", "PREREQUISITE_OF"],
+    ["矩", "矩母函数", "PREREQUISITE_OF"],
+
+    ["马尔可夫不等式", "切比雪夫不等式", "PREREQUISITE_OF"],
+    ["切比雪夫不等式", "弱大数定律", "PREREQUISITE_OF"],
+    ["大数定律", "弱大数定律", "PREREQUISITE_OF"],
+    ["大数定律", "强大数定律", "PREREQUISITE_OF"],
+    ["中心极限定理", "正态近似", "PREREQUISITE_OF"],
+    ["正态分布", "正态近似", "PREREQUISITE_OF"],
+
+    ["抽样分布", "统计量", "PREREQUISITE_OF"],
+    ["统计量", "点估计", "PREREQUISITE_OF"],
+    ["点估计", "矩估计", "PREREQUISITE_OF"],
+    ["点估计", "最大似然估计", "PREREQUISITE_OF"],
+    ["统计量", "充分统计量", "PREREQUISITE_OF"],
+    ["点估计", "区间估计", "PREREQUISITE_OF"],
+    ["区间估计", "置信区间", "PREREQUISITE_OF"],
+    ["最大似然估计", "逻辑回归", "PREREQUISITE_OF"],
+    ["最大似然估计", "EM算法", "PREREQUISITE_OF"],
+
+    ["原假设", "统计假设检验", "PREREQUISITE_OF"],
+    ["备择假设", "统计假设检验", "PREREQUISITE_OF"],
+    ["显著性水平", "统计假设检验", "PREREQUISITE_OF"],
+    ["p值", "统计假设检验", "PART_OF"],
+    ["第一类错误", "统计假设检验", "PART_OF"],
+    ["第二类错误", "统计假设检验", "PART_OF"],
+    ["检验功效", "第二类错误", "RELATED_TO"],
+    ["正态分布", "Z检验", "PREREQUISITE_OF"],
+    ["t分布", "t检验", "PREREQUISITE_OF"],
+    ["卡方分布", "卡方检验", "PREREQUISITE_OF"],
+    ["F分布", "F检验", "PREREQUISITE_OF"],
+    ["统计假设检验", "模型评估", "PREREQUISITE_OF"],
+
+    ["自变量", "一元线性回归", "PREREQUISITE_OF"],
+    ["因变量", "一元线性回归", "PREREQUISITE_OF"],
+    ["一元线性回归", "多元线性回归", "RELATED_TO"],
+    ["最小二乘法", "一元线性回归", "PREREQUISITE_OF"],
+    ["残差", "残差分析", "PREREQUISITE_OF"],
+    ["残差", "决定系数", "RELATED_TO"],
+    ["多元线性回归", "多重共线性", "RELATED_TO"],
+    ["多元线性回归", "异方差性", "RELATED_TO"],
+
+    ["先验概率", "后验概率", "PREREQUISITE_OF"],
+    ["似然", "后验概率", "PREREQUISITE_OF"],
+    ["先验概率", "共轭先验", "PREREQUISITE_OF"],
+    ["共轭先验", "贝叶斯估计", "PREREQUISITE_OF"],
+    ["后验概率", "后验预测", "PREREQUISITE_OF"],
+    ["贝叶斯估计", "贝叶斯决策", "PREREQUISITE_OF"],
+    ["概率图模型", "贝叶斯网络", "PREREQUISITE_OF"],
+    ["概率图模型", "马尔可夫网络", "PREREQUISITE_OF"],
+    ["贝叶斯定理", "朴素贝叶斯", "PREREQUISITE_OF"],
+    ["条件独立性", "朴素贝叶斯", "PREREQUISITE_OF"],
+    ["最大后验估计", "贝叶斯估计", "RELATED_TO"],
+    ["贝叶斯网络", "马尔可夫网络", "RELATED_TO"],
+    ["EM算法", "高斯混合模型", "PREREQUISITE_OF"]
+  ]
+}

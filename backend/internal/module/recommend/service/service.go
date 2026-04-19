@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	graphdto "github.com/han139242/course-recommend-agents/backend/internal/module/graph/dto"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
@@ -506,7 +507,7 @@ func buildScoredCandidate(rootTitle string, rootState studentKnowledgeState, edg
 		Title:         title,
 		ReasonCode:    reasonCode,
 		ReasonLabel:   reasonLabel,
-		TargetCourse:  strings.TrimSpace(node.ChapterTitle),
+		TargetCourse:  graphNodeCourseTitle(node, coursemeta.DefaultCourseTitle),
 		ReasonDetail:  contextualDetail(rootTitle, reasonLabel, state, hasState, title),
 		MasteryScore:  state.MasteryScore,
 		CorrectRate:   state.CorrectRate,
@@ -534,7 +535,7 @@ func buildFallbackCandidate(rootTitle string, node graphdto.GraphNodeView, looku
 		Title:         title,
 		ReasonCode:    "knowledge_graph",
 		ReasonLabel:   "图谱关联",
-		TargetCourse:  strings.TrimSpace(node.ChapterTitle),
+		TargetCourse:  graphNodeCourseTitle(node, coursemeta.DefaultCourseTitle),
 		ReasonDetail:  contextualDetail(rootTitle, "图谱关联", state, hasState, title),
 		MasteryScore:  state.MasteryScore,
 		CorrectRate:   state.CorrectRate,
@@ -657,7 +658,7 @@ func (s *Service) buildGraphDrivenPath(ctx context.Context, target string, scene
 				KnowledgeID:   routeID,
 				ReasonCode:    "knowledge_graph",
 				ReasonLabel:   "图谱关联",
-				TargetCourse:  strings.TrimSpace(node.ChapterTitle),
+				TargetCourse:  graphNodeCourseTitle(node, coursemeta.DefaultCourseTitle),
 				MasteryScore:  state.MasteryScore,
 				CorrectRate:   state.CorrectRate,
 				AnsweredCount: state.AnsweredCount,
@@ -709,7 +710,7 @@ func (s *Service) buildCrossCourseTransferPath(ctx context.Context, progressList
 			continue
 		}
 
-		sourceCourse := strings.TrimSpace(rootNode.ChapterTitle)
+		sourceCourse := graphNodeCourseTitle(rootNode, "")
 		if sourceCourse == "" {
 			continue
 		}
@@ -729,7 +730,7 @@ func (s *Service) buildCrossCourseTransferPath(ctx context.Context, progressList
 				continue
 			}
 
-			targetCourse := strings.TrimSpace(neighborNode.ChapterTitle)
+			targetCourse := graphNodeCourseTitle(neighborNode, "")
 			if targetCourse == "" || normalizeStateKey(targetCourse) == normalizeStateKey(sourceCourse) {
 				continue
 			}
@@ -828,12 +829,12 @@ func (s *Service) buildGapBridgePath(ctx context.Context, knowledgeID string, sc
 
 	targetNode := orderedNodes[len(orderedNodes)-1]
 	targetTitle := displayNodeTitle(targetNode)
-	targetCourse := strings.TrimSpace(targetNode.ChapterTitle)
+	targetCourse := graphNodeCourseTitle(targetNode, coursemeta.DefaultCourseTitle)
 	sourceCourse := targetCourse
 	sourceTitle := ""
 	if lastMasteredIndex >= 0 {
 		sourceNode := orderedNodes[lastMasteredIndex]
-		sourceCourse = firstNonEmptyCourse(strings.TrimSpace(sourceNode.ChapterTitle), targetCourse)
+		sourceCourse = firstNonEmptyCourse(graphNodeCourseTitle(sourceNode, ""), targetCourse)
 		sourceTitle = displayNodeTitle(sourceNode)
 	}
 
@@ -868,7 +869,7 @@ func (s *Service) buildGapBridgePath(ctx context.Context, knowledgeID string, sc
 			ReasonCode:    "gap_bridge",
 			ReasonLabel:   "缺口桥接",
 			SourceCourse:  sourceCourse,
-			TargetCourse:  firstNonEmptyCourse(strings.TrimSpace(node.ChapterTitle), targetCourse),
+			TargetCourse:  firstNonEmptyCourse(graphNodeCourseTitle(node, ""), targetCourse),
 			MasteryScore:  state.MasteryScore,
 			CorrectRate:   state.CorrectRate,
 			AnsweredCount: state.AnsweredCount,
@@ -1135,6 +1136,18 @@ func displayNodeTitle(node graphdto.GraphNodeView) string {
 	return firstNonEmptyText(strings.TrimSpace(node.Name), strings.TrimSpace(node.CanonicalName), strings.TrimSpace(node.RouteKnowledgeID), strings.TrimSpace(node.ID))
 }
 
+func graphNodeCourseTitle(node graphdto.GraphNodeView, fallback string) string {
+	return coursemeta.ResolveNodeCourseTitleWithFallback(
+		node.CuratedSource,
+		node.SourcePath,
+		"",
+		"",
+		"",
+		node.ChapterTitle,
+		fallback,
+	)
+}
+
 func firstNonEmptyText(values ...string) string {
 	for _, value := range values {
 		if strings.TrimSpace(value) != "" {
@@ -1145,7 +1158,12 @@ func firstNonEmptyText(values ...string) string {
 }
 
 func firstNonEmptyCourse(values ...string) string {
-	return firstNonEmptyText(values...)
+	for _, value := range values {
+		if normalized := coursemeta.NormalizeCourseTitleWithFallback(value, ""); normalized != "" {
+			return normalized
+		}
+	}
+	return ""
 }
 
 func forgettingFactor(lastAnsweredAt string) float64 {

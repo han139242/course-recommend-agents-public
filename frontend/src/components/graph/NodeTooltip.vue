@@ -1,4 +1,6 @@
-﻿<script setup>
+<script setup>
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../../utils/courseMeta'
+
 defineProps({
   visible: Boolean,
   x: Number,
@@ -6,6 +8,10 @@ defineProps({
   node: Object,
   progress: Object,
 })
+
+function getCourseTitle(node) {
+  return resolveNodeCourseTitle(node?.data, DEFAULT_COURSE_TITLE)
+}
 </script>
 
 <template>
@@ -18,7 +24,7 @@ defineProps({
     }"
   >
     <strong>{{ node.data?.label }}</strong>
-    <span>{{ node.data?.chapterTitle || '其他课程' }}</span>
+    <span>{{ getCourseTitle(node) }}</span>
     <span>类型：{{ node.data?.entityType || 'concept' }}</span>
     <span>掌握度：{{ Math.round(progress?.masteryScore || node.data?.masteryScore || 0) }}%</span>
   </div>

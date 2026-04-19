@@ -1,4 +1,5 @@
 import { getCoursePalette } from './colorMap'
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from './courseMeta'
 
 export const RELATION_CONFIG = {
   PREREQUISITE_OF: {
@@ -62,7 +63,7 @@ function clamp(value, min, max) {
 }
 
 function getChapterTitle(node) {
-  return String(node?.chapterTitle || '其他').trim() || '其他'
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
 }
 
 export function getNodeDisplayName(node) {
@@ -70,7 +71,7 @@ export function getNodeDisplayName(node) {
 }
 
 function splitLabelLines(label = '', lineLength = 5, maxLines = 3) {
-  const cleaned = String(label || '').replace(/\s+/g, '').trim()
+  const cleaned = String(label || '').replace(/\s+/g, ' ').trim()
   if (!cleaned) return ['未命名']
 
   const lines = []
@@ -102,10 +103,7 @@ function estimateCollisionRadius(label = '', radius = 32, options = {}) {
   )
   const basePadding = isRoot ? (isExpanded ? 32 : 28) : isExpanded ? 24 : 21
   return Math.ceil(
-    Math.max(
-      radius + basePadding,
-      labelRadius + radius * (isRoot ? 0.46 : 0.4) + labelSpreadBoost,
-    ),
+    Math.max(radius + basePadding, labelRadius + radius * (isRoot ? 0.46 : 0.4) + labelSpreadBoost),
   )
 }
 
@@ -114,7 +112,7 @@ function resolveProgressState(progress = {}) {
   const answeredCount = Number(progress?.answeredCount || 0)
   if (mastery >= 80) return 'mastered'
   if (mastery < 30 && answeredCount > 0) return 'weak'
-  if (mastery >= 40) return 'learning'
+  if (mastery >= 30) return 'learning'
   return 'default'
 }
 

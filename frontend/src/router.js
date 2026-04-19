@@ -4,6 +4,7 @@ import { useUserStore } from './stores/userStore'
 
 const GraphHome = () => import('./views/GraphHome.vue')
 const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
+const DashboardView = () => import('./views/DashboardView.vue')
 const LoginView = () => import('./views/LoginView.vue')
 const RegisterView = () => import('./views/RegisterView.vue')
 
@@ -23,6 +24,15 @@ const routes = [
     component: KnowledgeDetail,
     meta: {
       title: '知识详情',
+    },
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: DashboardView,
+    meta: {
+      title: '学习仪表盘',
+      requiresAuth: true,
     },
   },
   {

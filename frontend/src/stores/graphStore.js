@@ -22,24 +22,48 @@ import {
 import { createSearchIndex, searchInIndex } from '../utils/searchIndex'
 import { transformGraphData } from '../utils/graphTransform'
 import { getCourseOptions } from '../utils/colorMap'
+import {
+  ALL_COURSE_TITLE,
+  COURSE_TITLE_ORDER,
+  DEFAULT_COURSE_TITLE,
+  normalizeCourseTitle,
+  resolveNodeCourseTitle,
+} from '../utils/courseMeta'
 import { useUserStore } from './userStore'
 
-function getChapterTitle(node) {
-  return String(node?.chapterTitle || '其他').trim() || '其他'
+function getNormalizedCourseTitle(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
 }
 
 function normalizeCatalogNode(node = {}) {
   const id = String(node.id || node.routeKnowledgeId || '').trim()
+  const sourcePath = String(node.sourcePath || '').trim()
+  const curatedSource = String(node.curatedSource || '').trim()
   return {
     id,
     routeKnowledgeId: String(node.routeKnowledgeId || id).trim() || id,
     name: String(node.name || node.canonicalName || id).trim() || id,
     canonicalName: String(node.canonicalName || node.name || id).trim() || id,
-    chapterTitle: getChapterTitle(node),
+    chapterTitle: getNormalizedCourseTitle(node),
+    rawChapterTitle: String(node.chapterTitle || '').trim(),
     entityType: String(node.entityType || 'concept').trim() || 'concept',
     description: String(node.description || '').trim(),
-    sourcePath: String(node.sourcePath || '').trim(),
-    curatedSource: String(node.curatedSource || '').trim(),
+    sourcePath,
+    curatedSource,
+  }
+}
+
+function normalizeKnowledgeDetail(detail = {}) {
+  const normalizedNode = normalizeCatalogNode(detail)
+  return {
+    ...detail,
+    ...normalizedNode,
+    summary: String(detail.summary || '').trim(),
+    recommendReason: String(detail.recommendReason || '').trim(),
+    prerequisites: Array.isArray(detail.prerequisites) ? detail.prerequisites.filter(Boolean) : [],
+    related: Array.isArray(detail.related) ? detail.related.filter(Boolean) : [],
+    scenarios: Array.isArray(detail.scenarios) ? detail.scenarios.filter(Boolean) : [],
+    parentTopics: Array.isArray(detail.parentTopics) ? detail.parentTopics.filter(Boolean) : [],
   }
 }
 
@@ -147,7 +171,7 @@ export const useGraphStore = defineStore('graph', () => {
   const focusedNodeId = ref(null)
   const highlightFilter = ref(null)
   const highlightPath = ref([])
-  const activeCourseFilter = ref('全部')
+  const activeCourseFilter = ref(ALL_COURSE_TITLE)
 
   const detailCache = ref({})
   const frontierCache = ref({})
@@ -184,7 +208,7 @@ export const useGraphStore = defineStore('graph', () => {
   const courseGroups = computed(() => {
     const groups = {}
     catalogNodes.value.forEach((node) => {
-      const chapterTitle = getChapterTitle(node)
+      const chapterTitle = getNormalizedCourseTitle(node)
       const progress = userStore.getProgressMeta(node.routeKnowledgeId)
       if (!groups[chapterTitle]) {
         groups[chapterTitle] = {
@@ -200,7 +224,11 @@ export const useGraphStore = defineStore('graph', () => {
       if (Number(progress.masteryScore || 0) >= 80) groups[chapterTitle].mastered += 1
       groups[chapterTitle].nodes.push(node)
     })
+    const orderIndex = new Map(COURSE_TITLE_ORDER.map((title, index) => [title, index]))
     return Object.values(groups).sort((left, right) => {
+      const leftRank = orderIndex.get(left.title) ?? Number.MAX_SAFE_INTEGER
+      const rightRank = orderIndex.get(right.title) ?? Number.MAX_SAFE_INTEGER
+      if (leftRank !== rightRank) return leftRank - rightRank
       if (right.total !== left.total) return right.total - left.total
       return String(left.title || '').localeCompare(String(right.title || ''), 'zh-CN')
     })
@@ -278,8 +306,8 @@ export const useGraphStore = defineStore('graph', () => {
     expansionChildrenMap.value = next
   }
 
-  function setCourseFilter(courseTitle = '全部') {
-    activeCourseFilter.value = courseTitle || '全部'
+  function setCourseFilter(courseTitle = ALL_COURSE_TITLE) {
+    activeCourseFilter.value = normalizeCourseTitle(courseTitle, ALL_COURSE_TITLE)
   }
 
   function setFocusedNode(nodeId) {
@@ -811,7 +839,7 @@ export const useGraphStore = defineStore('graph', () => {
     if (!key) return null
     if (detailCache.value[key]) return detailCache.value[key]
 
-    const detail = await fetchKnowledgeDetail(key)
+    const detail = normalizeKnowledgeDetail(await fetchKnowledgeDetail(key))
     detailCache.value = {
       ...detailCache.value,
       [key]: detail,
@@ -966,19 +994,19 @@ export const useGraphStore = defineStore('graph', () => {
   }
 
   async function focusCourseRepresentative(courseTitle, options = {}) {
-    const title = String(courseTitle || '').trim()
+    const title = normalizeCourseTitle(courseTitle, '')
     if (!title) return null
 
     const visibleNode =
-      [...nodesMap.value.values()].find((node) => node.isRoot && getChapterTitle(node) === title) ||
-      [...nodesMap.value.values()].find((node) => getChapterTitle(node) === title)
+      [...nodesMap.value.values()].find((node) => node.isRoot && getNormalizedCourseTitle(node) === title) ||
+      [...nodesMap.value.values()].find((node) => getNormalizedCourseTitle(node) === title)
 
     if (visibleNode) {
       pinNode(visibleNode.id)
       return visibleNode
     }
 
-    const catalogNode = catalogNodes.value.find((node) => getChapterTitle(node) === title)
+    const catalogNode = catalogNodes.value.find((node) => getNormalizedCourseTitle(node) === title)
     if (!catalogNode?.routeKnowledgeId) return null
 
     return revealNodeByRouteKnowledgeId(catalogNode.routeKnowledgeId, options)

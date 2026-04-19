@@ -1,6 +1,7 @@
 ﻿import { readStorage, STORAGE_KEYS } from '../utils/storage'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const LEGACY_AUTH_STORAGE_KEY = 'course-recommend-auth'
 
 export class ApiError extends Error {
   constructor(message, status = 500, payload = null) {
@@ -11,9 +12,36 @@ export class ApiError extends Error {
   }
 }
 
+function readAuthSession() {
+  const primary = readStorage(STORAGE_KEYS.auth, null)
+  if (primary && typeof primary === 'object') {
+    return primary
+  }
+
+  const legacy = readStorage(LEGACY_AUTH_STORAGE_KEY, null)
+  if (legacy && typeof legacy === 'object') {
+    return legacy
+  }
+
+  return null
+}
+
+function extractToken(session) {
+  if (!session || typeof session !== 'object') return ''
+
+  return (
+    session.token ||
+    session.accessToken ||
+    session?.data?.token ||
+    session?.data?.accessToken ||
+    session?.user?.token ||
+    session?.user?.accessToken ||
+    ''
+  )
+}
+
 function getToken() {
-  const session = readStorage(STORAGE_KEYS.auth, null)
-  return session?.token || ''
+  return String(extractToken(readAuthSession()) || '').trim()
 }
 
 function buildHeaders(headers = {}, auth = true) {
@@ -85,16 +113,24 @@ export async function streamRequest(path, options = {}) {
     ...restOptions
   } = options
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...restOptions,
-    headers: {
-      Accept: 'text/event-stream',
-      ...buildHeaders(headers, auth),
-      'Content-Type': 'application/json',
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal,
-  })
+  async function openStream(useAuth) {
+    return fetch(`${API_BASE_URL}${path}`, {
+      ...restOptions,
+      headers: {
+        Accept: 'text/event-stream',
+        ...buildHeaders(headers, useAuth),
+        'Content-Type': 'application/json',
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    })
+  }
+
+  let response = await openStream(auth)
+
+  if (auth && response.status === 401) {
+    response = await openStream(false)
+  }
 
   if (!response.ok) {
     const payload = await parsePayload(response).catch(() => null)

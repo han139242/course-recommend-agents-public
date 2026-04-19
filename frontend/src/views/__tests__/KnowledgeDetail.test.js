@@ -92,5 +92,6 @@ describe('KnowledgeDetail', () => {
     expect(wrapper.text()).toContain('自适应优化')
     expect(wrapper.text()).toContain('A Survey on Adaptive Optimization')
     expect(graphStore.ensureFrontier).toHaveBeenCalledWith('gradient-descent')
+    expect(graphStore.ensureRecommendedPath).toHaveBeenCalledWith(detail.canonicalName, 'gradient-descent', 'detail')
   })
 })

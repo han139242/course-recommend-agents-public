@@ -1,0 +1,1138 @@
+{
+  "source": "course_rl",
+  "course_title": "强化学习",
+  "nodes": [
+    {
+      "canonical_name": "强化学习",
+      "entity_type": "method",
+      "description": "通过智能体与环境交互并依据奖励信号优化决策策略的学习范式。"
+    },
+    {
+      "canonical_name": "基础概念",
+      "entity_type": "topic",
+      "description": "围绕状态、动作、奖励和价值估计组成强化学习基本闭环的主题。"
+    },
+    {
+      "canonical_name": "动态规划",
+      "entity_type": "method",
+      "description": "通过分阶段决策和子问题最优性递推求解复杂问题的方法。"
+    },
+    {
+      "canonical_name": "蒙特卡洛方法",
+      "entity_type": "topic",
+      "description": "通过完整回合采样估计价值和策略表现的强化学习主题。"
+    },
+    {
+      "canonical_name": "时序差分",
+      "entity_type": "topic",
+      "description": "结合自举估计与在线更新机制的强化学习核心方法主题。"
+    },
+    {
+      "canonical_name": "Deep RL",
+      "entity_type": "topic",
+      "description": "将深度神经网络与价值学习或策略学习结合的强化学习主题。"
+    },
+    {
+      "canonical_name": "策略梯度与Actor-Critic",
+      "entity_type": "topic",
+      "description": "直接优化策略并结合价值估计稳定训练的算法主题。"
+    },
+    {
+      "canonical_name": "基于模型的RL",
+      "entity_type": "topic",
+      "description": "显式利用环境模型进行规划、想象或样本高效学习的主题。"
+    },
+    {
+      "canonical_name": "多智能体RL",
+      "entity_type": "topic",
+      "description": "研究多个智能体协作或竞争决策问题的强化学习主题。"
+    },
+    {
+      "canonical_name": "高级主题",
+      "entity_type": "topic",
+      "description": "涵盖奖励构造、离线学习与层次控制等前沿强化学习主题。"
+    },
+    {
+      "canonical_name": "智能体-环境交互",
+      "entity_type": "concept",
+      "description": "强化学习中智能体根据环境反馈持续采取动作并更新策略的交互过程。"
+    },
+    {
+      "canonical_name": "环境",
+      "entity_type": "concept",
+      "description": "强化学习中向智能体提供状态转移与奖励反馈的外部系统。"
+    },
+    {
+      "canonical_name": "状态",
+      "entity_type": "concept",
+      "description": "刻画环境在某一时刻可供决策使用信息的表示。"
+    },
+    {
+      "canonical_name": "动作",
+      "entity_type": "concept",
+      "description": "智能体在给定状态下可执行的决策选择。"
+    },
+    {
+      "canonical_name": "奖励",
+      "entity_type": "concept",
+      "description": "环境在动作执行后返回给智能体的即时反馈信号。"
+    },
+    {
+      "canonical_name": "回报",
+      "entity_type": "concept",
+      "description": "从某时刻开始未来奖励按折扣累计得到的长期收益量。"
+    },
+    {
+      "canonical_name": "折扣因子",
+      "entity_type": "concept",
+      "description": "用于控制未来奖励相对当前奖励重要程度的系数。"
+    },
+    {
+      "canonical_name": "策略",
+      "entity_type": "concept",
+      "description": "描述智能体在各状态下如何选择动作的决策规则。"
+    },
+    {
+      "canonical_name": "状态价值函数",
+      "entity_type": "concept",
+      "description": "衡量在给定策略下从某状态开始能获得期望回报的函数。"
+    },
+    {
+      "canonical_name": "动作价值函数",
+      "entity_type": "concept",
+      "description": "衡量在给定状态采取某动作后能获得期望回报的函数。"
+    },
+    {
+      "canonical_name": "马尔可夫决策过程",
+      "entity_type": "concept",
+      "description": "强化学习中描述状态、动作、转移与奖励的经典数学模型。"
+    },
+    {
+      "canonical_name": "探索与利用",
+      "entity_type": "concept",
+      "description": "在尝试新动作和利用已知高回报动作之间进行权衡的问题。"
+    },
+    {
+      "canonical_name": "轨迹",
+      "entity_type": "concept",
+      "description": "由状态、动作和奖励按时间顺序组成的交互序列。"
+    },
+    {
+      "canonical_name": "转移概率",
+      "entity_type": "concept",
+      "description": "在给定状态和动作下转移到后继状态的概率分布。"
+    },
+    {
+      "canonical_name": "回合任务",
+      "entity_type": "concept",
+      "description": "具有明确终止状态和有限交互长度的强化学习任务。"
+    },
+    {
+      "canonical_name": "持续任务",
+      "entity_type": "concept",
+      "description": "没有自然终止点并以长期平均收益为目标的任务。"
+    },
+    {
+      "canonical_name": "贝尔曼方程",
+      "entity_type": "concept",
+      "description": "刻画价值函数递归关系的强化学习核心方程。"
+    },
+    {
+      "canonical_name": "贝尔曼最优性原理",
+      "entity_type": "concept",
+      "description": "一个最优策略的任意后续决策仍应构成相应子问题最优策略的原则。"
+    },
+    {
+      "canonical_name": "策略评估",
+      "entity_type": "method",
+      "description": "在给定策略下估计状态价值或动作价值的过程。"
+    },
+    {
+      "canonical_name": "策略改进",
+      "entity_type": "method",
+      "description": "依据已有价值估计生成更优策略的过程。"
+    },
+    {
+      "canonical_name": "策略迭代",
+      "entity_type": "algorithm",
+      "description": "交替执行策略评估和策略改进以求最优策略的动态规划算法。"
+    },
+    {
+      "canonical_name": "值迭代",
+      "entity_type": "algorithm",
+      "description": "直接基于最优贝尔曼方程迭代更新价值函数的控制算法。"
+    },
+    {
+      "canonical_name": "贝尔曼备份",
+      "entity_type": "concept",
+      "description": "利用后继状态估计值回传更新当前状态或动作价值的操作。"
+    },
+    {
+      "canonical_name": "蒙特卡洛强化学习",
+      "entity_type": "method",
+      "description": "通过完整回合采样回报估计价值函数的强化学习方法。"
+    },
+    {
+      "canonical_name": "首次访问蒙特卡洛",
+      "entity_type": "method",
+      "description": "仅使用每个回合中首次访问状态的回报进行估计的方法。"
+    },
+    {
+      "canonical_name": "每次访问蒙特卡洛",
+      "entity_type": "method",
+      "description": "使用回合中每次访问状态的回报进行平均估计的方法。"
+    },
+    {
+      "canonical_name": "重要性采样",
+      "entity_type": "method",
+      "description": "通过加权修正采样分布差异以评估目标策略的估计方法。"
+    },
+    {
+      "canonical_name": "方差约简",
+      "entity_type": "method",
+      "description": "降低回报估计波动并提升强化学习训练稳定性的技术。"
+    },
+    {
+      "canonical_name": "时序差分学习",
+      "entity_type": "method",
+      "description": "结合自举思想与采样更新价值估计的强化学习方法。"
+    },
+    {
+      "canonical_name": "TD(0)",
+      "entity_type": "algorithm",
+      "description": "用一步自举目标在线更新状态价值函数的基础时序差分算法。"
+    },
+    {
+      "canonical_name": "TD(λ)",
+      "entity_type": "algorithm",
+      "description": "通过资格迹融合多步回报信息的时序差分学习算法。"
+    },
+    {
+      "canonical_name": "SARSA",
+      "entity_type": "algorithm",
+      "description": "基于当前行为策略动作更新动作价值函数的 on-policy 算法。"
+    },
+    {
+      "canonical_name": "Q学习",
+      "entity_type": "algorithm",
+      "description": "通过学习动作价值函数求解最优策略的经典强化学习算法。"
+    },
+    {
+      "canonical_name": "Expected SARSA",
+      "entity_type": "algorithm",
+      "description": "用下一步动作价值期望替代采样动作的时序差分算法。"
+    },
+    {
+      "canonical_name": "On-policy学习",
+      "entity_type": "method",
+      "description": "使用当前行为策略采样的数据来学习同一策略的方法。"
+    },
+    {
+      "canonical_name": "Off-policy学习",
+      "entity_type": "method",
+      "description": "使用与目标策略不同的行为策略生成的数据来学习目标策略的方法。"
+    },
+    {
+      "canonical_name": "epsilon-贪心策略",
+      "entity_type": "method",
+      "description": "以小概率随机探索、其余情况下选择当前最优动作的策略。"
+    },
+    {
+      "canonical_name": "n步回报",
+      "entity_type": "concept",
+      "description": "结合未来多步奖励与后续估计值构造的目标回报形式。"
+    },
+    {
+      "canonical_name": "DQN",
+      "entity_type": "algorithm",
+      "description": "利用深度神经网络逼近动作价值函数的经典价值型强化学习算法。"
+    },
+    {
+      "canonical_name": "Double DQN",
+      "entity_type": "algorithm",
+      "description": "通过解耦动作选择与动作评估缓解过估计问题的 DQN 变体。"
+    },
+    {
+      "canonical_name": "Dueling DQN",
+      "entity_type": "algorithm",
+      "description": "分别建模状态价值和优势函数以提升价值估计能力的 DQN 变体。"
+    },
+    {
+      "canonical_name": "PER",
+      "entity_type": "method",
+      "description": "按样本时序差分误差优先采样经验以提升学习效率的方法。"
+    },
+    {
+      "canonical_name": "Rainbow",
+      "entity_type": "algorithm",
+      "description": "融合多种 DQN 改进技巧构成的综合强化学习算法。"
+    },
+    {
+      "canonical_name": "经验回放",
+      "entity_type": "method",
+      "description": "缓存交互经验并随机采样训练以打破样本相关性的方法。"
+    },
+    {
+      "canonical_name": "目标网络",
+      "entity_type": "method",
+      "description": "用延迟更新的网络参数稳定时序差分目标的训练技巧。"
+    },
+    {
+      "canonical_name": "C51",
+      "entity_type": "algorithm",
+      "description": "通过离散分布近似回报分布的分布式价值学习算法。"
+    },
+    {
+      "canonical_name": "NoisyNet",
+      "entity_type": "method",
+      "description": "在网络权重中注入可学习噪声以促进探索的建模方法。"
+    },
+    {
+      "canonical_name": "分布式价值学习",
+      "entity_type": "method",
+      "description": "直接学习回报分布而非其期望值的价值建模方法。"
+    },
+    {
+      "canonical_name": "策略梯度",
+      "entity_type": "algorithm",
+      "description": "直接优化策略参数以最大化期望回报的强化学习算法族。"
+    },
+    {
+      "canonical_name": "REINFORCE",
+      "entity_type": "algorithm",
+      "description": "基于完整回合回报估计策略梯度的经典策略优化算法。"
+    },
+    {
+      "canonical_name": "Actor-Critic",
+      "entity_type": "algorithm",
+      "description": "结合策略模型与价值估计器协同更新的强化学习算法范式。"
+    },
+    {
+      "canonical_name": "A2C",
+      "entity_type": "algorithm",
+      "description": "同步环境采样并用优势函数更新策略和值函数的 Actor-Critic 算法。"
+    },
+    {
+      "canonical_name": "A3C",
+      "entity_type": "algorithm",
+      "description": "通过异步多线程交互提升采样效率的 Actor-Critic 算法。"
+    },
+    {
+      "canonical_name": "PPO",
+      "entity_type": "algorithm",
+      "description": "通过裁剪目标函数稳定策略更新的常用策略优化算法。"
+    },
+    {
+      "canonical_name": "TRPO",
+      "entity_type": "algorithm",
+      "description": "在信赖域约束下稳定更新策略参数的策略梯度算法。"
+    },
+    {
+      "canonical_name": "SAC",
+      "entity_type": "algorithm",
+      "description": "结合最大熵目标和双 Q 学习的离策略连续控制算法。"
+    },
+    {
+      "canonical_name": "广义优势估计",
+      "entity_type": "method",
+      "description": "平衡偏差与方差以稳定策略梯度训练的优势估计方法。"
+    },
+    {
+      "canonical_name": "基于模型的强化学习",
+      "entity_type": "method",
+      "description": "显式利用或学习环境模型并结合规划求解策略的方法。"
+    },
+    {
+      "canonical_name": "Dyna",
+      "entity_type": "algorithm",
+      "description": "交替利用真实经验和模型模拟样本进行更新的强化学习框架。"
+    },
+    {
+      "canonical_name": "MBPO",
+      "entity_type": "algorithm",
+      "description": "在短期模型滚动基础上提升样本效率的模型化策略优化算法。"
+    },
+    {
+      "canonical_name": "World Model",
+      "entity_type": "algorithm",
+      "description": "学习潜在环境动态并在内部表征空间中规划控制的模型框架。"
+    },
+    {
+      "canonical_name": "规划模型",
+      "entity_type": "concept",
+      "description": "用于预测环境演化并支持搜索或控制的环境模型表示。"
+    },
+    {
+      "canonical_name": "模型预测控制",
+      "entity_type": "method",
+      "description": "基于短期预测滚动优化动作序列的控制方法。"
+    },
+    {
+      "canonical_name": "多智能体强化学习",
+      "entity_type": "method",
+      "description": "研究多个相互作用智能体通过试错学习策略的强化学习方法。"
+    },
+    {
+      "canonical_name": "独立学习",
+      "entity_type": "method",
+      "description": "将其他智能体视作环境一部分并分别训练策略的方法。"
+    },
+    {
+      "canonical_name": "集中训练分散执行",
+      "entity_type": "method",
+      "description": "训练阶段共享更多信息、执行阶段各智能体独立决策的多智能体学习范式。"
+    },
+    {
+      "canonical_name": "CTDE",
+      "entity_type": "method",
+      "description": "训练阶段共享信息而执行阶段独立决策的多智能体范式。"
+    },
+    {
+      "canonical_name": "MAPPO",
+      "entity_type": "algorithm",
+      "description": "将 PPO 扩展到多智能体集中训练场景的策略优化算法。"
+    },
+    {
+      "canonical_name": "QMIX",
+      "entity_type": "algorithm",
+      "description": "通过单调混合网络组合个体价值函数的多智能体算法。"
+    },
+    {
+      "canonical_name": "信用分配",
+      "entity_type": "concept",
+      "description": "在团队回报条件下判定各智能体对整体结果贡献程度的问题。"
+    },
+    {
+      "canonical_name": "逆向强化学习",
+      "entity_type": "method",
+      "description": "从专家行为中反推出潜在奖励函数的学习方法。"
+    },
+    {
+      "canonical_name": "离线强化学习",
+      "entity_type": "method",
+      "description": "仅使用静态历史数据训练策略而不在线交互的学习方法。"
+    },
+    {
+      "canonical_name": "分层强化学习",
+      "entity_type": "method",
+      "description": "通过高层子目标和低层技能分解复杂决策任务的方法。"
+    },
+    {
+      "canonical_name": "奖励设计",
+      "entity_type": "method",
+      "description": "构造奖励信号以引导智能体朝期望行为学习的方法。"
+    },
+    {
+      "canonical_name": "探索奖励",
+      "entity_type": "concept",
+      "description": "为鼓励访问新颖状态而额外加入的探索型奖励信号。"
+    },
+    {
+      "canonical_name": "模仿学习",
+      "entity_type": "method",
+      "description": "通过学习专家演示行为快速获得策略的强化学习相关方法。"
+    },
+    {
+      "canonical_name": "机器人学",
+      "entity_type": "topic",
+      "description": "研究机器人感知、控制、规划与自主行为的交叉领域。"
+    },
+    {
+      "canonical_name": "蒙特卡洛树搜索",
+      "entity_type": "algorithm",
+      "description": "通过随机模拟与搜索树扩展进行决策的启发式搜索算法。"
+    }
+  ],
+  "relations": [
+    [
+      "基础概念",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "动态规划",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蒙特卡洛方法",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时序差分",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Deep RL",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略梯度与Actor-Critic",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "基于模型的RL",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多智能体RL",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "高级主题",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "智能体-环境交互",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "环境",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "状态",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "动作",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "奖励",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "回报",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "折扣因子",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "状态价值函数",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "动作价值函数",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "马尔可夫决策过程",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "探索与利用",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "轨迹",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "转移概率",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "回合任务",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "持续任务",
+      "基础概念",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝尔曼方程",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝尔曼最优性原理",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略评估",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略改进",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略迭代",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "值迭代",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝尔曼备份",
+      "动态规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蒙特卡洛强化学习",
+      "蒙特卡洛方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "重要性采样",
+      "蒙特卡洛方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "方差约简",
+      "蒙特卡洛方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时序差分学习",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Q学习",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "On-policy学习",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Off-policy学习",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "epsilon-贪心策略",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "n步回报",
+      "时序差分",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DQN",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "PER",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "经验回放",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "目标网络",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "C51",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NoisyNet",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分布式价值学习",
+      "Deep RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略梯度",
+      "策略梯度与Actor-Critic",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Actor-Critic",
+      "策略梯度与Actor-Critic",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "广义优势估计",
+      "策略梯度与Actor-Critic",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "基于模型的强化学习",
+      "基于模型的RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "规划模型",
+      "基于模型的RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型预测控制",
+      "基于模型的RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多智能体强化学习",
+      "多智能体RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "独立学习",
+      "多智能体RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "集中训练分散执行",
+      "多智能体RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CTDE",
+      "多智能体RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "信用分配",
+      "多智能体RL",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逆向强化学习",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "离线强化学习",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分层强化学习",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "奖励设计",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "探索奖励",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模仿学习",
+      "高级主题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "状态",
+      "智能体-环境交互",
+      "PART_OF"
+    ],
+    [
+      "动作",
+      "智能体-环境交互",
+      "PART_OF"
+    ],
+    [
+      "奖励",
+      "智能体-环境交互",
+      "PART_OF"
+    ],
+    [
+      "环境",
+      "智能体-环境交互",
+      "PART_OF"
+    ],
+    [
+      "回报",
+      "状态价值函数",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "折扣因子",
+      "回报",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "轨迹",
+      "蒙特卡洛强化学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "转移概率",
+      "马尔可夫决策过程",
+      "PART_OF"
+    ],
+    [
+      "回合任务",
+      "持续任务",
+      "RELATED_TO"
+    ],
+    [
+      "探索与利用",
+      "epsilon-贪心策略",
+      "RELATED_TO"
+    ],
+    [
+      "马尔可夫决策过程",
+      "策略评估",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "马尔可夫决策过程",
+      "策略改进",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "状态价值函数",
+      "贝尔曼方程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "动作价值函数",
+      "贝尔曼方程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "回报",
+      "贝尔曼方程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "贝尔曼备份",
+      "贝尔曼方程",
+      "RELATED_TO"
+    ],
+    [
+      "贝尔曼最优性原理",
+      "策略迭代",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "贝尔曼最优性原理",
+      "值迭代",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "策略评估",
+      "策略改进",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "策略改进",
+      "策略迭代",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "首次访问蒙特卡洛",
+      "蒙特卡洛强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "每次访问蒙特卡洛",
+      "蒙特卡洛强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "重要性采样",
+      "Off-policy学习",
+      "RELATED_TO"
+    ],
+    [
+      "方差约简",
+      "蒙特卡洛强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "蒙特卡洛强化学习",
+      "策略评估",
+      "RELATED_TO"
+    ],
+    [
+      "TD(0)",
+      "时序差分学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TD(λ)",
+      "时序差分学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时序差分学习",
+      "SARSA",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "时序差分学习",
+      "Q学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "时序差分学习",
+      "Expected SARSA",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "On-policy学习",
+      "SARSA",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Off-policy学习",
+      "Q学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Expected SARSA",
+      "SARSA",
+      "RELATED_TO"
+    ],
+    [
+      "n步回报",
+      "TD(λ)",
+      "RELATED_TO"
+    ],
+    [
+      "epsilon-贪心策略",
+      "Q学习",
+      "RELATED_TO"
+    ],
+    [
+      "经验回放",
+      "DQN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "目标网络",
+      "DQN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "DQN",
+      "Double DQN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "DQN",
+      "Dueling DQN",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "DQN",
+      "Rainbow",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "PER",
+      "Rainbow",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "C51",
+      "Rainbow",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "NoisyNet",
+      "Rainbow",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "DQN",
+      "动作价值函数",
+      "RELATED_TO"
+    ],
+    [
+      "DQN",
+      "Off-policy学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "策略梯度",
+      "REINFORCE",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "策略梯度",
+      "Actor-Critic",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Actor-Critic",
+      "A2C",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Actor-Critic",
+      "A3C",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Actor-Critic",
+      "PPO",
+      "RELATED_TO"
+    ],
+    [
+      "TRPO",
+      "PPO",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "广义优势估计",
+      "PPO",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "SAC",
+      "Actor-Critic",
+      "RELATED_TO"
+    ],
+    [
+      "SAC",
+      "Off-policy学习",
+      "RELATED_TO"
+    ],
+    [
+      "基于模型的强化学习",
+      "Dyna",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "基于模型的强化学习",
+      "MBPO",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "基于模型的强化学习",
+      "World Model",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "规划模型",
+      "基于模型的强化学习",
+      "PART_OF"
+    ],
+    [
+      "模型预测控制",
+      "基于模型的强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "动态规划",
+      "基于模型的强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "独立学习",
+      "多智能体强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "集中训练分散执行",
+      "多智能体强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "CTDE",
+      "集中训练分散执行",
+      "RELATED_TO"
+    ],
+    [
+      "CTDE",
+      "MAPPO",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "CTDE",
+      "QMIX",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "信用分配",
+      "多智能体强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "逆向强化学习",
+      "奖励设计",
+      "RELATED_TO"
+    ],
+    [
+      "离线强化学习",
+      "强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "分层强化学习",
+      "强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "探索奖励",
+      "探索与利用",
+      "RELATED_TO"
+    ],
+    [
+      "模仿学习",
+      "逆向强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "机器人学",
+      "强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "蒙特卡洛树搜索",
+      "强化学习",
+      "RELATED_TO"
+    ]
+  ]
+}

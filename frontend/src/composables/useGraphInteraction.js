@@ -43,11 +43,11 @@ export function useGraphInteraction(options = {}) {
   let dragStartPoint = null
   let dragDidMove = false
 
-  function applyConstraint(nextTransform) {
+  function applyConstraint(nextTransform, constraintOptions = {}) {
     if (typeof options.constrainTransform !== 'function') {
       return nextTransform
     }
-    return options.constrainTransform(nextTransform)
+    return options.constrainTransform(nextTransform, constraintOptions)
   }
 
   function getViewportCenter() {
@@ -103,28 +103,28 @@ export function useGraphInteraction(options = {}) {
     }
   }
 
-  function syncZoomTransform(nextTransform) {
+  function syncZoomTransform(nextTransform, constraintOptions = {}) {
     if (!selection || !zoomBehavior) return
-    const constrained = applyConstraint(nextTransform)
+    const constrained = applyConstraint(nextTransform, constraintOptions)
     selection.call(
       zoomBehavior.transform,
       zoomIdentity.translate(constrained.x, constrained.y).scale(constrained.k),
     )
   }
 
-  async function transformTo(nextTransform, duration = 0) {
-    const constrained = applyConstraint(nextTransform)
+  async function transformTo(nextTransform, duration = 0, constraintOptions = {}) {
+    const constrained = applyConstraint(nextTransform, constraintOptions)
     await renderer.animateTo(constrained, duration)
-    syncZoomTransform(constrained)
+    syncZoomTransform(constrained, constraintOptions)
   }
 
-  function setTransform(nextTransform) {
+  function setTransform(nextTransform, constraintOptions = {}) {
     const normalized = {
       x: Number(nextTransform?.x || 0),
       y: Number(nextTransform?.y || 0),
       k: clamp(Number(nextTransform?.k || DEFAULT_ZOOM), MIN_ZOOM, MAX_ZOOM),
     }
-    const constrained = applyConstraint(normalized)
+    const constrained = applyConstraint(normalized, constraintOptions)
 
     if (selection && zoomBehavior) {
       selection.call(

@@ -1,5 +1,7 @@
-﻿<script setup>
+<script setup>
 import { computed } from 'vue'
+
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../../utils/courseMeta'
 
 const props = defineProps({
   bookmarks: {
@@ -19,6 +21,10 @@ const bookmarkNodes = computed(() =>
     .map((bookmark) => props.nodes.find((node) => node.routeKnowledgeId === bookmark))
     .filter(Boolean),
 )
+
+function getCourseTitle(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
+}
 </script>
 
 <template>
@@ -37,7 +43,7 @@ const bookmarkNodes = computed(() =>
         @click="emit('select', node.routeKnowledgeId)"
       >
         <strong>{{ node.canonicalName || node.name }}</strong>
-        <span>{{ node.chapterTitle || '其他课程' }}</span>
+        <span>{{ getCourseTitle(node) }}</span>
       </button>
     </div>
     <p v-else class="muted-text">右键节点后，可以把重点知识点加入收藏。</p>

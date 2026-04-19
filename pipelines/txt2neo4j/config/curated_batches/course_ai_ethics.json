@@ -1,0 +1,1028 @@
+{
+  "source": "course_ai_ethics",
+  "course_title": "AI伦理",
+  "nodes": [
+    {
+      "canonical_name": "AI伦理",
+      "entity_type": "topic",
+      "description": "研究人工智能系统在设计、部署和使用过程中应遵循的价值与责任原则。"
+    },
+    {
+      "canonical_name": "公平性与去偏",
+      "entity_type": "topic",
+      "description": "围绕算法公平、偏见来源识别与去偏技术展开的 AI 伦理主题。"
+    },
+    {
+      "canonical_name": "可解释性方法",
+      "entity_type": "topic",
+      "description": "围绕模型解释、可视化分析和人类可理解决策依据展开的主题。"
+    },
+    {
+      "canonical_name": "隐私与隐私计算",
+      "entity_type": "topic",
+      "description": "围绕隐私保护、隐私攻击与隐私计算协作方法展开的主题。"
+    },
+    {
+      "canonical_name": "对抗安全",
+      "entity_type": "topic",
+      "description": "围绕对抗攻击、后门威胁和鲁棒防御评测展开的安全主题。"
+    },
+    {
+      "canonical_name": "模型安全",
+      "entity_type": "topic",
+      "description": "围绕大模型提示攻击、输出约束和安全防护机制展开的主题。"
+    },
+    {
+      "canonical_name": "治理与合规",
+      "entity_type": "topic",
+      "description": "围绕风险分级、审计、法规遵循与治理流程展开的治理主题。"
+    },
+    {
+      "canonical_name": "价值对齐与可信AI",
+      "entity_type": "topic",
+      "description": "围绕价值对齐、可信原则、人类监督和安全评测展开的主题。"
+    },
+    {
+      "canonical_name": "公平性",
+      "entity_type": "concept",
+      "description": "人工智能系统在不同群体和个体之间避免不合理差别影响的性质。"
+    },
+    {
+      "canonical_name": "群体公平",
+      "entity_type": "concept",
+      "description": "要求模型在不同敏感群体之间保持统计意义上的相对公平表现。"
+    },
+    {
+      "canonical_name": "个体公平",
+      "entity_type": "concept",
+      "description": "要求相似个体在模型决策中获得相似对待的公平原则。"
+    },
+    {
+      "canonical_name": "机会均等",
+      "entity_type": "concept",
+      "description": "要求不同群体在真实正例上的被正确识别概率尽可能一致。"
+    },
+    {
+      "canonical_name": "校准公平",
+      "entity_type": "concept",
+      "description": "要求不同群体在相同预测分数下具有一致真实结果概率的公平性质。"
+    },
+    {
+      "canonical_name": "偏见来源",
+      "entity_type": "concept",
+      "description": "导致模型输出不公的采样、标注、特征或目标设计根源。"
+    },
+    {
+      "canonical_name": "数据偏见",
+      "entity_type": "concept",
+      "description": "由样本收集、标注或覆盖不均衡导致的不公平数据问题。"
+    },
+    {
+      "canonical_name": "算法偏见",
+      "entity_type": "concept",
+      "description": "由模型结构、优化目标或决策阈值引入的不公平偏差现象。"
+    },
+    {
+      "canonical_name": "去偏方法",
+      "entity_type": "method",
+      "description": "用于降低模型对敏感属性依赖并改善公平指标的方法集合。"
+    },
+    {
+      "canonical_name": "可解释性",
+      "entity_type": "concept",
+      "description": "人工智能系统能够向人类说明其决策依据和行为机制的性质。"
+    },
+    {
+      "canonical_name": "LIME",
+      "entity_type": "concept",
+      "description": "在局部邻域内用可解释代理模型近似复杂模型行为以获得局部解释的方法。"
+    },
+    {
+      "canonical_name": "SHAP",
+      "entity_type": "method",
+      "description": "基于博弈论 Shapley 值分解特征贡献度的通用解释方法。"
+    },
+    {
+      "canonical_name": "Grad-CAM",
+      "entity_type": "method",
+      "description": "利用卷积网络梯度对特征图加权并上采样得到类判别区域热图的视觉解释方法。"
+    },
+    {
+      "canonical_name": "注意力可视化",
+      "entity_type": "method",
+      "description": "通过展示注意力权重分布帮助理解模型关注区域的解释方法。"
+    },
+    {
+      "canonical_name": "概念激活向量",
+      "entity_type": "concept",
+      "description": "将人类可理解概念与网络内部表示方向对齐，以解释神经元群编码语义的方式。"
+    },
+    {
+      "canonical_name": "反事实解释",
+      "entity_type": "concept",
+      "description": "通过构造与预测结果改变相对应的最小输入改动，说明模型决策边界附近的反事实条件。"
+    },
+    {
+      "canonical_name": "全局解释",
+      "entity_type": "concept",
+      "description": "跨数据分布总结模型总体依赖模式与重要特征结构的解释类型。"
+    },
+    {
+      "canonical_name": "局部解释",
+      "entity_type": "concept",
+      "description": "针对单个样本或邻域给出的细粒度解释，强调在该输入附近的模型行为。"
+    },
+    {
+      "canonical_name": "可解释模型",
+      "entity_type": "method",
+      "description": "结构本身便于人类理解其决策逻辑的模型类型。"
+    },
+    {
+      "canonical_name": "隐私保护",
+      "entity_type": "topic",
+      "description": "在数据采集、训练和推理过程中保护个人和敏感信息不被滥用的方法体系。"
+    },
+    {
+      "canonical_name": "差分隐私",
+      "entity_type": "method",
+      "description": "通过引入受控随机扰动来限制个体数据泄露风险的隐私保护方法。"
+    },
+    {
+      "canonical_name": "联邦学习",
+      "entity_type": "method",
+      "description": "在数据不出本地前提下通过参数或梯度协同训练模型的方法。"
+    },
+    {
+      "canonical_name": "同态加密",
+      "entity_type": "method",
+      "description": "允许在密文上直接执行运算并在解密后得到正确明文结果的加密方法。"
+    },
+    {
+      "canonical_name": "安全多方计算",
+      "entity_type": "method",
+      "description": "让多方在不泄露各自私有输入的前提下联合完成计算的密码学方法。"
+    },
+    {
+      "canonical_name": "隐私预算",
+      "entity_type": "concept",
+      "description": "差分隐私框架中用于量化隐私泄露程度的控制参数。"
+    },
+    {
+      "canonical_name": "成员推断攻击",
+      "entity_type": "method",
+      "description": "判断某条样本是否参与模型训练的隐私攻击方法。"
+    },
+    {
+      "canonical_name": "模型反演攻击",
+      "entity_type": "method",
+      "description": "利用模型输出或参数恢复训练数据特征或样本的隐私攻击方法。"
+    },
+    {
+      "canonical_name": "隐私计算",
+      "entity_type": "topic",
+      "description": "在保护数据隐私和合规前提下实现联合建模、分析与协作计算的方法体系。"
+    },
+    {
+      "canonical_name": "匿名化",
+      "entity_type": "method",
+      "description": "通过脱敏和去标识化处理降低样本身份可识别性的隐私方法。"
+    },
+    {
+      "canonical_name": "对抗攻击",
+      "entity_type": "method",
+      "description": "通过构造微小但恶意的输入扰动诱导模型输出错误结果的方法。"
+    },
+    {
+      "canonical_name": "对抗样本",
+      "entity_type": "concept",
+      "description": "对人眼几乎不可辨但对模型输出产生大幅改变的刻意构造输入。"
+    },
+    {
+      "canonical_name": "对抗训练",
+      "entity_type": "method",
+      "description": "将对抗样本纳入训练过程以提升模型鲁棒性的防御方法。"
+    },
+    {
+      "canonical_name": "模型鲁棒性",
+      "entity_type": "concept",
+      "description": "模型在噪声、攻击和分布变化条件下维持稳定性能的能力。"
+    },
+    {
+      "canonical_name": "后门攻击",
+      "entity_type": "method",
+      "description": "后门攻击是在 AI 伦理评估、防护或治理中常用的方法。"
+    },
+    {
+      "canonical_name": "数据投毒",
+      "entity_type": "method",
+      "description": "通过污染训练数据影响模型学习结果和行为边界的攻击方式。"
+    },
+    {
+      "canonical_name": "攻击面分析",
+      "entity_type": "method",
+      "description": "系统梳理模型输入、工具、接口与供应链潜在攻击入口的方法。"
+    },
+    {
+      "canonical_name": "鲁棒评测",
+      "entity_type": "method",
+      "description": "通过系统化攻击与扰动测试评估模型安全稳定性的流程。"
+    },
+    {
+      "canonical_name": "提示注入",
+      "entity_type": "method",
+      "description": "通过恶意提示篡改模型原有指令和行为边界的攻击方式。"
+    },
+    {
+      "canonical_name": "越狱攻击",
+      "entity_type": "method",
+      "description": "通过构造规避策略绕过模型安全约束与拒答规则的攻击方式。"
+    },
+    {
+      "canonical_name": "输出过滤",
+      "entity_type": "method",
+      "description": "对模型生成内容进行审核、拦截和清洗的安全防护方法。"
+    },
+    {
+      "canonical_name": "安全护栏",
+      "entity_type": "method",
+      "description": "通过规则、过滤和控制机制约束模型输出与行为边界的方法。"
+    },
+    {
+      "canonical_name": "水印",
+      "entity_type": "method",
+      "description": "在生成内容或模型参数中嵌入可追踪标记的安全技术。"
+    },
+    {
+      "canonical_name": "内容审核",
+      "entity_type": "application",
+      "description": "内容审核是 AI 安全治理中的典型落地场景。"
+    },
+    {
+      "canonical_name": "工具滥用",
+      "entity_type": "method",
+      "description": "模型错误或被诱导调用高风险工具产生损害的安全风险。"
+    },
+    {
+      "canonical_name": "权限控制",
+      "entity_type": "method",
+      "description": "约束模型与外部工具可访问资源和可执行动作范围的控制机制。"
+    },
+    {
+      "canonical_name": "红队测试",
+      "entity_type": "method",
+      "description": "通过模拟恶意使用和极端场景主动发现人工智能系统薄弱点的测试方法。"
+    },
+    {
+      "canonical_name": "AI治理",
+      "entity_type": "topic",
+      "description": "围绕人工智能系统监管、标准、责任与风险控制建立制度和流程的方法体系。"
+    },
+    {
+      "canonical_name": "风险分级",
+      "entity_type": "method",
+      "description": "依据潜在危害程度对 AI 系统进行等级划分和治理响应的机制。"
+    },
+    {
+      "canonical_name": "算法审计",
+      "entity_type": "method",
+      "description": "对数据、模型、流程和结果开展系统性检查的治理方法。"
+    },
+    {
+      "canonical_name": "可追溯性",
+      "entity_type": "concept",
+      "description": "能够追踪模型训练、数据来源、参数变更和决策过程的能力。"
+    },
+    {
+      "canonical_name": "透明度",
+      "entity_type": "concept",
+      "description": "透明度是理解 AI 伦理、安全和治理问题的重要概念。"
+    },
+    {
+      "canonical_name": "合规性",
+      "entity_type": "concept",
+      "description": "人工智能系统满足法律法规、标准和组织规范要求的性质。"
+    },
+    {
+      "canonical_name": "模型审计",
+      "entity_type": "method",
+      "description": "系统评估模型性能、风险、偏差、合规性和可解释性的检查过程。"
+    },
+    {
+      "canonical_name": "风险评估",
+      "entity_type": "method",
+      "description": "识别、分析和分级人工智能系统潜在危害与失效场景的方法。"
+    },
+    {
+      "canonical_name": "EU AI Act",
+      "entity_type": "method",
+      "description": "欧盟提出的基于风险分级管理人工智能系统的法规框架。"
+    },
+    {
+      "canonical_name": "治理流程",
+      "entity_type": "method",
+      "description": "覆盖设计、评审、上线和复盘的 AI 风险治理工作流程。"
+    },
+    {
+      "canonical_name": "价值对齐",
+      "entity_type": "concept",
+      "description": "使人工智能系统目标与人类意图、价值和规范保持一致的性质。"
+    },
+    {
+      "canonical_name": "人类反馈强化学习",
+      "entity_type": "method",
+      "description": "利用人类偏好反馈优化生成模型行为和输出质量的方法。"
+    },
+    {
+      "canonical_name": "Constitutional AI",
+      "entity_type": "method",
+      "description": "通过显式行为原则引导模型自我批改和偏好优化的对齐方法。"
+    },
+    {
+      "canonical_name": "RLAIF",
+      "entity_type": "method",
+      "description": "利用 AI 反馈替代部分人工偏好标注来优化模型行为的对齐方法。"
+    },
+    {
+      "canonical_name": "可信AI",
+      "entity_type": "concept",
+      "description": "强调安全、公平、可解释、可追责和稳定可靠的 AI 原则体系。"
+    },
+    {
+      "canonical_name": "责任归属",
+      "entity_type": "concept",
+      "description": "明确模型开发、部署和使用各环节责任主体的治理要求。"
+    },
+    {
+      "canonical_name": "人类监督",
+      "entity_type": "method",
+      "description": "在关键决策环节引入人工复核与干预机制的安全治理方法。"
+    },
+    {
+      "canonical_name": "幻觉",
+      "entity_type": "concept",
+      "description": "生成式模型输出看似合理但事实错误或无依据内容的现象。"
+    },
+    {
+      "canonical_name": "可控生成",
+      "entity_type": "method",
+      "description": "通过约束和反馈机制让生成模型输出可预测、可审查的能力。"
+    },
+    {
+      "canonical_name": "安全评测",
+      "entity_type": "method",
+      "description": "从有害性、稳健性、合规性和对齐性等维度评估模型风险的流程。"
+    }
+  ],
+  "relations": [
+    [
+      "公平性与去偏",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可解释性方法",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私与隐私计算",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗安全",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型安全",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "治理与合规",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "价值对齐与可信AI",
+      "AI伦理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "公平性",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "群体公平",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "个体公平",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机会均等",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "校准公平",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "偏见来源",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据偏见",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "算法偏见",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "去偏方法",
+      "公平性与去偏",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可解释性",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LIME",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SHAP",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Grad-CAM",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "注意力可视化",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "概念激活向量",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反事实解释",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "全局解释",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "局部解释",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可解释模型",
+      "可解释性方法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私保护",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "差分隐私",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦学习",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "同态加密",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全多方计算",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私预算",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "成员推断攻击",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型反演攻击",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私计算",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "匿名化",
+      "隐私与隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗攻击",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗样本",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗训练",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型鲁棒性",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "后门攻击",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据投毒",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "攻击面分析",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "鲁棒评测",
+      "对抗安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示注入",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "越狱攻击",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "输出过滤",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全护栏",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "水印",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "内容审核",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工具滥用",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "权限控制",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "红队测试",
+      "模型安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI治理",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "风险分级",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "算法审计",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可追溯性",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "透明度",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "合规性",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型审计",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "风险评估",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "EU AI Act",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "治理流程",
+      "治理与合规",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "价值对齐",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人类反馈强化学习",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Constitutional AI",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RLAIF",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可信AI",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "责任归属",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人类监督",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "幻觉",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可控生成",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全评测",
+      "价值对齐与可信AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "公平性",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "群体公平",
+      "公平性",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "个体公平",
+      "公平性",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机会均等",
+      "公平性",
+      "RELATED_TO"
+    ],
+    [
+      "校准公平",
+      "公平性",
+      "RELATED_TO"
+    ],
+    [
+      "偏见来源",
+      "数据偏见",
+      "RELATED_TO"
+    ],
+    [
+      "数据偏见",
+      "算法偏见",
+      "RELATED_TO"
+    ],
+    [
+      "去偏方法",
+      "公平性",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "可解释性",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "LIME",
+      "局部解释",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SHAP",
+      "局部解释",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Grad-CAM",
+      "可解释性",
+      "RELATED_TO"
+    ],
+    [
+      "注意力可视化",
+      "可解释性",
+      "RELATED_TO"
+    ],
+    [
+      "概念激活向量",
+      "全局解释",
+      "RELATED_TO"
+    ],
+    [
+      "反事实解释",
+      "局部解释",
+      "RELATED_TO"
+    ],
+    [
+      "全局解释",
+      "可解释性",
+      "PART_OF"
+    ],
+    [
+      "局部解释",
+      "可解释性",
+      "PART_OF"
+    ],
+    [
+      "可解释模型",
+      "可解释性",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "隐私保护",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "隐私预算",
+      "差分隐私",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "联邦学习",
+      "隐私保护",
+      "RELATED_TO"
+    ],
+    [
+      "同态加密",
+      "隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全多方计算",
+      "隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "成员推断攻击",
+      "隐私保护",
+      "RELATED_TO"
+    ],
+    [
+      "模型反演攻击",
+      "隐私保护",
+      "RELATED_TO"
+    ],
+    [
+      "匿名化",
+      "隐私保护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗样本",
+      "对抗攻击",
+      "PART_OF"
+    ],
+    [
+      "对抗训练",
+      "对抗攻击",
+      "RELATED_TO"
+    ],
+    [
+      "对抗训练",
+      "模型鲁棒性",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "后门攻击",
+      "数据投毒",
+      "RELATED_TO"
+    ],
+    [
+      "攻击面分析",
+      "对抗攻击",
+      "RELATED_TO"
+    ],
+    [
+      "鲁棒评测",
+      "模型鲁棒性",
+      "RELATED_TO"
+    ],
+    [
+      "提示注入",
+      "工具滥用",
+      "RELATED_TO"
+    ],
+    [
+      "越狱攻击",
+      "提示注入",
+      "RELATED_TO"
+    ],
+    [
+      "输出过滤",
+      "安全护栏",
+      "PART_OF"
+    ],
+    [
+      "工具滥用",
+      "权限控制",
+      "RELATED_TO"
+    ],
+    [
+      "红队测试",
+      "提示注入",
+      "RELATED_TO"
+    ],
+    [
+      "红队测试",
+      "越狱攻击",
+      "RELATED_TO"
+    ],
+    [
+      "AI治理",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "风险分级",
+      "AI治理",
+      "PART_OF"
+    ],
+    [
+      "算法审计",
+      "模型审计",
+      "RELATED_TO"
+    ],
+    [
+      "可追溯性",
+      "模型审计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "透明度",
+      "合规性",
+      "RELATED_TO"
+    ],
+    [
+      "风险评估",
+      "AI治理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "EU AI Act",
+      "合规性",
+      "RELATED_TO"
+    ],
+    [
+      "治理流程",
+      "AI治理",
+      "PART_OF"
+    ],
+    [
+      "价值对齐",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "人类反馈强化学习",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "Constitutional AI",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "RLAIF",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "可信AI",
+      "价值对齐",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "责任归属",
+      "可信AI",
+      "RELATED_TO"
+    ],
+    [
+      "人类监督",
+      "可信AI",
+      "RELATED_TO"
+    ],
+    [
+      "幻觉",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "幻觉",
+      "可控生成",
+      "RELATED_TO"
+    ],
+    [
+      "可控生成",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "安全评测",
+      "可信AI",
+      "PREREQUISITE_OF"
+    ]
+  ]
+}

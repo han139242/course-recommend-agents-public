@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	assistantdto "github.com/han139242/course-recommend-agents/backend/internal/module/assistant/dto"
 	frontierdto "github.com/han139242/course-recommend-agents/backend/internal/module/frontier/dto"
 	recommenddto "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/dto"
@@ -52,7 +53,7 @@ func (s *Service) GenerateKnowledgeCard(ctx context.Context, request assistantdt
 			knowledgeDetail = map[string]any{
 				"knowledgeId":   detail.RouteKnowledgeID,
 				"name":          firstNonEmpty(detail.Name, request.Name, knowledgeID),
-				"domain":        firstNonEmpty(firstTopic(detail.ParentTopics), request.Domain, detail.ChapterTitle, detail.EntityType),
+				"domain":        firstNonEmpty(firstTopic(detail.ParentTopics), request.Domain, coursemeta.ResolveNodeCourseTitleWithFallback(detail.CuratedSource, detail.SourcePath, "", "", "", detail.ChapterTitle, ""), detail.EntityType),
 				"levelLabel":    firstNonEmpty(request.LevelLabel, "核心"),
 				"description":   firstNonEmpty(detail.Description, detail.Summary, request.Description),
 				"prerequisites": preferStringList(detail.Prerequisites, request.Prerequisites),
@@ -192,7 +193,10 @@ func (s *Service) requestPlainModelWithProvider(ctx context.Context, provider co
 	}
 
 	baseURL := strings.TrimRight(provider.BaseURL, "/")
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
+	requestCtx, cancel := context.WithTimeout(ctx, s.chatProviderTimeout(provider))
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(requestCtx, http.MethodPost, baseURL+"/v1/chat/completions", bytes.NewReader(body))
 	if err != nil {
 		return "", apperr.ErrDependencyUnavailable.WithCause(err)
 	}

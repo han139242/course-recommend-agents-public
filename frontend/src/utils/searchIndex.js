@@ -1,4 +1,6 @@
-﻿function normalizeKeyword(value = '') {
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from './courseMeta'
+
+function normalizeKeyword(value = '') {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, '')
 }
 
@@ -21,7 +23,7 @@ export function createSearchIndex(nodes = []) {
     routeKnowledgeId: node.routeKnowledgeId,
     name: node.name || node.canonicalName || node.routeKnowledgeId || '',
     canonicalName: node.canonicalName || node.name || '',
-    chapterTitle: node.chapterTitle || '其他',
+    chapterTitle: resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE),
     entityType: node.entityType || 'concept',
   }))
 }

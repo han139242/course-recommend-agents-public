@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	competencydto "github.com/han139242/course-recommend-agents/backend/internal/module/competency/dto"
 	competencyentity "github.com/han139242/course-recommend-agents/backend/internal/module/competency/entity"
 	graphentity "github.com/han139242/course-recommend-agents/backend/internal/module/graph/entity"
@@ -88,14 +89,14 @@ func (s *Service) BuildProfile(ctx context.Context, studentID int64, user *compe
 	growthSummaryCards := buildGrowthSummaryCards(axes)
 	response := &competencydto.ProfileResponse{
 		Profile: competencydto.ProfileView{
-			Name:      user.Name,
-			Role:      user.Role,
-			ClassID:   user.ClassID,
-			ClassName: user.ClassName,
-			Target:    user.Target,
-			Summary:   "当前画像优先基于知识图谱能力映射生成；若映射尚未补齐，则退回到知识路径聚合结果。",
-			Stats: []competencydto.StatItem{{Label: "学习中知识点", Value: fmt.Sprintf("%d", len(states))}, {Label: "能力维度数", Value: fmt.Sprintf("%d", len(scores))}},
-			Goals: []string{"持续补齐当前薄弱知识点，逐步提升能力画像稳定性。"},
+			Name:          user.Name,
+			Role:          user.Role,
+			ClassID:       user.ClassID,
+			ClassName:     user.ClassName,
+			Target:        user.Target,
+			Summary:       "当前画像优先基于知识图谱能力映射生成；若映射尚未补齐，则退回到知识路径聚合结果。",
+			Stats:         []competencydto.StatItem{{Label: "学习中知识点", Value: fmt.Sprintf("%d", len(states))}, {Label: "能力维度数", Value: fmt.Sprintf("%d", len(scores))}},
+			Goals:         []string{"持续补齐当前薄弱知识点，逐步提升能力画像稳定性。"},
 			RecentRecords: []string{"最近答题记录已纳入画像实时计算。"},
 		},
 		RadarAxes:          axes,
@@ -189,7 +190,7 @@ func deriveKnowledgeDomain(detail *graphentity.KnowledgeDetail) string {
 			return trimmed
 		}
 	}
-	if chapter := strings.TrimSpace(detail.ChapterTitle); chapter != "" {
+	if chapter := coursemeta.ResolveNodeCourseTitleWithFallback(detail.CuratedSource, detail.SourcePath, "", "", "", detail.ChapterTitle, ""); chapter != "" {
 		return chapter
 	}
 	switch strings.TrimSpace(detail.EntityType) {

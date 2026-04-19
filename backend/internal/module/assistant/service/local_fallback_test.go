@@ -68,3 +68,32 @@ func TestChatPublicKeepsGraphActionsWithoutAIConfig(t *testing.T) {
 		t.Fatalf("unexpected second action: %#v", response.Actions[1])
 	}
 }
+
+func TestChatPublicNormalizesLegacyCourseContextWithoutAIConfig(t *testing.T) {
+	t.Parallel()
+
+	service := New(config.AIConfig{}, nil, nil, nil, nil, nil, nil, nil, nil)
+	response, err := service.ChatPublic(context.Background(), assistantdto.ChatRequest{
+		Messages: []map[string]any{
+			{
+				"role": "system",
+				"content": strings.Join([]string{
+					"你是知识图谱学习助手，请用中文回答。",
+					"当前知识点：知识表示",
+					"课程：人工智能基础知识骨架",
+					"简介：知识表示用于组织智能体可操作的结构化知识。",
+				}, "\n"),
+			},
+			{"role": "user", "content": "帮我解释这个知识点"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("expected local fallback response, got error: %v", err)
+	}
+	if response == nil {
+		t.Fatal("expected non-nil response")
+	}
+	if !strings.Contains(response.Content, "人工智能导论") {
+		t.Fatalf("expected normalized course title in fallback reply, got %q", response.Content)
+	}
+}
