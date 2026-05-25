@@ -102,11 +102,16 @@ const weeklyTrend = computed(() => {
     </div>
 
     <div class="trend-card">
-      <span class="panel-label">本周学习趋势</span>
-      <div class="trend-bars">
-        <div v-for="item in weeklyTrend" :key="item.label" class="trend-bar">
-          <span class="trend-bar__col" :style="{ height: `${item.value}%` }"></span>
-          <small>{{ item.label }}</small>
+      <span class="panel-label">能力覆盖维度</span>
+      <div class="competency-list">
+        <div v-for="item in weeklyTrend" :key="item.label" class="competency-item">
+          <div class="competency-meta">
+            <span class="competency-label">{{ item.label }}</span>
+            <span class="competency-value">{{ item.value }}%</span>
+          </div>
+          <div class="progress-track">
+            <span class="progress-fill" :style="{ width: `${item.value}%` }"></span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -8,6 +8,7 @@ import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { APP_NAME } from '../constants/appInfo'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
+import { useThemeStore } from '../stores/themeStore'
 import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../utils/courseMeta'
 
 const GraphCanvas = defineAsyncComponent(() => import('../components/graph/GraphCanvas.vue'))
@@ -16,6 +17,7 @@ const AiAssistant = defineAsyncComponent(() => import('../components/ai/AiAssist
 
 const graphStore = useGraphStore()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 const router = useRouter()
 
 const searchValue = ref('')
@@ -444,6 +446,10 @@ async function handleRelatedSelect(routeKnowledgeId) {
   rightCollapsed.value = false
 }
 
+const aiAssistantRef = ref(null)
+const quizCelebrationActive = ref(false)
+const quizCelebrationNodeName = ref('')
+
 function handleOpenAi() {
   aiAutoPrompt.value = {
     id: Date.now(),
@@ -452,6 +458,29 @@ function handleOpenAi() {
       : '请先概览当前知识图谱，并给我一个适合现在开始的学习建议。',
   }
   aiOpen.value = true
+}
+
+function handleOpenAiWithPrompt(promptText) {
+  aiAutoPrompt.value = {
+    id: Date.now(),
+    text: promptText
+  }
+  aiOpen.value = true
+}
+
+function handleQuizFailed(payload) {
+  if (aiAssistantRef.value?.triggerStruggleHint) {
+    aiAssistantRef.value.triggerStruggleHint(payload.name || payload.nodeId)
+  }
+}
+
+function handleQuizMastered(payload) {
+  quizCelebrationNodeName.value = payload.name || payload.nodeId
+  quizCelebrationActive.value = true
+  setTimeout(() => {
+    quizCelebrationActive.value = false
+    quizCelebrationNodeName.value = ''
+  }, 3000)
 }
 
 async function handleSceneReset() {
@@ -543,7 +572,7 @@ onBeforeUnmount(() => {
         </div>
         <div>
           <strong class="topbar__title">{{ APP_NAME }}</strong>
-          <p>分层展开的关联知识图谱，优先保证大图流畅、节点可读和逐层探索体验。</p>
+          <p class="topbar__subtitle">跨课程 AI 知识图谱推荐系统</p>
         </div>
       </div>
 
@@ -558,6 +587,15 @@ onBeforeUnmount(() => {
       />
 
       <div class="topbar__actions">
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          title="切换白天/夜间模式"
+          @click="themeStore.toggleTheme"
+        >
+          <span v-if="themeStore.theme === 'light'">🌙 夜间</span>
+          <span v-else>☀️ 白天</span>
+        </button>
         <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">登录</RouterLink>
         <template v-else>
           <RouterLink class="secondary-btn" to="/dashboard">能力图谱</RouterLink>
@@ -631,6 +669,17 @@ onBeforeUnmount(() => {
           @clear-selection="handleClearSelection"
           @context-action="handleContextAction"
         />
+        
+        <!-- Celebrations Overlay -->
+        <div v-if="quizCelebrationActive" class="graph-celebrations">
+          <div class="graph-burst">
+            <span class="graph-burst__label">✨ 掌握通关：{{ quizCelebrationNodeName }} ✨</span>
+            <div class="graph-burst__star graph-burst__star--1">★</div>
+            <div class="graph-burst__star graph-burst__star--2">★</div>
+            <div class="graph-burst__star graph-burst__star--3">★</div>
+            <div class="graph-burst__star graph-burst__star--4">★</div>
+          </div>
+        </div>
       </main>
 
       <RightPanel
@@ -643,10 +692,14 @@ onBeforeUnmount(() => {
         @select-related="handleRelatedSelect"
         @open-ai="handleOpenAi"
         @show-recommend-path="handleShowPath"
+        @open-ai-with-prompt="handleOpenAiWithPrompt"
+        @quiz-mastered="handleQuizMastered"
+        @quiz-failed="handleQuizFailed"
       />
     </div>
 
     <AiAssistant
+      ref="aiAssistantRef"
       v-model="aiOpen"
       :detail="graphStore.selectedDetail"
       :is-authenticated="userStore.isAuthenticated"

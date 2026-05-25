@@ -148,13 +148,24 @@ function buildPathTitle(item = {}) {
   return label || normalizedTitle || '推荐知识点'
 }
 
-const visibleHints = computed(() =>
-  (props.proactiveHints || []).slice(0, 2).map((hint) => ({
+const localStruggleHint = ref(null)
+
+const visibleHints = computed(() => {
+  const list = []
+  if (localStruggleHint.value) {
+    list.push({
+      ...localStruggleHint.value,
+      displayTitle: localStruggleHint.value.title,
+      displayDetail: localStruggleHint.value.detail,
+    })
+  }
+  const propHints = (props.proactiveHints || []).map((hint) => ({
     ...hint,
     displayTitle: buildHintTitle(hint),
     displayDetail: replaceKnowledgeLabels(hint.detail || ''),
-  })),
-)
+  }))
+  return [...list, ...propHints].slice(0, 2)
+})
 const lastAssistantMessage = computed(() =>
   [...messages.value].reverse().find((message) => message.role === 'assistant' && message.mode) || null,
 )
@@ -352,6 +363,30 @@ function showRecommendedPath() {
   if (!recommendedRouteIds.value.length) return
   emit('show-recommend-path', recommendedRouteIds.value)
 }
+
+function triggerStruggleHint(nodeName) {
+  localStruggleHint.value = {
+    title: '测验挑战卡关？',
+    detail: `检测到你在“${nodeName}”测验中遇到阻碍。点击让我为你提供通俗大白话的讲解！`,
+    knowledgeId: nodeName,
+    reasonCode: 'weakness',
+    isStruggle: true,
+  }
+  open.value = false
+}
+
+function handleBubbleClick() {
+  const primaryHint = visibleHints.value[0]
+  open.value = true
+  if (primaryHint && primaryHint.isStruggle) {
+    send(`我刚刚在学习“${primaryHint.knowledgeId}”时测验卡关了，请用极度通俗易懂的大白话、结合生活中的生动比喻，为我全面讲解一下这个概念，并说明它的实际用途。`)
+    localStruggleHint.value = null
+  }
+}
+
+defineExpose({
+  triggerStruggleHint,
+})
 </script>
 
 <template>
@@ -360,7 +395,7 @@ function showRecommendedPath() {
       v-if="!open && visibleHints.length"
       type="button"
       class="ai-proactive-bubble"
-      @click="open = true"
+      @click="handleBubbleClick"
     >
       <span class="ai-proactive-bubble__icon">&#x2728;</span>
       <span class="ai-proactive-bubble__text">{{ visibleHints[0].displayTitle || visibleHints[0].title }}</span>

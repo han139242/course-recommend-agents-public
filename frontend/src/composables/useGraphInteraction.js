@@ -232,36 +232,41 @@ export function useGraphInteraction(options = {}) {
         if (!event.subject) return
         dragStartPoint = { x: event.x, y: event.y }
         dragDidMove = false
-        event.subject.isUserPinned = true
-        event.subject.fx = event.subject.x
-        event.subject.fy = event.subject.y
       })
       .on('drag', (event) => {
         if (!event.subject) return
         if (!dragDidMove && hasExceededDragTolerance(dragStartPoint, event)) {
           suppressClickUntil = Date.now() + 220
           dragDidMove = true
+          event.subject.isUserPinned = true
           engine.reheat({
             alphaTarget: 0.09,
             alpha: 0.8,
             duration: 1400,
           })
         }
-        const point = localToClient(event.x, event.y)
-        const [worldX, worldY] = renderer.screenToWorld(point.x, point.y)
-        event.subject.fx = worldX
-        event.subject.fy = worldY
-        event.subject.x = worldX
-        event.subject.y = worldY
+        if (dragDidMove) {
+          const point = localToClient(event.x, event.y)
+          const [worldX, worldY] = renderer.screenToWorld(point.x, point.y)
+          event.subject.fx = worldX
+          event.subject.fy = worldY
+          event.subject.x = worldX
+          event.subject.y = worldY
+        }
       })
       .on('end', (event) => {
         if (!event.subject) return
         if (dragDidMove) {
           suppressClickUntil = Date.now() + 220
+          event.subject.isUserPinned = false
+          event.subject.fx = null
+          event.subject.fy = null
+          engine.reheat({
+            alphaTarget: 0.1,
+            alpha: 0.5,
+            duration: 1100,
+          })
         }
-        event.subject.isUserPinned = true
-        event.subject.fx = event.subject.x
-        event.subject.fy = event.subject.y
         dragStartPoint = null
         dragDidMove = false
       })

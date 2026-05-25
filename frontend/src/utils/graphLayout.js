@@ -144,6 +144,47 @@ function createExpansionForce() {
   return force
 }
 
+function createCourseClusteringForce() {
+  let nodes = []
+
+  function force(alpha) {
+    const courseGroups = new Map()
+    nodes.forEach((node) => {
+      const course = node.view?.data?.chapterTitle || ''
+      if (!course) return
+      if (!courseGroups.has(course)) {
+        courseGroups.set(course, [])
+      }
+      courseGroups.get(course).push(node)
+    })
+
+    courseGroups.forEach((group) => {
+      if (group.length <= 1) return
+      let sumX = 0
+      let sumY = 0
+      group.forEach((node) => {
+        sumX += node.x
+        sumY += node.y
+      })
+      const centerX = sumX / group.length
+      const centerY = sumY / group.length
+
+      const strength = 0.082 * alpha
+      group.forEach((node) => {
+        if (node.fx != null || node.fy != null) return
+        node.vx += (centerX - node.x) * strength
+        node.vy += (centerY - node.y) * strength
+      })
+    })
+  }
+
+  force.initialize = (nextNodes) => {
+    nodes = nextNodes || []
+  }
+
+  return force
+}
+
 export function createSimulation(nodes = [], links = [], onTick = () => {}) {
   const simulation = forceSimulation(nodes)
     .force(
@@ -168,6 +209,7 @@ export function createSimulation(nodes = [], links = [], onTick = () => {}) {
     )
     .force('center', forceCenter(0, 0))
     .force('expand', createExpansionForce())
+    .force('cluster', createCourseClusteringForce())
     .velocityDecay(0.34)
     .alphaDecay(0.032)
     .alphaMin(0.001)

@@ -165,6 +165,26 @@ function buildNodeColors(courseTitle, progress = {}) {
   }
 }
 
+export function getRelationStroke(relationType, theme = 'dark') {
+  const isLight = theme === 'light'
+  switch (relationType) {
+    case 'PREREQUISITE_OF':
+      return isLight ? '#64748B' : '#CBD5E1'
+    case 'SUBTOPIC_OF':
+      return isLight ? '#6366F1' : '#C7D2FE'
+    case 'PART_OF':
+      return isLight ? '#3B82F6' : '#BFDBFE'
+    case 'RELATED_TO':
+      return isLight ? '#94A3B8' : '#E2E8F0'
+    case 'USES':
+      return isLight ? '#2563EB' : '#93C5FD'
+    case 'APPLIES_TO':
+      return isLight ? '#0D9488' : '#6EE7B7'
+    default:
+      return isLight ? '#94A3B8' : '#CBD5E1'
+  }
+}
+
 function buildNodeStyle(node, options) {
   const progress = options.progressMap?.[node.routeKnowledgeId] || {}
   const colors = buildNodeColors(getChapterTitle(node), progress)
@@ -175,6 +195,8 @@ function buildNodeStyle(node, options) {
   const radius = isRoot ? 42 : 30
   const shadowBlur = isSelected ? 24 : isExpanded ? 18 : isRoot ? 14 : 9
   const borderWidth = isSelected ? 4 : isExpanded ? 3 : isPinned ? 2.4 : 2
+  const theme = options.theme || 'dark'
+  const isLight = theme === 'light'
 
   return {
     radius,
@@ -183,16 +205,20 @@ function buildNodeStyle(node, options) {
       isExpanded,
     }),
     fill: colors.fill,
-    stroke: isSelected || isExpanded ? 'rgba(103, 232, 249, 1)' : colors.stroke,
+    stroke: isSelected || isExpanded 
+      ? (isLight ? 'rgba(79, 70, 229, 1)' : 'rgba(103, 232, 249, 1)') 
+      : colors.stroke,
     borderWidth,
     shadowBlur,
-    shadowColor: isSelected ? 'rgba(103, 232, 249, 0.42)' : colors.shadow,
+    shadowColor: isSelected 
+      ? (isLight ? 'rgba(79, 70, 229, 0.25)' : 'rgba(103, 232, 249, 0.42)') 
+      : colors.shadow,
     badgeColor: colors.accent,
     ringColor: colors.ring,
     courseLight: colors.courseLight,
     masteryRatio: colors.masteryRatio,
-    labelColor: '#F8FAFC',
-    labelStroke: 'rgba(15, 23, 42, 0.88)',
+    labelColor: isLight ? '#0F172A' : '#F8FAFC',
+    labelStroke: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.88)',
     opacity: 1,
     fontSize: isRoot ? 14 : 11,
   }
@@ -227,7 +253,8 @@ function normalizeGraphNode(node, options) {
   }
 }
 
-function normalizeGraphEdge(edge, nodeMap) {
+function normalizeGraphEdge(edge, nodeMap, options = {}) {
+  const theme = options.theme || 'dark'
   const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
   const sourceNode = nodeMap.get(edge.sourceId)
   const targetNode = nodeMap.get(edge.targetId)
@@ -249,7 +276,7 @@ function normalizeGraphEdge(edge, nodeMap) {
       crossCourse: sourceCourse !== targetCourse,
     },
     style: {
-      stroke: relation.stroke,
+      stroke: getRelationStroke(edge.relationType, theme),
       lineWidth: relation.lineWidth,
       lineDash: relation.lineDash,
       endArrow: relation.endArrow,
@@ -281,12 +308,13 @@ export function transformGraphData(nodes = [], edges = [], options = {}) {
         expandedSet,
         pinnedSet,
         selectedNodeId: options.selectedNodeId || null,
+        theme: options.theme || 'dark',
       }),
     )
 
   const visibleEdges = edges
     .filter((edge) => nodeMap.has(edge.sourceId) && nodeMap.has(edge.targetId))
-    .map((edge) => normalizeGraphEdge(edge, nodeMap))
+    .map((edge) => normalizeGraphEdge(edge, nodeMap, options))
 
   return {
     nodes: visibleNodes,
