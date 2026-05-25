@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  DEFAULT_COURSE_TITLE,
   getCourseTitleFromSource,
   normalizeCourseTitle,
   resolveNodeCourseTitle,
@@ -18,20 +19,27 @@ describe('courseMeta', () => {
     ).toBe('人工智能导论')
   })
 
-  it('folds legacy chapter titles back into canonical courses', () => {
-    expect(normalizeCourseTitle('人工智能课程知识图谱')).toBe('知识图谱')
+  it('keeps generic skeleton labels from collapsing into artificial-intelligence-intro by default', () => {
+    expect(normalizeCourseTitle('人工智能基础知识骨架')).toBe(DEFAULT_COURSE_TITLE)
+    expect(normalizeCourseTitle('人工智能课程知识图谱')).toBe(DEFAULT_COURSE_TITLE)
+    expect(resolveNodeCourseTitle({ curatedSource: 'curated_ai_professional_ontology' })).toBe(DEFAULT_COURSE_TITLE)
+  })
+
+  it('folds specific legacy chapter titles back into canonical courses', () => {
     expect(normalizeCourseTitle('自然语言处理及其应用')).toBe('自然语言处理')
     expect(normalizeCourseTitle('概率统计')).toBe('概率与统计')
     expect(normalizeCourseTitle('人工神经网络及其应用')).toBe('深度学习')
     expect(normalizeCourseTitle('智能体与多智能体系统')).toBe('人工智能导论')
   })
 
-  it('infers canonical courses from legacy batch-style sources', () => {
-    expect(resolveNodeCourseTitle({ curatedSource: 'curated_ai_professional_ontology' })).toBe('人工智能导论')
-    expect(resolveNodeCourseTitle({ curatedSource: 'batch_29_transformer_llm_full_route' })).toBe('大模型')
+  it('infers canonical courses from batch-style and node-specific hints', () => {
     expect(resolveNodeCourseTitle({ sourcePath: 'curated/batch_22_automl_compression_edge_ai' })).toBe('AI工程')
     expect(resolveNodeCourseTitle({ sourcePath: 'curated/batch_07_nlp_foundation' })).toBe('自然语言处理')
     expect(resolveNodeCourseTitle({ curatedSource: 'batch_28_machine_learning_full_route' })).toBe('机器学习')
+    expect(resolveNodeCourseTitle({ canonicalName: '图像分割', curatedSource: 'curated_ai_professional_ontology' })).toBe('计算机视觉')
+    expect(resolveNodeCourseTitle({ canonicalName: '马尔可夫决策过程', curatedSource: 'curated_ai_professional_ontology' })).toBe('强化学习')
+    expect(resolveNodeCourseTitle({ canonicalName: 'BERT', curatedSource: 'curated_ai_professional_ontology' })).toBe('自然语言处理')
+    expect(resolveNodeCourseTitle({ canonicalName: '知识表示', chapterTitle: '人工智能基础知识骨架' })).toBe('人工智能导论')
   })
 
   it('keeps already-normalized titles stable', () => {

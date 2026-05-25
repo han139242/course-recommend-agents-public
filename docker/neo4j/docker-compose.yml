@@ -46,6 +46,8 @@ services:
     container_name: course-recommend-neo4j
     environment:
       NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-123456789}
+      NEO4J_browser_remote__content__hostname__whitelist: "guides.neo4j.com,localhost,127.0.0.1"
+      NEO4J_browser_post__connect__cmd: "style reset; style http://localhost:${BACKEND_HTTP_PORT:-8080}/neo4j-browser-course-palette.grass?v=course-palette-v3"
     ports:
       - "${NEO4J_HTTP_PORT:-7474}:7474"
       - "${NEO4J_BOLT_PORT:-7687}:7687"

@@ -1,0 +1,164 @@
+node {
+  diameter: 54px;
+  color: #F3F4F6;
+  border-color: #CBD5E1;
+  border-width: 3px;
+  text-color-internal: #1F2937;
+  font-size: 10px;
+  caption: "{canonicalName}";
+}
+
+relationship {
+  color: #B8C2CF;
+  shaft-width: 1.2px;
+  font-size: 8px;
+  padding: 3px;
+  text-color-external: #475569;
+  text-color-internal: #FFFFFF;
+  caption: "<type>";
+}
+
+node.Competency {
+  color: #DBEAFE;
+  border-color: #60A5FA;
+  text-color-internal: #1D4ED8;
+  caption: "{name}";
+}
+
+node.FrontierDigest {
+  color: #FEF3C7;
+  border-color: #FCD34D;
+  text-color-internal: #92400E;
+  caption: "{knowledge_name}";
+}
+
+node.ResearchTopic {
+  color: #FFE4E6;
+  border-color: #FDA4AF;
+  text-color-internal: #BE123C;
+  caption: "{name}";
+}
+
+node.Paper {
+  color: #E0F2FE;
+  border-color: #7DD3FC;
+  text-color-internal: #0C4A6E;
+  caption: "{title}";
+}
+
+node.Author {
+  color: #F3E8FF;
+  border-color: #D8B4FE;
+  text-color-internal: #6B21A8;
+  caption: "{name}";
+}
+
+node.Venue {
+  color: #FCE7F3;
+  border-color: #F9A8D4;
+  text-color-internal: #9D174D;
+  caption: "{name}";
+}
+
+node.User {
+  color: #E0F2FE;
+  border-color: #38BDF8;
+  text-color-internal: #075985;
+  caption: "{name}";
+}
+
+node.Course_MachineLearning {
+  color: #E8EDFC;
+  border-color: #B0C4F5;
+  text-color-internal: #6C8EEF;
+}
+
+node.Course_DeepLearning {
+  color: #EDE8FB;
+  border-color: #C4B3F0;
+  text-color-internal: #9B7FE6;
+}
+
+node.Course_Calculus {
+  color: #E3F4F7;
+  border-color: #A0D8E1;
+  text-color-internal: #4DB8C7;
+}
+
+node.Course_LinearAlgebra {
+  color: #E5F0FA;
+  border-color: #A5CBE8;
+  text-color-internal: #5BA3D9;
+}
+
+node.Course_ProbabilityStatistics {
+  color: #E3F5F0;
+  border-color: #A0D8CA;
+  text-color-internal: #4DB8A5;
+}
+
+node.Course_DataStructures {
+  color: #E3F5EA;
+  border-color: #A0D8B2;
+  text-color-internal: #4DB87A;
+}
+
+node.Course_NLP {
+  color: #FCF1DE;
+  border-color: #EFC98A;
+  text-color-internal: #E0A542;
+}
+
+node.Course_ComputerVision {
+  color: #FCE6E6;
+  border-color: #EFA5A5;
+  text-color-internal: #E07272;
+}
+
+node.Course_LargeModels {
+  color: #FCE1EB;
+  border-color: #EFA0BC;
+  text-color-internal: #E06090;
+}
+
+node.Course_KnowledgeGraph {
+  color: #EFE4FB;
+  border-color: #C9A8EF;
+  text-color-internal: #A570E0;
+}
+
+node.Course_ReinforcementLearning {
+  color: #FAE8E2;
+  border-color: #E8B19E;
+  text-color-internal: #D97757;
+}
+
+node.Course_AIEngineering {
+  color: #EEF6E9;
+  border-color: #BDD8B1;
+  text-color-internal: #6D9F5A;
+}
+
+node.Course_AIEthics {
+  color: #F8EEDC;
+  border-color: #E6C48F;
+  text-color-internal: #C98B3C;
+}
+
+node.Course_PythonProgramming {
+  color: #E5EFFB;
+  border-color: #A6C2EB;
+  text-color-internal: #4F8ACC;
+}
+
+node.Course_AIIntro {
+  color: #EDF1F5;
+  border-color: #BEC9D5;
+  text-color-internal: #7A8DA6;
+}
+
+node.Course_Other {
+  color: #F1F5F9;
+  border-color: #CBD5E1;
+  text-color-internal: #64748B;
+}

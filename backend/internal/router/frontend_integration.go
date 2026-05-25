@@ -46,6 +46,8 @@ func registerFrontendIntegrationRoutes(engine *gin.Engine, cfg config.Config) {
 		return
 	}
 
+	registerBrowserStyleRoute(engine, filepath.Join(distDir, "neo4j-browser-course-palette.grass"))
+
 	engine.NoRoute(func(ctx *gin.Context) {
 		if strings.HasPrefix(ctx.Request.URL.Path, "/api") || strings.HasPrefix(ctx.Request.URL.Path, "/debug/pprof") || ctx.Request.URL.Path == "/healthz" || ctx.Request.URL.Path == "/readyz" {
 			result.Error(ctx, http.StatusNotFound, http.StatusNotFound, "not found")
@@ -66,6 +68,32 @@ func registerFrontendIntegrationRoutes(engine *gin.Engine, cfg config.Config) {
 		}
 
 		ctx.File(indexPath)
+	})
+}
+
+func registerBrowserStyleRoute(engine *gin.Engine, stylePath string) {
+	if !fileExists(stylePath) {
+		return
+	}
+
+	serveStyle := func(ctx *gin.Context) {
+		ctx.Header("Access-Control-Allow-Origin", "*")
+		ctx.Header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+		ctx.Header("Access-Control-Allow-Headers", "Content-Type")
+		ctx.Header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		ctx.Header("Pragma", "no-cache")
+		ctx.Header("Expires", "0")
+		ctx.Header("Content-Type", "text/plain; charset=utf-8")
+		ctx.File(stylePath)
+	}
+
+	engine.GET("/neo4j-browser-course-palette.grass", serveStyle)
+	engine.HEAD("/neo4j-browser-course-palette.grass", serveStyle)
+	engine.OPTIONS("/neo4j-browser-course-palette.grass", func(ctx *gin.Context) {
+		ctx.Header("Access-Control-Allow-Origin", "*")
+		ctx.Header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+		ctx.Header("Access-Control-Allow-Headers", "Content-Type")
+		ctx.Status(http.StatusNoContent)
 	})
 }
 

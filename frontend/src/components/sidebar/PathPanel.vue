@@ -14,6 +14,10 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  nodes: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits([
@@ -33,6 +37,46 @@ const dragState = ref({
 const recommendedRouteIds = computed(() =>
   props.recommendedPath.map((item) => item.knowledgeId || item.title).filter(Boolean),
 )
+
+const nodeLookup = computed(() => {
+  const lookup = new Map()
+
+  ;(props.nodes || []).forEach((node) => {
+    const routeKnowledgeId = String(node?.routeKnowledgeId || '').trim()
+    const fallbackId = String(node?.id || '').trim()
+    const label = String(node?.canonicalName || node?.name || routeKnowledgeId || fallbackId).trim()
+    const courseLabel = String(node?.chapterTitle || node?.courseTitle || '').trim()
+
+    if (routeKnowledgeId) {
+      lookup.set(routeKnowledgeId, {
+        label,
+        courseLabel,
+      })
+    }
+
+    if (fallbackId && !lookup.has(fallbackId)) {
+      lookup.set(fallbackId, {
+        label,
+        courseLabel,
+      })
+    }
+  })
+
+  return lookup
+})
+
+function getNodeDisplayMeta(nodeId) {
+  const normalized = String(nodeId || '').trim()
+  const matched = nodeLookup.value.get(normalized)
+  if (matched?.label) {
+    return matched
+  }
+
+  return {
+    label: normalized.length > 18 ? `${normalized.slice(0, 8)}...${normalized.slice(-6)}` : normalized,
+    courseLabel: '',
+  }
+}
 
 function getNodeMeta(routeKnowledgeId) {
   const progress = props.progressMap[String(routeKnowledgeId || '').trim()] || {}
@@ -131,10 +175,12 @@ function handleStartPath(nodeIds) {
 
 function getRecommendedPathLabel(item) {
   if (!item) return ''
+  const title = String(item.displayTitle || item.title || item.knowledgeId || '').trim()
+  const reason = String(item.reasonLabel || '').trim()
   if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
-    return `${item.sourceCourse} → ${item.targetCourse} · ${item.title}`
+    return `${reason || '跨课程迁移'} · ${item.sourceCourse} → ${item.targetCourse} · ${title}`
   }
-  return `${item.stage ? `${item.stage} · ` : ''}${item.title}`
+  return `${reason || '推荐'} · ${title}`
 }
 </script>
 
@@ -146,7 +192,7 @@ function getRecommendedPathLabel(item) {
     </div>
 
     <div class="path-block">
-      <span class="panel-label">AI 推荐路径</span>
+      <span class="panel-label">推荐路径</span>
 
       <template v-if="recommendedRouteIds.length">
         <div class="path-chain">
@@ -212,12 +258,17 @@ function getRecommendedPathLabel(item) {
             >
               <button type="button" class="path-node__main" @click="emit('focus-node', nodeId)">
                 <span class="path-node__handle" aria-hidden="true">⋮⋮</span>
-                <span class="path-node__label">{{ nodeId }}</span>
-                <span
-                  class="path-node__status"
-                  :class="`path-node__status--${getNodeMeta(nodeId).tone}`"
-                >
-                  {{ getNodeMeta(nodeId).label }}
+                <span class="path-node__content">
+                  <span class="path-node__label">{{ getNodeDisplayMeta(nodeId).label }}</span>
+                  <span v-if="getNodeDisplayMeta(nodeId).courseLabel" class="path-node__subtext">
+                    {{ getNodeDisplayMeta(nodeId).courseLabel }}
+                  </span>
+                  <span
+                    class="path-node__status"
+                    :class="`path-node__status--${getNodeMeta(nodeId).tone}`"
+                  >
+                    {{ getNodeMeta(nodeId).label }}
+                  </span>
                 </span>
               </button>
 

@@ -40,7 +40,7 @@ async function submit() {
     <div class="auth-card page-card">
       <p class="eyebrow">欢迎回来</p>
       <h1>登录学习空间</h1>
-      <p>登录后可以同步个人学习进度、收藏和 AI 推荐路径。</p>
+      <p>登录后可以同步个人学习进度、收藏和推荐路径。</p>
       <p>当前测试学生账号：`student@test.local` / `TestPass123!`。</p>
       <button type="button" class="secondary-btn" @click="fillDemoStudent">填入测试学生账号</button>
 

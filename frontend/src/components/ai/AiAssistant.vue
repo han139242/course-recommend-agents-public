@@ -15,6 +15,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  knowledgeLookup: {
+    type: Object,
+    default: () => ({}),
+  },
   recommendedPath: {
     type: Array,
     default: () => [],
@@ -41,11 +45,133 @@ const { messages, quickPrompts, sending, send } = useAiChat(detailRef, authRef, 
   },
 })
 const lastPromptId = ref(null)
-const visibleHints = computed(() => (props.proactiveHints || []).slice(0, 2))
+const mentionEntries = computed(() => {
+  const map = new Map()
+
+  Object.entries(props.knowledgeLookup || {}).forEach(([value, meta]) => {
+    const normalized = String(value || '').trim()
+    if (!normalized) return
+    map.set(normalized, {
+      value: normalized,
+      label:
+        String(meta?.label || meta?.canonicalName || meta?.name || normalized).trim() || normalized,
+    })
+  })
+
+  ;(props.knowledgeMentions || []).forEach((value) => {
+    const normalized = String(value || '').trim()
+    if (!normalized || map.has(normalized)) return
+    map.set(normalized, {
+      value: normalized,
+      label: normalized,
+    })
+  })
+
+  return [...map.values()].sort((left, right) => right.value.length - left.value.length)
+})
+
+function resolveKnowledgeLabel(value = '', fallback = '') {
+  const normalized = String(value || '').trim()
+  const fallbackValue = String(fallback || '').trim()
+  if (!normalized) return fallbackValue
+
+  const entry = props.knowledgeLookup?.[normalized]
+  return String(entry?.label || entry?.canonicalName || entry?.name || normalized).trim() || fallbackValue
+}
+
+function replaceKnowledgeLabels(text = '') {
+  let output = String(text || '')
+  mentionEntries.value.forEach(({ value, label }) => {
+    if (!value || !label || value === label || !output.includes(value)) return
+    output = output.split(value).join(label)
+  })
+  return output
+}
+
+function findMentionInText(...values) {
+  const source = values
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .join(' ')
+
+  if (!source) return null
+  return mentionEntries.value.find((item) => item.value && source.includes(item.value)) || null
+}
+
+function resolveInsightPrefix(reasonCode = '', fallback = '') {
+  switch (String(reasonCode || '').trim()) {
+    case 'weakness':
+      return '薄弱补强'
+    case 'forgetting_review':
+      return '回温复习'
+    case 'cross_course_transfer':
+      return '跨课迁移'
+    case 'gap_bridge':
+      return '前置补桥'
+    default:
+      return String(fallback || '').trim()
+  }
+}
+
+function hasMachineId(text = '') {
+  return /[0-9a-f]{16,}/i.test(String(text || ''))
+}
+
+function buildHintTitle(hint = {}) {
+  const explicitId = String(hint.knowledgeId || '').trim()
+  const mention = findMentionInText(explicitId, hint.title, hint.detail, hint.route)
+  const label = resolveKnowledgeLabel(explicitId || mention?.value || '', mention?.label || '')
+  const prefix = resolveInsightPrefix(hint.reasonCode, hint.title)
+  const normalizedTitle = replaceKnowledgeLabels(hint.title || '')
+
+  if (label && prefix) {
+    return `${prefix}：${label}`
+  }
+
+  if (label && hasMachineId(normalizedTitle)) {
+    return label
+  }
+
+  return normalizedTitle || label || '学习提醒'
+}
+
+function buildPathTitle(item = {}) {
+  const explicitId = String(item.knowledgeId || '').trim()
+  const mention = findMentionInText(explicitId, item.title, item.detail, item.route)
+  const label = resolveKnowledgeLabel(explicitId || mention?.value || '', mention?.label || '')
+  const normalizedTitle = replaceKnowledgeLabels(item.title || '')
+
+  if (label && hasMachineId(normalizedTitle)) {
+    return label
+  }
+
+  return label || normalizedTitle || '推荐知识点'
+}
+
+const visibleHints = computed(() =>
+  (props.proactiveHints || []).slice(0, 2).map((hint) => ({
+    ...hint,
+    displayTitle: buildHintTitle(hint),
+    displayDetail: replaceKnowledgeLabels(hint.detail || ''),
+  })),
+)
 const lastAssistantMessage = computed(() =>
   [...messages.value].reverse().find((message) => message.role === 'assistant' && message.mode) || null,
 )
-const visibleRecommendedPath = computed(() => (props.recommendedPath || []).slice(0, 3))
+const visibleRecommendedPath = computed(() =>
+  (props.recommendedPath || []).slice(0, 3).map((item) => ({
+    ...item,
+    displayTitle: buildPathTitle(item),
+    displayDetail: replaceKnowledgeLabels(item.detail || ''),
+    displayReasonLabel: String(item.reasonLabel || '').trim() || '图谱推荐',
+    displayCourseLabel:
+      String(item.sourceCourse || '').trim() && String(item.targetCourse || '').trim()
+        ? String(item.sourceCourse || '').trim() === String(item.targetCourse || '').trim()
+          ? String(item.targetCourse || '').trim()
+          : `${String(item.sourceCourse || '').trim()} → ${String(item.targetCourse || '').trim()}`
+        : String(item.targetCourse || item.sourceCourse || '').trim(),
+  })),
+)
 const recommendedRouteIds = computed(() =>
   (props.recommendedPath || []).map((item) => item.knowledgeId || item.title).filter(Boolean),
 )
@@ -87,7 +213,7 @@ const roadmapHeadline = computed(() => {
   if (total) {
     return `当前最值得优先推进的 ${total} 步主线`
   }
-  return 'AI 会根据当前上下文整理下一步主线'
+  return '系统会根据当前上下文整理下一步主线'
 })
 const insightCount = computed(() =>
   Number(Boolean(props.learnerProfile)) + visibleHints.value.length + Number(Boolean(visibleRecommendedPath.value.length)),
@@ -97,7 +223,7 @@ const panelStatus = computed(() => {
     return {
       tone: 'pending',
       label: '正在响应',
-      detail: '会优先尝试当前可用的在线模型，必要时自动切到本地兜底。',
+      detail: '会优先尝试当前可用的在线服务，必要时自动切到本地兜底。',
     }
   }
 
@@ -106,13 +232,13 @@ const panelStatus = computed(() => {
       return {
         tone: 'online',
         label: '在线回答',
-        detail: '后端已命中当前可用的在线模型，这条回答走的是线上通道。',
+        detail: '当前回答已通过在线服务生成，可继续追问或联动图谱操作。',
       }
     case 'action':
       return {
         tone: 'action',
         label: '页面执行',
-        detail: '图谱控制指令已经下发到页面，适合继续让 AI 帮你展开、聚焦或高亮。',
+        detail: '图谱控制指令已经下发到页面，适合继续展开、聚焦或高亮。',
       }
     case 'fallback':
       return {
@@ -125,7 +251,7 @@ const panelStatus = computed(() => {
         ? {
             tone: 'idle',
             label: '已就绪',
-            detail: '后端会优先选择当前可用的在线模型，图谱控制指令可以直接作用到页面。',
+            detail: '系统已准备就绪，图谱控制指令可以直接作用到页面。',
           }
         : {
             tone: 'idle',
@@ -201,23 +327,22 @@ watch(
 )
 
 function splitMessage(text) {
-  const sorted = [...props.knowledgeMentions].sort((a, b) => b.length - a.length)
   let remaining = String(text || '')
   const parts = []
 
   while (remaining) {
-    const hit = sorted.find((item) => item && remaining.includes(item))
+    const hit = mentionEntries.value.find((item) => item.value && remaining.includes(item.value))
     if (!hit) {
-      parts.push({ type: 'text', value: remaining })
+      parts.push({ type: 'text', value: replaceKnowledgeLabels(remaining) })
       break
     }
 
-    const index = remaining.indexOf(hit)
+    const index = remaining.indexOf(hit.value)
     if (index > 0) {
-      parts.push({ type: 'text', value: remaining.slice(0, index) })
+      parts.push({ type: 'text', value: replaceKnowledgeLabels(remaining.slice(0, index)) })
     }
-    parts.push({ type: 'link', value: hit })
-    remaining = remaining.slice(index + hit.length)
+    parts.push({ type: 'link', value: hit.value, label: hit.label })
+    remaining = remaining.slice(index + hit.value.length)
   }
 
   return parts
@@ -238,7 +363,7 @@ function showRecommendedPath() {
       @click="open = true"
     >
       <span class="ai-proactive-bubble__icon">&#x2728;</span>
-      <span class="ai-proactive-bubble__text">{{ visibleHints[0].title }}</span>
+      <span class="ai-proactive-bubble__text">{{ visibleHints[0].displayTitle || visibleHints[0].title }}</span>
     </button>
     <button type="button" class="ai-fab" @click="open = !open">
       <span class="ai-fab__icon">
@@ -263,7 +388,7 @@ function showRecommendedPath() {
               </svg>
             </div>
             <div class="ai-panel__title">
-              <strong>AI 学习助手</strong>
+              <strong>学习助手</strong>
               <div class="ai-panel__status-row">
                 <span class="ai-panel__status" :class="`ai-panel__status--${panelStatus.tone}`">
                   <span class="ai-panel__status-dot"></span>
@@ -313,9 +438,9 @@ function showRecommendedPath() {
             >
               <div class="ai-hint-card__meta">
                 <span class="ai-hint-card__severity">{{ hint.severity || '提醒' }}</span>
-                <span class="ai-hint-card__reason">{{ hint.title }}</span>
+                <span class="ai-hint-card__reason">{{ hint.displayTitle || hint.title }}</span>
               </div>
-              <p>{{ hint.detail }}</p>
+              <p>{{ hint.displayDetail || hint.detail }}</p>
               <button
                 v-if="hint.knowledgeId"
                 type="button"
@@ -328,7 +453,7 @@ function showRecommendedPath() {
 
             <section v-if="visibleRecommendedPath.length" class="ai-path-card">
               <div class="ai-path-card__head">
-                <span class="ai-learner-card__eyebrow">AI 推荐路径</span>
+                <span class="ai-learner-card__eyebrow">推荐路径</span>
                 <button
                   v-if="recommendedRouteIds.length > 1"
                   type="button"
@@ -347,7 +472,8 @@ function showRecommendedPath() {
                 <div class="ai-path-step__num">{{ stepIdx + 1 }}</div>
                 <div class="ai-path-step__content">
                   <div class="ai-path-step__meta">
-                    <span>{{ item.reasonLabel || item.stage || '推荐' }}</span>
+                    <span>{{ `推荐理由：${item.displayReasonLabel || item.reasonLabel || '图谱推荐'}` }}</span>
+                    <span v-if="item.displayCourseLabel">{{ `课程：${item.displayCourseLabel}` }}</span>
                     <strong v-if="item.score">{{ Math.round(Number(item.score || 0) * 100) }}%</strong>
                   </div>
                   <button
@@ -355,9 +481,9 @@ function showRecommendedPath() {
                     class="ai-path-step__title"
                     @click="emit('focus-knowledge', item.knowledgeId || item.title)"
                   >
-                    {{ item.title }}
+                    {{ item.displayTitle || item.title }}
                   </button>
-                  <p>{{ item.detail || '这是当前最值得优先推进的一步。' }}</p>
+                  <p>{{ item.displayDetail || item.detail || '这是当前最值得优先推进的一步。' }}</p>
                 </div>
               </article>
             </section>
@@ -373,7 +499,7 @@ function showRecommendedPath() {
             <div class="ai-panel__empty-icon">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
-            <p>向 AI 助手提问，获取知识讲解、学习建议或控制图谱。</p>
+            <p>向学习助手提问，获取知识讲解、学习建议或控制图谱。</p>
           </div>
           <article
             v-for="(message, index) in messages"
@@ -384,7 +510,7 @@ function showRecommendedPath() {
             <div class="ai-message__bubble">
               <div class="ai-message__meta">
                 <span class="ai-message__avatar" :class="`ai-message__avatar--${message.role}`">
-                  {{ message.role === 'assistant' ? 'AI' : '我' }}
+                  {{ message.role === 'assistant' ? '助' : '我' }}
                 </span>
                 <span
                   v-if="message.role === 'assistant' && message.agentLabel"
@@ -411,7 +537,7 @@ function showRecommendedPath() {
                     class="inline-link inline-link--ai"
                     @click="emit('focus-knowledge', part.value)"
                   >
-                    {{ part.value }}
+                    {{ part.label || part.value }}
                   </button>
                   <span v-else>{{ part.value }}</span>
                 </template>

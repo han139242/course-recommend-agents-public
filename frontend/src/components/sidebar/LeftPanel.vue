@@ -78,6 +78,7 @@ const emit = defineEmits([
         :recommended-path="recommendedPath"
         :custom-paths="customPaths"
         :progress-map="progressMap"
+        :nodes="nodes"
         @show-path="emit('show-path', $event)"
         @create-path="emit('create-path')"
         @reorder-path="emit('reorder-path', $event)"

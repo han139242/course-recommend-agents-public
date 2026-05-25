@@ -488,13 +488,7 @@ func buildScoredCandidate(rootTitle string, rootState studentKnowledgeState, edg
 	stateBoost := masteryNeedScore(state, hasState)
 	score := normalizedRecommendationScore(relationBoost + stateBoost)
 
-	title := strings.TrimSpace(node.Name)
-	if title == "" {
-		title = strings.TrimSpace(node.CanonicalName)
-	}
-	if title == "" {
-		title = strings.TrimSpace(node.RouteKnowledgeID)
-	}
+	title := displayNodeTitle(node)
 
 	knowledgeID := strings.TrimSpace(node.RouteKnowledgeID)
 	if knowledgeID == "" {
@@ -518,13 +512,7 @@ func buildScoredCandidate(rootTitle string, rootState studentKnowledgeState, edg
 
 func buildFallbackCandidate(rootTitle string, node graphdto.GraphNodeView, lookup map[string]studentKnowledgeState) scoredCandidate {
 	state, hasState := lookupStateForNode(lookup, node)
-	title := strings.TrimSpace(node.Name)
-	if title == "" {
-		title = strings.TrimSpace(node.CanonicalName)
-	}
-	if title == "" {
-		title = strings.TrimSpace(node.RouteKnowledgeID)
-	}
+	title := displayNodeTitle(node)
 	knowledgeID := strings.TrimSpace(node.RouteKnowledgeID)
 	if knowledgeID == "" {
 		knowledgeID = strings.TrimSpace(node.ID)
@@ -638,7 +626,7 @@ func (s *Service) buildGraphDrivenPath(ctx context.Context, target string, scene
 		}
 		for _, node := range prioritizeRecommendNodes(root, subgraph.Nodes) {
 			routeID := strings.TrimSpace(node.RouteKnowledgeID)
-			title := strings.TrimSpace(node.Name)
+			title := displayNodeTitle(node)
 			if routeID == "" || title == "" {
 				continue
 			}
@@ -1133,7 +1121,31 @@ func orderedGraphNodes(orderedNodeIDs []string, lookup map[string]graphdto.Graph
 }
 
 func displayNodeTitle(node graphdto.GraphNodeView) string {
-	return firstNonEmptyText(strings.TrimSpace(node.Name), strings.TrimSpace(node.CanonicalName), strings.TrimSpace(node.RouteKnowledgeID), strings.TrimSpace(node.ID))
+	name := strings.TrimSpace(node.Name)
+	canonicalName := strings.TrimSpace(node.CanonicalName)
+	routeID := strings.TrimSpace(node.RouteKnowledgeID)
+
+	if canonicalName != "" && (looksLikeMachineKnowledgeID(name) || sameKnowledgeID(name, routeID)) {
+		return canonicalName
+	}
+
+	return firstNonEmptyText(name, canonicalName, routeID, strings.TrimSpace(node.ID))
+}
+
+func looksLikeMachineKnowledgeID(value string) bool {
+	normalized := strings.TrimSpace(value)
+	if len(normalized) < 16 {
+		return false
+	}
+
+	for _, char := range normalized {
+		if (char >= '0' && char <= '9') || (char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F') {
+			continue
+		}
+		return false
+	}
+
+	return true
 }
 
 func graphNodeCourseTitle(node graphdto.GraphNodeView, fallback string) string {

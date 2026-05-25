@@ -1,5 +1,5 @@
-.env
-.env.local
+frontend/.env
+docker/neo4j/.env
 
 node_modules/
 dist/
@@ -24,10 +24,18 @@ db/mysql/
 Thumbs.db
 
 course-recommend-agents.wiki/
-artifacts/handoff/
-backend/*.log
-backend/*.err.log
+artifacts/
+%TEMP%/
+.cursor/
+.spec-workflow/
+.cursorrules
+.package_src_*/
+.package_teacher_src_*/
+AGENTS.md
+*.log
+*.err.log
 backend/*.exe
-backend/web/dist/
 .tmp-edge-profile-cdp/
 test-results/
+
+!backend/web/dist/

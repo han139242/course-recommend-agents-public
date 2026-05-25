@@ -5,8 +5,6 @@ import { fetchCurrentUser, loginRequest, registerRequest } from '../api/auth'
 import { fetchCompetencyProfile, fetchDashboardSummary, fetchLearningProgress } from '../api/learning'
 import { createLocalId, readStorage, removeStorage, STORAGE_KEYS, writeStorage } from '../utils/storage'
 
-const LEGACY_AUTH_STORAGE_KEY = 'course-recommend-auth'
-
 function normalizeProgressList(payload) {
   const list = payload?.list || payload?.items || payload?.progress || payload || []
   return Array.isArray(list) ? list : []
@@ -58,9 +56,6 @@ export const useUserStore = defineStore('user', () => {
   function persistSession() {
     if (!token.value || !user.value) {
       removeStorage(STORAGE_KEYS.auth)
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)
-      }
       return
     }
 
@@ -70,15 +65,10 @@ export const useUserStore = defineStore('user', () => {
     }
 
     writeStorage(STORAGE_KEYS.auth, payload)
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(LEGACY_AUTH_STORAGE_KEY, JSON.stringify(payload))
-    }
   }
 
   function hydrateSession() {
-    const session =
-      readStorage(STORAGE_KEYS.auth, null) ||
-      readStorage(LEGACY_AUTH_STORAGE_KEY, null)
+    const session = readStorage(STORAGE_KEYS.auth, null)
 
     token.value = session?.token || session?.accessToken || ''
     user.value = session?.user || null

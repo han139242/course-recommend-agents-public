@@ -61,10 +61,17 @@ const crossCourseRecommends = computed(() => {
   return (props.recommendedPath || [])
     .map((item) => {
       const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
+      const displayTitle =
+        String(node?.canonicalName || node?.name || item.title || item.knowledgeId || '').trim()
       return {
         ...item,
+        displayTitle,
         sourceCourse: normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE),
         targetCourse: normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
+        courseLabel:
+          item.reasonCode === 'cross_course_transfer'
+            ? `${normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE)} → ${normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE)}`
+            : normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
       }
     })
     .filter((item) => {
@@ -160,7 +167,7 @@ function saveNote() {
           <div class="recommend-card" v-for="item in crossCourseRecommends" :key="item.knowledgeId || item.title">
             <div class="recommend-card__head">
               <span class="recommend-card__badge">{{ item.reasonLabel || '推荐' }}</span>
-              <span class="recommend-card__course">{{ item.stage || '跨课程' }}</span>
+              <span class="recommend-card__course">{{ item.courseLabel || item.targetCourse || '当前课程' }}</span>
             </div>
             <div
               v-if="item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse"
@@ -168,7 +175,7 @@ function saveNote() {
               <BridgeView :item="item" />
             </div>
             <button type="button" class="recommend-card__title" @click="emit('select-related', item.knowledgeId || item.title)">
-              {{ item.title }}
+              {{ item.displayTitle || item.title }}
             </button>
             <p v-if="item.reasonCode !== 'cross_course_transfer'" class="recommend-card__detail">
               {{ item.detail || '基于你当前的学习路径，推荐探索此知识点' }}
@@ -200,7 +207,7 @@ function saveNote() {
           <RouterLink class="primary-btn" :to="`/knowledge/${encodeURIComponent(detail.routeKnowledgeId)}`">
             开始学习
           </RouterLink>
-          <button type="button" class="secondary-btn" @click="emit('open-ai')">AI 讲解</button>
+          <button type="button" class="secondary-btn" @click="emit('open-ai')">学习讲解</button>
         </div>
       </div>
 
@@ -209,7 +216,7 @@ function saveNote() {
           <span>?</span>
         </div>
         <strong>在图谱中点选知识点</strong>
-        <p>智能体将为你分析该知识点的跨课程关联，推荐突破课程边界的学习路径。</p>
+        <p>系统将为你分析该知识点的跨课程关联，并给出后续学习路径建议。</p>
         <div class="empty-card__tips">
           <span>左键点击 → 聚焦邻域</span>
           <span>右键点击 → 学习操作</span>

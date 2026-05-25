@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/coursemeta"
 	graphdto "github.com/han139242/course-recommend-agents/backend/internal/module/graph/dto"
 	graphentity "github.com/han139242/course-recommend-agents/backend/internal/module/graph/entity"
 	graphrepo "github.com/han139242/course-recommend-agents/backend/internal/module/graph/repository"
@@ -177,7 +178,18 @@ func (s *Service) GetKnowledgeDetail(ctx context.Context, knowledgeID string) (*
 		CanonicalName:    detail.CanonicalName,
 		EntityType:       detail.EntityType,
 		Description:      detail.Description,
-		ChapterTitle:     detail.ChapterTitle,
+		ChapterTitle: coursemeta.ResolveNodeCourseTitleFromHintsWithFallback(
+			detail.CuratedSource,
+			detail.SourcePath,
+			"",
+			"",
+			"",
+			detail.ChapterTitle,
+			detail.Name,
+			detail.CanonicalName,
+			detail.Description,
+			detail.ChapterTitle,
+		),
 		SourcePath:       detail.SourcePath,
 		CuratedSource:    detail.CuratedSource,
 		Summary:          detail.Summary,
@@ -204,7 +216,18 @@ func buildCatalogResponse(nodes []graphentity.Node, edges []graphentity.Edge) *g
 			RouteKnowledgeID: node.RouteKnowledgeID,
 			Name:             node.Name,
 			CanonicalName:    node.CanonicalName,
-			ChapterTitle:     node.ChapterTitle,
+			ChapterTitle: coursemeta.ResolveNodeCourseTitleFromHintsWithFallback(
+				node.CuratedSource,
+				node.SourcePath,
+				"",
+				"",
+				"",
+				node.ChapterTitle,
+				node.Name,
+				node.CanonicalName,
+				node.Description,
+				node.ChapterTitle,
+			),
 			EntityType:       node.EntityType,
 			SourcePath:       node.SourcePath,
 			CuratedSource:    node.CuratedSource,
@@ -238,7 +261,18 @@ func buildGraphResponse(nodes []graphentity.Node, edges []graphentity.Edge) *gra
 			CanonicalName:    node.CanonicalName,
 			EntityType:       node.EntityType,
 			Description:      node.Description,
-			ChapterTitle:     node.ChapterTitle,
+			ChapterTitle: coursemeta.ResolveNodeCourseTitleFromHintsWithFallback(
+				node.CuratedSource,
+				node.SourcePath,
+				"",
+				"",
+				"",
+				node.ChapterTitle,
+				node.Name,
+				node.CanonicalName,
+				node.Description,
+				node.ChapterTitle,
+			),
 			SourcePath:       node.SourcePath,
 			CuratedSource:    node.CuratedSource,
 		})

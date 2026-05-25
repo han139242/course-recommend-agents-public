@@ -201,7 +201,7 @@ defineExpose({
         <strong>{{ renderError ? '渲染失败' : '加载失败' }}</strong>
         <p>{{ renderError || error }}</p>
         <p style="opacity:0.6;margin-top:4px">
-          {{ renderError ? '如果图谱区域一直空白，请检查浏览器 Canvas 2D 是否可用。' : '请确认后端服务和 Neo4j 已启动。' }}
+          {{ renderError ? '如果图谱区域一直空白，请检查浏览器 Canvas 2D 是否可用。' : '请确认后端服务和图谱数据服务已启动。' }}
         </p>
       </div>
     </div>

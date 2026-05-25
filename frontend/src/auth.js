@@ -1,7 +1,13 @@
 import { computed, reactive } from 'vue'
 import { resolveFriendlyKnowledgeRoute } from './utils/knowledgeLookup'
+import {
+  buildKnowledgeTitleLookup,
+  normalizeRecommendationPresentation,
+  replaceKnowledgeIdsInText,
+  resolveRecommendationTitle,
+} from './utils/recommendationPresentation'
 
-const AUTH_STORAGE_KEY = 'course-recommend-auth'
+const AUTH_STORAGE_KEY = 'kg-auth-session'
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 /** 开发环境优先走同源 /api，由 Vite 代理到后端，避免 CORS 与直连失败 */
 const API_BASE_URL_CANDIDATES = ENV_API_BASE_URL
@@ -17,6 +23,7 @@ export const authState = reactive({
 let bootstrapPromise = null
 let resolvedApiBaseUrl = API_BASE_URL_CANDIDATES[0]
 let apiBaseUrlConfirmed = Boolean(ENV_API_BASE_URL)
+let recommendationLookupPromise = null
 
 function persistAuth() {
   if (typeof window === 'undefined') {
@@ -57,7 +64,7 @@ function normalizeRecommendationItems(items) {
   return items
     .filter(isUsableRecommendationItem)
     .map((item) => ({
-      ...item,
+      ...normalizeRecommendationPresentation(item),
       mastery: Number(item.mastery ?? item.masteryScore ?? 0),
       masteryScore: Number(item.masteryScore ?? item.mastery ?? 0),
       correctRate: Number(item.correctRate ?? 0),
@@ -65,6 +72,65 @@ function normalizeRecommendationItems(items) {
       knowledgeId: String(item.knowledgeId || '').trim(),
       route: resolveFriendlyKnowledgeRoute(item.route, item.title),
     }))
+}
+
+function normalizeRecommendationItemsWithLookup(items, lookup = {}) {
+  if (!Array.isArray(items)) return []
+  return items
+    .filter(isUsableRecommendationItem)
+    .map((item) => {
+      const normalized = normalizeRecommendationPresentation(item, lookup)
+      return {
+        ...normalized,
+        mastery: Number(item.mastery ?? item.masteryScore ?? 0),
+        masteryScore: Number(item.masteryScore ?? item.mastery ?? 0),
+        correctRate: Number(item.correctRate ?? 0),
+        answeredCount: Number(item.answeredCount ?? 0),
+        knowledgeId: String(item.knowledgeId || '').trim(),
+        route: resolveFriendlyKnowledgeRoute(item.route, normalized.title),
+      }
+    })
+}
+
+function normalizeKnowledgeCards(cards, lookup = {}) {
+  if (!Array.isArray(cards)) return []
+  return cards.map((card) => {
+    const title = resolveRecommendationTitle(
+      {
+        title: card?.title,
+        knowledgeId: card?.id,
+        route: card?.route,
+      },
+      lookup,
+    )
+
+    return {
+      ...card,
+      title,
+      tag: replaceKnowledgeIdsInText(card?.tag || '', lookup),
+    }
+  })
+}
+
+function normalizeLearningInsights(items, lookup = {}) {
+  if (!Array.isArray(items)) return []
+  return items.map((item) => ({
+    ...item,
+    title: replaceKnowledgeIdsInText(item?.title || '', lookup),
+    detail: replaceKnowledgeIdsInText(item?.detail || '', lookup),
+  }))
+}
+
+async function loadRecommendationLookup() {
+  if (!recommendationLookupPromise) {
+    recommendationLookupPromise = apiRequest('/graph/catalog', {
+      method: 'GET',
+    })
+      .then((data) => buildKnowledgeTitleLookup(data?.nodes || []))
+      .catch(() => ({}))
+  }
+
+  return recommendationLookupPromise
 }
 
 export function clearSession() {
@@ -228,13 +294,17 @@ export async function fetchDashboardSummary() {
   const data = await apiRequest('/dashboard/summary', {
     method: 'GET',
   })
-  const recommendedPath = normalizeRecommendationItems(data.recommendedPath || data.path || [])
+  const recommendationLookup = await loadRecommendationLookup()
+  const recommendedPath = normalizeRecommendationItemsWithLookup(
+    data.recommendedPath || data.path || [],
+    recommendationLookup,
+  )
   return {
     ...data,
     quickStats: data.quickStats || data.stats || [],
     stats: data.stats || data.quickStats || [],
     recommendedPath,
-    knowledgeCards: data.knowledgeCards || [],
+    knowledgeCards: normalizeKnowledgeCards(data.knowledgeCards || [], recommendationLookup),
   }
 }
 
@@ -281,9 +351,11 @@ export async function fetchRecommendedPath(params = {}) {
   const data = await apiRequest(`/recommend/path${suffix}`, {
     method: 'GET',
   })
+  const recommendationLookup = await loadRecommendationLookup()
   return {
     ...data,
-    path: normalizeRecommendationItems(data.path || data.recommendedPath || []),
+    path: normalizeRecommendationItemsWithLookup(data.path || data.recommendedPath || [], recommendationLookup),
+    insights: normalizeLearningInsights(data.insights || [], recommendationLookup),
   }
 }
 

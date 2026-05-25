@@ -1,7 +1,6 @@
 ﻿import { readStorage, STORAGE_KEYS } from '../utils/storage'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
-const LEGACY_AUTH_STORAGE_KEY = 'course-recommend-auth'
 
 export class ApiError extends Error {
   constructor(message, status = 500, payload = null) {
@@ -16,11 +15,6 @@ function readAuthSession() {
   const primary = readStorage(STORAGE_KEYS.auth, null)
   if (primary && typeof primary === 'object') {
     return primary
-  }
-
-  const legacy = readStorage(LEGACY_AUTH_STORAGE_KEY, null)
-  if (legacy && typeof legacy === 'object') {
-    return legacy
   }
 
   return null
@@ -134,7 +128,7 @@ export async function streamRequest(path, options = {}) {
 
   if (!response.ok) {
     const payload = await parsePayload(response).catch(() => null)
-    throw new ApiError(payload?.message || payload?.error || 'AI 助手暂时不可用。', response.status, payload)
+    throw new ApiError(payload?.message || payload?.error || '学习助手暂时不可用。', response.status, payload)
   }
 
   if (!response.body) {

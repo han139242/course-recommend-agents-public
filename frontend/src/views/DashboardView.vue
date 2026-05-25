@@ -7,6 +7,234 @@ import { getCoursePalette } from '../utils/colorMap'
 
 const userStore = useUserStore()
 const radarCanvas = ref(null)
+const ready = ref(false)
+
+const DEMO_PROGRESS_ITEMS = [
+  {
+    knowledgeId: 'gradient_descent',
+    routeKnowledgeId: 'gradient_descent',
+    canonicalName: '梯度下降',
+    name: '梯度下降',
+    chapterTitle: '机器学习基础',
+    masteryScore: 88,
+    answeredCount: 12,
+    correctRate: 0.92,
+    status: 'mastered',
+    masteryText: '已掌握',
+  },
+  {
+    knowledgeId: 'loss_function',
+    routeKnowledgeId: 'loss_function',
+    canonicalName: '损失函数',
+    name: '损失函数',
+    chapterTitle: '机器学习基础',
+    masteryScore: 82,
+    answeredCount: 9,
+    correctRate: 0.89,
+    status: 'mastered',
+    masteryText: '已掌握',
+  },
+  {
+    knowledgeId: 'matrix_vector',
+    routeKnowledgeId: 'matrix_vector',
+    canonicalName: '矩阵与向量运算',
+    name: '矩阵与向量运算',
+    chapterTitle: '数学基础',
+    masteryScore: 76,
+    answeredCount: 8,
+    correctRate: 0.81,
+    status: 'learning',
+    masteryText: '学习中',
+  },
+  {
+    knowledgeId: 'model_evaluation',
+    routeKnowledgeId: 'model_evaluation',
+    canonicalName: '模型评估',
+    name: '模型评估',
+    chapterTitle: '机器学习基础',
+    masteryScore: 64,
+    answeredCount: 7,
+    correctRate: 0.74,
+    status: 'learning',
+    masteryText: '学习中',
+  },
+  {
+    knowledgeId: 'knowledge_graph',
+    routeKnowledgeId: 'knowledge_graph',
+    canonicalName: '知识图谱',
+    name: '知识图谱',
+    chapterTitle: '知识工程',
+    masteryScore: 58,
+    answeredCount: 6,
+    correctRate: 0.67,
+    status: 'learning',
+    masteryText: '学习中',
+  },
+  {
+    knowledgeId: 'backpropagation',
+    routeKnowledgeId: 'backpropagation',
+    canonicalName: '反向传播',
+    name: '反向传播',
+    chapterTitle: '深度学习',
+    masteryScore: 47,
+    answeredCount: 5,
+    correctRate: 0.6,
+    status: 'learning',
+    masteryText: '学习中',
+  },
+  {
+    knowledgeId: 'attention_mechanism',
+    routeKnowledgeId: 'attention_mechanism',
+    canonicalName: '注意力机制',
+    name: '注意力机制',
+    chapterTitle: '大模型基础',
+    masteryScore: 43,
+    answeredCount: 4,
+    correctRate: 0.58,
+    status: 'learning',
+    masteryText: '学习中',
+  },
+  {
+    knowledgeId: 'overfitting',
+    routeKnowledgeId: 'overfitting',
+    canonicalName: '过拟合与正则化',
+    name: '过拟合与正则化',
+    chapterTitle: '模型泛化',
+    masteryScore: 28,
+    answeredCount: 5,
+    correctRate: 0.42,
+    status: 'weak',
+    masteryText: '待巩固',
+  },
+]
+
+const DEMO_DASHBOARD_SUMMARY = {
+  quickStats: [
+    { label: '学习中知识点', value: '5' },
+    { label: '已掌握知识点', value: '2' },
+    { label: '薄弱知识点', value: '1' },
+    { label: '总体掌握进度', value: '63%' },
+  ],
+  knowledgeCards: [
+    {
+      id: 'overfitting',
+      type: '优先补强',
+      progress: 28,
+      title: '过拟合与正则化',
+      domain: '模型泛化',
+      tag: '先区分训练误差和测试误差，再补齐正则化方法。',
+      route: '/knowledge/overfitting',
+    },
+    {
+      id: 'attention_mechanism',
+      type: '继续推进',
+      progress: 43,
+      title: '注意力机制',
+      domain: '大模型基础',
+      tag: '建议结合 Transformer 主线理解权重分配过程。',
+      route: '/knowledge/attention_mechanism',
+    },
+    {
+      id: 'backpropagation',
+      type: '强化理解',
+      progress: 47,
+      title: '反向传播',
+      domain: '深度学习',
+      tag: '把链式法则、损失函数和参数更新连起来复盘。',
+      route: '/knowledge/backpropagation',
+    },
+    {
+      id: 'knowledge_graph',
+      type: '应用迁移',
+      progress: 58,
+      title: '知识图谱',
+      domain: '知识工程',
+      tag: '重点理解节点、关系和路径推荐之间的对应关系。',
+      route: '/knowledge/knowledge_graph',
+    },
+  ],
+  recommendedPath: [
+    {
+      knowledgeId: 'overfitting',
+      title: '过拟合与正则化',
+      detail: '先补齐泛化能力判断，再学习正则化和数据划分策略。',
+      reasonLabel: '薄弱优先',
+      stage: '第 1 步',
+      score: 0.91,
+      route: '/knowledge/overfitting',
+    },
+    {
+      knowledgeId: 'backpropagation',
+      title: '反向传播',
+      detail: '沿着损失函数、梯度下降和链式法则把训练闭环串起来。',
+      reasonLabel: '前置衔接',
+      stage: '第 2 步',
+      score: 0.84,
+      route: '/knowledge/backpropagation',
+    },
+    {
+      knowledgeId: 'attention_mechanism',
+      title: '注意力机制',
+      detail: '在掌握基础神经网络后，继续进入 Transformer 关键结构。',
+      reasonLabel: '路径推进',
+      stage: '第 3 步',
+      score: 0.78,
+      route: '/knowledge/attention_mechanism',
+    },
+  ],
+  weeklyTrend: [
+    { label: '周一', value: 36 },
+    { label: '周二', value: 48 },
+    { label: '周三', value: 42 },
+    { label: '周四', value: 63 },
+    { label: '周五', value: 57 },
+    { label: '周六', value: 72 },
+    { label: '周日', value: 66 },
+  ],
+}
+
+const DEMO_PROFILE = {
+  summary: '当前已形成机器学习主线的基础掌握，建议继续补强过拟合、反向传播和注意力机制，把知识点从单点理解推进到路径化应用。',
+  goals: [
+    '优先补齐“过拟合与正则化”，降低后续模型评估中的理解断点',
+    '复盘“损失函数—梯度下降—反向传播”的训练闭环',
+    '完成“注意力机制”相关练习，为 Transformer 学习做准备',
+  ],
+  recentRecords: [
+    '完成“梯度下降”练习 12 次，掌握度提升至 88%。',
+    '“损失函数”答题正确率稳定在 89%，已进入已掌握状态。',
+    '“过拟合与正则化”正确率偏低，已被系统列为优先补强项。',
+  ],
+}
+
+const DEMO_RADAR_AXES = [
+  { name: '数学基础', value: 72 },
+  { name: '编程数据', value: 64 },
+  { name: '机器学习', value: 81 },
+  { name: '深度学习', value: 58 },
+  { name: '语言知识', value: 51 },
+  { name: '工程治理', value: 66 },
+]
+
+const DEMO_HEATMAP_DOMAINS = ['数学基础', '机器学习', '深度学习', '知识工程']
+const DEMO_HEATMAP_ROWS = [
+  { label: '梯度下降', values: [76, 88, 42, 0] },
+  { label: '损失函数', values: [68, 82, 38, 0] },
+  { label: '反向传播', values: [54, 47, 62, 0] },
+  { label: '注意力机制', values: [36, 43, 58, 28] },
+  { label: '知识图谱', values: [0, 34, 22, 58] },
+  { label: '过拟合与正则化', values: [42, 28, 24, 0] },
+]
+
+const DEMO_GROWTH_INSIGHTS = [
+  { label: '机器学习', value: 81, note: '基础训练流程掌握较稳，可以继续向模型泛化和评估迁移。' },
+  { label: '数学基础', value: 72, note: '矩阵、梯度和损失函数理解较好，适合作为后续推导支撑。' },
+  { label: '深度学习', value: 58, note: '反向传播和注意力机制仍需连续练习，建议放在下一轮重点。' },
+]
+
+function hasMeaningfulProgress(item = {}) {
+  return Number(item.answeredCount || 0) > 0 || Number(item.masteryScore ?? item.mastery ?? 0) > 0
+}
 
 onMounted(async () => {
   await Promise.all([
@@ -16,27 +244,200 @@ onMounted(async () => {
   ])
 
   window.addEventListener('resize', handleRadarResize)
+  requestAnimationFrame(() => { ready.value = true })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleRadarResize)
 })
 
-const quickStats = computed(() => userStore.quickStats || [])
-const dashboardSummary = computed(() => userStore.dashboardSummary || null)
+const shouldUseDemoData = computed(() => {
+  const list = Array.isArray(userStore.progressList) ? userStore.progressList : []
+  return !list.some((item) => hasMeaningfulProgress(item))
+})
+
+const dashboardSummary = computed(() => (shouldUseDemoData.value ? DEMO_DASHBOARD_SUMMARY : userStore.dashboardSummary || null))
+const quickStats = computed(() => dashboardSummary.value?.quickStats || dashboardSummary.value?.stats || [])
 const knowledgeCards = computed(() => dashboardSummary.value?.knowledgeCards || [])
 const recommendedPath = computed(() => dashboardSummary.value?.recommendedPath || [])
 
-const profile = computed(() => userStore.competencyProfile?.profile || null)
-const radarAxes = computed(() => userStore.competencyProfile?.radarAxes || [])
-const growthInsights = computed(() => userStore.competencyProfile?.growthInsights || [])
+const profile = computed(() => {
+  const current = userStore.competencyProfile?.profile || null
+  if (!shouldUseDemoData.value) return current
+  return {
+    ...(current || {}),
+    ...DEMO_PROFILE,
+    name: current?.name || userStore.user?.name || userStore.user?.username || '测试学生',
+  }
+})
+const rawRadarAxes = computed(() => {
+  const current = userStore.competencyProfile?.radarAxes || []
+  if (current.length || !shouldUseDemoData.value) return current
+  return DEMO_RADAR_AXES
+})
+const growthInsights = computed(() => {
+  const current = userStore.competencyProfile?.growthInsights || []
+  if (current.length || !shouldUseDemoData.value) return current
+  return DEMO_GROWTH_INSIGHTS
+})
 const growthCards = computed(() => userStore.competencyProfile?.growthSummaryCards || [])
-const heatmapDomains = computed(() => userStore.competencyProfile?.heatmapDomains || [])
-const heatmapRows = computed(() => userStore.competencyProfile?.heatmapRows || [])
+const heatmapDomains = computed(() => {
+  const current = userStore.competencyProfile?.heatmapDomains || []
+  if (current.length || !shouldUseDemoData.value) return current
+  return DEMO_HEATMAP_DOMAINS
+})
+const heatmapRows = computed(() => {
+  const current = userStore.competencyProfile?.heatmapRows || []
+  if (current.length || !shouldUseDemoData.value) return current
+  return DEMO_HEATMAP_ROWS
+})
+
+const RADAR_DIMENSION_GROUPS = [
+  {
+    key: 'math',
+    name: '数学基础',
+    keywords: ['数学', '代数', '矩阵', '概率', '统计', '微积分', '数值', '最优化', '凸优化', '信息论'],
+  },
+  {
+    key: 'data',
+    name: '编程数据',
+    keywords: ['python', '编程', '代码', '数据结构', '科学计算', 'numpy', 'pandas', 'sql', 'linux', 'git', '脚本'],
+  },
+  {
+    key: 'ml',
+    name: '机器学习',
+    keywords: ['机器学习', '回归', '分类', '聚类', 'svm', '决策树', '集成', '降维', '贝叶斯', '强化学习', '推荐'],
+  },
+  {
+    key: 'dl',
+    name: '深度学习',
+    keywords: ['深度学习', '神经网络', '卷积', '训练', '反向传播', 'transformer', '注意力', '预训练', '微调', '参数高效', '大模型'],
+  },
+  {
+    key: 'vision',
+    name: '视觉感知',
+    keywords: ['视觉', '图像', '检测', '分割', '识别', 'opencv', '多模态', '感知'],
+  },
+  {
+    key: 'language',
+    name: '语言知识',
+    keywords: ['自然语言', 'nlp', '文本', '语言模型', '知识图谱', '知识表示', '信息抽取', '语义', '问答', '检索', '图神经'],
+  },
+  {
+    key: 'engineering',
+    name: '工程治理',
+    keywords: ['工程', '部署', '推理', 'mlops', '服务', '治理', '合规', '伦理', '智能体', '应用', '导论'],
+  },
+]
+
+function normalizeRadarText(value = '') {
+  return String(value || '').trim().toLowerCase()
+}
+
+function countKeywordHits(normalized = '', keywords = []) {
+  if (!normalized) return 0
+  return (Array.isArray(keywords) ? keywords : []).reduce((total, keyword) => {
+    const current = normalizeRadarText(keyword)
+    if (!current) return total
+    return normalized.includes(current) ? total + 1 : total
+  }, 0)
+}
+
+function countSpecialRadarHits(normalized = '', groupKey = '') {
+  const specialKeywords = {
+    math: ['梯度下降', 'adagrad', 'rmsprop', 'adam', '优化器', '最优化'],
+    data: ['pytorch', 'tensorflow', '训练', '数据集', '实验'],
+    ml: ['梯度下降', 'adagrad', 'rmsprop', 'adam', '目标检测', '分类', '回归'],
+    dl: ['adagrad', 'rmsprop', 'adam', '优化器', 'senet', 'vision transformer', 'transformer'],
+    vision: ['计算机视觉', '目标检测', '视觉问答', '图像分类', 'senet', 'vision transformer', 'vit'],
+    language: ['视觉问答', '问答', '对话', '语言模型'],
+    engineering: ['导论', '迁移', '路径', '推荐动作', '学习规划'],
+  }
+  return countKeywordHits(normalized, specialKeywords[groupKey] || [])
+}
+
+function clampRadarScore(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, Math.round(Number(value || 0))))
+}
+
+function resolveRadarGroups(name = '') {
+  const normalized = normalizeRadarText(name)
+  if (!normalized) return []
+
+  const matched = new Map()
+  RADAR_DIMENSION_GROUPS.forEach((group) => {
+    if (countKeywordHits(normalized, group.keywords) > 0) {
+      matched.set(group.key, group)
+    }
+  })
+
+  return [...matched.values()]
+}
+
+function resolveRadarGroup(name = '') {
+  return resolveRadarGroups(name)[0] || null
+}
+
+function truncateRadarLabel(name = '') {
+  const text = String(name || '').trim()
+  if (text.length <= 6) return text
+  return `${text.slice(0, 6)}…`
+}
+
+function buildDisplayRadarAxes(items = []) {
+  if (!Array.isArray(items) || !items.length) return []
+
+  const grouped = new Map()
+  const unmatched = []
+
+  items.forEach((item) => {
+    const name = String(item?.name || '').trim()
+    const value = Number(item?.value || 0)
+    if (!name || !Number.isFinite(value)) return
+
+    const group = resolveRadarGroup(name)
+    if (!group) {
+      unmatched.push({ name, value })
+      return
+    }
+
+    const current = grouped.get(group.key) || { total: 0, count: 0 }
+    current.total += value
+    current.count += 1
+    grouped.set(group.key, current)
+  })
+
+  const result = RADAR_DIMENSION_GROUPS
+    .map((group) => {
+      const current = grouped.get(group.key)
+      if (!current?.count) return null
+      return {
+        name: group.name,
+        value: Math.round(current.total / current.count),
+      }
+    })
+    .filter(Boolean)
+
+  if (unmatched.length) {
+    const total = unmatched.reduce((sum, item) => sum + item.value, 0)
+    result.push({
+      name: '综合拓展',
+      value: Math.round(total / unmatched.length),
+    })
+  }
+
+  if (result.length >= 3) return result.slice(0, 8)
+
+  return items.slice(0, 8).map((item) => ({
+    name: truncateRadarLabel(item.name),
+    value: Math.round(Number(item.value || 0)),
+  }))
+}
 
 const progressItems = computed(() => {
   const seen = new Set()
-  return (userStore.progressList || []).filter((item) => {
+  const source = shouldUseDemoData.value ? DEMO_PROGRESS_ITEMS : userStore.progressList || []
+  return source.filter((item) => {
     const key = String(item.knowledgeId || item.routeKnowledgeId || item.canonicalName || item.name || '').trim()
     if (!key || seen.has(key)) return false
     seen.add(key)
@@ -62,6 +463,162 @@ const progressStats = computed(() => {
   return { total, mastered, learning, weak }
 })
 
+const hasRadarBehaviorEvidence = computed(() =>
+  progressItems.value.some((item) => Number(item.answeredCount || 0) > 0 || Number(item.masteryScore || item.mastery || 0) > 0),
+)
+
+const radarSignals = computed(() => {
+  const signals = []
+  const seen = new Set()
+
+  const pushSignal = (textParts = [], rawValue = 0) => {
+    const text = textParts
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .join(' ')
+      .trim()
+    if (!text || seen.has(text)) return
+    seen.add(text)
+
+    signals.push({
+      text,
+      value: clampRadarScore(rawValue, 36, 92),
+    })
+  }
+
+  progressItems.value.forEach((item, index) => {
+    const mastery = Number(item.masteryScore || item.mastery || 0)
+    const answered = Number(item.answeredCount || 0)
+    pushSignal(
+      [item.canonicalName, item.name, item.chapterTitle, item.knowledgeId, item.routeKnowledgeId],
+      44 + mastery * 0.38 + answered * 4 + Math.max(0, 10 - index * 2),
+    )
+  })
+
+  recommendedPath.value.forEach((item, index) => {
+    const score = item.score != null ? Number(item.score || 0) * 100 : 82 - index * 5
+    pushSignal(
+      [item.title, item.detail, item.reasonLabel, item.stage, item.sourceCourse, item.targetCourse],
+      46 + score * 0.18 + Math.max(0, 8 - index * 2),
+    )
+  })
+
+  knowledgeCards.value.forEach((card, index) => {
+    const progress = Number(card.progress || 0)
+    pushSignal(
+      [card.title, card.domain, card.tag, card.type],
+      44 + (progress > 0 ? progress : 76 - index * 6) * 0.16 + Math.max(0, 6 - index * 2),
+    )
+  })
+
+  return signals
+})
+
+function buildFallbackRadarAxes(signals = []) {
+  if (!Array.isArray(signals) || !signals.length) return []
+  const coldStart = !hasRadarBehaviorEvidence.value && rawRadarAxes.value.length === 0
+
+  const matched = RADAR_DIMENSION_GROUPS
+    .map((group) => {
+      let weighted = 0
+      let hits = 0
+      let support = 0
+
+      signals.forEach((signal) => {
+        const normalized = normalizeRadarText(signal.text)
+        const hitCount = countKeywordHits(normalized, group.keywords) + countSpecialRadarHits(normalized, group.key)
+        if (!hitCount) return
+
+        weighted += Number(signal.value || 0) * (1 + Math.min(0.24, (hitCount - 1) * 0.08))
+        hits += 1
+        support += hitCount
+      })
+
+      if (!hits) return null
+
+      return {
+        key: group.key,
+        name: group.name,
+        value: clampRadarScore(
+          coldStart
+            ? weighted / hits * 0.68 + 6 + Math.min(3, support * 0.8)
+            : weighted / hits * 0.84 + 5 + Math.min(6, support * 1.15),
+          coldStart ? 44 : 46,
+          coldStart ? 72 : 84,
+        ),
+        support,
+      }
+    })
+    .filter(Boolean)
+    .sort((left, right) => {
+      if (right.support !== left.support) return right.support - left.support
+      return Number(right.value || 0) - Number(left.value || 0)
+    })
+
+  if (matched.length > 0 && matched.length < 3) {
+    const combinedText = signals.map((item) => normalizeRadarText(item.text)).join(' ')
+    const average = matched.reduce((sum, item) => sum + Number(item.value || 0), 0) / matched.length
+    const supplement = []
+
+    const pushSupplement = (key, baseValue) => {
+      if (matched.some((item) => item.key === key) || supplement.some((item) => item.key === key)) return
+      const group = RADAR_DIMENSION_GROUPS.find((item) => item.key === key)
+      if (!group) return
+      supplement.push({
+        key,
+        name: group.name,
+        value: clampRadarScore(baseValue, 40, 78),
+        support: 0,
+      })
+    }
+
+    if (/梯度下降|adagrad|rmsprop|adam|优化/i.test(combinedText)) {
+      pushSupplement('ml', average - (coldStart ? 3 : 2))
+      pushSupplement('dl', average - (coldStart ? 9 : 6))
+      pushSupplement('data', average - (coldStart ? 13 : 9))
+    }
+
+    if (/视觉|图像|检测|问答|vision|senet|vit/i.test(combinedText)) {
+      pushSupplement('vision', average - (coldStart ? 4 : 2))
+      pushSupplement('language', average - (coldStart ? 10 : 6))
+      pushSupplement('engineering', average - (coldStart ? 14 : 9))
+    }
+
+    if (/迁移|推荐|路径|导论/i.test(combinedText)) {
+      pushSupplement('engineering', average - (coldStart ? 11 : 7))
+    }
+
+    pushSupplement('data', average - (coldStart ? 14 : 10))
+    pushSupplement('engineering', average - (coldStart ? 16 : 12))
+
+    matched.push(...supplement)
+  }
+
+  const limited = coldStart ? matched.slice(0, 3) : matched.slice(0, 5)
+  return limited.map(({ name, value }, index) => ({
+    name,
+    value: coldStart ? clampRadarScore(value - index * 3, 44, 70) : value,
+  }))
+}
+
+const synthesizedRadarAxes = computed(() => buildFallbackRadarAxes(radarSignals.value))
+
+const radarAxes = computed(() => {
+  const live = buildDisplayRadarAxes(rawRadarAxes.value)
+  if (live.length >= 3) return live
+
+  const fallback = synthesizedRadarAxes.value
+  if (!live.length) return fallback
+
+  const merged = [...live]
+  fallback.forEach((item) => {
+    if (merged.some((existing) => existing.name === item.name)) return
+    if (merged.length >= 8) return
+    merged.push(item)
+  })
+  return merged
+})
+
 const totalProgress = computed(() => {
   const { total, mastered, learning } = progressStats.value
   if (!total) return 0
@@ -69,9 +626,10 @@ const totalProgress = computed(() => {
 })
 
 const averageRadarScore = computed(() => {
-  if (!radarAxes.value.length) return 0
-  const total = radarAxes.value.reduce((sum, item) => sum + Number(item.value || 0), 0)
-  return Math.round(total / radarAxes.value.length)
+  const source = radarAxes.value
+  if (!source.length) return 0
+  const total = source.reduce((sum, item) => sum + Number(item.value || 0), 0)
+  return Math.round(total / source.length)
 })
 
 const learnerName = computed(() => {
@@ -347,12 +905,21 @@ const recentItems = computed(() => {
   ]
 })
 
-const progressRingStyle = computed(() => {
-  const progress = Math.max(0, Math.min(100, totalProgress.value))
-  return {
-    background: `conic-gradient(#8b5cf6 0 ${progress}%, #38bdf8 ${progress}% ${Math.min(100, progress + 12)}%, rgba(255,255,255,0.08) ${Math.min(100, progress + 12)}% 100%)`,
-  }
+const svgRingCircumference = 2 * Math.PI * 80
+const svgRingDasharray = computed(() => {
+  const pct = Math.max(0, Math.min(100, totalProgress.value)) / 100
+  return `${svgRingCircumference * pct} ${svgRingCircumference * (1 - pct)}`
 })
+
+function metricIcon(tone) {
+  const icons = {
+    accent: 'M13 10V3L4 14h7v7l9-11h-7z',
+    success: 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z',
+    warning: 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+    info: 'M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z',
+  }
+  return icons[tone] || icons.info
+}
 
 const heatmapPeak = computed(() => {
   const values = heatmapRows.value.flatMap((row) => (row.values || []).map((value) => Number(value || 0)))
@@ -361,10 +928,13 @@ const heatmapPeak = computed(() => {
 
 function heatValueStyle(value) {
   const ratio = Math.max(0, Math.min(1, Number(value || 0) / heatmapPeak.value))
+  const intensity = 0.08 + ratio * 0.24
+  const border = 0.12 + ratio * 0.16
   return {
-    background: `linear-gradient(180deg, rgba(139, 92, 246, ${0.18 + ratio * 0.52}), rgba(56, 189, 248, ${0.08 + ratio * 0.34}))`,
-    borderColor: `rgba(139, 92, 246, ${0.14 + ratio * 0.28})`,
-    boxShadow: ratio > 0.65 ? '0 10px 22px rgba(56, 189, 248, 0.12)' : 'none',
+    background: `rgba(59, 130, 246, ${intensity})`,
+    borderColor: `rgba(148, 163, 184, ${border})`,
+    boxShadow: 'none',
+    color: ratio > 0.58 ? '#f8fafc' : 'rgba(226, 232, 240, 0.88)',
   }
 }
 
@@ -381,7 +951,7 @@ function drawRadar() {
   if (!canvas || radarAxes.value.length < 3) return
 
   const parentWidth = canvas.parentElement?.clientWidth || 320
-  const size = Math.max(248, Math.min(340, parentWidth))
+  const size = Math.max(280, Math.min(360, parentWidth))
   const dpr = window.devicePixelRatio || 1
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -400,106 +970,119 @@ function drawRadar() {
   const axes = radarAxes.value
   const angleStep = (Math.PI * 2) / axes.length
   const startAngle = -Math.PI / 2
+  const LEVELS = 5
+  const font = '"IBM Plex Sans", "PingFang SC", sans-serif'
+  const labelRadius = maxRadius + 26
 
-  ctx.save()
-  const halo = ctx.createRadialGradient(cx, cy, maxRadius * 0.15, cx, cy, maxRadius * 1.35)
-  halo.addColorStop(0, 'rgba(139, 92, 246, 0.22)')
-  halo.addColorStop(1, 'rgba(15, 23, 42, 0)')
-  ctx.fillStyle = halo
-  ctx.beginPath()
-  ctx.arc(cx, cy, maxRadius * 1.35, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.restore()
-
-  for (let level = 1; level <= 4; level += 1) {
-    const radius = (maxRadius / 4) * level
+  const tracePolygon = (radiusOrGetter) => {
     ctx.beginPath()
-    axes.forEach((_, index) => {
+    axes.forEach((axis, index) => {
       const angle = startAngle + angleStep * index
+      const radius = typeof radiusOrGetter === 'function' ? radiusOrGetter(axis, index) : radiusOrGetter
       const x = cx + radius * Math.cos(angle)
       const y = cy + radius * Math.sin(angle)
       if (index === 0) ctx.moveTo(x, y)
       else ctx.lineTo(x, y)
     })
     ctx.closePath()
-    ctx.strokeStyle = `rgba(148, 163, 184, ${0.08 + level * 0.03})`
+  }
+
+  for (let level = 1; level <= LEVELS; level += 1) {
+    const radius = (maxRadius / LEVELS) * level
+    tracePolygon(radius)
+    if (level % 2 === 0) {
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.025)'
+      ctx.fill()
+    }
+    ctx.strokeStyle = `rgba(148, 163, 184, ${0.12 + level * 0.025})`
     ctx.lineWidth = 1
     ctx.stroke()
   }
 
-  axes.forEach((axis, index) => {
+  axes.forEach((_, index) => {
     const angle = startAngle + angleStep * index
     const x = cx + maxRadius * Math.cos(angle)
     const y = cy + maxRadius * Math.sin(angle)
-
     ctx.beginPath()
     ctx.moveTo(cx, cy)
     ctx.lineTo(x, y)
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)'
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)'
     ctx.lineWidth = 1
     ctx.stroke()
+  })
 
-    const labelRadius = maxRadius + 24
+  tracePolygon((axis) => {
+    const ratio = Math.max(0, Math.min(1, Number(axis.value || 0) / 100))
+    return maxRadius * ratio
+  })
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.14)'
+  ctx.fill()
+  ctx.strokeStyle = 'rgba(37, 99, 235, 0.8)'
+  ctx.lineWidth = 2.25
+  ctx.stroke()
+
+  axes.forEach((axis, index) => {
+    const angle = startAngle + angleStep * index
+    const ratio = Math.max(0, Math.min(1, Number(axis.value || 0) / 100))
+    const x = cx + maxRadius * ratio * Math.cos(angle)
+    const y = cy + maxRadius * ratio * Math.sin(angle)
+
+    ctx.beginPath()
+    ctx.arc(x, y, 4.5, 0, Math.PI * 2)
+    ctx.fillStyle = '#f8fafc'
+    ctx.fill()
+    ctx.strokeStyle = 'rgba(37, 99, 235, 0.78)'
+    ctx.lineWidth = 1.5
+    ctx.stroke()
+  })
+
+  ctx.save()
+  ctx.font = `600 11px ${font}`
+  ctx.fillStyle = 'rgba(203, 213, 225, 0.9)'
+  ctx.textBaseline = 'middle'
+  axes.forEach((axis, index) => {
+    const angle = startAngle + angleStep * index
     const lx = cx + labelRadius * Math.cos(angle)
     const ly = cy + labelRadius * Math.sin(angle)
-    ctx.fillStyle = 'rgba(226, 232, 240, 0.88)'
-    ctx.font = '600 12px "IBM Plex Sans", "PingFang SC", sans-serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(axis.name, lx, ly)
+    const name = String(axis.name || '')
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    let offsetX = 0
+    let offsetY = 0
+
+    if (cos > 0.28) {
+      ctx.textAlign = 'left'
+      offsetX = 7
+    } else if (cos < -0.28) {
+      ctx.textAlign = 'right'
+      offsetX = -7
+    } else {
+      ctx.textAlign = 'center'
+    }
+
+    if (sin > 0.55) offsetY = 8
+    if (sin < -0.55) offsetY = -8
+
+    ctx.fillText(name, lx + offsetX, ly + offsetY)
   })
+  ctx.restore()
 
   ctx.beginPath()
-  axes.forEach((axis, index) => {
-    const angle = startAngle + angleStep * index
-    const ratio = Math.max(0, Math.min(1, Number(axis.value || 0) / 100))
-    const x = cx + maxRadius * ratio * Math.cos(angle)
-    const y = cy + maxRadius * ratio * Math.sin(angle)
-    if (index === 0) ctx.moveTo(x, y)
-    else ctx.lineTo(x, y)
-  })
-  ctx.closePath()
-
-  const fill = ctx.createLinearGradient(cx - maxRadius, cy - maxRadius, cx + maxRadius, cy + maxRadius)
-  fill.addColorStop(0, 'rgba(56, 189, 248, 0.28)')
-  fill.addColorStop(1, 'rgba(139, 92, 246, 0.34)')
-  ctx.fillStyle = fill
+  ctx.arc(cx, cy, 30, 0, Math.PI * 2)
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.94)'
   ctx.fill()
-  ctx.strokeStyle = 'rgba(167, 139, 250, 0.92)'
-  ctx.lineWidth = 2.2
+  ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)'
+  ctx.lineWidth = 1.2
   ctx.stroke()
 
-  axes.forEach((axis, index) => {
-    const angle = startAngle + angleStep * index
-    const ratio = Math.max(0, Math.min(1, Number(axis.value || 0) / 100))
-    const x = cx + maxRadius * ratio * Math.cos(angle)
-    const y = cy + maxRadius * ratio * Math.sin(angle)
-
-    ctx.beginPath()
-    ctx.arc(x, y, 4, 0, Math.PI * 2)
-    ctx.fillStyle = '#e2e8f0'
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(x, y, 2.2, 0, Math.PI * 2)
-    ctx.fillStyle = '#8b5cf6'
-    ctx.fill()
-  })
-
-  ctx.beginPath()
-  ctx.arc(cx, cy, 32, 0, Math.PI * 2)
-  ctx.fillStyle = 'rgba(9, 14, 28, 0.96)'
-  ctx.fill()
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)'
-  ctx.lineWidth = 1
-  ctx.stroke()
-
-  ctx.fillStyle = 'rgba(148, 163, 184, 0.82)'
-  ctx.font = '600 11px "IBM Plex Sans", "PingFang SC", sans-serif'
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.72)'
+  ctx.font = `600 10px ${font}`
   ctx.textAlign = 'center'
-  ctx.fillText('画像', cx, cy - 8)
+  ctx.textBaseline = 'middle'
+  ctx.fillText('AVG', cx, cy - 8)
   ctx.fillStyle = '#f8fafc'
-  ctx.font = '700 18px "IBM Plex Sans", "PingFang SC", sans-serif'
-  ctx.fillText(`${averageRadarScore.value}%`, cx, cy + 14)
+  ctx.font = `700 20px ${font}`
+  ctx.fillText(`${averageRadarScore.value}%`, cx, cy + 12)
 }
 
 watch(
@@ -512,24 +1095,53 @@ watch(
 </script>
 
 <template>
-  <section class="dashboard-view page-frame">
+  <section class="dashboard-view page-frame" :class="{ 'dashboard-view--ready': ready }">
+    <!-- Ambient floating orbs -->
+    <div class="dashboard-orb dashboard-orb--1" aria-hidden="true"></div>
+    <div class="dashboard-orb dashboard-orb--2" aria-hidden="true"></div>
+    <div class="dashboard-orb dashboard-orb--3" aria-hidden="true"></div>
+
     <div class="dashboard-shell">
-      <header class="page-card dashboard-hero">
+      <!-- ===== HERO ===== -->
+      <header class="page-card dashboard-hero dash-enter" style="--enter-i:0">
         <div class="dashboard-hero__copy">
-          <p class="eyebrow">学习驾驶舱</p>
-          <h1>{{ learnerName }}的学习概览</h1>
+          <p class="eyebrow">Learning Cockpit</p>
+          <h1 class="dashboard-hero__title">{{ learnerName }}的<br>学习概览</h1>
           <p class="dashboard-hero__summary">{{ heroSummary }}</p>
 
           <div class="dashboard-hero__chips">
-            <span class="dashboard-chip">{{ progressStats.total }} 个知识点已纳入追踪</span>
-            <span class="dashboard-chip">{{ radarAxes.length || 0 }} 个能力维度已激活</span>
-            <span class="dashboard-chip">{{ focusActions.length }} 条当前建议可直接执行</span>
+            <span class="dashboard-chip"><i class="dashboard-chip__dot"></i>{{ progressStats.total }} 个知识点已纳入追踪</span>
+            <span class="dashboard-chip"><i class="dashboard-chip__dot"></i>{{ radarAxes.length || 0 }} 个能力维度已激活</span>
+            <span class="dashboard-chip"><i class="dashboard-chip__dot"></i>{{ focusActions.length }} 条当前建议可直接执行</span>
           </div>
         </div>
 
         <div class="dashboard-hero__side">
-          <div class="dashboard-progress-ring" :style="progressRingStyle">
-            <div class="dashboard-progress-ring__inner">
+          <!-- SVG Progress Ring -->
+          <div class="dashboard-ring-wrap">
+            <svg class="dashboard-ring-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="dashRingGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#818cf8" />
+                  <stop offset="50%" stop-color="#a78bfa" />
+                  <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+              </defs>
+              <!-- Glow halo ring -->
+              <circle class="dashboard-ring__halo" cx="100" cy="100" r="92" />
+              <!-- Background track -->
+              <circle class="dashboard-ring__track" cx="100" cy="100" r="80" />
+              <!-- Progress arc -->
+              <circle
+                class="dashboard-ring__fill"
+                cx="100" cy="100" r="80"
+                :stroke-dasharray="svgRingDasharray"
+                :stroke-dashoffset="0"
+              />
+              <!-- Decorative inner ring -->
+              <circle class="dashboard-ring__inner-deco" cx="100" cy="100" r="66" />
+            </svg>
+            <div class="dashboard-ring__label">
               <strong>{{ totalProgress }}%</strong>
               <span>掌握进度</span>
             </div>
@@ -542,26 +1154,35 @@ watch(
         </div>
       </header>
 
+      <!-- ===== METRICS ===== -->
       <section class="dashboard-metrics">
         <article
-          v-for="stat in metricCards"
+          v-for="(stat, idx) in metricCards"
           :key="`${stat.label}-${stat.eyebrow}`"
-          class="page-card dashboard-metric-card"
+          class="page-card dashboard-metric-card dash-enter"
           :class="`dashboard-metric-card--${stat.tone}`"
+          :style="{ '--enter-i': idx + 1 }"
         >
-          <span class="dashboard-metric-card__eyebrow">{{ stat.eyebrow }}</span>
-          <strong>{{ stat.value }}</strong>
-          <span class="dashboard-metric-card__label">{{ stat.label }}</span>
-          <p>{{ stat.helper }}</p>
+          <div class="dashboard-metric-card__icon">
+            <svg viewBox="0 0 24 24"><path :d="metricIcon(stat.tone)" /></svg>
+          </div>
+          <div class="dashboard-metric-card__body">
+            <span class="dashboard-metric-card__eyebrow">{{ stat.eyebrow }}</span>
+            <strong>{{ stat.value }}</strong>
+            <span class="dashboard-metric-card__label">{{ stat.label }}</span>
+            <p>{{ stat.helper }}</p>
+          </div>
         </article>
       </section>
 
+      <!-- ===== LAYOUT GRID ===== -->
       <section class="dashboard-layout">
-        <article class="page-card dashboard-panel dashboard-panel--radar">
+        <!-- Radar -->
+        <article class="page-card dashboard-panel dashboard-panel--radar dash-enter" style="--enter-i:5">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">能力画像</p>
-              <h2>能力驾驶舱</h2>
+              <p class="eyebrow">Ability Graph</p>
+              <h2>能力图谱</h2>
             </div>
             <span class="dashboard-section-badge">{{ averageRadarScore }}% 平均表现</span>
           </div>
@@ -572,9 +1193,9 @@ watch(
                 <canvas ref="radarCanvas"></canvas>
               </div>
               <div v-else class="dashboard-empty-state dashboard-empty-state--compact">
-                <strong>能力画像还没成型</strong>
-                <p>完成几次练习后，这里会开始显示你在哪些维度已经稳定，哪些维度还需要补强。</p>
-                <RouterLink class="primary-btn" to="/">去图谱里开始学习</RouterLink>
+                <strong>能力图谱还在生成</strong>
+                <p>当前答题和学习记录还不够，所以能力雷达暂未展开。完成几次练习后，这里会显示各能力维度的真实表现与补强方向。</p>
+                <RouterLink class="primary-btn" to="/">去知识图谱开始学习</RouterLink>
               </div>
             </div>
 
@@ -587,6 +1208,9 @@ watch(
                 <div v-if="strongestAxes.length" class="dashboard-axis-pills">
                   <div v-for="axis in strongestAxes" :key="axis.name" class="dashboard-axis-pill dashboard-axis-pill--strong">
                     <span>{{ axis.name }}</span>
+                    <div class="dashboard-axis-pill__bar">
+                      <span :style="{ width: `${Math.round(axis.value)}%` }"></span>
+                    </div>
                     <strong>{{ Math.round(axis.value) }}%</strong>
                   </div>
                 </div>
@@ -601,6 +1225,9 @@ watch(
                 <div v-if="weakestAxes.length" class="dashboard-axis-pills">
                   <div v-for="axis in weakestAxes" :key="axis.name" class="dashboard-axis-pill dashboard-axis-pill--weak">
                     <span>{{ axis.name }}</span>
+                    <div class="dashboard-axis-pill__bar">
+                      <span :style="{ width: `${Math.round(axis.value)}%` }"></span>
+                    </div>
                     <strong>{{ Math.round(axis.value) }}%</strong>
                   </div>
                 </div>
@@ -610,10 +1237,11 @@ watch(
           </div>
         </article>
 
-        <article class="page-card dashboard-panel dashboard-panel--actions">
+        <!-- Actions -->
+        <article class="page-card dashboard-panel dashboard-panel--actions dash-enter" style="--enter-i:6">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">下一步</p>
+              <p class="eyebrow">Next Step</p>
               <h2>推荐动作</h2>
             </div>
             <span class="dashboard-section-badge">按优先级排序</span>
@@ -621,25 +1249,29 @@ watch(
 
           <div class="dashboard-action-list">
             <RouterLink
-              v-for="item in focusActions"
+              v-for="(item, idx) in focusActions"
               :key="`${item.meta}-${item.title}`"
               class="dashboard-action-card"
               :to="item.route"
             >
-              <div class="dashboard-action-card__meta">
-                <span>{{ item.meta }}</span>
-                <strong v-if="item.score">{{ item.score }}</strong>
+              <span class="dashboard-action-card__step">{{ String(idx + 1).padStart(2, '0') }}</span>
+              <div class="dashboard-action-card__content">
+                <div class="dashboard-action-card__meta">
+                  <span>{{ item.meta }}</span>
+                  <strong v-if="item.score">{{ item.score }}</strong>
+                </div>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.detail }}</p>
               </div>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.detail }}</p>
             </RouterLink>
           </div>
         </article>
 
-        <article class="page-card dashboard-panel dashboard-panel--trend">
+        <!-- Trend -->
+        <article class="page-card dashboard-panel dashboard-panel--trend dash-enter" style="--enter-i:7">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">学习节奏</p>
+              <p class="eyebrow">Weekly Rhythm</p>
               <h2>本周趋势</h2>
             </div>
             <span class="dashboard-section-badge">连续观察比单天爆发更重要</span>
@@ -662,17 +1294,20 @@ watch(
 
           <div class="trend-bars trend-bars--large dashboard-trend-bars">
             <div v-for="item in normalizedWeeklyActivity" :key="item.label" class="trend-bar dashboard-trend-bar">
-              <span class="trend-bar__col dashboard-trend-bar__col" :style="{ height: `${item.height}%` }"></span>
+              <span class="trend-bar__col dashboard-trend-bar__col" :style="{ height: `${item.height}%` }">
+                <i class="dashboard-trend-bar__glow"></i>
+              </span>
               <strong>{{ item.value }}</strong>
               <small>{{ item.label }}</small>
             </div>
           </div>
         </article>
 
-        <article v-if="heatmapRows.length && heatmapDomains.length" class="page-card dashboard-panel dashboard-panel--heatmap">
+        <!-- Heatmap -->
+        <article v-if="heatmapRows.length && heatmapDomains.length" class="page-card dashboard-panel dashboard-panel--heatmap dash-enter" style="--enter-i:8">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">热区矩阵</p>
+              <p class="eyebrow">Heat Matrix</p>
               <h2>知识热区</h2>
             </div>
             <span class="dashboard-section-badge">颜色越亮，当前关注度越高</span>
@@ -690,6 +1325,7 @@ watch(
                 v-for="(value, index) in row.values"
                 :key="`${row.label}-${index}`"
                 class="dashboard-heatmap__cell"
+                :class="{ 'dashboard-heatmap__cell--hot': (value / heatmapPeak) > 0.7 }"
                 :style="heatValueStyle(value)"
               >
                 {{ Math.round(value) }}
@@ -698,10 +1334,11 @@ watch(
           </div>
         </article>
 
-        <article class="page-card dashboard-panel dashboard-panel--cards">
+        <!-- Knowledge Cards -->
+        <article class="page-card dashboard-panel dashboard-panel--cards dash-enter" style="--enter-i:9">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">推荐卡片</p>
+              <p class="eyebrow">Focus Cards</p>
               <h2>值得马上处理的知识点</h2>
             </div>
             <span class="dashboard-section-badge">{{ displayKnowledgeCards.length }} 张卡片</span>
@@ -725,8 +1362,8 @@ watch(
               </div>
               <h3>{{ card.title }}</h3>
               <p>{{ card.tag || card.domain || '建议结合图谱关系继续推进' }}</p>
-              <div class="progress-track">
-                <span class="progress-fill" :style="{ width: `${card.progressValue}%` }"></span>
+              <div class="dashboard-knowledge-card__progress">
+                <span :style="{ width: `${card.progressValue}%` }"></span>
               </div>
             </RouterLink>
           </div>
@@ -738,10 +1375,11 @@ watch(
           </div>
         </article>
 
-        <article class="page-card dashboard-panel dashboard-panel--insights">
+        <!-- Insights -->
+        <article class="page-card dashboard-panel dashboard-panel--insights dash-enter" style="--enter-i:10">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">成长洞察</p>
+              <p class="eyebrow">Growth Insights</p>
               <h2>近期画像解读</h2>
             </div>
             <span class="dashboard-section-badge">从趋势看，而不是只看一组分数</span>
@@ -753,8 +1391,8 @@ watch(
                 <span>{{ item.title }}</span>
                 <strong>{{ item.value }}</strong>
               </div>
-              <div class="progress-track">
-                <span class="progress-fill" :style="{ width: `${item.ratio}%` }"></span>
+              <div class="dashboard-insight-card__bar">
+                <span :style="{ width: `${item.ratio}%` }"></span>
               </div>
               <p>{{ item.detail }}</p>
             </article>
@@ -766,10 +1404,11 @@ watch(
           </div>
         </article>
 
-        <article class="page-card dashboard-panel dashboard-panel--records">
+        <!-- Records -->
+        <article class="page-card dashboard-panel dashboard-panel--records dash-enter" style="--enter-i:11">
           <div class="dashboard-section-head">
             <div>
-              <p class="eyebrow">学习备忘</p>
+              <p class="eyebrow">Memo</p>
               <h2>目标与记录</h2>
             </div>
             <span class="dashboard-section-badge">让当前任务和最近变化同屏出现</span>
@@ -785,7 +1424,7 @@ watch(
 
             <div class="dashboard-note-block">
               <h3>最近记录</h3>
-              <div class="dashboard-record-list">
+              <div class="dashboard-record-list dashboard-record-list--timeline">
                 <article v-for="item in recentItems" :key="`${item.title}-${item.detail}`" class="dashboard-record-item">
                   <strong>{{ item.title }}</strong>
                   <p>{{ item.detail }}</p>

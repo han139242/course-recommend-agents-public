@@ -291,11 +291,11 @@ export const knowledgeDetails = {
     id: 'knowledge-graph',
     title: '知识图谱建模',
     domain: '知识图谱',
-    summary: '将知识点、课程、能力和场景组织为结构化关系网络，是推荐智能体的重要底座。',
+    summary: '将知识点、课程、能力和场景组织为结构化关系网络，是推荐系统的重要底座。',
     mastery: '当前建议先补图结构与实体关系。',
     recommendReason: '你已经开始进入推荐系统设计阶段，知识图谱能帮助你理解跨课程关联如何组织。',
     prerequisites: ['图结构基础', '实体关系', '图查询'],
-    related: ['Neo4j', '推荐逻辑', '知识主线'],
+    related: ['图数据库', '推荐逻辑', '知识主线'],
     scenarios: ['课程知识网络', '跨课程推荐系统', '个性化学习安排'],
   },
 }

@@ -48,7 +48,7 @@ function buildLocalFallbackReply(detail, question) {
 
   if (!detail) {
     const sections = [
-      '在线 AI 暂时不稳定，我先基于当前全局图谱给你一个本地回答。',
+      '在线讲解服务暂时不稳定，我先基于当前全局图谱给你一个本地回答。',
       '现在还没有锁定具体知识点，所以更适合先做全局梳理，再决定下一步聚焦哪里。',
     ]
 
@@ -68,7 +68,7 @@ function buildLocalFallbackReply(detail, question) {
   const prerequisites = (detail?.prerequisites || []).filter(Boolean)
   const recommendReason = String(detail?.recommendReason || '').trim()
   const sections = [
-    `在线 AI 暂时不稳定，我先基于当前知识图谱为你整理“${name}”的本地讲解。`,
+    `在线讲解服务暂时不稳定，我先基于当前知识图谱为你整理“${name}”的本地讲解。`,
     `核心理解：${summary}`,
   ]
 
@@ -101,17 +101,17 @@ function buildErrorHint(error) {
 
   if (Number(error?.status) === 503 && /OPENAI_API_KEY|DEEPSEEK_API_KEY/i.test(message)) {
     return [
-      '当前项目还没有配置可用的后端 AI Key。',
-      '请在项目根目录的 `.env` 里优先配置 `DEEPSEEK_API_KEY`，也可以配置 `OPENAI_API_KEY`，然后重启后端服务。',
-      '密钥只放后端，不要放到前端。',
+      '当前项目暂未配置可用的在线讲解服务。',
+      '请检查后端环境配置后重启服务。',
+      '相关密钥只保留在服务端即可。',
     ].join('\n')
   }
 
-  return `提示：线上模型当前返回了异常，原因是：${message || '未知错误'}`
+  return `提示：在线讲解服务当前返回了异常，原因是：${message || '未知错误'}`
 }
 
 function buildEmptyReplyHint(detail, question) {
-  return `${buildLocalFallbackReply(detail, question)}\n\n提示：这次在线 AI 返回了空内容，已自动切换到本地讲解。`
+  return `${buildLocalFallbackReply(detail, question)}\n\n提示：这次在线讲解返回了空内容，已自动切换到本地讲解。`
 }
 
 function normalizeActionPrompt(input = '') {
@@ -333,7 +333,7 @@ export function useAiChat(selectedDetail, isAuthenticated, options = {}) {
           reply.mode = 'fallback'
           reply.content = buildEmptyReplyHint(selectedDetail.value, text)
         }
-      } else if (/^在线 AI 当前连接不稳定/.test(normalizedReply)) {
+      } else if (/^在线讲解服务暂时不稳定/.test(normalizedReply)) {
         reply.mode = 'fallback'
       } else if (shouldExecuteActions) {
         reply.mode = 'action'

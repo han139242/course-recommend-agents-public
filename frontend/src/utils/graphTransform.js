@@ -62,6 +62,39 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
+function hexToRgb(color = '#CBD5E1') {
+  const normalized = String(color || '').trim()
+  if (!normalized.startsWith('#')) return null
+
+  let hex = normalized.slice(1)
+  if (hex.length === 3) {
+    hex = hex
+      .split('')
+      .map((char) => char + char)
+      .join('')
+  }
+  if (hex.length !== 6) return null
+
+  return {
+    red: Number.parseInt(hex.slice(0, 2), 16),
+    green: Number.parseInt(hex.slice(2, 4), 16),
+    blue: Number.parseInt(hex.slice(4, 6), 16),
+  }
+}
+
+function mixCourseColor(fromColor, toColor, ratio, alpha = 1) {
+  const left = hexToRgb(fromColor)
+  const right = hexToRgb(toColor)
+  const t = clamp(Number(ratio || 0), 0, 1)
+
+  if (!left || !right) return String(toColor || fromColor || '#CBD5E1')
+
+  const red = Math.round(left.red + (right.red - left.red) * t)
+  const green = Math.round(left.green + (right.green - left.green) * t)
+  const blue = Math.round(left.blue + (right.blue - left.blue) * t)
+  return `rgba(${red}, ${green}, ${blue}, ${clamp(alpha, 0, 1)})`
+}
+
 function getChapterTitle(node) {
   return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
 }
@@ -116,52 +149,25 @@ function resolveProgressState(progress = {}) {
   return 'default'
 }
 
-function buildNodeColors(courseTitle, progressState) {
+function buildNodeColors(courseTitle, progress = {}) {
   const palette = getCoursePalette(courseTitle)
-  if (progressState === 'mastered') {
-    return {
-      fill: 'rgba(255, 246, 214, 0.99)',
-      stroke: 'rgba(250, 204, 21, 0.98)',
-      shadow: 'rgba(250, 204, 21, 0.22)',
-      accent: palette.primary,
-      ring: palette.ring,
-      courseLight: palette.light,
-    }
-  }
-  if (progressState === 'weak') {
-    return {
-      fill: 'rgba(255, 228, 196, 0.99)',
-      stroke: 'rgba(251, 146, 60, 0.98)',
-      shadow: 'rgba(251, 146, 60, 0.22)',
-      accent: palette.primary,
-      ring: palette.ring,
-      courseLight: palette.light,
-    }
-  }
-  if (progressState === 'learning') {
-    return {
-      fill: 'rgba(230, 236, 255, 0.99)',
-      stroke: 'rgba(129, 140, 248, 0.98)',
-      shadow: 'rgba(129, 140, 248, 0.18)',
-      accent: palette.primary,
-      ring: palette.ring,
-      courseLight: palette.light,
-    }
-  }
+  const masteryRatio = clamp(Number(progress?.masteryScore || 0), 0, 100) / 100
+  const easedRatio = masteryRatio ** 0.88
+
   return {
-    fill: 'rgba(241, 234, 255, 0.99)',
-    stroke: 'rgba(196, 181, 253, 1)',
-    shadow: 'rgba(196, 181, 253, 0.18)',
+    fill: mixCourseColor(palette.light, palette.primary, easedRatio, 0.99),
+    stroke: mixCourseColor(palette.ring, palette.primary, 0.28 + easedRatio * 0.5, 0.98),
+    shadow: mixCourseColor(palette.ring, palette.primary, 0.14 + easedRatio * 0.36, 0.2),
     accent: palette.primary,
     ring: palette.ring,
     courseLight: palette.light,
+    masteryRatio,
   }
 }
 
 function buildNodeStyle(node, options) {
   const progress = options.progressMap?.[node.routeKnowledgeId] || {}
-  const progressState = resolveProgressState(progress)
-  const colors = buildNodeColors(getChapterTitle(node), progressState)
+  const colors = buildNodeColors(getChapterTitle(node), progress)
   const isRoot = Boolean(node.isRoot)
   const isExpanded = options.expandedSet.has(node.id)
   const isPinned = options.pinnedSet.has(node.id)
@@ -184,6 +190,7 @@ function buildNodeStyle(node, options) {
     badgeColor: colors.accent,
     ringColor: colors.ring,
     courseLight: colors.courseLight,
+    masteryRatio: colors.masteryRatio,
     labelColor: '#F8FAFC',
     labelStroke: 'rgba(15, 23, 42, 0.88)',
     opacity: 1,

@@ -1,5 +1,6 @@
 ﻿import { createRouter, createWebHistory } from 'vue-router'
 
+import { APP_NAME } from './constants/appInfo'
 import { useUserStore } from './stores/userStore'
 
 const GraphHome = () => import('./views/GraphHome.vue')
@@ -65,7 +66,7 @@ router.beforeEach(async (to) => {
   await userStore.bootstrap()
 
   if (to.meta?.title) {
-    document.title = `${to.meta.title} | 突破课程边界 · 知识点推荐智能体`
+    document.title = `${to.meta.title} | ${APP_NAME}`
   }
 
   if (to.meta?.requiresAuth && !userStore.isAuthenticated) {

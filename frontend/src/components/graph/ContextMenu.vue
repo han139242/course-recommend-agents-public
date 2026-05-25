@@ -14,7 +14,7 @@ const actions = [
   { key: 'toggle-bookmark', label: '收藏 / 取消收藏', icon: '⭐' },
   { key: 'note', label: '记笔记', icon: '📝' },
   { key: 'detail', label: '进入详细学习', icon: '📖' },
-  { key: 'ai', label: 'AI 讲解这个知识点', icon: '🤖' },
+  { key: 'ai', label: '讲解这个知识点', icon: '🤖' },
   { key: 'chain', label: '查看前置依赖链', icon: '🔗' },
   { key: 'mastered', label: '标记为已掌握', icon: '✅' },
 ]

@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import SearchBar from '../components/search/SearchBar.vue'
 import LeftPanel from '../components/sidebar/LeftPanel.vue'
 import { buildGraphStateMap } from '../composables/useNodeFocus'
+import { APP_NAME } from '../constants/appInfo'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
 import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../utils/courseMeta'
@@ -61,7 +62,27 @@ const stateMap = computed(() =>
 )
 
 const selectedProgress = computed(() => userStore.getProgressMeta(graphStore.selectedRouteKnowledgeId))
-const knowledgeMentions = computed(() => graphStore.rawNodes.map((node) => node.routeKnowledgeId).filter(Boolean))
+
+function upsertKnowledgeLookup(lookup, node) {
+  const routeKnowledgeId = String(node?.routeKnowledgeId || '').trim()
+  if (!routeKnowledgeId) return
+
+  const label = String(node?.canonicalName || node?.name || routeKnowledgeId).trim() || routeKnowledgeId
+  lookup[routeKnowledgeId] = {
+    label,
+    canonicalName: String(node?.canonicalName || '').trim(),
+    name: String(node?.name || '').trim(),
+  }
+}
+
+const aiKnowledgeLookup = computed(() => {
+  const lookup = {}
+  graphStore.rawNodes.forEach((node) => upsertKnowledgeLookup(lookup, node))
+  Object.values(graphStore.detailCache || {}).forEach((detail) => upsertKnowledgeLookup(lookup, detail))
+  return lookup
+})
+
+const knowledgeMentions = computed(() => Object.keys(aiKnowledgeLookup.value))
 
 function getCourseLabel(node) {
   return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
@@ -517,12 +538,12 @@ onBeforeUnmount(() => {
     <header class="topbar">
       <div class="topbar__brand">
         <div class="topbar__logo">
-          <span class="topbar__logo-icon">AI</span>
+          <span class="topbar__logo-icon">智</span>
           <span class="topbar__logo-pulse"></span>
         </div>
         <div>
-          <strong class="topbar__title">突破课程边界<span class="topbar__title-accent"> · 知识点推荐智能体</span></strong>
-          <p>分层展开的 Neo4j 风格知识图谱，优先保证大图流畅、节点可读和逐层探索体验。</p>
+          <strong class="topbar__title">{{ APP_NAME }}</strong>
+          <p>分层展开的关联知识图谱，优先保证大图流畅、节点可读和逐层探索体验。</p>
         </div>
       </div>
 
@@ -539,7 +560,7 @@ onBeforeUnmount(() => {
       <div class="topbar__actions">
         <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">登录</RouterLink>
         <template v-else>
-          <RouterLink class="secondary-btn" to="/dashboard">仪表盘</RouterLink>
+          <RouterLink class="secondary-btn" to="/dashboard">能力图谱</RouterLink>
           <RouterLink class="profile-chip" to="/">
             <span class="profile-chip__dot"></span>
             <span>{{ userStore.user?.username || userStore.user?.email || '已登录' }}</span>
@@ -573,7 +594,7 @@ onBeforeUnmount(() => {
       <main class="graph-stage">
         <div class="graph-stage__hint">
           <span>
-            首屏只保留少量关键知识点，双击任意知识点才会像 Neo4j 一样展开它的关联节点；再次双击已经展开的节点，会把它展开出的关联节点收回去。
+            首屏只保留少量关键知识点，双击任意知识点会按层级展开它的关联节点；再次双击已经展开的节点，会把它展开出的关联节点收回去。
           </span>
           <span>
             鼠标滚轮缩放，左键选中知识点，双击展开或收回关联网络，右键打开学习菜单，<kbd>Space</kbd> 适配视图，<kbd>Ctrl+K</kbd> 搜索，<kbd>0</kbd> 重置。
@@ -631,6 +652,7 @@ onBeforeUnmount(() => {
       :is-authenticated="userStore.isAuthenticated"
       :auto-prompt="aiAutoPrompt"
       :knowledge-mentions="knowledgeMentions"
+      :knowledge-lookup="aiKnowledgeLookup"
       :recommended-path="recommendedPath"
       :proactive-hints="recommendationMeta.insights || []"
       :learner-profile="recommendationMeta.learnerProfile || null"
@@ -642,7 +664,7 @@ onBeforeUnmount(() => {
     <div class="mobile-dock">
       <button type="button" class="mobile-dock__btn" @click="leftCollapsed = !leftCollapsed">导航</button>
       <button type="button" class="mobile-dock__btn" @click="rightCollapsed = !rightCollapsed">详情</button>
-      <button type="button" class="mobile-dock__btn mobile-dock__btn--primary" @click="aiOpen = !aiOpen">AI</button>
+      <button type="button" class="mobile-dock__btn mobile-dock__btn--primary" @click="aiOpen = !aiOpen">助手</button>
     </div>
   </section>
 </template>

@@ -1,4 +1,5 @@
 import { transformGraphData } from '../graphTransform'
+import { getCoursePalette } from '../colorMap'
 
 describe('graphTransform', () => {
   it('keeps total catalog size separate from visible graph stats and marks cross-course edges', () => {
@@ -117,5 +118,47 @@ describe('graphTransform', () => {
     expect(result.edges[0]?.data.crossCourse).toBe(true)
     expect(result.edges[0]?.data.sourceCourse).toBe('人工智能导论')
     expect(result.edges[0]?.data.targetCourse).toBe('大模型')
+  })
+  it('blends node fill from course background to primary color as mastery rises', () => {
+    const palette = getCoursePalette('鏈哄櫒瀛︿範')
+    const nodes = [
+      {
+        id: 'low',
+        routeKnowledgeId: 'low',
+        name: '鏈哄櫒瀛︿範鍩虹',
+        canonicalName: '鏈哄櫒瀛︿範鍩虹',
+        chapterTitle: '鏈哄櫒瀛︿範',
+        entityType: 'concept',
+        x: 0,
+        y: 0,
+      },
+      {
+        id: 'high',
+        routeKnowledgeId: 'high',
+        name: '鏈哄櫒瀛︿範杩涢樁',
+        canonicalName: '鏈哄櫒瀛︿範杩涢樁',
+        chapterTitle: '鏈哄櫒瀛︿範',
+        entityType: 'concept',
+        x: 120,
+        y: 0,
+      },
+    ]
+
+    const result = transformGraphData(nodes, [], {
+      progressMap: {
+        low: { masteryScore: 0, answeredCount: 0 },
+        high: { masteryScore: 100, answeredCount: 20 },
+      },
+    })
+
+    const lowNode = result.nodes.find((node) => node.id === 'low')
+    const highNode = result.nodes.find((node) => node.id === 'high')
+
+    expect(lowNode.style.fill).toBe('rgba(232, 237, 252, 0.99)')
+    expect(highNode.style.fill).toBe('rgba(108, 142, 239, 0.99)')
+    expect(lowNode.style.ringColor).toBe(palette.ring)
+    expect(highNode.style.ringColor).toBe(palette.ring)
+    expect(lowNode.style.masteryRatio).toBe(0)
+    expect(highNode.style.masteryRatio).toBe(1)
   })
 })
