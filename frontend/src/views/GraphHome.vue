@@ -20,6 +20,7 @@ import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { APP_NAME } from '../constants/appInfo'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
+import { useThemeStore } from '../stores/themeStore'
 import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../utils/courseMeta'
 
 const GraphCanvas = defineAsyncComponent(() => import('../components/graph/GraphCanvas.vue'))
@@ -28,6 +29,7 @@ const AiAssistant = defineAsyncComponent(() => import('../components/ai/AiAssist
 
 const graphStore = useGraphStore()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 const router = useRouter()
 
 const searchValue = ref('')
@@ -460,6 +462,10 @@ async function handleRelatedSelect(routeKnowledgeId) {
   rightCollapsed.value = false
 }
 
+const aiAssistantRef = ref(null)
+const quizCelebrationActive = ref(false)
+const quizCelebrationNodeName = ref('')
+
 function handleOpenAi() {
   aiAutoPrompt.value = {
     id: Date.now(),
@@ -468,6 +474,29 @@ function handleOpenAi() {
       : '请帮我从当前课程图谱里选一个适合开始学习的知识点。',
   }
   aiOpen.value = true
+}
+
+function handleOpenAiWithPrompt(promptText) {
+  aiAutoPrompt.value = {
+    id: Date.now(),
+    text: promptText
+  }
+  aiOpen.value = true
+}
+
+function handleQuizFailed(payload) {
+  if (aiAssistantRef.value?.triggerStruggleHint) {
+    aiAssistantRef.value.triggerStruggleHint(payload.name || payload.nodeId)
+  }
+}
+
+function handleQuizMastered(payload) {
+  quizCelebrationNodeName.value = payload.name || payload.nodeId
+  quizCelebrationActive.value = true
+  setTimeout(() => {
+    quizCelebrationActive.value = false
+    quizCelebrationNodeName.value = ''
+  }, 3000)
 }
 
 async function handleSceneReset() {
@@ -563,6 +592,15 @@ onBeforeUnmount(() => {
       />
 
       <div class="topbar__actions">
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          :title="themeStore.theme === 'light' ? '切换夜间模式' : '切换白天模式'"
+          @click="themeStore.toggleTheme"
+        >
+          <span v-if="themeStore.theme === 'light'">夜间</span>
+          <span v-else>白天</span>
+        </button>
         <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/dashboard">
           <LayoutDashboard :size="16" aria-hidden="true" />
           学习总览
@@ -652,6 +690,16 @@ onBeforeUnmount(() => {
             @clear-selection="handleClearSelection"
             @context-action="handleContextAction"
           />
+
+          <div v-if="quizCelebrationActive" class="graph-celebrations">
+            <div class="graph-burst">
+              <span class="graph-burst__label">掌握通关：{{ quizCelebrationNodeName }}</span>
+              <div class="graph-burst__star graph-burst__star--1">★</div>
+              <div class="graph-burst__star graph-burst__star--2">★</div>
+              <div class="graph-burst__star graph-burst__star--3">★</div>
+              <div class="graph-burst__star graph-burst__star--4">★</div>
+            </div>
+          </div>
         </section>
       </main>
 
@@ -665,10 +713,14 @@ onBeforeUnmount(() => {
         @select-related="handleRelatedSelect"
         @open-ai="handleOpenAi"
         @show-recommend-path="handleShowPath"
+        @open-ai-with-prompt="handleOpenAiWithPrompt"
+        @quiz-mastered="handleQuizMastered"
+        @quiz-failed="handleQuizFailed"
       />
     </div>
 
     <AiAssistant
+      ref="aiAssistantRef"
       v-model="aiOpen"
       :detail="graphStore.selectedDetail"
       :is-authenticated="userStore.isAuthenticated"

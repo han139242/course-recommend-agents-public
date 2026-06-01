@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: linear-gradient(160deg, #080c16 0%, #0f1724 50%, #0a0f1a 100%);
+    font-family: 'Noto Sans SC', sans-serif; color: #e0e8f0;
+    display: flex; flex-direction: column; padding: 60px 80px;
+  }
+  .header { text-align: center; margin-bottom: 50px; }
+  .section-tag { font-size: 18px; color: #9775fa; letter-spacing: 6px; margin-bottom: 12px; }
+  .section-title { font-size: 42px; font-weight: 900; color: #fff; }
+
+  .arch {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px;
+    position: relative;
+  }
+  /* Frontend layer */
+  .layer {
+    display: flex; gap: 30px; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .box {
+    border-radius: 16px; padding: 24px 40px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.3s;
+  }
+  .box-title { font-size: 22px; font-weight: 700; color: #fff; }
+  .box-sub { font-size: 13px; color: rgba(160,190,220,0.55); margin-top: 6px; }
+
+  .fe-box { background: rgba(76,175,80,0.1); border-color: rgba(76,175,80,0.3); min-width: 200px; }
+  .be-box { background: rgba(33,150,243,0.1); border-color: rgba(33,150,243,0.3); min-width: 160px; }
+  .db-box { background: rgba(156,39,176,0.1); border-color: rgba(156,39,176,0.3); min-width: 140px; }
+  .cache-box { background: rgba(255,152,0,0.1); border-color: rgba(255,152,0,0.3); min-width: 120px; }
+  .ai-box { background: rgba(76,175,80,0.08); border-color: rgba(76,175,80,0.25); min-width: 160px; }
+
+  .layer-label {
+    position: absolute; left: -180px; font-size: 15px; font-weight: 700; color: rgba(160,190,220,0.5);
+    text-align: right; width: 150px;
+  }
+  .arrow-down {
+    width: 2px; height: 30px; background: rgba(100,180,255,0.3); position: relative;
+  }
+  .arrow-down::after {
+    content: ''; position: absolute; bottom: 0; left: -4px;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 8px solid rgba(100,180,255,0.3);
+  }
+  .section-line {
+    width: 900px; height: 1px; background: rgba(255,255,255,0.06);
+  }
+  .stat-row {
+    display: flex; gap: 40px; margin-top: 20px;
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 900; color: #64b4ff; }
+  .stat-lbl { font-size: 13px; color: rgba(160,190,220,0.5); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="section-tag">系统架构 · 全栈技术方案</div>
+  <div class="section-title">模块化后端 + 知识图谱引擎 + 可视化前端</div>
+</div>
+
+<div class="arch">
+  <!-- Frontend -->
+  <div class="layer" style="position:relative;">
+    <span class="layer-label">展示层</span>
+    <div class="box fe-box">
+      <div class="box-title">Vue 3 + Vite</div>
+      <div class="box-sub">可视化仪表盘 · G6 知识图谱 · 评分因子面板</div>
+    </div>
+    <div class="box fe-box">
+      <div class="box-title">AntV G6</div>
+      <div class="box-sub">知识图谱交互渲染</div>
+    </div>
+    <div class="box fe-box">
+      <div class="box-title">KaTeX</div>
+      <div class="box-sub">数学公式渲染</div>
+    </div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- Backend -->
+  <div class="layer" style="position:relative;">
+    <span class="layer-label">业务层</span>
+    <div class="box be-box">
+      <div class="box-title">Go + Gin</div>
+      <div class="box-sub">REST API · JWT 认证</div>
+    </div>
+    <div class="box be-box" style="background: rgba(33,150,243,0.18);">
+      <div class="box-title">KT-KGPath 评分器</div>
+      <div class="box-sub">7因子统一评分</div>
+    </div>
+    <div class="box be-box">
+      <div class="box-title">评测框架</div>
+      <div class="box-sub">5基线 × 10指标</div>
+    </div>
+    <div class="box be-box">
+      <div class="box-title">11 个模块</div>
+      <div class="box-sub">30+ API 接口</div>
+    </div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- Data & AI -->
+  <div class="layer" style="position:relative;">
+    <span class="layer-label">数据与AI层</span>
+    <div class="box db-box">
+      <div class="box-title">Neo4j 知识图谱</div>
+      <div class="box-sub">2,659 知识点 · 5,376 关系</div>
+    </div>
+    <div class="box db-box">
+      <div class="box-title">MySQL</div>
+      <div class="box-sub">用户 · 题库 · 班级</div>
+    </div>
+    <div class="box cache-box">
+      <div class="box-title">Redis</div>
+      <div class="box-sub">学习状态 · 缓存</div>
+    </div>
+    <div class="box ai-box">
+      <div class="box-title">DeepSeek API</div>
+      <div class="box-sub">AI 助手 · 内容生成</div>
+    </div>
+  </div>
+
+  <div class="section-line"></div>
+
+  <div class="stat-row">
+    <div class="stat-item"><div class="stat-num">Go + Gin</div><div class="stat-lbl">后端框架</div></div>
+    <div class="stat-item"><div class="stat-num">Vue 3</div><div class="stat-lbl">前端框架</div></div>
+    <div class="stat-item"><div class="stat-num">Neo4j</div><div class="stat-lbl">图数据库</div></div>
+    <div class="stat-item"><div class="stat-num">Docker</div><div class="stat-lbl">一键部署</div></div>
+    <div class="stat-item"><div class="stat-num">localhost:8080</div><div class="stat-lbl">统一入口</div></div>
+  </div>
+</div>
+</body>
+</html>

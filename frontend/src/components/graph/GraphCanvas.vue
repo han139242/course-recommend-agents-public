@@ -190,10 +190,15 @@ defineExpose({
 <template>
   <div ref="containerRef" class="graph-canvas-shell">
     <div v-if="loading" class="graph-canvas-status">
-      <div class="graph-canvas-status__inner">
-        <div class="status-spinner"></div>
-        <strong>知识地图加载中</strong>
-        <span>正在同步课程目录和知识点关系。</span>
+      <div class="graph-canvas-status__inner nebula-skeleton-screen">
+        <div class="nebula-spinner">
+          <div class="nebula-spinner__orbit nebula-spinner__orbit--outer"></div>
+          <div class="nebula-spinner__orbit nebula-spinner__orbit--middle"></div>
+          <div class="nebula-spinner__orbit nebula-spinner__orbit--inner"></div>
+          <div class="nebula-spinner__core"></div>
+        </div>
+        <strong class="nebula-skeleton-title">知识地图加载中</strong>
+        <span class="nebula-skeleton-subtitle">正在同步课程目录、学习进度和知识点关系。</span>
       </div>
     </div>
     <div v-else-if="error || renderError" class="graph-canvas-status graph-canvas-status--error">
@@ -204,7 +209,11 @@ defineExpose({
       </div>
     </div>
 
-    <canvas ref="graphMountRef" class="graph-canvas-stage"></canvas>
+    <canvas
+      ref="graphMountRef"
+      class="graph-canvas-stage"
+      :class="{ 'graph-canvas-stage--focused': !loading && !error && !renderError }"
+    ></canvas>
 
     <GraphControls
       :zoom="zoom"

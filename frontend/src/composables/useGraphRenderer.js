@@ -106,6 +106,11 @@ export function useGraphRenderer() {
       y: Number(nextTransform.y || 0),
       k: clamp(Number(nextTransform.k || 1), MIN_ZOOM, MAX_ZOOM),
     }
+    if (container) {
+      container.style.setProperty('--grid-dx', `${transform.x / 3}px`)
+      container.style.setProperty('--grid-dy', `${transform.y / 3}px`)
+      container.style.setProperty('--grid-zoom', `${transform.k}`)
+    }
   }
 
   function getTransform() {

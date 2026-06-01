@@ -30,6 +30,7 @@ import {
   resolveNodeCourseTitle,
 } from '../utils/courseMeta'
 import { useUserStore } from './userStore'
+import { useThemeStore } from './themeStore'
 
 function getNormalizedCourseTitle(node) {
   return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
@@ -160,6 +161,7 @@ function buildLayoutLock(node, expiresAt) {
 
 export const useGraphStore = defineStore('graph', () => {
   const userStore = useUserStore()
+  const themeStore = useThemeStore()
 
   const catalogNodes = ref([])
   const prerequisiteIndex = ref([])
@@ -267,6 +269,7 @@ export const useGraphStore = defineStore('graph', () => {
       selectedNodeId: selectedNodeId.value,
       rootNodeIds: [...rootNodeIds.value],
       totalNodes: catalogNodes.value.length,
+      theme: themeStore.theme,
     }),
   )
 

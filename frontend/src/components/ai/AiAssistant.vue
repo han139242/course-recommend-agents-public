@@ -102,14 +102,27 @@ function buildPathTitle(item = {}) {
   return resolveKnowledgeLabel(item.knowledgeId, replaceKnowledgeLabels(item.title || '推荐知识点'))
 }
 
-const visibleHints = computed(() =>
-  (props.proactiveHints || []).slice(0, 2).map((hint) => ({
+const localStruggleHint = ref(null)
+
+const visibleHints = computed(() => {
+  const list = []
+  if (localStruggleHint.value) {
+    list.push({
+      ...localStruggleHint.value,
+      displayTitle: localStruggleHint.value.title,
+      displayDetail: localStruggleHint.value.detail,
+    })
+  }
+  const propHints = (props.proactiveHints || []).map((hint) => ({
     ...hint,
     displayTitle: resolveHintTitle(hint),
     displayDetail: replaceKnowledgeLabels(hint.detail || ''),
-  })),
+  }))
+  return [...list, ...propHints].slice(0, 2)
+})
+const lastAssistantMessage = computed(() =>
+  [...messages.value].reverse().find((message) => message.role === 'assistant' && message.mode) || null,
 )
-
 const visibleRecommendedPath = computed(() =>
   (props.recommendedPath || []).slice(0, 3).map((item) => ({
     ...item,
@@ -162,11 +175,71 @@ watch(
     send(prompt.text)
   },
 )
+
+watch(
+  () => messages.value.map((message) => `${message.role}:${String(message.content || '').length}`).join('|'),
+  async () => {
+    if (!open.value) return
+    await nextTick()
+    scrollMessagesToBottom()
+  },
+)
+
+function splitMessage(text) {
+  let remaining = String(text || '')
+  const parts = []
+
+  while (remaining) {
+    const hit = mentionEntries.value.find((item) => item.value && remaining.includes(item.value))
+    if (!hit) {
+      parts.push({ type: 'text', value: replaceKnowledgeLabels(remaining) })
+      break
+    }
+
+    const index = remaining.indexOf(hit.value)
+    if (index > 0) {
+      parts.push({ type: 'text', value: replaceKnowledgeLabels(remaining.slice(0, index)) })
+    }
+    parts.push({ type: 'link', value: hit.value, label: hit.label })
+    remaining = remaining.slice(index + hit.value.length)
+  }
+
+  return parts
+}
+
+function showRecommendedPath() {
+  if (!recommendedRouteIds.value.length) return
+  emit('show-recommend-path', recommendedRouteIds.value)
+}
+
+function triggerStruggleHint(nodeName) {
+  localStruggleHint.value = {
+    title: '测验挑战卡关？',
+    detail: `检测到你在“${nodeName}”测验中遇到阻碍。点击让我为你提供通俗大白话的讲解！`,
+    knowledgeId: nodeName,
+    reasonCode: 'weakness',
+    isStruggle: true,
+  }
+  open.value = false
+}
+
+function handleBubbleClick() {
+  const primaryHint = visibleHints.value[0]
+  open.value = true
+  if (primaryHint && primaryHint.isStruggle) {
+    send(`我刚刚在学习“${primaryHint.knowledgeId}”时测验卡关了，请用极度通俗易懂的大白话、结合生活中的生动比喻，为我全面讲解一下这个概念，并说明它的实际用途。`)
+    localStruggleHint.value = null
+  }
+}
+
+defineExpose({
+  triggerStruggleHint,
+})
 </script>
 
 <template>
   <div class="ai-assistant" :class="{ 'ai-assistant--open': open }">
-    <button v-if="!open && visibleHints.length" type="button" class="ai-proactive-bubble" @click="open = true">
+    <button v-if="!open && visibleHints.length" type="button" class="ai-proactive-bubble" @click="handleBubbleClick">
       <Sparkles :size="16" aria-hidden="true" />
       <span>{{ visibleHints[0].displayTitle }}</span>
     </button>

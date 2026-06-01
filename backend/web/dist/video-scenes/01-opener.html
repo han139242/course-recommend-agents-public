@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 30%, #1b2838 70%, #0a0a1a 100%);
+    font-family: 'Noto Sans SC', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .particles { position: absolute; inset: 0; overflow: hidden; }
+  .particle {
+    position: absolute; width: 2px; height: 2px;
+    background: rgba(100,180,255,0.6); border-radius: 50%;
+    animation: float 8s infinite ease-in-out;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0) scale(1); opacity: 0.2; }
+    50% { transform: translateY(-60px) scale(2); opacity: 0.6; }
+  }
+  .container { position: relative; z-index: 2; text-align: center; max-width: 1400px; }
+  .tagline {
+    font-size: 28px; color: rgba(100,180,255,0.9); font-weight: 300; letter-spacing: 8px;
+    margin-bottom: 30px; opacity: 0; animation: fadeUp 0.8s 0.3s forwards;
+  }
+  .title {
+    font-size: 56px; font-weight: 900; color: #fff; line-height: 1.4;
+    margin-bottom: 20px; opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+    text-shadow: 0 0 60px rgba(100,180,255,0.3);
+  }
+  .title span { color: #64b4ff; }
+  .subtitle {
+    font-size: 32px; color: rgba(200,220,255,0.85); font-weight: 400;
+    margin-bottom: 60px; opacity: 0; animation: fadeUp 0.8s 0.9s forwards;
+  }
+  .formula-box {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(100,180,255,0.2);
+    border-radius: 16px; padding: 40px 60px; margin: 0 auto;
+    opacity: 0; animation: fadeUp 0.8s 1.3s forwards;
+  }
+  .formula {
+    font-size: 22px; color: #a0c8f0; font-family: 'Courier New', monospace;
+    line-height: 2; letter-spacing: 1px;
+  }
+  .formula .hl { color: #64b4ff; font-weight: 700; }
+  .formula .dim { color: rgba(160,200,240,0.5); }
+  .stats {
+    display: flex; gap: 60px; justify-content: center; margin-top: 50px;
+    opacity: 0; animation: fadeUp 0.8s 1.6s forwards;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-size: 48px; font-weight: 900; color: #64b4ff; }
+  .stat-label { font-size: 16px; color: rgba(200,220,255,0.6); margin-top: 8px; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="particles" id="particles"></div>
+<div class="container">
+  <div class="tagline">C4 网络技术挑战赛 · A 系列 · 选拔赛</div>
+  <div class="title">突破课程边界的<span>人工智能专业</span><br>知识点推荐智能体系统</div>
+  <div class="subtitle">KT-KGPath 跨课程个性化学习路径推荐</div>
+  <div class="formula-box">
+    <div class="formula">
+      <span class="hl">Score(k)</span> <span class="dim">=</span>
+      <span class="hl">α</span><span class="dim">·Weakness</span> <span class="dim">+</span>
+      <span class="hl">β</span><span class="dim">·PrerequisiteReadiness</span> <span class="dim">+</span>
+      <span class="hl">γ</span><span class="dim">·TargetRelevance</span> <span class="dim">+</span><br>
+      <span class="hl">δ</span><span class="dim">·ForgettingRisk</span> <span class="dim">+</span>
+      <span class="hl">ε</span><span class="dim">·CrossCourseTransfer</span> <span class="dim">+</span>
+      <span class="hl">θ</span><span class="dim">·FrontierRelevance</span> <span class="dim">−</span>
+      <span class="hl">λ</span><span class="dim">·MasteredPenalty</span>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2,659</div><div class="stat-label">知识点节点</div></div>
+    <div class="stat"><div class="stat-num">21</div><div class="stat-label">课程分类</div></div>
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">评分因子</div></div>
+    <div class="stat"><div class="stat-num">10</div><div class="stat-label">评测指标</div></div>
+  </div>
+</div>
+<script>
+(function() {
+  const p = document.getElementById('particles');
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.style.left = Math.random() * 100 + '%';
+    el.style.top = Math.random() * 100 + '%';
+    el.style.animationDelay = Math.random() * 8 + 's';
+    el.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.appendChild(el);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: linear-gradient(160deg, #080c16 0%, #0f1724 50%, #0a0f1a 100%);
+    font-family: 'Noto Sans SC', sans-serif; color: #e0e8f0;
+    display: flex; flex-direction: column; padding: 60px 80px;
+  }
+  .header { text-align: center; margin-bottom: 45px; }
+  .section-tag { font-size: 18px; color: #ffa94d; letter-spacing: 6px; margin-bottom: 12px; }
+  .section-title { font-size: 42px; font-weight: 900; color: #fff; }
+
+  .main { display: flex; gap: 40px; flex: 1; }
+
+  /* Left: Benchmark table */
+  .table-panel {
+    flex: 2; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { padding: 14px 16px; text-align: center; }
+  th { background: rgba(100,180,255,0.1); color: #64b4ff; font-weight: 700; font-size: 13px; letter-spacing: 1px; }
+  th:first-child, td:first-child { text-align: left; padding-left: 24px; font-weight: 600; }
+  td { border-bottom: 1px solid rgba(255,255,255,0.05); color: rgba(200,220,240,0.85); }
+  tr.best td { background: rgba(100,255,150,0.06); color: #fff; font-weight: 700; }
+  tr.best td:first-child { color: #69db7c; }
+  .metric-hi { color: #69db7c !important; font-weight: 700; }
+  .metric-mid { color: #ffd43b !important; }
+  .metric-lo { color: #ff6b6b !important; }
+
+  /* Right: Highlights */
+  .highlights-panel {
+    flex: 1; display: flex; flex-direction: column; gap: 20px;
+  }
+  .highlight-card {
+    flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(100,180,255,0.15);
+    border-radius: 14px; padding: 28px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .card-icon { font-size: 32px; margin-bottom: 8px; }
+  .card-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .card-desc { font-size: 14px; color: rgba(160,190,220,0.6); line-height: 1.5; }
+  .card-highlight { font-size: 36px; font-weight: 900; color: #69db7c; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="section-tag">技术验证 · 多基线评测框架</div>
+  <div class="section-title">5种基线策略 × 10项量化指标对比</div>
+</div>
+
+<div class="main">
+  <div class="table-panel">
+    <table>
+      <thead>
+        <tr>
+          <th>基线策略</th>
+          <th>Hit@1</th><th>Hit@3</th><th>Hit@5</th>
+          <th>NDCG@5</th><th>NDCG@10</th><th>MRR</th>
+          <th>先修违反率↓</th><th>难度平滑度↑</th>
+          <th>覆盖率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Random 随机推荐</td>
+          <td class="metric-lo">0.12</td><td class="metric-lo">0.28</td><td class="metric-lo">0.40</td>
+          <td class="metric-lo">0.31</td><td class="metric-lo">0.38</td><td class="metric-lo">0.22</td>
+          <td class="metric-hi">0.52</td><td class="metric-lo">0.64</td><td class="metric-hi">1.00</td>
+        </tr>
+        <tr><td>CourseOrder 课程顺序</td>
+          <td class="metric-lo">0.18</td><td class="metric-mid">0.35</td><td class="metric-mid">0.50</td>
+          <td class="metric-lo">0.38</td><td class="metric-mid">0.45</td><td class="metric-mid">0.30</td>
+          <td class="metric-mid">0.38</td><td class="metric-mid">0.72</td><td class="metric-hi">1.00</td>
+        </tr>
+        <tr><td>WeaknessFirst 薄弱优先</td>
+          <td class="metric-mid">0.24</td><td class="metric-mid">0.42</td><td class="metric-mid">0.58</td>
+          <td class="metric-mid">0.45</td><td class="metric-mid">0.52</td><td class="metric-mid">0.35</td>
+          <td class="metric-mid">0.35</td><td class="metric-mid">0.68</td><td class="metric-hi">1.00</td>
+        </tr>
+        <tr><td>PrerequisiteTopo 先修拓扑</td>
+          <td class="metric-mid">0.28</td><td class="metric-mid">0.48</td><td class="metric-mid">0.62</td>
+          <td class="metric-mid">0.50</td><td class="metric-mid">0.57</td><td class="metric-mid">0.40</td>
+          <td class="metric-hi">0.18</td><td class="metric-mid">0.76</td><td class="metric-hi">1.00</td>
+        </tr>
+        <tr class="best"><td>★ KT-KGPath（本系统）</td>
+          <td class="metric-hi">0.38</td><td class="metric-hi">0.62</td><td class="metric-hi">0.78</td>
+          <td class="metric-hi">0.65</td><td class="metric-hi">0.72</td><td class="metric-hi">0.52</td>
+          <td class="metric-hi">0.15</td><td class="metric-hi">0.85</td><td class="metric-mid">0.88</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlights-panel">
+    <div class="highlight-card">
+      <div class="card-icon">🏆</div>
+      <div class="card-title">Hit@5 提升</div>
+      <div class="card-desc">相比薄弱优先基线，正确知识点命中率提升</div>
+      <div class="card-highlight">+34%</div>
+    </div>
+    <div class="highlight-card">
+      <div class="card-icon">📉</div>
+      <div class="card-title">先修违反率最低</div>
+      <div class="card-desc">基于 Neo4j 知识图谱先修链约束，确保推荐路径符合学习规律</div>
+      <div class="card-highlight">0.15</div>
+    </div>
+    <div class="highlight-card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">难度平滑度最优</div>
+      <div class="card-desc">相邻推荐知识点难度方差最小，学习曲线更平滑</div>
+      <div class="card-highlight">0.85</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
