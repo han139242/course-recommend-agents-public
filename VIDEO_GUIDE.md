@@ -11,24 +11,16 @@
 ### 1.1 启动服务
 
 ```bash
-# 终端 1：启动 Neo4j + MySQL + Redis（Docker）
-cd docker/neo4j
-docker compose up -d
-
-# 终端 2：启动 Go 后端（端口 8080）
-cd backend
-go run ./cmd/server
-
-# 终端 3：启动 Vue 前端开发服务器（端口 5173）
-cd frontend
-npm run dev
+# 推荐：项目根目录一键启动 Docker 依赖、构建前端、启动 Go 后端
+powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1
 ```
 
 ### 1.2 检查清单
 
 - [ ] Neo4j 已启动且填充 1800+ 知识点（`curl http://localhost:7474`）
 - [ ] 后端健康检查通过（`curl http://localhost:8080/healthz`）
-- [ ] 前端代理正常（访问 `http://localhost:5173` 可打开登录页）
+- [ ] 统一入口正常（访问 `http://127.0.0.1:8080` 可打开首页）
+- [ ] 展示中心正常（访问 `http://127.0.0.1:8080/showcase` 可打开比赛展示页）
 - [ ] 演示账号已创建且有学习数据（有答题记录、掌握度）
 - [ ] 浏览器无痕模式（以免缓存干扰）
 - [ ] 关闭系统通知和弹窗
@@ -72,7 +64,7 @@ OBS 推荐设置：
 
 ```
 1. 打开浏览器无痕窗口
-2. 输入 http://localhost:5173
+2. 输入 http://127.0.0.1:8080
 3. 按 F12 打开开发者工具 → Network 标签（用于验证 API 调用正常）
 4. 确认页面加载完成
 5. 开始录屏
@@ -200,5 +192,5 @@ OBS 推荐设置：
 | Neo4j 连接失败 | 重启 Docker `docker compose restart neo4j` |
 | AI 助手 API 无响应 | 使用本地 fallback（删除 DEEPSEEK_API_KEY 环境变量） |
 | 图谱加载慢 | 减少 seed 节点数：`graphStore.loadSeeds(10)` |
-| 前端构建报错 | 使用开发模式：`npm run dev` 直接用开发服务器录制 |
+| 前端构建报错 | 执行 `npm install` 后重新运行 `powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1` |
 | 录制卡顿 | 降低 OBS 编码质量、关闭其他应用 |

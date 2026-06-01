@@ -17,6 +17,44 @@
 
 ## 本地开发
 
+### 0. 队友复现同款效果
+
+当前 GitHub 上 `main` 和 `前端修改1` 已同步到同一个提交。队友只需要拉取其中任一分支，即可看到和本机一致的前端构建产物与功能效果。
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+```
+
+如果队友习惯使用前端分支，也可以：
+
+```bash
+git fetch origin
+git checkout 前端修改1
+git pull --ff-only origin 前端修改1
+```
+
+推荐统一使用一键脚本启动演示环境：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1
+```
+
+浏览器统一打开：
+
+```text
+http://127.0.0.1:8080
+```
+
+比赛展示中心统一打开：
+
+```text
+http://127.0.0.1:8080/showcase
+```
+
+说明：演示和队友验收都不要打开 `5173`。项目的统一效果以 Go 后端托管的 `backend/web/dist` 为准，入口固定为 `8080`。
+
 ### 1. 准备环境变量
 
 复制 `.env.example` 为 `.env`，补齐：
@@ -58,21 +96,21 @@ curl http://localhost:8080/healthz
 curl http://localhost:8080/readyz
 ```
 
-### 3. 启动前端开发服务
+### 3. 统一入口运行前端页面
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run build
 ```
 
-开发模式下，Vite 会把 `/api/*` 统一代理到 Go 后端，默认目标是：
+构建结果会写入：
 
 ```text
-http://localhost:8080
+backend/web/dist
 ```
 
-浏览器固定访问前端入口：
+随后由 Go 后端统一托管前端页面。浏览器固定访问：
 
 ```text
 http://127.0.0.1:8080
@@ -80,7 +118,13 @@ http://127.0.0.1:8080
 
 说明：项目运行入口统一为 `8080`。前端先执行生产构建，Go 后端直接托管 `backend/web/dist`，浏览器不再需要打开 Vite 的 `5173` 端口。
 
-如果你要改代理目标，可以设置：
+如果只是做前端源码开发，可以临时运行 Vite 开发服务器；但比赛演示、队友验收和最终效果检查仍以 `8080` 为准。
+
+```bash
+npm run dev
+```
+
+如果你要改 Vite 开发代理目标，可以设置：
 
 ```text
 VITE_API_PROXY_TARGET=http://localhost:8080
