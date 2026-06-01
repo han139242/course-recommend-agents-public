@@ -1,10 +1,12 @@
 <script setup>
+import { Bot, Bookmark, BookmarkCheck, ChevronLeft, ChevronRight, ExternalLink, MousePointerClick } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import BridgeView from './BridgeView.vue'
-import { useUserStore } from '../../stores/userStore'
 import { useGraphStore } from '../../stores/graphStore'
+import { useUserStore } from '../../stores/userStore'
+import { getEntityLabel } from '../../utils/colorMap'
 import { DEFAULT_COURSE_TITLE, normalizeCourseTitle } from '../../utils/courseMeta'
 
 const props = defineProps({
@@ -25,13 +27,6 @@ const emit = defineEmits(['toggle', 'select-related', 'open-ai', 'show-recommend
 const userStore = useUserStore()
 const graphStore = useGraphStore()
 const draftNote = ref('')
-const entityTypeLabelMap = {
-  concept: '概念',
-  method: '方法',
-  algorithm: '算法',
-  application: '应用',
-  topic: '主题',
-}
 
 watch(
   () => props.detail?.routeKnowledgeId,
@@ -45,15 +40,21 @@ const masteryPercent = computed(() =>
   Math.round(props.progress?.masteryScore || props.detail?.masteryScore || 0),
 )
 
+const statusText = computed(() => {
+  if (masteryPercent.value >= 80) return '已掌握'
+  if (masteryPercent.value >= 40) return '学习中'
+  if (Number(props.progress?.answeredCount || 0) > 0) return '待巩固'
+  return '未开始'
+})
+
 function getStatusMeta(routeKnowledgeId) {
   const progress = userStore.getProgressMeta(routeKnowledgeId)
   const mastery = Number(progress.masteryScore || 0)
   const answeredCount = Number(progress.answeredCount || 0)
-
-  if (mastery >= 80) return '✅'
-  if (mastery < 30 && answeredCount > 0) return '⚠️'
-  if (mastery >= 40) return '📖'
-  return '⬜'
+  if (mastery >= 80) return '已掌握'
+  if (mastery < 30 && answeredCount > 0) return '待巩固'
+  if (mastery >= 40) return '学习中'
+  return '未开始'
 }
 
 const crossCourseRecommends = computed(() => {
@@ -63,15 +64,16 @@ const crossCourseRecommends = computed(() => {
       const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
       const displayTitle =
         String(node?.canonicalName || node?.name || item.title || item.knowledgeId || '').trim()
+      const sourceCourse = normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE)
+      const targetCourse = normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE)
       return {
         ...item,
         displayTitle,
-        sourceCourse: normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE),
-        targetCourse: normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
-        courseLabel:
-          item.reasonCode === 'cross_course_transfer'
-            ? `${normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE)} → ${normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE)}`
-            : normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
+        sourceCourse,
+        targetCourse,
+        courseLabel: item.reasonCode === 'cross_course_transfer'
+          ? `${sourceCourse} -> ${targetCourse}`
+          : targetCourse,
       }
     })
     .filter((item) => {
@@ -84,6 +86,10 @@ const crossCourseRecommends = computed(() => {
     .slice(0, 3)
 })
 
+const pathRouteIds = computed(() =>
+  (props.recommendedPath || []).map((item) => item.knowledgeId || item.title).filter(Boolean),
+)
+
 function saveNote() {
   if (!props.detail?.routeKnowledgeId) return
   userStore.saveNote(props.detail.routeKnowledgeId, draftNote.value)
@@ -93,9 +99,13 @@ function saveNote() {
 <template>
   <aside class="right-panel" :class="{ 'right-panel--collapsed': collapsed }">
     <div class="panel-header">
-      <strong>节点详情</strong>
-      <button type="button" class="panel-toggle" @click="emit('toggle')">
-        {{ collapsed ? '展开' : '折叠' }}
+      <div class="panel-header__title">
+        <Bot :size="17" aria-hidden="true" />
+        <strong>学习提示</strong>
+      </div>
+      <button type="button" class="panel-toggle" :title="collapsed ? '展开详情' : '收起详情'" @click="emit('toggle')">
+        <ChevronLeft v-if="collapsed" :size="16" aria-hidden="true" />
+        <ChevronRight v-else :size="16" aria-hidden="true" />
       </button>
     </div>
 
@@ -103,11 +113,13 @@ function saveNote() {
       <div v-if="detail" class="panel-card detail-card">
         <div class="detail-title-row">
           <div>
+            <span class="status-pill" :class="`status-pill--${statusText === '已掌握' ? 'mastered' : statusText === '待巩固' ? 'weak' : statusText === '学习中' ? 'learning' : 'idle'}`">{{ statusText }}</span>
             <h2>{{ detail.canonicalName || detail.name }}</h2>
-            <p>{{ detail.chapterTitle || '其他课程' }} · {{ entityTypeLabelMap[detail.entityType] || '知识点' }}</p>
+            <p>{{ detail.chapterTitle || '其他课程' }} · {{ getEntityLabel(detail.entityType) }}</p>
           </div>
-          <button type="button" class="icon-btn" @click="userStore.toggleBookmark(detail.routeKnowledgeId)">
-            {{ userStore.bookmarks.includes(detail.routeKnowledgeId) ? '★' : '☆' }}
+          <button type="button" class="icon-btn" :title="userStore.bookmarks.includes(detail.routeKnowledgeId) ? '取消收藏' : '收藏'" @click="userStore.toggleBookmark(detail.routeKnowledgeId)">
+            <BookmarkCheck v-if="userStore.bookmarks.includes(detail.routeKnowledgeId)" :size="18" aria-hidden="true" />
+            <Bookmark v-else :size="18" aria-hidden="true" />
           </button>
         </div>
 
@@ -119,7 +131,7 @@ function saveNote() {
         </div>
 
         <p class="detail-copy">
-          {{ detail.description || detail.summary || '当前知识点暂时还没有补充说明。' }}
+          {{ detail.description || detail.summary || '当前知识点还没有补充说明，可以先结合前置知识和练习题建立基本理解。' }}
         </p>
 
         <div class="detail-section">
@@ -131,8 +143,10 @@ function saveNote() {
             class="inline-link"
             @click="emit('select-related', item)"
           >
-            {{ getStatusMeta(item) }} {{ item }}
+            <span>{{ getStatusMeta(item) }}</span>
+            {{ item }}
           </button>
+          <span v-if="!(detail.prerequisites || []).length" class="muted-text">暂无明确前置知识。</span>
         </div>
 
         <div class="detail-section">
@@ -144,84 +158,65 @@ function saveNote() {
             class="inline-link"
             @click="emit('select-related', item.routeKnowledgeId || item)"
           >
-            {{ getStatusMeta(item.routeKnowledgeId || item) }} {{ item.label || item }}
+            <span>{{ getStatusMeta(item.routeKnowledgeId || item) }}</span>
+            {{ item.label || item }}
           </button>
-          <span v-if="!nextNodes.length" class="muted-text">当前还没有明确的后续可学节点。</span>
-        </div>
-
-        <div class="detail-section">
-          <span class="panel-label">相关知识</span>
-          <button
-            v-for="item in detail.related || []"
-            :key="item"
-            type="button"
-            class="inline-link"
-            @click="emit('select-related', item)"
-          >
-            {{ getStatusMeta(item) }} {{ item }}
-          </button>
+          <span v-if="!nextNodes.length" class="muted-text">暂无明确后续节点。</span>
         </div>
 
         <div v-if="crossCourseRecommends.length" class="detail-section recommend-section">
-          <span class="panel-label">智能推荐 · 突破课程边界</span>
-          <div class="recommend-card" v-for="item in crossCourseRecommends" :key="item.knowledgeId || item.title">
+          <span class="panel-label">跨课程衔接</span>
+          <article class="recommend-card" v-for="item in crossCourseRecommends" :key="item.knowledgeId || item.title">
             <div class="recommend-card__head">
               <span class="recommend-card__badge">{{ item.reasonLabel || '推荐' }}</span>
               <span class="recommend-card__course">{{ item.courseLabel || item.targetCourse || '当前课程' }}</span>
             </div>
-            <div
+            <BridgeView
               v-if="item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse"
-            >
-              <BridgeView :item="item" />
-            </div>
+              :item="item"
+            />
             <button type="button" class="recommend-card__title" @click="emit('select-related', item.knowledgeId || item.title)">
               {{ item.displayTitle || item.title }}
             </button>
-            <p v-if="item.reasonCode !== 'cross_course_transfer'" class="recommend-card__detail">
-              {{ item.detail || '基于你当前的学习路径，推荐探索此知识点' }}
+            <p class="recommend-card__detail">
+              {{ item.detail || '这一步适合作为当前知识点之后的延伸学习。' }}
             </p>
-            <div class="recommend-card__bar">
-              <div class="progress-track">
-                <span class="progress-fill" :style="{ width: `${Math.round(item.masteryScore || 0)}%` }"></span>
-              </div>
-              <span class="recommend-card__score">掌握 {{ Math.round(item.masteryScore || 0) }}%</span>
-            </div>
-          </div>
+          </article>
           <button
-            v-if="recommendedPath.length > 3"
+            v-if="pathRouteIds.length"
             type="button"
-            class="inline-link--ai"
-            @click="emit('show-recommend-path', recommendedPath.map(p => p.knowledgeId || p.title))"
+            class="inline-link inline-link--ai"
+            @click="emit('show-recommend-path', pathRouteIds)"
           >
-            在图谱中查看完整推荐路径 →
+            在图谱中查看完整路径
           </button>
         </div>
 
         <div class="detail-section">
           <span class="panel-label">我的笔记</span>
-          <textarea v-model="draftNote" rows="5" placeholder="记录你的理解、误区和启发..."></textarea>
+          <textarea v-model="draftNote" rows="5" placeholder="记录理解、易错点或下一步计划"></textarea>
           <button type="button" class="secondary-btn" @click="saveNote">保存笔记</button>
         </div>
 
         <div class="detail-actions">
           <RouterLink class="primary-btn" :to="`/knowledge/${encodeURIComponent(detail.routeKnowledgeId)}`">
+            <ExternalLink :size="16" aria-hidden="true" />
             开始学习
           </RouterLink>
-          <button type="button" class="secondary-btn" @click="emit('open-ai')">学习讲解</button>
+          <button type="button" class="secondary-btn" @click="emit('open-ai')">问 AI 助教</button>
         </div>
       </div>
 
       <div v-else class="panel-card empty-card empty-card--guide">
         <div class="empty-card__icon">
-          <span>?</span>
+          <MousePointerClick :size="28" aria-hidden="true" />
         </div>
-        <strong>在图谱中点选知识点</strong>
-        <p>系统将为你分析该知识点的跨课程关联，并给出后续学习路径建议。</p>
+        <strong>选择一个知识点</strong>
+        <p>点击图谱中的节点后，这里会显示说明、前置知识、推荐下一步和学习笔记。</p>
         <div class="empty-card__tips">
-          <span>左键点击 → 聚焦邻域</span>
-          <span>右键点击 → 学习操作</span>
-          <span>双击知识点 → 展开关联节点</span>
-          <span>再次双击已展开节点 → 收回关联节点</span>
+          <span>单击：查看详情</span>
+          <span>双击：展开关联</span>
+          <span>右键：加入路径或收藏</span>
         </div>
       </div>
     </div>

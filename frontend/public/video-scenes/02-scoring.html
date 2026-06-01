@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: linear-gradient(160deg, #080c16 0%, #0f1724 50%, #0a0f1a 100%);
+    font-family: 'Noto Sans SC', sans-serif; color: #e0e8f0;
+    display: flex; flex-direction: column; padding: 60px 80px;
+  }
+  .header { text-align: center; margin-bottom: 50px; }
+  .section-tag { font-size: 18px; color: #64b4ff; letter-spacing: 6px; margin-bottom: 12px; }
+  .section-title { font-size: 42px; font-weight: 900; color: #fff; }
+  .section-title span { color: #64b4ff; }
+
+  .main { display: flex; gap: 50px; flex: 1; }
+  /* Formula panel */
+  .formula-panel {
+    flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(100,180,255,0.15);
+    border-radius: 16px; padding: 35px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .formula-title { font-size: 20px; color: rgba(200,220,255,0.7); margin-bottom: 25px; }
+  .factor-row {
+    display: flex; align-items: center; margin-bottom: 16px; padding: 12px 16px;
+    background: rgba(255,255,255,0.02); border-radius: 10px;
+    transition: all 0.3s;
+  }
+  .factor-row.highlight { background: rgba(100,180,255,0.1); border-left: 3px solid #64b4ff; }
+  .factor-symbol { width: 36px; font-size: 24px; font-weight: 900; color: #64b4ff; }
+  .factor-name { flex: 1; font-size: 18px; color: #c8d8f0; }
+  .factor-cn { font-size: 14px; color: rgba(160,190,220,0.65); display: block; }
+  .factor-weight { font-size: 16px; color: #64b4ff; font-weight: 700; width: 50px; text-align: right; }
+
+  /* Bars panel */
+  .bars-panel {
+    flex: 1.2; background: rgba(255,255,255,0.03); border: 1px solid rgba(100,180,255,0.15);
+    border-radius: 16px; padding: 35px; display: flex; flex-direction: column;
+  }
+  .knowledge-name { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .knowledge-meta { font-size: 15px; color: rgba(160,190,220,0.55); margin-bottom: 35px; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 18px; }
+  .bar-label { width: 120px; font-size: 14px; color: rgba(180,200,220,0.8); text-align: right; padding-right: 16px; }
+  .bar-track { flex: 1; height: 28px; background: rgba(255,255,255,0.05); border-radius: 14px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 14px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+  .bar-score { width: 60px; font-size: 15px; font-weight: 700; text-align: right; padding-left: 16px; }
+  .bar-color-1 { background: linear-gradient(90deg, #ff6b6b, #ff8e8e); } .c1 { color: #ff6b6b; }
+  .bar-color-2 { background: linear-gradient(90deg, #ffa94d, #ffc078); } .c2 { color: #ffa94d; }
+  .bar-color-3 { background: linear-gradient(90deg, #ffd43b, #ffe066); } .c3 { color: #ffd43b; }
+  .bar-color-4 { background: linear-gradient(90deg, #69db7c, #8ce99a); } .c4 { color: #69db7c; }
+  .bar-color-5 { background: linear-gradient(90deg, #4dabf7, #74c0fc); } .c5 { color: #4dabf7; }
+  .bar-color-6 { background: linear-gradient(90deg, #9775fa, #b197fc); } .c6 { color: #9775fa; }
+  .bar-color-7 { background: linear-gradient(90deg, #f783ac, #faa2c1); } .c7 { color: #f783ac; }
+
+  .total-score {
+    margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: flex-end; gap: 15px;
+  }
+  .total-label { font-size: 20px; color: #fff; font-weight: 700; }
+  .total-num { font-size: 48px; font-weight: 900; color: #64b4ff; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="section-tag">核心创新 · 评分因子分解</div>
+  <div class="section-title">KT-KGPath <span>7因子统一评分器</span></div>
+</div>
+
+<div class="main">
+  <!-- Left: Formula factors -->
+  <div class="formula-panel">
+    <div class="formula-title">Score(k) = Σ (权重 × 因子得分)</div>
+    <div class="factor-row" id="f0">
+      <div class="factor-symbol">α</div>
+      <div class="factor-name">薄弱度<span class="factor-cn">Weakness</span></div>
+      <div class="factor-weight">0.30</div>
+    </div>
+    <div class="factor-row" id="f1">
+      <div class="factor-symbol">β</div>
+      <div class="factor-name">先修满足度<span class="factor-cn">Prerequisite Readiness</span></div>
+      <div class="factor-weight">0.20</div>
+    </div>
+    <div class="factor-row" id="f2">
+      <div class="factor-symbol">γ</div>
+      <div class="factor-name">目标相关度<span class="factor-cn">Target Relevance</span></div>
+      <div class="factor-weight">0.20</div>
+    </div>
+    <div class="factor-row" id="f3">
+      <div class="factor-symbol">δ</div>
+      <div class="factor-name">遗忘风险<span class="factor-cn">Forgetting Risk</span></div>
+      <div class="factor-weight">0.10</div>
+    </div>
+    <div class="factor-row" id="f4">
+      <div class="factor-symbol">ε</div>
+      <div class="factor-name">跨课程迁移<span class="factor-cn">Cross-Course Transfer</span></div>
+      <div class="factor-weight">0.10</div>
+    </div>
+    <div class="factor-row" id="f5">
+      <div class="factor-symbol">θ</div>
+      <div class="factor-name">前沿关联度<span class="factor-cn">Frontier Relevance</span></div>
+      <div class="factor-weight">0.05</div>
+    </div>
+    <div class="factor-row" id="f6">
+      <div class="factor-symbol">λ</div>
+      <div class="factor-name">已掌握惩罚<span class="factor-cn">Mastered Penalty</span></div>
+      <div class="factor-weight">−0.05</div>
+    </div>
+  </div>
+
+  <!-- Right: Score bars for a sample knowledge point -->
+  <div class="bars-panel" id="barsPanel">
+    <div class="knowledge-name">矩阵分解 Matrix Factorization</div>
+    <div class="knowledge-meta">课程：机器学习 · 当前掌握度：42% · 上次练习：6天前</div>
+    <div id="bars"></div>
+    <div class="total-score">
+      <span class="total-label">综合评分</span>
+      <span class="total-num" id="totalScore">0.00</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const factors = [
+  { label: '薄弱度 Weakness', score: 0.78, cls: 'bar-color-1', ccls: 'c1', weight: 0.30 },
+  { label: '先修满足度 Prerequisite', score: 0.65, cls: 'bar-color-2', ccls: 'c2', weight: 0.20 },
+  { label: '目标相关度 Target Relevance', score: 0.82, cls: 'bar-color-3', ccls: 'c3', weight: 0.20 },
+  { label: '遗忘风险 Forgetting Risk', score: 0.45, cls: 'bar-color-4', ccls: 'c4', weight: 0.10 },
+  { label: '跨课程迁移 Cross-Course', score: 0.70, cls: 'bar-color-5', ccls: 'c5', weight: 0.10 },
+  { label: '前沿关联度 Frontier', score: 0.35, cls: 'bar-color-6', ccls: 'c6', weight: 0.05 },
+  { label: '已掌握惩罚 Mastered', score: -0.05, cls: 'bar-color-7', ccls: 'c7', weight: -0.05 },
+];
+
+const barsDiv = document.getElementById('bars');
+let totalScore = 0;
+
+factors.forEach((f, i) => {
+  const barScore = f.score >= 0 ? f.score : 0;
+  const weighted = f.score * Math.abs(f.weight);
+  totalScore += weighted;
+
+  const row = document.createElement('div');
+  row.className = 'bar-row';
+  row.innerHTML = `
+    <div class="bar-label">${f.label}</div>
+    <div class="bar-track">
+      <div class="bar-fill ${f.cls}" style="width:0%"></div>
+    </div>
+    <div class="bar-score ${f.ccls}">${(f.score >= 0 ? '+' : '')}${f.score.toFixed(2)}</div>
+  `;
+  barsDiv.appendChild(row);
+});
+
+// Animate bars sequentially
+setTimeout(() => {
+  const fills = document.querySelectorAll('.bar-fill');
+  const rows = document.querySelectorAll('.factor-row');
+  const scoreEl = document.getElementById('totalScore');
+  let animated = 0;
+
+  factors.forEach((f, i) => {
+    setTimeout(() => {
+      fills[i].style.width = (f.score * 100) + '%';
+      rows[i].classList.add('highlight');
+      animated += f.score * Math.abs(f.weight);
+      scoreEl.textContent = animated.toFixed(2);
+    }, i * 400);
+  });
+}, 600);
+</script>
+</body>
+</html>

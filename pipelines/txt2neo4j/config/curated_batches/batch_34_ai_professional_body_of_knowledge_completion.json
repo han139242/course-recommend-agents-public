@@ -1,0 +1,1842 @@
+{
+  "source": "batch_34_ai_professional_body_of_knowledge_completion",
+  "nodes": [
+    {
+      "canonical_name": "图灵测试",
+      "entity_type": "concept",
+      "description": "通过对话行为判断机器是否表现出类人智能的经典人工智能思想实验。"
+    },
+    {
+      "canonical_name": "中文房间思想实验",
+      "entity_type": "concept",
+      "description": "用于讨论符号操作、理解和强人工智能边界的哲学思想实验。"
+    },
+    {
+      "canonical_name": "弱人工智能",
+      "entity_type": "concept",
+      "description": "面向特定任务表现智能行为但不主张机器具有真实理解或意识的人工智能观点。"
+    },
+    {
+      "canonical_name": "强人工智能",
+      "entity_type": "concept",
+      "description": "认为机器可以拥有真实理解、心智或通用认知能力的人工智能观点。"
+    },
+    {
+      "canonical_name": "理性行为",
+      "entity_type": "concept",
+      "description": "智能体在给定感知、知识和目标条件下选择最大化期望表现行动的行为准则。"
+    },
+    {
+      "canonical_name": "环境可观测性",
+      "entity_type": "concept",
+      "description": "描述智能体能否通过传感信息完整获得环境状态的任务环境属性。"
+    },
+    {
+      "canonical_name": "完全可观测环境",
+      "entity_type": "concept",
+      "description": "智能体每一步都能获得决策所需完整环境状态信息的任务环境。"
+    },
+    {
+      "canonical_name": "部分可观测环境",
+      "entity_type": "concept",
+      "description": "智能体只能获得环境状态一部分或带噪观测的任务环境。"
+    },
+    {
+      "canonical_name": "确定性环境",
+      "entity_type": "concept",
+      "description": "当前状态和行动能够唯一决定下一状态的任务环境。"
+    },
+    {
+      "canonical_name": "随机环境",
+      "entity_type": "concept",
+      "description": "状态转移或观测结果包含不确定性并需要概率建模的任务环境。"
+    },
+    {
+      "canonical_name": "离散环境",
+      "entity_type": "concept",
+      "description": "状态、行动或时间步可以用有限或可数集合描述的任务环境。"
+    },
+    {
+      "canonical_name": "连续环境",
+      "entity_type": "concept",
+      "description": "状态、行动或时间变量取值连续并通常需要数值优化的任务环境。"
+    },
+    {
+      "canonical_name": "单智能体环境",
+      "entity_type": "concept",
+      "description": "只有一个决策主体与外部环境交互的智能体任务设定。"
+    },
+    {
+      "canonical_name": "多智能体环境",
+      "entity_type": "concept",
+      "description": "多个智能体共同影响环境状态并可能协作、竞争或混合交互的任务设定。"
+    },
+    {
+      "canonical_name": "性能度量",
+      "entity_type": "concept",
+      "description": "衡量智能体行为结果是否满足任务目标和质量要求的评价标准。"
+    },
+    {
+      "canonical_name": "AI问题形式化",
+      "entity_type": "method",
+      "description": "将现实任务抽象为状态、行动、目标、约束、效用和评价指标的建模方法。"
+    },
+    {
+      "canonical_name": "状态空间表示",
+      "entity_type": "concept",
+      "description": "用状态集合、初始状态、动作和目标条件刻画搜索或规划问题的形式化表示。"
+    },
+    {
+      "canonical_name": "搜索树",
+      "entity_type": "concept",
+      "description": "以节点扩展过程形成的树形结构表示候选解路径和搜索分支。"
+    },
+    {
+      "canonical_name": "搜索图",
+      "entity_type": "concept",
+      "description": "允许重复状态合并和图遍历策略的搜索空间结构表示。"
+    },
+    {
+      "canonical_name": "搜索空间拓扑",
+      "entity_type": "concept",
+      "description": "描述搜索空间连通性、邻域结构、局部极值和可达性的结构属性。"
+    },
+    {
+      "canonical_name": "组合爆炸",
+      "entity_type": "concept",
+      "description": "候选状态或动作组合随问题规模快速增长导致穷举搜索不可行的现象。"
+    },
+    {
+      "canonical_name": "双向搜索",
+      "entity_type": "algorithm",
+      "description": "从初始状态和目标状态同时扩展并在中间相遇以降低搜索复杂度的算法。"
+    },
+    {
+      "canonical_name": "IDA*搜索",
+      "entity_type": "algorithm",
+      "description": "结合迭代加深和 A* 代价界限的低内存启发式搜索算法。"
+    },
+    {
+      "canonical_name": "RBFS搜索",
+      "entity_type": "algorithm",
+      "description": "通过递归回溯和当前最佳备选代价控制内存使用的启发式搜索算法。"
+    },
+    {
+      "canonical_name": "SMA*搜索",
+      "entity_type": "algorithm",
+      "description": "在有限内存条件下保留最有希望节点并丢弃较差路径的启发式搜索算法。"
+    },
+    {
+      "canonical_name": "禁忌搜索",
+      "entity_type": "algorithm",
+      "description": "通过禁忌表避免重复访问近期状态并跳出局部最优的元启发式搜索算法。"
+    },
+    {
+      "canonical_name": "约束传播",
+      "entity_type": "method",
+      "description": "利用约束关系缩小变量可取值范围并提前发现不一致性的推理方法。"
+    },
+    {
+      "canonical_name": "弧一致性",
+      "entity_type": "concept",
+      "description": "约束满足问题中要求每个变量取值都能在相邻变量中找到兼容取值的局部一致性条件。"
+    },
+    {
+      "canonical_name": "最小冲突算法",
+      "entity_type": "algorithm",
+      "description": "在约束满足问题中优先调整造成冲突最少变量取值的局部搜索算法。"
+    },
+    {
+      "canonical_name": "期望极大极小搜索",
+      "entity_type": "algorithm",
+      "description": "在对抗搜索中同时考虑决策节点和随机机会节点的博弈树搜索算法。"
+    },
+    {
+      "canonical_name": "机会节点",
+      "entity_type": "concept",
+      "description": "博弈树或决策树中表示随机事件结果并按概率加权的节点类型。"
+    },
+    {
+      "canonical_name": "一阶逻辑",
+      "entity_type": "concept",
+      "description": "使用个体、谓词、量词和逻辑连接词表达对象关系与命题的形式逻辑系统。"
+    },
+    {
+      "canonical_name": "归结推理",
+      "entity_type": "algorithm",
+      "description": "通过子句归结和反证法完成自动定理证明的逻辑推理算法。"
+    },
+    {
+      "canonical_name": "论证推理",
+      "entity_type": "method",
+      "description": "通过构造支持与反驳理由来处理冲突知识和不完全信息的推理方法。"
+    },
+    {
+      "canonical_name": "情境演算",
+      "entity_type": "concept",
+      "description": "用逻辑形式描述行动、状态变化和情境序列的知识表示方法。"
+    },
+    {
+      "canonical_name": "事件演算",
+      "entity_type": "concept",
+      "description": "用事件发生和属性保持关系表示时间变化与因果效应的逻辑形式体系。"
+    },
+    {
+      "canonical_name": "时间推理",
+      "entity_type": "method",
+      "description": "对事件顺序、持续时间、时态约束和状态变化进行推断的方法。"
+    },
+    {
+      "canonical_name": "空间推理",
+      "entity_type": "method",
+      "description": "对空间位置、方向、距离、拓扑关系和几何约束进行推断的方法。"
+    },
+    {
+      "canonical_name": "逻辑编程",
+      "entity_type": "method",
+      "description": "以事实、规则和查询组织程序并依靠逻辑推理完成计算的编程范式。"
+    },
+    {
+      "canonical_name": "答案集编程",
+      "entity_type": "method",
+      "description": "基于稳定模型语义表达组合搜索、规划和非单调推理问题的逻辑编程方法。"
+    },
+    {
+      "canonical_name": "基于模型推理",
+      "entity_type": "method",
+      "description": "利用系统结构模型解释观测、定位故障或推断不可直接观测状态的推理方法。"
+    },
+    {
+      "canonical_name": "本体工程",
+      "entity_type": "method",
+      "description": "设计、构建、维护和复用领域本体以支撑知识共享与推理的工程方法。"
+    },
+    {
+      "canonical_name": "知识一致性检查",
+      "entity_type": "method",
+      "description": "检测知识库中类型约束、逻辑规则和实例事实是否存在矛盾的方法。"
+    },
+    {
+      "canonical_name": "贝叶斯决策理论",
+      "entity_type": "concept",
+      "description": "在不确定性条件下结合概率、损失和效用进行理性决策的理论框架。"
+    },
+    {
+      "canonical_name": "期望效用最大化",
+      "entity_type": "method",
+      "description": "选择期望效用最高行动以获得最优决策的决策准则。"
+    },
+    {
+      "canonical_name": "马尔可夫毯",
+      "entity_type": "concept",
+      "description": "贝叶斯网络中使节点与其他所有节点条件独立的最小变量集合。"
+    },
+    {
+      "canonical_name": "d-分离",
+      "entity_type": "concept",
+      "description": "在有向概率图中判断变量条件独立关系的图结构准则。"
+    },
+    {
+      "canonical_name": "变量消除",
+      "entity_type": "algorithm",
+      "description": "通过逐步求和或最大化消去中间变量完成概率图模型精确推理的算法。"
+    },
+    {
+      "canonical_name": "吉布斯采样",
+      "entity_type": "algorithm",
+      "description": "逐个变量按条件分布采样以近似联合分布的马尔可夫链蒙特卡洛算法。"
+    },
+    {
+      "canonical_name": "近似推理",
+      "entity_type": "method",
+      "description": "在精确推理代价过高时利用采样、变分或近似传播估计推理结果的方法。"
+    },
+    {
+      "canonical_name": "粒子滤波",
+      "entity_type": "algorithm",
+      "description": "用带权样本集合递推估计动态系统隐藏状态的序贯蒙特卡洛算法。"
+    },
+    {
+      "canonical_name": "关系概率模型",
+      "entity_type": "concept",
+      "description": "结合关系结构和概率依赖表达对象、属性和关系不确定性的模型族。"
+    },
+    {
+      "canonical_name": "影响图",
+      "entity_type": "concept",
+      "description": "用决策节点、机会节点和效用节点表示不确定决策问题的图模型。"
+    },
+    {
+      "canonical_name": "动态贝叶斯网络",
+      "entity_type": "concept",
+      "description": "以时间片结构扩展贝叶斯网络并表示动态随机过程的概率图模型。"
+    },
+    {
+      "canonical_name": "规划问题形式化",
+      "entity_type": "method",
+      "description": "用状态、动作、前提、效果、目标和约束描述自动规划任务的方法。"
+    },
+    {
+      "canonical_name": "STRIPS",
+      "entity_type": "concept",
+      "description": "用动作前提、添加列表和删除列表表示经典规划问题的形式化语言。"
+    },
+    {
+      "canonical_name": "PDDL",
+      "entity_type": "concept",
+      "description": "用于描述规划领域、动作模式、对象、初始状态和目标的标准规划描述语言。"
+    },
+    {
+      "canonical_name": "全序规划",
+      "entity_type": "method",
+      "description": "生成所有动作具有明确线性执行顺序的规划方法。"
+    },
+    {
+      "canonical_name": "偏序规划",
+      "entity_type": "method",
+      "description": "只约束必要动作先后关系并保留可并行或可交换顺序的规划方法。"
+    },
+    {
+      "canonical_name": "规划图",
+      "entity_type": "concept",
+      "description": "交替展开命题层和动作层并记录互斥关系的规划问题图结构。"
+    },
+    {
+      "canonical_name": "GraphPlan算法",
+      "entity_type": "algorithm",
+      "description": "基于规划图展开和反向解抽取求解经典规划问题的算法。"
+    },
+    {
+      "canonical_name": "层次任务网络",
+      "entity_type": "method",
+      "description": "通过将高层任务递归分解为子任务和基本动作来生成规划的层次规划方法。"
+    },
+    {
+      "canonical_name": "条件规划",
+      "entity_type": "method",
+      "description": "在规划中包含观测动作和分支策略以应对执行时不确定性的规划方法。"
+    },
+    {
+      "canonical_name": "连续规划",
+      "entity_type": "method",
+      "description": "面向连续状态、连续时间或连续动作空间的规划方法。"
+    },
+    {
+      "canonical_name": "概率规划",
+      "entity_type": "method",
+      "description": "在动作效果或环境转移具有概率性的条件下构造策略或计划的规划方法。"
+    },
+    {
+      "canonical_name": "MDP规划",
+      "entity_type": "method",
+      "description": "将马尔可夫决策过程求解为策略生成问题的规划方法。"
+    },
+    {
+      "canonical_name": "动态重规划",
+      "entity_type": "method",
+      "description": "在环境变化、执行失败或目标变化后在线更新计划的规划方法。"
+    },
+    {
+      "canonical_name": "时序规划",
+      "entity_type": "method",
+      "description": "同时考虑动作持续时间、时间约束和并发关系的规划方法。"
+    },
+    {
+      "canonical_name": "资源约束规划",
+      "entity_type": "method",
+      "description": "在有限时间、能量、设备或其他资源约束下生成可执行计划的方法。"
+    },
+    {
+      "canonical_name": "智能体架构",
+      "entity_type": "concept",
+      "description": "组织智能体感知、状态表示、决策、学习和行动模块的系统结构。"
+    },
+    {
+      "canonical_name": "反应式架构",
+      "entity_type": "concept",
+      "description": "主要依据当前感知直接选择行动并强调快速响应的智能体架构。"
+    },
+    {
+      "canonical_name": "分层式架构",
+      "entity_type": "concept",
+      "description": "将智能体控制划分为高层目标规划、中层策略和底层执行控制的架构。"
+    },
+    {
+      "canonical_name": "认知架构",
+      "entity_type": "concept",
+      "description": "模拟记忆、目标、推理、学习和注意等认知过程的智能体架构。"
+    },
+    {
+      "canonical_name": "ACT-R",
+      "entity_type": "concept",
+      "description": "将陈述性记忆、程序性规则和认知模块结合的经典认知架构。"
+    },
+    {
+      "canonical_name": "SOAR",
+      "entity_type": "concept",
+      "description": "以问题空间搜索、产生式规则和经验学习为核心的经典认知架构。"
+    },
+    {
+      "canonical_name": "决策理论智能体",
+      "entity_type": "concept",
+      "description": "用概率信念和效用函数选择最大期望效用行动的智能体类型。"
+    },
+    {
+      "canonical_name": "BDI智能体",
+      "entity_type": "concept",
+      "description": "以信念、愿望和意图刻画内部状态并驱动行动选择的智能体模型。"
+    },
+    {
+      "canonical_name": "多臂老虎机",
+      "entity_type": "concept",
+      "description": "在探索未知收益和利用当前最优选择之间权衡的序贯决策问题。"
+    },
+    {
+      "canonical_name": "协作智能体",
+      "entity_type": "concept",
+      "description": "以共享目标、信息交换和协同决策完成任务的智能体类型。"
+    },
+    {
+      "canonical_name": "信息搜集智能体",
+      "entity_type": "concept",
+      "description": "主动检索、筛选、整合和更新外部信息以服务决策的智能体类型。"
+    },
+    {
+      "canonical_name": "可信智能体",
+      "entity_type": "concept",
+      "description": "在安全性、可靠性、可解释性、合规性和可控性上满足信任要求的智能体。"
+    },
+    {
+      "canonical_name": "学习型智能体",
+      "entity_type": "concept",
+      "description": "能够根据经验、反馈或交互数据更新行为策略和内部模型的智能体。"
+    },
+    {
+      "canonical_name": "人机智能体交互",
+      "entity_type": "application",
+      "description": "研究人类与智能体之间协作、沟通、信任校准和任务分配的交互场景。"
+    },
+    {
+      "canonical_name": "确定性文法",
+      "entity_type": "concept",
+      "description": "在给定输入和文法规则下具有确定分析路径的形式文法。"
+    },
+    {
+      "canonical_name": "随机文法",
+      "entity_type": "concept",
+      "description": "为文法产生式或结构分配概率以表达语言结构不确定性的文法模型。"
+    },
+    {
+      "canonical_name": "上下文无关文法",
+      "entity_type": "concept",
+      "description": "每条产生式左侧为单个非终结符并常用于句法结构描述的形式文法。"
+    },
+    {
+      "canonical_name": "图表句法分析器",
+      "entity_type": "algorithm",
+      "description": "通过图表缓存中间句法分析结果以避免重复计算的动态规划句法分析器。"
+    },
+    {
+      "canonical_name": "CYK算法",
+      "entity_type": "algorithm",
+      "description": "在乔姆斯基范式文法上使用动态规划判断句子可解析性的句法分析算法。"
+    },
+    {
+      "canonical_name": "概率上下文无关文法",
+      "entity_type": "concept",
+      "description": "为上下文无关文法产生式赋予概率并用于统计句法分析的文法模型。"
+    },
+    {
+      "canonical_name": "平滑技术",
+      "entity_type": "method",
+      "description": "在语言建模或概率估计中为未见事件分配合理概率并降低稀疏性影响的方法。"
+    },
+    {
+      "canonical_name": "回退模型",
+      "entity_type": "method",
+      "description": "在高阶上下文证据不足时退回到低阶上下文估计概率的语言模型方法。"
+    },
+    {
+      "canonical_name": "形态学分析",
+      "entity_type": "method",
+      "description": "分析词的词根、词缀、词形变化和构词结构的自然语言处理方法。"
+    },
+    {
+      "canonical_name": "向量空间模型",
+      "entity_type": "concept",
+      "description": "将文本、词项或文档表示为向量并用几何关系衡量相似性的模型。"
+    },
+    {
+      "canonical_name": "语义表示",
+      "entity_type": "concept",
+      "description": "把自然语言含义编码为逻辑式、图结构、向量或其他可计算形式的表示方法。"
+    },
+    {
+      "canonical_name": "语料库方法",
+      "entity_type": "method",
+      "description": "基于大规模真实文本数据统计语言规律并训练语言处理模型的方法。"
+    },
+    {
+      "canonical_name": "语言资源",
+      "entity_type": "concept",
+      "description": "支撑自然语言处理的语料库、词典、本体、标注数据和评测集等资源集合。"
+    },
+    {
+      "canonical_name": "指代消解",
+      "entity_type": "method",
+      "description": "识别文本中代词、名词短语等表达所指实体或事件的自然语言理解方法。"
+    },
+    {
+      "canonical_name": "篇章分析",
+      "entity_type": "method",
+      "description": "分析跨句结构、篇章关系、主题连贯性和信息组织的自然语言处理方法。"
+    },
+    {
+      "canonical_name": "对话状态跟踪",
+      "entity_type": "method",
+      "description": "在多轮对话中维护用户目标、槽位、上下文和系统状态的建模方法。"
+    },
+    {
+      "canonical_name": "机器人控制架构",
+      "entity_type": "concept",
+      "description": "组织机器人感知、规划、控制和执行模块以完成任务的系统结构。"
+    },
+    {
+      "canonical_name": "反应式控制",
+      "entity_type": "method",
+      "description": "机器人根据当前传感输入直接产生控制动作的低延迟控制方法。"
+    },
+    {
+      "canonical_name": "审慎式控制",
+      "entity_type": "method",
+      "description": "机器人先构建环境模型和计划再执行动作的模型驱动控制方法。"
+    },
+    {
+      "canonical_name": "混合控制",
+      "entity_type": "method",
+      "description": "结合反应式快速响应和审慎式规划能力的机器人控制方法。"
+    },
+    {
+      "canonical_name": "世界模型",
+      "entity_type": "concept",
+      "description": "学习环境动态性内在表示的生成模型，使智能体可以在想象中规划而无需真实环境交互。"
+    },
+    {
+      "canonical_name": "传感器",
+      "entity_type": "concept",
+      "description": "机器人用于获取外部环境或自身状态信息的硬件与信号来源。"
+    },
+    {
+      "canonical_name": "执行器",
+      "entity_type": "concept",
+      "description": "机器人用于产生运动、操作或物理作用的驱动装置。"
+    },
+    {
+      "canonical_name": "坐标系变换",
+      "entity_type": "method",
+      "description": "在不同参考坐标系之间转换位置、姿态和运动量的几何计算方法。"
+    },
+    {
+      "canonical_name": "配置空间",
+      "entity_type": "concept",
+      "description": "用机器人自由度参数表示所有可能姿态或构型的空间。"
+    },
+    {
+      "canonical_name": "环境地图",
+      "entity_type": "concept",
+      "description": "用于表示机器人周围障碍物、可通行区域、语义对象或拓扑结构的地图。"
+    },
+    {
+      "canonical_name": "不确定性感知",
+      "entity_type": "method",
+      "description": "在感知结果中同时估计噪声、置信度和状态不确定性的机器人感知方法。"
+    },
+    {
+      "canonical_name": "定位与建图",
+      "entity_type": "method",
+      "description": "同时估计机器人位姿并构建环境地图的机器人核心问题。"
+    },
+    {
+      "canonical_name": "SLAM",
+      "entity_type": "method",
+      "description": "同步定位与地图构建技术，用于未知环境中的位姿估计和地图生成。"
+    },
+    {
+      "canonical_name": "机器人导航",
+      "entity_type": "application",
+      "description": "机器人在环境中从当前位置安全到达目标位置的感知、规划与控制任务。"
+    },
+    {
+      "canonical_name": "运动路径规划",
+      "entity_type": "method",
+      "description": "在配置空间或工作空间中寻找无碰撞运动路径的规划方法。"
+    },
+    {
+      "canonical_name": "轨迹优化",
+      "entity_type": "method",
+      "description": "在动力学、碰撞和任务约束下优化连续运动轨迹的数值方法。"
+    },
+    {
+      "canonical_name": "正向运动学",
+      "entity_type": "method",
+      "description": "根据机器人关节参数计算末端执行器位置和姿态的运动学方法。"
+    },
+    {
+      "canonical_name": "逆向运动学",
+      "entity_type": "method",
+      "description": "根据目标末端位姿求解机器人关节参数的运动学方法。"
+    },
+    {
+      "canonical_name": "机械臂操作",
+      "entity_type": "application",
+      "description": "机器人机械臂完成抓取、搬运、装配、工具使用等物理操作的任务。"
+    },
+    {
+      "canonical_name": "抓取规划",
+      "entity_type": "method",
+      "description": "为机器人选择抓取姿态、接触点和执行路径以稳定操作物体的方法。"
+    },
+    {
+      "canonical_name": "关节控制",
+      "entity_type": "method",
+      "description": "控制机器人关节位置、速度或力矩以实现期望运动的底层控制方法。"
+    },
+    {
+      "canonical_name": "机器人动力学",
+      "entity_type": "concept",
+      "description": "研究机器人受力、质量、惯量和运动之间关系的动力学知识。"
+    },
+    {
+      "canonical_name": "视觉伺服",
+      "entity_type": "method",
+      "description": "利用视觉反馈实时修正机器人运动和末端姿态的控制方法。"
+    },
+    {
+      "canonical_name": "多机器人协同",
+      "entity_type": "application",
+      "description": "多个机器人通过通信、任务分配和协调控制共同完成任务的应用场景。"
+    },
+    {
+      "canonical_name": "社交辅助机器人",
+      "entity_type": "application",
+      "description": "面向陪伴、教育、康复或服务场景并强调人机社会交互的机器人系统。"
+    },
+    {
+      "canonical_name": "图像获取",
+      "entity_type": "method",
+      "description": "通过相机、传感器或成像系统采集视觉数据并形成数字图像的过程。"
+    },
+    {
+      "canonical_name": "图像表示",
+      "entity_type": "concept",
+      "description": "用像素、颜色空间、特征、张量或多尺度结构表达图像内容的方法。"
+    },
+    {
+      "canonical_name": "形状表示",
+      "entity_type": "concept",
+      "description": "用轮廓、区域、骨架、关键点或参数模型表达物体几何形状的方法。"
+    },
+    {
+      "canonical_name": "物体识别",
+      "entity_type": "application",
+      "description": "判断图像或视频中目标对象类别、身份或语义属性的视觉任务。"
+    },
+    {
+      "canonical_name": "运动分析",
+      "entity_type": "method",
+      "description": "从视频序列中估计物体、相机或场景随时间变化的视觉分析方法。"
+    },
+    {
+      "canonical_name": "音频识别",
+      "entity_type": "application",
+      "description": "识别声音事件、语音内容、环境音或音乐类别的感知任务。"
+    },
+    {
+      "canonical_name": "说话人识别",
+      "entity_type": "application",
+      "description": "根据语音信号判断说话人身份或验证身份的语音感知任务。"
+    },
+    {
+      "canonical_name": "触觉感知",
+      "entity_type": "method",
+      "description": "通过力传感器和触觉阵列感知接触力、纹理和温度等物理交互信息的机器人感知模态。"
+    },
+    {
+      "canonical_name": "本体感觉",
+      "entity_type": "concept",
+      "description": "系统对自身位置、姿态、速度、受力和内部状态的感知能力。"
+    },
+    {
+      "canonical_name": "多模态感知",
+      "entity_type": "method",
+      "description": "融合视觉、语音、文本、触觉和本体感受等多类信号完成环境理解的方法。"
+    },
+    {
+      "canonical_name": "感知模块化",
+      "entity_type": "method",
+      "description": "将感知系统拆分为检测、分割、跟踪、识别和融合等模块的工程组织方式。"
+    },
+    {
+      "canonical_name": "视觉生成模型",
+      "entity_type": "method",
+      "description": "用于生成、补全、编辑或预测视觉内容的生成式视觉模型。"
+    },
+    {
+      "canonical_name": "轮廓表示",
+      "entity_type": "concept",
+      "description": "用物体边界曲线或边缘集合表达目标形状和空间范围的方法。"
+    },
+    {
+      "canonical_name": "区域分割",
+      "entity_type": "method",
+      "description": "将图像划分为具有一致视觉或语义属性区域的图像分析方法。"
+    },
+    {
+      "canonical_name": "三维重建",
+      "entity_type": "method",
+      "description": "从图像、视频或深度传感数据恢复场景或物体三维几何结构的方法。"
+    },
+    {
+      "canonical_name": "场景理解",
+      "entity_type": "application",
+      "description": "综合识别场景类别、物体关系、空间布局和可行动性信息的视觉理解任务。"
+    },
+    {
+      "canonical_name": "无免费午餐定理",
+      "entity_type": "concept",
+      "description": "说明在所有问题平均意义下不存在普遍优于其他算法的机器学习理论结果。"
+    },
+    {
+      "canonical_name": "假设空间",
+      "entity_type": "concept",
+      "description": "学习算法可从中选择模型或函数的候选集合。"
+    },
+    {
+      "canonical_name": "归纳偏置",
+      "entity_type": "concept",
+      "description": "学习算法在有限数据下偏好某些假设或解的先验倾向。"
+    },
+    {
+      "canonical_name": "泛化误差",
+      "entity_type": "concept",
+      "description": "模型在未见数据上的预期预测误差，是衡量学习能力的核心指标。"
+    },
+    {
+      "canonical_name": "结构风险最小化",
+      "entity_type": "method",
+      "description": "在经验误差和模型复杂度之间权衡以降低泛化风险的学习原则。"
+    },
+    {
+      "canonical_name": "数据集偏差",
+      "entity_type": "concept",
+      "description": "训练、验证或测试数据分布与目标应用分布不一致造成的系统性偏差。"
+    },
+    {
+      "canonical_name": "评估偏差",
+      "entity_type": "concept",
+      "description": "由评测指标、数据划分、采样方式或实验流程引入的不公平或不准确评价。"
+    },
+    {
+      "canonical_name": "算法偏差",
+      "entity_type": "concept",
+      "description": "模型结构、训练目标或优化过程导致对不同样本群体产生系统性差异的偏差。"
+    },
+    {
+      "canonical_name": "公平性约束",
+      "entity_type": "method",
+      "description": "在模型训练、决策或评估中加入群体公平、个体公平或机会均等要求的方法。"
+    },
+    {
+      "canonical_name": "可解释性评估",
+      "entity_type": "method",
+      "description": "衡量解释结果忠实性、稳定性、可理解性和任务有效性的评价方法。"
+    },
+    {
+      "canonical_name": "鲁棒性评估",
+      "entity_type": "method",
+      "description": "通过系统施加对抗样本和分布偏移量化模型最坏情况性能退化程度的评估方法论。"
+    },
+    {
+      "canonical_name": "安全性评估",
+      "entity_type": "method",
+      "description": "评估人工智能系统在攻击、误用、失效和风险场景中的安全边界和防护能力。"
+    },
+    {
+      "canonical_name": "隐私保护机器学习",
+      "entity_type": "method",
+      "description": "在模型训练和推理中保护个人数据、敏感属性和成员信息的机器学习方法。"
+    },
+    {
+      "canonical_name": "元学习",
+      "entity_type": "method",
+      "description": "学习如何学习，使模型能够利用过往任务经验快速适应新任务的方法。"
+    },
+    {
+      "canonical_name": "持续学习",
+      "entity_type": "method",
+      "description": "模型在连续到来的任务或数据流中保持旧知识并学习新知识的方法。"
+    },
+    {
+      "canonical_name": "贝叶斯学习",
+      "entity_type": "method",
+      "description": "用概率分布表示模型参数或假设不确定性并通过贝叶斯更新进行学习的方法。"
+    },
+    {
+      "canonical_name": "因果学习",
+      "entity_type": "method",
+      "description": "从数据、实验或先验结构中学习因果关系并支持干预推断的方法。"
+    },
+    {
+      "canonical_name": "逆强化学习",
+      "entity_type": "method",
+      "description": "从专家行为中反推出潜在奖励函数并学习决策目标的强化学习方法。"
+    },
+    {
+      "canonical_name": "可信人工智能",
+      "entity_type": "concept",
+      "description": "强调可靠、安全、公平、透明、可解释、隐私保护和可治理的人工智能体系。"
+    },
+    {
+      "canonical_name": "智能体工作流",
+      "entity_type": "method",
+      "description": "将大模型、工具调用、记忆、计划和多智能体协作组织为可执行任务流程的方法。"
+    }
+  ],
+  "relations": [
+    [
+      "图灵测试",
+      "人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "中文房间思想实验",
+      "人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "中文房间思想实验",
+      "强人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "弱人工智能",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "强人工智能",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "理性行为",
+      "智能体",
+      "RELATED_TO"
+    ],
+    [
+      "性能度量",
+      "理性行为",
+      "RELATED_TO"
+    ],
+    [
+      "环境可观测性",
+      "智能体",
+      "RELATED_TO"
+    ],
+    [
+      "完全可观测环境",
+      "环境可观测性",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "部分可观测环境",
+      "环境可观测性",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "确定性环境",
+      "智能体",
+      "RELATED_TO"
+    ],
+    [
+      "随机环境",
+      "不确定性推理",
+      "RELATED_TO"
+    ],
+    [
+      "离散环境",
+      "AI问题形式化",
+      "RELATED_TO"
+    ],
+    [
+      "连续环境",
+      "AI问题形式化",
+      "RELATED_TO"
+    ],
+    [
+      "单智能体环境",
+      "智能体",
+      "RELATED_TO"
+    ],
+    [
+      "多智能体环境",
+      "多智能体系统",
+      "RELATED_TO"
+    ],
+    [
+      "AI问题形式化",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI问题形式化",
+      "状态空间表示",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "状态空间表示",
+      "搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "状态空间表示",
+      "规划问题形式化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "搜索树",
+      "搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "搜索图",
+      "搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "搜索空间拓扑",
+      "搜索",
+      "RELATED_TO"
+    ],
+    [
+      "组合爆炸",
+      "搜索",
+      "RELATED_TO"
+    ],
+    [
+      "搜索树",
+      "搜索图",
+      "RELATED_TO"
+    ],
+    [
+      "双向搜索",
+      "搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "A*搜索算法",
+      "IDA*搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "A*搜索算法",
+      "RBFS搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "A*搜索算法",
+      "SMA*搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "IDA*搜索",
+      "启发式搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RBFS搜索",
+      "启发式搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SMA*搜索",
+      "启发式搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "禁忌搜索",
+      "局部搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "约束传播",
+      "约束满足问题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "弧一致性",
+      "约束传播",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "约束传播",
+      "最小冲突算法",
+      "RELATED_TO"
+    ],
+    [
+      "最小冲突算法",
+      "约束满足问题",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机会节点",
+      "期望极大极小搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "极小极大算法",
+      "期望极大极小搜索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "期望极大极小搜索",
+      "博弈搜索",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蒙特卡洛树搜索",
+      "博弈搜索",
+      "RELATED_TO"
+    ],
+    [
+      "一阶逻辑",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "命题逻辑",
+      "一阶逻辑",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "一阶逻辑",
+      "合一",
+      "RELATED_TO"
+    ],
+    [
+      "合一",
+      "归结推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "归结推理",
+      "推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "默认推理",
+      "非单调推理",
+      "RELATED_TO"
+    ],
+    [
+      "论证推理",
+      "非单调推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "情境演算",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "事件演算",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时间推理",
+      "推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "空间推理",
+      "推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逻辑编程",
+      "一阶逻辑",
+      "RELATED_TO"
+    ],
+    [
+      "逻辑编程",
+      "答案集编程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "答案集编程",
+      "非单调推理",
+      "RELATED_TO"
+    ],
+    [
+      "基于模型推理",
+      "推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "本体工程",
+      "知识表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "描述逻辑",
+      "本体工程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "本体工程",
+      "知识图谱",
+      "RELATED_TO"
+    ],
+    [
+      "知识一致性检查",
+      "知识表示",
+      "RELATED_TO"
+    ],
+    [
+      "贝叶斯决策理论",
+      "不确定性推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "决策理论",
+      "贝叶斯决策理论",
+      "RELATED_TO"
+    ],
+    [
+      "期望效用最大化",
+      "贝叶斯决策理论",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "效用函数",
+      "期望效用最大化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "马尔可夫毯",
+      "贝叶斯网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "d-分离",
+      "贝叶斯网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "d-分离",
+      "条件独立性",
+      "RELATED_TO"
+    ],
+    [
+      "变量消除",
+      "概率图模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "吉布斯采样",
+      "近似推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "近似推理",
+      "概率推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "粒子滤波",
+      "动态贝叶斯网络",
+      "RELATED_TO"
+    ],
+    [
+      "关系概率模型",
+      "概率图模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "影响图",
+      "贝叶斯决策理论",
+      "RELATED_TO"
+    ],
+    [
+      "动态贝叶斯网络",
+      "贝叶斯网络",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐马尔可夫模型",
+      "动态贝叶斯网络",
+      "RELATED_TO"
+    ],
+    [
+      "规划问题形式化",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "STRIPS",
+      "规划问题形式化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "PDDL",
+      "规划问题形式化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "STRIPS",
+      "PDDL",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "全序规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "偏序规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "规划图",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "规划图",
+      "GraphPlan算法",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "GraphPlan算法",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "层次任务网络",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "条件规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "连续规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "概率规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "MDP规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "马尔可夫决策过程",
+      "MDP规划",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "动态重规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "时序规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "资源约束规划",
+      "规划",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "智能体架构",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反应式架构",
+      "智能体架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分层式架构",
+      "智能体架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "认知架构",
+      "智能体架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACT-R",
+      "认知架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SOAR",
+      "认知架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "决策理论智能体",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝叶斯决策理论",
+      "决策理论智能体",
+      "RELATED_TO"
+    ],
+    [
+      "BDI智能体",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多臂老虎机",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "协作智能体",
+      "多智能体系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "信息搜集智能体",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可信智能体",
+      "可信人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "学习型智能体",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人机智能体交互",
+      "智能体",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "智能体工作流",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "智能体工作流",
+      "智能体",
+      "RELATED_TO"
+    ],
+    [
+      "确定性文法",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "随机文法",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文无关文法",
+      "句法分析",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "上下文无关文法",
+      "确定性文法",
+      "RELATED_TO"
+    ],
+    [
+      "上下文无关文法",
+      "随机文法",
+      "RELATED_TO"
+    ],
+    [
+      "图表句法分析器",
+      "句法分析",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CYK算法",
+      "图表句法分析器",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "概率上下文无关文法",
+      "随机文法",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "概率上下文无关文法",
+      "句法分析",
+      "RELATED_TO"
+    ],
+    [
+      "平滑技术",
+      "语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "回退模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "平滑技术",
+      "回退模型",
+      "RELATED_TO"
+    ],
+    [
+      "形态学分析",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词袋模型",
+      "向量空间模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "向量空间模型",
+      "自然语言处理",
+      "RELATED_TO"
+    ],
+    [
+      "语义表示",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语料库方法",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语言资源",
+      "自然语言处理",
+      "RELATED_TO"
+    ],
+    [
+      "指代消解",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "篇章分析",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对话状态跟踪",
+      "对话系统",
+      "RELATED_TO"
+    ],
+    [
+      "机器人控制架构",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反应式控制",
+      "机器人控制架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "审慎式控制",
+      "机器人控制架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合控制",
+      "机器人控制架构",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "世界模型",
+      "机器人学",
+      "RELATED_TO"
+    ],
+    [
+      "世界模型",
+      "具身智能",
+      "RELATED_TO"
+    ],
+    [
+      "传感器",
+      "机器人学",
+      "RELATED_TO"
+    ],
+    [
+      "执行器",
+      "机器人学",
+      "RELATED_TO"
+    ],
+    [
+      "坐标系变换",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "配置空间",
+      "运动路径规划",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "环境地图",
+      "机器人导航",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "不确定性感知",
+      "机器人学",
+      "RELATED_TO"
+    ],
+    [
+      "定位与建图",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "定位与建图",
+      "SLAM",
+      "RELATED_TO"
+    ],
+    [
+      "SLAM",
+      "机器人导航",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "机器人导航",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "运动路径规划",
+      "机器人导航",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "轨迹优化",
+      "运动路径规划",
+      "RELATED_TO"
+    ],
+    [
+      "正向运动学",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "正向运动学",
+      "逆向运动学",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "逆向运动学",
+      "机械臂操作",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "机械臂操作",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "抓取规划",
+      "机械臂操作",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "关节控制",
+      "机器人控制架构",
+      "RELATED_TO"
+    ],
+    [
+      "机器人动力学",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器人动力学",
+      "关节控制",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "视觉伺服",
+      "机器人控制架构",
+      "RELATED_TO"
+    ],
+    [
+      "多机器人协同",
+      "多智能体系统",
+      "RELATED_TO"
+    ],
+    [
+      "多机器人协同",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "社交辅助机器人",
+      "机器人学",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像获取",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图像获取",
+      "图像表示",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "图像表示",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "形状表示",
+      "图像表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "物体识别",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "运动分析",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "音频识别",
+      "语音识别",
+      "RELATED_TO"
+    ],
+    [
+      "说话人识别",
+      "语音识别",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "触觉感知",
+      "多模态感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "本体感觉",
+      "机器人学",
+      "RELATED_TO"
+    ],
+    [
+      "多模态感知",
+      "多模态学习",
+      "RELATED_TO"
+    ],
+    [
+      "多模态感知",
+      "计算机视觉",
+      "RELATED_TO"
+    ],
+    [
+      "感知模块化",
+      "计算机视觉",
+      "RELATED_TO"
+    ],
+    [
+      "视觉生成模型",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "轮廓表示",
+      "形状表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "区域分割",
+      "图像分割",
+      "RELATED_TO"
+    ],
+    [
+      "三维重建",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "深度估计",
+      "三维重建",
+      "RELATED_TO"
+    ],
+    [
+      "姿态估计",
+      "场景理解",
+      "RELATED_TO"
+    ],
+    [
+      "场景理解",
+      "计算机视觉",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "无免费午餐定理",
+      "机器学习",
+      "RELATED_TO"
+    ],
+    [
+      "假设空间",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "归纳偏置",
+      "假设空间",
+      "RELATED_TO"
+    ],
+    [
+      "归纳偏置",
+      "泛化误差",
+      "RELATED_TO"
+    ],
+    [
+      "泛化误差",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "经验风险最小化",
+      "结构风险最小化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "结构风险最小化",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据集偏差",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "评估偏差",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "算法偏差",
+      "公平性",
+      "RELATED_TO"
+    ],
+    [
+      "公平性约束",
+      "公平性",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可解释性评估",
+      "可解释人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "鲁棒性评估",
+      "鲁棒性",
+      "RELATED_TO"
+    ],
+    [
+      "安全性评估",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "隐私保护机器学习",
+      "隐私保护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可信人工智能",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可信人工智能",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "可信人工智能",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "元学习",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "持续学习",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝叶斯学习",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝叶斯定理",
+      "贝叶斯学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "因果学习",
+      "因果推断",
+      "RELATED_TO"
+    ],
+    [
+      "因果学习",
+      "机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逆强化学习",
+      "强化学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模仿学习",
+      "逆强化学习",
+      "RELATED_TO"
+    ]
+  ]
+}

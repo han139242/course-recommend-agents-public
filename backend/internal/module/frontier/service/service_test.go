@@ -32,6 +32,20 @@ func TestGetBriefingReturnsNotReadyWhenGraphUnavailable(t *testing.T) {
 	}
 }
 
+func TestListLibraryReturnsNotReadyWhenGraphUnavailable(t *testing.T) {
+	service := New(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)))
+	resp, err := service.ListLibrary(context.Background(), frontierdto.LibraryQuery{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.Status != "not_ready" {
+		t.Fatalf("unexpected status: %s", resp.Status)
+	}
+	if resp.Items == nil {
+		t.Fatal("expected empty items slice")
+	}
+}
+
 func TestNormalizeStatusMarksStale(t *testing.T) {
 	service := New(nil)
 	resp := &frontierdto.BriefingResponse{Status: "ready", GeneratedAt: time.Now().Add(-31 * 24 * time.Hour).UTC().Format(time.RFC3339)}

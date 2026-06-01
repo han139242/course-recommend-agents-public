@@ -1,0 +1,548 @@
+{
+  "source": "course_advanced_llm_applications",
+  "course_title": "高级大模型应用开发",
+  "nodes": [
+    {
+      "canonical_name": "大模型应用工程",
+      "entity_type": "topic",
+      "description": "面向大模型应用落地的上下文组织、工具接入、检索增强、智能体编排、评测与运维工程体系。"
+    },
+    {
+      "canonical_name": "高级大模型应用开发",
+      "entity_type": "topic",
+      "description": "面向生产级大模型应用的上下文工程、工具调用、RAG、Agent 编排和评测课程。"
+    },
+    {
+      "canonical_name": "上下文工程",
+      "entity_type": "topic",
+      "description": "系统设计提示、记忆、检索证据、工具结果和输出约束以稳定驱动大模型的工程主题。"
+    },
+    {
+      "canonical_name": "工具增强大模型",
+      "entity_type": "topic",
+      "description": "围绕函数调用、外部工具、代码执行和结构化输出扩展模型能力的主题。"
+    },
+    {
+      "canonical_name": "Agent应用编排",
+      "entity_type": "topic",
+      "description": "围绕规划、记忆、工具、反思和多智能体协作构建复杂任务代理的主题。"
+    },
+    {
+      "canonical_name": "RAG质量工程",
+      "entity_type": "topic",
+      "description": "围绕检索增强生成的索引、召回、重排、引用、评测和调优展开的主题。"
+    },
+    {
+      "canonical_name": "长上下文建模",
+      "entity_type": "method",
+      "description": "让模型处理更长输入序列并保持关键信息可用的建模与工程方法。"
+    },
+    {
+      "canonical_name": "提示模板",
+      "entity_type": "concept",
+      "description": "把角色、任务、约束、示例和输出格式组织为可复用提示结构的方法。"
+    },
+    {
+      "canonical_name": "少样本提示",
+      "entity_type": "method",
+      "description": "在提示中提供少量演示样例以激发模型完成任务的上下文学习方法。"
+    },
+    {
+      "canonical_name": "思维链提示",
+      "entity_type": "method",
+      "description": "引导模型显式展开中间推理步骤以改善复杂问题求解的方法。"
+    },
+    {
+      "canonical_name": "自一致性解码",
+      "entity_type": "algorithm",
+      "description": "采样多条推理路径并通过一致答案投票提高推理稳定性和准确性的解码策略。"
+    },
+    {
+      "canonical_name": "结构化输出",
+      "entity_type": "method",
+      "description": "约束模型按 JSON、表格、字段或 schema 生成可机器解析结果的方法。"
+    },
+    {
+      "canonical_name": "函数调用",
+      "entity_type": "method",
+      "description": "让模型根据工具 schema 选择函数并生成参数以调用外部能力的方法。"
+    },
+    {
+      "canonical_name": "工具调用",
+      "entity_type": "method",
+      "description": "模型在推理过程中使用搜索、数据库、计算器、代码解释器等外部工具的能力。"
+    },
+    {
+      "canonical_name": "代码解释器模式",
+      "entity_type": "application",
+      "description": "通过安全沙箱执行代码、读取文件和生成结果的大模型工具应用模式。"
+    },
+    {
+      "canonical_name": "模型上下文协议",
+      "entity_type": "method",
+      "description": "为模型应用连接外部工具、资源和上下文提供统一接口约定的协议化方法。"
+    },
+    {
+      "canonical_name": "Agent协议",
+      "entity_type": "method",
+      "description": "约定智能体身份、能力、消息、工具和协作流程的应用协议。"
+    },
+    {
+      "canonical_name": "任务规划器",
+      "entity_type": "method",
+      "description": "将复杂用户目标拆解为子任务、依赖和执行顺序的 Agent 组件。"
+    },
+    {
+      "canonical_name": "短期记忆",
+      "entity_type": "concept",
+      "description": "在当前会话或任务窗口内保存上下文、状态和中间结果的记忆机制。"
+    },
+    {
+      "canonical_name": "长期记忆",
+      "entity_type": "concept",
+      "description": "跨会话保存用户偏好、经验、知识或历史任务信息的记忆机制。"
+    },
+    {
+      "canonical_name": "反思机制",
+      "entity_type": "method",
+      "description": "让模型检查自身输出、发现错误并修正计划或答案的控制方法。"
+    },
+    {
+      "canonical_name": "多智能体编排",
+      "entity_type": "method",
+      "description": "组织多个角色化智能体通过分工、通信和评审完成复杂任务的方法。"
+    },
+    {
+      "canonical_name": "工作流Agent",
+      "entity_type": "application",
+      "description": "把业务流程、工具调用和状态转移封装为可执行代理的应用形态。"
+    },
+    {
+      "canonical_name": "向量索引设计",
+      "entity_type": "method",
+      "description": "围绕分块、嵌入、元数据和索引结构设计高质量检索库的方法。"
+    },
+    {
+      "canonical_name": "文档分块策略",
+      "entity_type": "method",
+      "description": "将长文档切分为适合嵌入检索和上下文组装片段的策略。"
+    },
+    {
+      "canonical_name": "混合检索",
+      "entity_type": "method",
+      "description": "结合稀疏检索的词汇匹配和稠密检索的语义匹配，融合两者优势提升检索召回率的方法。"
+    },
+    {
+      "canonical_name": "检索重排",
+      "entity_type": "method",
+      "description": "使用交叉编码器、学习排序或规则对召回文档重新排序的方法。"
+    },
+    {
+      "canonical_name": "查询改写",
+      "entity_type": "method",
+      "description": "将用户问题改写为更适合检索、分解或多路召回的查询形式。"
+    },
+    {
+      "canonical_name": "答案引用生成",
+      "entity_type": "method",
+      "description": "在生成答案时附带证据片段、来源链接或文档定位的生成方法。"
+    },
+    {
+      "canonical_name": "RAG忠实性评估",
+      "entity_type": "method",
+      "description": "衡量生成内容是否被检索证据支持并减少幻觉的评估方法。"
+    },
+    {
+      "canonical_name": "RAG召回评估",
+      "entity_type": "method",
+      "description": "衡量检索阶段是否找回回答问题所需证据的评估方法。"
+    },
+    {
+      "canonical_name": "端到端RAG评测",
+      "entity_type": "method",
+      "description": "同时评估检索、重排、生成、引用和用户任务成功率的 RAG 系统评测方法。"
+    },
+    {
+      "canonical_name": "提示版本管理",
+      "entity_type": "method",
+      "description": "对提示模板、参数、评测结果和发布记录进行版本化管理的方法。"
+    },
+    {
+      "canonical_name": "大模型应用观测",
+      "entity_type": "method",
+      "description": "跟踪请求、提示、工具调用、token 成本、延迟和输出质量的应用观测方法。"
+    },
+    {
+      "canonical_name": "大模型成本控制",
+      "entity_type": "method",
+      "description": "通过模型路由、缓存、压缩上下文和批处理降低应用运行成本的方法。"
+    },
+    {
+      "canonical_name": "AI原生应用",
+      "entity_type": "application",
+      "description": "以大模型推理、工具调用和智能体工作流为核心交互能力的软件应用形态。"
+    },
+    {
+      "canonical_name": "企业知识库问答",
+      "entity_type": "application",
+      "description": "把企业文档、流程、权限和知识图谱接入 RAG 系统的问答应用。"
+    },
+    {
+      "canonical_name": "智能代码助手",
+      "entity_type": "application",
+      "description": "面向代码生成、补全、解释、测试和重构的大模型应用。"
+    },
+    {
+      "canonical_name": "智能数据分析助手",
+      "entity_type": "application",
+      "description": "用自然语言驱动数据查询、统计分析、可视化和报告生成的智能应用。"
+    },
+    {
+      "canonical_name": "AI应用安全边界",
+      "entity_type": "concept",
+      "description": "限制模型权限、工具访问、数据暴露和操作范围的应用安全设计边界。"
+    },
+    {
+      "canonical_name": "人机协同智能",
+      "entity_type": "concept",
+      "description": "人类专家与 AI 系统通过反馈、审查和分工共同完成任务的智能形态。"
+    }
+  ],
+  "relations": [
+    [
+      "高级大模型应用开发",
+      "大模型应用工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文工程",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工具增强大模型",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Agent应用编排",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RAG质量工程",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "长上下文建模",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示模板",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "少样本提示",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "思维链提示",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自一致性解码",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "结构化输出",
+      "上下文工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "函数调用",
+      "工具增强大模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工具调用",
+      "工具增强大模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "代码解释器模式",
+      "工具增强大模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型上下文协议",
+      "工具增强大模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Agent协议",
+      "工具增强大模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "任务规划器",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "短期记忆",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "长期记忆",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反思机制",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多智能体编排",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工作流Agent",
+      "Agent应用编排",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "向量索引设计",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "文档分块策略",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合检索",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "检索重排",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "查询改写",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "答案引用生成",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RAG忠实性评估",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RAG召回评估",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "端到端RAG评测",
+      "RAG质量工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示版本管理",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "大模型应用观测",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "大模型成本控制",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI原生应用",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "企业知识库问答",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "智能代码助手",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "智能数据分析助手",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI应用安全边界",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人机协同智能",
+      "高级大模型应用开发",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示模板",
+      "少样本提示",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "少样本提示",
+      "思维链提示",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "思维链提示",
+      "自一致性解码",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "结构化输出",
+      "函数调用",
+      "RELATED_TO"
+    ],
+    [
+      "函数调用",
+      "工具调用",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "工具调用",
+      "工作流Agent",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "任务规划器",
+      "工作流Agent",
+      "PART_OF"
+    ],
+    [
+      "短期记忆",
+      "工作流Agent",
+      "PART_OF"
+    ],
+    [
+      "长期记忆",
+      "工作流Agent",
+      "PART_OF"
+    ],
+    [
+      "反思机制",
+      "工作流Agent",
+      "PART_OF"
+    ],
+    [
+      "多智能体编排",
+      "工作流Agent",
+      "RELATED_TO"
+    ],
+    [
+      "文档分块策略",
+      "向量索引设计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "向量索引设计",
+      "混合检索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "混合检索",
+      "检索重排",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "查询改写",
+      "混合检索",
+      "APPLIES_TO"
+    ],
+    [
+      "检索重排",
+      "答案引用生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "答案引用生成",
+      "RAG忠实性评估",
+      "RELATED_TO"
+    ],
+    [
+      "RAG召回评估",
+      "端到端RAG评测",
+      "PART_OF"
+    ],
+    [
+      "RAG忠实性评估",
+      "端到端RAG评测",
+      "PART_OF"
+    ],
+    [
+      "提示版本管理",
+      "大模型应用观测",
+      "RELATED_TO"
+    ],
+    [
+      "大模型成本控制",
+      "模型路由",
+      "APPLIES_TO"
+    ],
+    [
+      "AI应用安全边界",
+      "工具调用",
+      "RELATED_TO"
+    ],
+    [
+      "人机协同智能",
+      "工作流Agent",
+      "RELATED_TO"
+    ],
+    [
+      "RAG系统",
+      "RAG质量工程",
+      "RELATED_TO"
+    ],
+    [
+      "提示工程",
+      "提示模板",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "向量数据库",
+      "向量索引设计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型评估",
+      "端到端RAG评测",
+      "PREREQUISITE_OF"
+    ]
+  ]
+}

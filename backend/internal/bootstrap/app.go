@@ -90,6 +90,7 @@ func New(ctx context.Context) (*App, error) {
 	learningModule.SetCompetencyService(competencyModule.Service)
 	go competencyModule.Matrix.Start(context.TODO())
 	recommendModule := NewRecommendModule(neo4jDriver, redisClient, mysqlDB)
+	evaluationModule := NewEvaluationModule(recommendModule.Service.Scorer)
 	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
 	frontierModule := frontiermodule.New(graphModule.Repo)
 	assistantModule := NewAssistantModule(cfg, authModule.AuthService, learningModule.Service, competencyModule.Service, recommendModule.Service, dashboardModule.Service, graphModule.Service, frontierModule.Service, mysqlDB)
@@ -97,7 +98,7 @@ func New(ctx context.Context) (*App, error) {
 	logStep("modules_ready")
 
 	logStep("router_initializing")
-	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, dashboardModule, frontierModule, assistantModule)
+	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
 	logStep("router_ready")
 
 	server := &http.Server{

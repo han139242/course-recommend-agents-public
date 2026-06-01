@@ -99,49 +99,209 @@
     {
       "canonical_name": "指令微调",
       "entity_type": "method",
-      "description": "利用指令数据对预训练语言模型进行任务泛化能力增强的微调方法。"
+      "description": "使用（指令,回答）格式数据对预训练模型进行监督微调以提升模型对人类指令理解执行能力。"
     }
   ],
   "relations": [
-    ["分词", "自然语言处理", "SUBTOPIC_OF"],
-    ["分词歧义", "分词", "RELATED_TO"],
-    ["子词表示", "分词", "RELATED_TO"],
-    ["子词表示", "词嵌入", "RELATED_TO"],
-    ["Word2Vec", "词嵌入", "SUBTOPIC_OF"],
-    ["GloVe", "词嵌入", "SUBTOPIC_OF"],
-    ["上下文词向量", "词嵌入", "SUBTOPIC_OF"],
-    ["上下文词向量", "BERT", "RELATED_TO"],
-    ["语言模型", "自然语言处理", "SUBTOPIC_OF"],
-    ["n-gram模型", "语言模型", "SUBTOPIC_OF"],
-    ["掩码语言模型", "语言模型", "SUBTOPIC_OF"],
-    ["因果语言模型", "语言模型", "SUBTOPIC_OF"],
-    ["掩码语言模型", "BERT", "PREREQUISITE_OF"],
-    ["因果语言模型", "大语言模型", "PREREQUISITE_OF"],
-    ["Transformer", "掩码语言模型", "PREREQUISITE_OF"],
-    ["Transformer", "因果语言模型", "PREREQUISITE_OF"],
-    ["词性标注", "自然语言处理", "SUBTOPIC_OF"],
-    ["句法分析", "自然语言处理", "SUBTOPIC_OF"],
-    ["依存句法分析", "句法分析", "SUBTOPIC_OF"],
-    ["成分句法分析", "句法分析", "SUBTOPIC_OF"],
-    ["词性标注", "句法分析", "PREREQUISITE_OF"],
-    ["句法分析", "信息抽取", "PREREQUISITE_OF"],
-    ["语义角色标注", "自然语言处理", "SUBTOPIC_OF"],
-    ["句法分析", "语义角色标注", "PREREQUISITE_OF"],
-    ["语义角色标注", "信息抽取", "RELATED_TO"],
-    ["共指消解", "自然语言处理", "SUBTOPIC_OF"],
-    ["共指消解", "信息抽取", "RELATED_TO"],
-    ["共指消解", "问答系统", "RELATED_TO"],
-    ["文本分类", "自然语言处理", "SUBTOPIC_OF"],
-    ["情感分析", "文本分类", "SUBTOPIC_OF"],
-    ["词嵌入", "文本分类", "PREREQUISITE_OF"],
-    ["Transformer", "文本分类", "PREREQUISITE_OF"],
-    ["文本分类", "情感分析", "PREREQUISITE_OF"],
-    ["提示学习", "自然语言处理", "RELATED_TO"],
-    ["提示学习", "大语言模型", "RELATED_TO"],
-    ["提示学习", "BERT", "RELATED_TO"],
-    ["指令微调", "大语言模型", "RELATED_TO"],
-    ["指令微调", "提示学习", "RELATED_TO"],
-    ["因果语言模型", "指令微调", "PREREQUISITE_OF"],
-    ["上下文词向量", "问答系统", "RELATED_TO"]
+    [
+      "分词",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分词歧义",
+      "分词",
+      "RELATED_TO"
+    ],
+    [
+      "子词表示",
+      "分词",
+      "RELATED_TO"
+    ],
+    [
+      "子词表示",
+      "词嵌入",
+      "RELATED_TO"
+    ],
+    [
+      "Word2Vec",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GloVe",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文词向量",
+      "词嵌入",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文词向量",
+      "BERT",
+      "RELATED_TO"
+    ],
+    [
+      "语言模型",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "n-gram模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "掩码语言模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "因果语言模型",
+      "语言模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "掩码语言模型",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "因果语言模型",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "掩码语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "因果语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "词性标注",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "句法分析",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "依存句法分析",
+      "句法分析",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "成分句法分析",
+      "句法分析",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词性标注",
+      "句法分析",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "句法分析",
+      "信息抽取",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "语义角色标注",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "句法分析",
+      "语义角色标注",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "语义角色标注",
+      "信息抽取",
+      "RELATED_TO"
+    ],
+    [
+      "共指消解",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "共指消解",
+      "信息抽取",
+      "RELATED_TO"
+    ],
+    [
+      "共指消解",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "文本分类",
+      "自然语言处理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "情感分析",
+      "文本分类",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "词嵌入",
+      "文本分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "文本分类",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "文本分类",
+      "情感分析",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "提示学习",
+      "自然语言处理",
+      "RELATED_TO"
+    ],
+    [
+      "提示学习",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "提示学习",
+      "BERT",
+      "RELATED_TO"
+    ],
+    [
+      "指令微调",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "指令微调",
+      "提示学习",
+      "RELATED_TO"
+    ],
+    [
+      "因果语言模型",
+      "指令微调",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "上下文词向量",
+      "问答系统",
+      "RELATED_TO"
+    ]
   ]
 }

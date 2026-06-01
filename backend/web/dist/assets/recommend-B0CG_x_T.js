@@ -1,0 +1,1 @@
+import{t as e}from"./request-DslUqtXA.js";function t(t={}){let n=new URLSearchParams;return t.target&&n.set(`target`,String(t.target)),t.knowledgeId&&n.set(`knowledgeId`,String(t.knowledgeId)),t.limit&&n.set(`limit`,String(t.limit)),t.scene&&n.set(`scene`,String(t.scene)),e(`/recommend/unified-path${n.toString()?`?${n.toString()}`:``}`)}export{t};

@@ -80,7 +80,7 @@ func TestChatPublicNormalizesLegacyCourseContextWithoutAIConfig(t *testing.T) {
 				"content": strings.Join([]string{
 					"你是知识图谱学习助手，请用中文回答。",
 					"当前知识点：知识表示",
-					"课程：人工智能基础知识骨架",
+					"课程：绪论",
 					"简介：知识表示用于组织智能体可操作的结构化知识。",
 				}, "\n"),
 			},

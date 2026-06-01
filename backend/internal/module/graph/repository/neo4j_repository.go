@@ -817,6 +817,57 @@ func parseFrontierPapers(value any) []graphentity.FrontierPaper {
 	return result
 }
 
+func parseFrontierKnowledgeRefs(value any) []graphentity.FrontierKnowledgeRef {
+	items, ok := value.([]any)
+	if !ok {
+		return []graphentity.FrontierKnowledgeRef{}
+	}
+	result := make([]graphentity.FrontierKnowledgeRef, 0, len(items))
+	seen := map[string]struct{}{}
+	for _, item := range items {
+		mapped, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		knowledgeID := stringOrDefault(mapped["knowledge_id"], "")
+		name := stringOrDefault(mapped["name"], "")
+		if knowledgeID == "" && name == "" {
+			continue
+		}
+		key := knowledgeID + "|" + name
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		result = append(result, graphentity.FrontierKnowledgeRef{
+			KnowledgeID: knowledgeID,
+			Name:        name,
+			Course:      stringOrDefault(mapped["course"], ""),
+			Reason:      stringOrDefault(mapped["reason"], ""),
+		})
+	}
+	return result
+}
+
+func parseFrontierLibraryItem(value any) graphentity.FrontierLibraryItem {
+	mapped, ok := value.(map[string]any)
+	if !ok {
+		return graphentity.FrontierLibraryItem{}
+	}
+	return graphentity.FrontierLibraryItem{
+		PaperID:       stringOrDefault(mapped["paper_id"], ""),
+		Title:         stringOrDefault(mapped["title"], ""),
+		Abstract:      stringOrDefault(mapped["abstract"], ""),
+		Venue:         stringOrDefault(mapped["venue"], ""),
+		Year:          intOrDefault(mapped["year"]),
+		URL:           stringOrDefault(mapped["url"], ""),
+		Source:        stringOrDefault(mapped["source"], ""),
+		UpdatedAt:     formatGraphTime(mapped["updated_at"]),
+		Topics:        parseFrontierTopics(mapped["topics"]),
+		KnowledgeRefs: parseFrontierKnowledgeRefs(mapped["knowledge_refs"]),
+	}
+}
+
 func intOrDefault(value any) int {
 	switch typed := value.(type) {
 	case int64:
@@ -965,6 +1016,88 @@ LIMIT 1
 	}
 	briefing.Message = "已从图谱载入前沿扩展摘要。"
 	return briefing, nil
+}
+
+// LoadFrontierLibrary 查询最新前沿论文、主题和关联知识点。
+func (r *Neo4jRepository) LoadFrontierLibrary(ctx context.Context, limit int) (*graphentity.FrontierLibrary, error) {
+	if !r.Enabled() {
+		return nil, ErrFrontierBriefingNotReady
+	}
+	if limit <= 0 {
+		limit = 30
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	session := r.driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (paper:Paper)
+OPTIONAL MATCH (paper)-[:MENTIONS_TOPIC]->(topic:ResearchTopic)
+OPTIONAL MATCH (topic)-[:EXTENDS_KNOWLEDGE]->(knowledge:KnowledgeNode)
+WITH paper,
+     collect(DISTINCT topic{.topic_id, .name, reason: coalesce(topic.summary, '')}) AS topics,
+     collect(DISTINCT knowledge{
+       knowledge_id: coalesce(knowledge.knowledge_id, knowledge.node_id, knowledge.id, knowledge.name),
+       name: coalesce(knowledge.name, knowledge.canonical_name, knowledge.knowledge_id, knowledge.node_id),
+       course: coalesce(knowledge.chapter_title, knowledge.course_title, ''),
+       reason: ''
+     }) AS knowledge_refs
+RETURN paper{
+  .paper_id,
+  .title,
+  .abstract,
+  .venue,
+  .year,
+  .url,
+  .source,
+  .updated_at,
+  topics: topics,
+  knowledge_refs: knowledge_refs
+} AS item,
+coalesce(paper.updated_at, '') AS updated_at,
+coalesce(paper.year, 0) AS year
+ORDER BY year DESC, updated_at DESC, paper.title ASC
+LIMIT $limit
+`
+		records, runErr := tx.Run(ctx, query, map[string]any{"limit": limit})
+		if runErr != nil {
+			return nil, runErr
+		}
+
+		items := []graphentity.FrontierLibraryItem{}
+		generatedAt := ""
+		for records.Next(ctx) {
+			itemValue, _ := records.Record().Get("item")
+			item := parseFrontierLibraryItem(itemValue)
+			if item.PaperID == "" && item.Title == "" {
+				continue
+			}
+			if generatedAt == "" || item.UpdatedAt > generatedAt {
+				generatedAt = item.UpdatedAt
+			}
+			items = append(items, item)
+		}
+		if err := records.Err(); err != nil {
+			return nil, err
+		}
+		return &graphentity.FrontierLibrary{
+			GeneratedAt: generatedAt,
+			Total:       len(items),
+			Items:       items,
+		}, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("查询前沿资料中心失败: %w", err)
+	}
+	library, ok := result.(*graphentity.FrontierLibrary)
+	if !ok || library == nil || len(library.Items) == 0 {
+		return nil, ErrFrontierBriefingNotReady
+	}
+	return library, nil
 }
 
 func parseGraphNodes(value any) []graphentity.Node {

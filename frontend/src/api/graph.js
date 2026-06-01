@@ -46,3 +46,12 @@ export function fetchFrontierBriefing(query = {}) {
   const suffix = params.toString() ? `?${params.toString()}` : ''
   return request(`/frontier/briefing${suffix}`)
 }
+
+export function fetchFrontierLibrary(options = {}) {
+  const params = new URLSearchParams()
+  if (options.limit) {
+    params.set('limit', String(options.limit))
+  }
+  const suffix = params.toString() ? `?${params.toString()}` : ''
+  return request(`/frontier/library${suffix}`)
+}

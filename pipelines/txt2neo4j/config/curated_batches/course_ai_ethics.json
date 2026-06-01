@@ -15,7 +15,7 @@
     {
       "canonical_name": "可解释性方法",
       "entity_type": "topic",
-      "description": "围绕模型解释、可视化分析和人类可理解决策依据展开的主题。"
+      "description": "综合运用特征重要性、部分依赖图、SHAP值和反事实解释使模型决策透明化的技术体系。"
     },
     {
       "canonical_name": "隐私与隐私计算",
@@ -45,7 +45,7 @@
     {
       "canonical_name": "公平性",
       "entity_type": "concept",
-      "description": "人工智能系统在不同群体和个体之间避免不合理差别影响的性质。"
+      "description": "模型在不同人口统计分组间表现一致、不系统性地偏向或损害特定群体的性质。"
     },
     {
       "canonical_name": "群体公平",
@@ -90,7 +90,7 @@
     {
       "canonical_name": "可解释性",
       "entity_type": "concept",
-      "description": "人工智能系统能够向人类说明其决策依据和行为机制的性质。"
+      "description": "以人类可理解的方式揭示模型决策逻辑的能力。"
     },
     {
       "canonical_name": "LIME",
@@ -145,7 +145,7 @@
     {
       "canonical_name": "差分隐私",
       "entity_type": "method",
-      "description": "通过引入受控随机扰动来限制个体数据泄露风险的隐私保护方法。"
+      "description": "通过在查询或训练中注入精确校准的随机噪声，提供数学上可证明的个体隐私保护保证。"
     },
     {
       "canonical_name": "联邦学习",
@@ -155,12 +155,12 @@
     {
       "canonical_name": "同态加密",
       "entity_type": "method",
-      "description": "允许在密文上直接执行运算并在解密后得到正确明文结果的加密方法。"
+      "description": "允许在密文上直接执行运算而无需解密，结果解密后等价于明文计算的密码学原语。"
     },
     {
       "canonical_name": "安全多方计算",
       "entity_type": "method",
-      "description": "让多方在不泄露各自私有输入的前提下联合完成计算的密码学方法。"
+      "description": "允许多个参与方在不泄露各自私有输入前提下联合计算约定函数的密码学协议。"
     },
     {
       "canonical_name": "隐私预算",
@@ -170,12 +170,12 @@
     {
       "canonical_name": "成员推断攻击",
       "entity_type": "method",
-      "description": "判断某条样本是否参与模型训练的隐私攻击方法。"
+      "description": "判断给定样本是否属于模型训练集的隐私攻击方法，可用于审计训练数据泄露风险。"
     },
     {
       "canonical_name": "模型反演攻击",
       "entity_type": "method",
-      "description": "利用模型输出或参数恢复训练数据特征或样本的隐私攻击方法。"
+      "description": "利用模型输出或中间表示逆向推断训练数据中敏感特征和样本信息的隐私攻击。"
     },
     {
       "canonical_name": "隐私计算",
@@ -190,7 +190,7 @@
     {
       "canonical_name": "对抗攻击",
       "entity_type": "method",
-      "description": "通过构造微小但恶意的输入扰动诱导模型输出错误结果的方法。"
+      "description": "通过向输入添加人类不可察觉的微小扰动导致机器学习模型输出错误预测的攻击方法。"
     },
     {
       "canonical_name": "对抗样本",
@@ -200,22 +200,22 @@
     {
       "canonical_name": "对抗训练",
       "entity_type": "method",
-      "description": "将对抗样本纳入训练过程以提升模型鲁棒性的防御方法。"
+      "description": "在训练过程中动态生成对抗样本并纳入损失函数进行联合优化，使模型学会抵抗对抗扰动的鲁棒性提升方法。"
     },
     {
       "canonical_name": "模型鲁棒性",
       "entity_type": "concept",
-      "description": "模型在噪声、攻击和分布变化条件下维持稳定性能的能力。"
+      "description": "机器学习模型在面对输入扰动、分布偏移和对抗攻击时保持正确预测和稳定行为的能力。"
     },
     {
       "canonical_name": "后门攻击",
       "entity_type": "method",
-      "description": "后门攻击是在 AI 伦理评估、防护或治理中常用的方法。"
+      "description": "在模型训练时植入隐藏触发器，正常输入下表现正常但特定模式输入时输出预设结果的隐蔽攻击。"
     },
     {
       "canonical_name": "数据投毒",
       "entity_type": "method",
-      "description": "通过污染训练数据影响模型学习结果和行为边界的攻击方式。"
+      "description": "攻击者向训练数据注入恶意样本或修改标签，使模型在特定条件下产生攻击者期望的错误输出。"
     },
     {
       "canonical_name": "攻击面分析",
@@ -230,12 +230,12 @@
     {
       "canonical_name": "提示注入",
       "entity_type": "method",
-      "description": "通过恶意提示篡改模型原有指令和行为边界的攻击方式。"
+      "description": "通过精心构造的提示文本覆盖或绕过LLM的系统指令和安全对齐，使模型执行非预期操作的攻击。"
     },
     {
       "canonical_name": "越狱攻击",
       "entity_type": "method",
-      "description": "通过构造规避策略绕过模型安全约束与拒答规则的攻击方式。"
+      "description": "通过角色扮演、编码转换和多步推理绕过LLM安全对齐机制，诱导模型输出违规内容的攻击。"
     },
     {
       "canonical_name": "输出过滤",
@@ -300,7 +300,7 @@
     {
       "canonical_name": "合规性",
       "entity_type": "concept",
-      "description": "人工智能系统满足法律法规、标准和组织规范要求的性质。"
+      "description": "确保AI系统在数据使用和模型决策方面符合隐私法律和行业法规的制度化要求。"
     },
     {
       "canonical_name": "模型审计",

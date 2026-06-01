@@ -46,6 +46,6 @@ function getCourseTitle(node) {
         <span>{{ getCourseTitle(node) }}</span>
       </button>
     </div>
-    <p v-else class="muted-text">右键节点后，可以把重点知识点加入收藏。</p>
+    <p v-else class="muted-text">遇到重点知识点时，可以右键加入收藏，后续从这里快速回到学习位置。</p>
   </section>
 </template>

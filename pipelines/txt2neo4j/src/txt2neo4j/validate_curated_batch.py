@@ -4,15 +4,16 @@ import argparse
 import json
 from pathlib import Path
 
+from .models import COURSE_ENTITY_TYPE_VALUES, ENTITY_TYPE_VALUES
 from .neo4j_import import SUPPORTED_RELATION_TYPES
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[2]
 CURATED_SEED_PATH = PIPELINE_ROOT / "config" / "curated_seed_graph.json"
 CURATED_BATCH_DIR = PIPELINE_ROOT / "config" / "curated_batches"
 COURSE_EXPANSION_PLAN_PATH = PIPELINE_ROOT / "config" / "course_expansion_plan.json"
-VALID_ENTITY_TYPES = {"topic", "concept", "method", "algorithm", "application", "exercise"}
-COURSE_PLAN_ENTITY_TYPES = {"topic", "concept", "method", "algorithm", "application"}
-RELATION_DENSITY_RANGE = (1.2, 1.8)
+VALID_ENTITY_TYPES = set(ENTITY_TYPE_VALUES)
+COURSE_PLAN_ENTITY_TYPES = set(COURSE_ENTITY_TYPE_VALUES)
+RELATION_DENSITY_RANGE = (1.5, 2.1)
 
 
 def load_json_file(path: Path) -> dict:

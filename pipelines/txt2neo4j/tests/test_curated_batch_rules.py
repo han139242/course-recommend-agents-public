@@ -363,6 +363,66 @@ class CuratedBatchRulesTest(unittest.TestCase):
             )
             self.assertEqual(result["metrics"]["isolated_node_count"], 1)
 
+    def test_validate_seed_accepts_modern_ai_entity_types_in_course_batches(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            seed_path = root / "curated_seed_graph.json"
+            batch_dir = root / "curated_batches"
+            plan_path = root / "course_expansion_plan.json"
+            batch_dir.mkdir()
+
+            write_json(seed_path, {"source": "seed_root", "nodes": [], "relations": []})
+            write_course_plan(
+                plan_path,
+                [
+                    {
+                        "source": "course_llm",
+                        "course_title": "大模型",
+                        "target_node_range": [3, 5],
+                    }
+                ],
+            )
+
+            target_path = batch_dir / "course_llm.json"
+            write_json(
+                target_path,
+                {
+                    "source": "course_llm",
+                    "course_title": "大模型",
+                    "nodes": [
+                        {
+                            "canonical_name": "DeepSeek-V3",
+                            "entity_type": "model",
+                            "description": "面向通用语言理解、推理和生成任务的大规模语言模型。",
+                        },
+                        {
+                            "canonical_name": "vLLM",
+                            "entity_type": "tool",
+                            "description": "用于高吞吐大模型推理服务和调度的开源工具。",
+                        },
+                        {
+                            "canonical_name": "LangChain",
+                            "entity_type": "framework",
+                            "description": "用于编排大模型应用、检索和工具调用的开发框架。",
+                        },
+                    ],
+                    "relations": [
+                        ["vLLM", "DeepSeek-V3", "RELATED_TO"],
+                        ["LangChain", "DeepSeek-V3", "USES"],
+                    ],
+                },
+            )
+
+            with patch("txt2neo4j.validate_curated_batch.CURATED_SEED_PATH", seed_path), patch(
+                "txt2neo4j.validate_curated_batch.CURATED_BATCH_DIR", batch_dir
+            ), patch(
+                "txt2neo4j.validate_curated_batch.COURSE_EXPANSION_PLAN_PATH", plan_path
+            ):
+                result = validate_seed_path(target_path)
+
+            self.assertTrue(result["valid"])
+            self.assertEqual(result["errors"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

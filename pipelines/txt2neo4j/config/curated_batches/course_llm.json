@@ -230,7 +230,7 @@
     {
       "canonical_name": "长上下文建模",
       "entity_type": "method",
-      "description": "提升模型处理长文本和长时依赖能力的建模与工程方法。"
+      "description": "让模型处理更长输入序列并保持关键信息可用的建模与工程方法。"
     },
     {
       "canonical_name": "大语言模型",
@@ -345,12 +345,12 @@
     {
       "canonical_name": "LoRA",
       "entity_type": "method",
-      "description": "通过在权重更新中引入低秩分解适配器实现参数高效微调的方法。"
+      "description": "通过将权重更新矩阵分解为低秩矩阵乘积仅训练少量参数实现大模型高效微调的方法。"
     },
     {
       "canonical_name": "QLoRA",
       "entity_type": "method",
-      "description": "结合低比特量化与 LoRA 适配器以降低显存占用的高效微调方法。"
+      "description": "在LoRA基础上引入4位量化使单个消费级GPU即可微调650亿参数大模型的方法。"
     },
     {
       "canonical_name": "Adapter",
@@ -380,7 +380,7 @@
     {
       "canonical_name": "提示工程",
       "entity_type": "method",
-      "description": "通过设计输入提示来稳定提升生成模型输出质量和任务表现的方法。"
+      "description": "通过系统设计、测试和迭代优化提示模板，以最少token实现最优模型输出的工程方法论。"
     },
     {
       "canonical_name": "系统提示",
@@ -410,7 +410,7 @@
     {
       "canonical_name": "思维树",
       "entity_type": "method",
-      "description": "将复杂问题拆为多条分支推理路径并搜索更优解的推理框架。"
+      "description": "将多步推理构建为树状搜索结构，在每个节点生成多个候选思考方向，并通过搜索寻找更优推理路径的方法。"
     },
     {
       "canonical_name": "Self-Consistency",
@@ -450,7 +450,7 @@
     {
       "canonical_name": "向量数据库",
       "entity_type": "concept",
-      "description": "用于存储向量表示并支持高效近邻搜索和过滤查询的数据系统。"
+      "description": "专门存储和检索高维向量嵌入的数据库系统，通过近似最近邻搜索实现语义相似度快速匹配。"
     },
     {
       "canonical_name": "文档切分",
@@ -475,7 +475,7 @@
     {
       "canonical_name": "混合检索",
       "entity_type": "method",
-      "description": "结合关键词检索与向量检索结果提高覆盖率和相关性的检索方法。"
+      "description": "结合稀疏检索的词汇匹配和稠密检索的语义匹配，融合两者优势提升检索召回率的方法。"
     },
     {
       "canonical_name": "重排序模型",
@@ -495,12 +495,12 @@
     {
       "canonical_name": "函数调用",
       "entity_type": "method",
-      "description": "让大模型按结构化参数调用外部函数或 API 的交互方式。"
+      "description": "让模型根据工具 schema 选择函数并生成参数以调用外部能力的方法。"
     },
     {
       "canonical_name": "工具调用",
       "entity_type": "method",
-      "description": "让大模型在推理过程中使用搜索、计算、数据库等外部工具的方法。"
+      "description": "模型在推理过程中使用搜索、数据库、计算器、代码解释器等外部工具的能力。"
     },
     {
       "canonical_name": "工作流编排",
@@ -525,12 +525,12 @@
     {
       "canonical_name": "多Agent协作",
       "entity_type": "method",
-      "description": "让多个智能体分工协同完成复杂任务的工作流编排方式。"
+      "description": "多个专业化LLM Agent通过消息传递和任务分解协同完成复杂任务的分布式智能范式。"
     },
     {
       "canonical_name": "结构化输出",
       "entity_type": "method",
-      "description": "通过模式约束让模型稳定生成 JSON 等结构化结果的输出方式。"
+      "description": "约束模型按 JSON、表格、字段或 schema 生成可机器解析结果的方法。"
     },
     {
       "canonical_name": "视觉语言模型",
@@ -595,12 +595,12 @@
     {
       "canonical_name": "KV缓存",
       "entity_type": "concept",
-      "description": "在自回归解码时复用历史键值张量以减少重复计算的推理缓存机制。"
+      "description": "Transformer自回归生成时缓存历史token的Key和Value张量，避免每步重新计算所有历史注意力，将推理复杂度从O(n^2)降至O(n)的机制。"
     },
     {
       "canonical_name": "推测解码",
       "entity_type": "method",
-      "description": "利用草稿模型与验证模型协同生成以提升大模型解码吞吐的方法。"
+      "description": "使用轻量草稿模型快速生成候选token序列，再由目标大模型并行验证并接受匹配前缀，在不损失输出质量的前提下加速自回归解码的算法。"
     },
     {
       "canonical_name": "预填充阶段",
@@ -624,8 +624,8 @@
     },
     {
       "canonical_name": "vLLM",
-      "entity_type": "algorithm",
-      "description": "vLLM是大模型领域具有代表性的模型、算法或系统。"
+      "entity_type": "framework",
+      "description": "开源的高吞吐 LLM 推理引擎，基于 PagedAttention 的显存管理实现高效 KV 缓存利用，并通过连续批处理提升 GPU 利用率。"
     },
     {
       "canonical_name": "TensorRT-LLM",
@@ -635,12 +635,12 @@
     {
       "canonical_name": "PagedAttention",
       "entity_type": "method",
-      "description": "通过分页式 KV 管理提升大模型推理显存利用率的注意力执行技术。"
+      "description": "借鉴操作系统分页思想，将KV缓存划分为固定大小的内存块，允许非连续存储以减少显存碎片和浪费的注意力内存管理技术。"
     },
     {
       "canonical_name": "连续批处理",
       "entity_type": "method",
-      "description": "在服务过程中持续并入新请求以提升 GPU 利用率和吞吐的调度方法。"
+      "description": "推理服务中不等待一个批次全部完成，而是动态插入新请求的解码步到当前批次中，最大限度提高GPU计算单元利用率的调度技术。"
     },
     {
       "canonical_name": "量化",

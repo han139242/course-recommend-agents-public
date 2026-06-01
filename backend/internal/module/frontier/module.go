@@ -24,4 +24,5 @@ func New(graphRepository *graphrepo.Neo4jRepository) *Module {
 // RegisterRoutes 注册前沿扩展路由。
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/briefing", m.Handler.GetBriefing)
+	group.GET("/library", m.Handler.ListLibrary)
 }

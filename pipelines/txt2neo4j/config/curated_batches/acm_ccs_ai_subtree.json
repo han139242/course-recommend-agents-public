@@ -1,0 +1,828 @@
+{
+  "source": "acm_ccs_2012_ai_subtree",
+  "course_title": "ACM CCS 2012 AI 分类体系",
+  "nodes": [
+    {
+      "canonical_name": "ACM:Planning with abstraction and generalization",
+      "entity_type": "topic",
+      "description": "Planning with abstraction and generalization (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computational photography",
+      "entity_type": "topic",
+      "description": "Computational photography (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:3D imaging",
+      "entity_type": "topic",
+      "description": "3D imaging (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Intelligent agents",
+      "entity_type": "topic",
+      "description": "Intelligent agents (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Visual content-based indexing and retrieval",
+      "entity_type": "topic",
+      "description": "Visual content-based indexing and retrieval (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Multi-agent planning",
+      "entity_type": "topic",
+      "description": "Multi-agent planning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computer vision representations",
+      "entity_type": "topic",
+      "description": "Computer vision representations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Biometrics",
+      "entity_type": "topic",
+      "description": "Biometrics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Language resources",
+      "entity_type": "topic",
+      "description": "Language resources (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Lexical semantics",
+      "entity_type": "topic",
+      "description": "Lexical semantics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Planning and scheduling",
+      "entity_type": "topic",
+      "description": "Planning and scheduling (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Distributed artificial intelligence",
+      "entity_type": "topic",
+      "description": "Distributed artificial intelligence (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Scene anomaly detection",
+      "entity_type": "topic",
+      "description": "Scene anomaly detection (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Machine translation",
+      "entity_type": "topic",
+      "description": "Machine translation (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Cooperation and coordination",
+      "entity_type": "topic",
+      "description": "Cooperation and coordination (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Abstraction and micro-operators",
+      "entity_type": "topic",
+      "description": "Abstraction and micro-operators (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Knowledge representation and reasoning",
+      "entity_type": "topic",
+      "description": "Knowledge representation and reasoning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Visual inspection",
+      "entity_type": "topic",
+      "description": "Visual inspection (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Randomized search",
+      "entity_type": "topic",
+      "description": "Randomized search (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Object identification",
+      "entity_type": "topic",
+      "description": "Object identification (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Multi-agent systems",
+      "entity_type": "topic",
+      "description": "Multi-agent systems (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Spatial and physical reasoning",
+      "entity_type": "topic",
+      "description": "Spatial and physical reasoning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Object recognition",
+      "entity_type": "topic",
+      "description": "Object recognition (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Image segmentation",
+      "entity_type": "topic",
+      "description": "Image segmentation (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computational control theory",
+      "entity_type": "topic",
+      "description": "Computational control theory (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Video summarization",
+      "entity_type": "topic",
+      "description": "Video summarization (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Object detection",
+      "entity_type": "topic",
+      "description": "Object detection (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Phonology / morphology",
+      "entity_type": "topic",
+      "description": "Phonology / morphology (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Planning under uncertainty",
+      "entity_type": "topic",
+      "description": "Planning under uncertainty (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Nonmonotonic, default reasoning and belief revision",
+      "entity_type": "topic",
+      "description": "Nonmonotonic, default reasoning and belief revision (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Planning for deterministic actions",
+      "entity_type": "topic",
+      "description": "Planning for deterministic actions (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Matching",
+      "entity_type": "topic",
+      "description": "Matching (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Temporal reasoning",
+      "entity_type": "topic",
+      "description": "Temporal reasoning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Speech recognition",
+      "entity_type": "topic",
+      "description": "Speech recognition (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Ontology engineering",
+      "entity_type": "topic",
+      "description": "Ontology engineering (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Logic programming and answer set programming",
+      "entity_type": "topic",
+      "description": "Logic programming and answer set programming (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Reasoning about belief and knowledge",
+      "entity_type": "topic",
+      "description": "Reasoning about belief and knowledge (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computer vision problems",
+      "entity_type": "topic",
+      "description": "Computer vision problems (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Appearance and texture representations",
+      "entity_type": "topic",
+      "description": "Appearance and texture representations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Vagueness and fuzzy logic",
+      "entity_type": "topic",
+      "description": "Vagueness and fuzzy logic (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Causal reasoning and diagnostics",
+      "entity_type": "topic",
+      "description": "Causal reasoning and diagnostics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Robotic planning",
+      "entity_type": "topic",
+      "description": "Robotic planning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Motion capture",
+      "entity_type": "topic",
+      "description": "Motion capture (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Mobile agents",
+      "entity_type": "topic",
+      "description": "Mobile agents (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Motion path planning",
+      "entity_type": "topic",
+      "description": "Motion path planning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Natural language processing",
+      "entity_type": "topic",
+      "description": "Natural language processing (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Active vision",
+      "entity_type": "topic",
+      "description": "Active vision (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Reconstruction",
+      "entity_type": "topic",
+      "description": "Reconstruction (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Vision for robotics",
+      "entity_type": "topic",
+      "description": "Vision for robotics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Artificial intelligence",
+      "entity_type": "topic",
+      "description": "Artificial intelligence (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Camera calibration",
+      "entity_type": "topic",
+      "description": "Camera calibration (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Shape inference",
+      "entity_type": "topic",
+      "description": "Shape inference (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Cognitive science",
+      "entity_type": "topic",
+      "description": "Cognitive science (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Hyperspectral imaging",
+      "entity_type": "topic",
+      "description": "Hyperspectral imaging (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Discourse, dialogue and pragmatics",
+      "entity_type": "topic",
+      "description": "Discourse, dialogue and pragmatics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Tracking",
+      "entity_type": "topic",
+      "description": "Tracking (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Philosophical/theoretical foundations of artificial intelligence",
+      "entity_type": "topic",
+      "description": "Philosophical/theoretical foundations of artificial intelligence (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Image representations",
+      "entity_type": "topic",
+      "description": "Image representations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Continuous space search",
+      "entity_type": "topic",
+      "description": "Continuous space search (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Theory of mind",
+      "entity_type": "topic",
+      "description": "Theory of mind (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Image and video acquisition",
+      "entity_type": "topic",
+      "description": "Image and video acquisition (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Cognitive robotics",
+      "entity_type": "topic",
+      "description": "Cognitive robotics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Activity recognition and understanding",
+      "entity_type": "topic",
+      "description": "Activity recognition and understanding (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Game tree search",
+      "entity_type": "topic",
+      "description": "Game tree search (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Information extraction",
+      "entity_type": "topic",
+      "description": "Information extraction (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Search with partial observations",
+      "entity_type": "topic",
+      "description": "Search with partial observations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Description logics",
+      "entity_type": "topic",
+      "description": "Description logics (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Discrete space search",
+      "entity_type": "topic",
+      "description": "Discrete space search (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Shape representations",
+      "entity_type": "topic",
+      "description": "Shape representations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Semantic networks",
+      "entity_type": "topic",
+      "description": "Semantic networks (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Control methods",
+      "entity_type": "topic",
+      "description": "Control methods (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Hierarchical representations",
+      "entity_type": "topic",
+      "description": "Hierarchical representations (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Video segmentation",
+      "entity_type": "topic",
+      "description": "Video segmentation (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Heuristic function construction",
+      "entity_type": "topic",
+      "description": "Heuristic function construction (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Search methodologies",
+      "entity_type": "topic",
+      "description": "Search methodologies (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Scene understanding",
+      "entity_type": "topic",
+      "description": "Scene understanding (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Probabilistic reasoning",
+      "entity_type": "topic",
+      "description": "Probabilistic reasoning (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computer vision",
+      "entity_type": "topic",
+      "description": "Computer vision (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Natural language generation",
+      "entity_type": "topic",
+      "description": "Natural language generation (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Interest point and salient region detections",
+      "entity_type": "topic",
+      "description": "Interest point and salient region detections (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Computer vision tasks",
+      "entity_type": "topic",
+      "description": "Computer vision tasks (ACM CCS 2012 分类)"
+    },
+    {
+      "canonical_name": "ACM:Epipolar geometry",
+      "entity_type": "topic",
+      "description": "Epipolar geometry (ACM CCS 2012 分类)"
+    }
+  ],
+  "relations": [
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Natural language processing",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Knowledge representation and reasoning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Planning and scheduling",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Search methodologies",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Control methods",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Philosophical/theoretical foundations of artificial intelligence",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Distributed artificial intelligence",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Artificial intelligence",
+      "ACM:Computer vision",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Information extraction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Machine translation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Discourse, dialogue and pragmatics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Natural language generation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Speech recognition",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Lexical semantics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Phonology / morphology",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Natural language processing",
+      "ACM:Language resources",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Description logics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Semantic networks",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Nonmonotonic, default reasoning and belief revision",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Probabilistic reasoning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Vagueness and fuzzy logic",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Causal reasoning and diagnostics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Temporal reasoning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Cognitive robotics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Ontology engineering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Logic programming and answer set programming",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Spatial and physical reasoning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Knowledge representation and reasoning",
+      "ACM:Reasoning about belief and knowledge",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Planning and scheduling",
+      "ACM:Planning for deterministic actions",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Planning and scheduling",
+      "ACM:Planning under uncertainty",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Planning and scheduling",
+      "ACM:Multi-agent planning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Planning and scheduling",
+      "ACM:Planning with abstraction and generalization",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Planning and scheduling",
+      "ACM:Robotic planning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Heuristic function construction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Discrete space search",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Continuous space search",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Randomized search",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Game tree search",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Abstraction and micro-operators",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Search methodologies",
+      "ACM:Search with partial observations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Control methods",
+      "ACM:Robotic planning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Control methods",
+      "ACM:Computational control theory",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Control methods",
+      "ACM:Motion path planning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Philosophical/theoretical foundations of artificial intelligence",
+      "ACM:Cognitive science",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Philosophical/theoretical foundations of artificial intelligence",
+      "ACM:Theory of mind",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Distributed artificial intelligence",
+      "ACM:Multi-agent systems",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Distributed artificial intelligence",
+      "ACM:Intelligent agents",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Distributed artificial intelligence",
+      "ACM:Mobile agents",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Distributed artificial intelligence",
+      "ACM:Cooperation and coordination",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision",
+      "ACM:Computer vision tasks",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision",
+      "ACM:Image and video acquisition",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision",
+      "ACM:Computer vision representations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision",
+      "ACM:Computer vision problems",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Biometrics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Scene understanding",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Activity recognition and understanding",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Video summarization",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Visual content-based indexing and retrieval",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Visual inspection",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Vision for robotics",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision tasks",
+      "ACM:Scene anomaly detection",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Camera calibration",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Epipolar geometry",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Computational photography",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Hyperspectral imaging",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Motion capture",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:3D imaging",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Image and video acquisition",
+      "ACM:Active vision",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision representations",
+      "ACM:Image representations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision representations",
+      "ACM:Shape representations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision representations",
+      "ACM:Appearance and texture representations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision representations",
+      "ACM:Hierarchical representations",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Interest point and salient region detections",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Image segmentation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Video segmentation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Shape inference",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Object detection",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Object recognition",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Object identification",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Tracking",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Reconstruction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ACM:Computer vision problems",
+      "ACM:Matching",
+      "SUBTOPIC_OF"
+    ]
+  ]
+}

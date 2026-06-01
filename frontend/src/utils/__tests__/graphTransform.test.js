@@ -1,5 +1,5 @@
 import { transformGraphData } from '../graphTransform'
-import { getCoursePalette } from '../colorMap'
+import { getCoursePalette, getEntityLabel } from '../colorMap'
 
 describe('graphTransform', () => {
   it('keeps total catalog size separate from visible graph stats and marks cross-course edges', () => {
@@ -76,15 +76,14 @@ describe('graphTransform', () => {
     expect(result.meta.expandedCount).toBe(1)
   })
 
-  it('normalizes course titles from source metadata before rendering node and edge data', () => {
+  it('keeps readable course labels in rendered node and edge data', () => {
     const nodes = [
       {
-        id: 'intro',
-        routeKnowledgeId: 'intro',
-        name: '知识表示',
-        canonicalName: '知识表示',
-        chapterTitle: '人工智能基础知识骨架',
-        curatedSource: 'curated_ai_professional_ontology',
+        id: 'ml',
+        routeKnowledgeId: 'ml',
+        name: '梯度下降',
+        canonicalName: '梯度下降',
+        chapterTitle: '机器学习',
         entityType: 'topic',
         x: 0,
         y: 0,
@@ -94,8 +93,7 @@ describe('graphTransform', () => {
         routeKnowledgeId: 'llm',
         name: 'Transformer',
         canonicalName: 'Transformer',
-        chapterTitle: '人工智能课程知识图谱',
-        sourcePath: 'curated/batch_29_transformer_llm_full_route',
+        chapterTitle: '大模型',
         entityType: 'topic',
         x: 120,
         y: 30,
@@ -103,9 +101,9 @@ describe('graphTransform', () => {
     ]
     const edges = [
       {
-        id: 'intro:RELATED_TO:llm',
-        relationId: 'intro:RELATED_TO:llm',
-        sourceId: 'intro',
+        id: 'ml:RELATED_TO:llm',
+        relationId: 'ml:RELATED_TO:llm',
+        sourceId: 'ml',
         targetId: 'llm',
         relationType: 'RELATED_TO',
       },
@@ -113,21 +111,22 @@ describe('graphTransform', () => {
 
     const result = transformGraphData(nodes, edges)
 
-    expect(result.nodes.find((node) => node.id === 'intro')?.data.chapterTitle).toBe('人工智能导论')
+    expect(result.nodes.find((node) => node.id === 'ml')?.data.chapterTitle).toBe('机器学习')
     expect(result.nodes.find((node) => node.id === 'llm')?.data.chapterTitle).toBe('大模型')
     expect(result.edges[0]?.data.crossCourse).toBe(true)
-    expect(result.edges[0]?.data.sourceCourse).toBe('人工智能导论')
+    expect(result.edges[0]?.data.sourceCourse).toBe('机器学习')
     expect(result.edges[0]?.data.targetCourse).toBe('大模型')
   })
-  it('blends node fill from course background to primary color as mastery rises', () => {
-    const palette = getCoursePalette('鏈哄櫒瀛︿範')
+
+  it('blends readable course colors from background to primary color as mastery rises', () => {
+    const palette = getCoursePalette('机器学习')
     const nodes = [
       {
         id: 'low',
         routeKnowledgeId: 'low',
-        name: '鏈哄櫒瀛︿範鍩虹',
-        canonicalName: '鏈哄櫒瀛︿範鍩虹',
-        chapterTitle: '鏈哄櫒瀛︿範',
+        name: '梯度下降',
+        canonicalName: '梯度下降',
+        chapterTitle: '机器学习',
         entityType: 'concept',
         x: 0,
         y: 0,
@@ -135,9 +134,9 @@ describe('graphTransform', () => {
       {
         id: 'high',
         routeKnowledgeId: 'high',
-        name: '鏈哄櫒瀛︿範杩涢樁',
-        canonicalName: '鏈哄櫒瀛︿範杩涢樁',
-        chapterTitle: '鏈哄櫒瀛︿範',
+        name: '模型评估',
+        canonicalName: '模型评估',
+        chapterTitle: '机器学习',
         entityType: 'concept',
         x: 120,
         y: 0,
@@ -160,5 +159,12 @@ describe('graphTransform', () => {
     expect(highNode.style.ringColor).toBe(palette.ring)
     expect(lowNode.style.masteryRatio).toBe(0)
     expect(highNode.style.masteryRatio).toBe(1)
+  })
+
+  it('labels modern AI node types for graph UI surfaces', () => {
+    expect(getEntityLabel('model')).toBe('模型')
+    expect(getEntityLabel('tool')).toBe('工具')
+    expect(getEntityLabel('framework')).toBe('框架')
+    expect(getEntityLabel('unknown')).toBe('知识点')
   })
 })

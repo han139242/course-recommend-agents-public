@@ -1,0 +1,538 @@
+{
+  "source": "course_ai_for_science",
+  "course_title": "AI for Science",
+  "nodes": [
+    {
+      "canonical_name": "AI for Science",
+      "entity_type": "topic",
+      "description": "使用人工智能方法加速科学发现、实验设计、仿真建模和工程优化的交叉课程。"
+    },
+    {
+      "canonical_name": "科学机器学习",
+      "entity_type": "topic",
+      "description": "将物理定律和守恒约束融入机器学习模型，在数据稀缺时保证预测物理合理性的新范式。"
+    },
+    {
+      "canonical_name": "分子与材料智能",
+      "entity_type": "topic",
+      "description": "围绕分子表示、性质预测、生成设计和材料发现展开的科学智能主题。"
+    },
+    {
+      "canonical_name": "生物医学智能",
+      "entity_type": "topic",
+      "description": "围绕蛋白质、基因组、医学影像、药物发现和临床辅助展开的 AI 主题。"
+    },
+    {
+      "canonical_name": "科学发现工作流",
+      "entity_type": "topic",
+      "description": "围绕假设生成、实验设计、自动化实验和文献知识整合展开的科学发现主题。"
+    },
+    {
+      "canonical_name": "微分方程",
+      "entity_type": "concept",
+      "description": "描述函数及其导数之间关系并用于刻画连续动态系统的数学模型。"
+    },
+    {
+      "canonical_name": "物理约束神经网络",
+      "entity_type": "method",
+      "description": "把微分方程、边界条件和物理守恒项纳入神经网络训练的建模方法。"
+    },
+    {
+      "canonical_name": "神经算子",
+      "entity_type": "method",
+      "description": "学习函数空间到函数空间映射以快速近似偏微分方程解的模型方法。"
+    },
+    {
+      "canonical_name": "傅里叶神经算子",
+      "entity_type": "algorithm",
+      "description": "在频域学习全局卷积核以近似复杂物理系统算子的神经算子算法。"
+    },
+    {
+      "canonical_name": "PDE求解学习",
+      "entity_type": "method",
+      "description": "使用机器学习近似偏微分方程求解器或加速数值仿真的方法。"
+    },
+    {
+      "canonical_name": "代理模型",
+      "entity_type": "concept",
+      "description": "用低成本模型近似昂贵仿真、实验或优化过程的替代建模方法。"
+    },
+    {
+      "canonical_name": "不确定性量化",
+      "entity_type": "method",
+      "description": "估计科学模型预测置信区间、误差来源和风险范围的方法。"
+    },
+    {
+      "canonical_name": "主动学习实验设计",
+      "entity_type": "method",
+      "description": "根据模型不确定性和收益选择最有价值实验样本的设计方法。"
+    },
+    {
+      "canonical_name": "贝叶斯优化实验",
+      "entity_type": "method",
+      "description": "用概率代理模型和采集函数高效搜索实验条件或材料配方的方法。"
+    },
+    {
+      "canonical_name": "分子图表示",
+      "entity_type": "method",
+      "description": "把原子、键和空间结构表示为图以支持分子性质预测和生成的方法。"
+    },
+    {
+      "canonical_name": "分子性质预测",
+      "entity_type": "application",
+      "description": "预测分子活性、毒性、溶解度、稳定性或能量等性质的 AI 任务。"
+    },
+    {
+      "canonical_name": "分子生成模型",
+      "entity_type": "method",
+      "description": "生成满足性质约束的新分子结构的深度生成模型。"
+    },
+    {
+      "canonical_name": "逆向材料设计",
+      "entity_type": "application",
+      "description": "从目标性能出发搜索材料结构、组成和制备条件的智能设计任务。"
+    },
+    {
+      "canonical_name": "晶体结构预测",
+      "entity_type": "application",
+      "description": "预测材料晶体结构、稳定构型或相变行为的科学智能任务。"
+    },
+    {
+      "canonical_name": "蛋白质结构预测",
+      "entity_type": "application",
+      "description": "根据氨基酸序列预测蛋白质三维结构和构象的 AI 任务。"
+    },
+    {
+      "canonical_name": "蛋白质语言模型",
+      "entity_type": "model",
+      "description": "在大规模蛋白质序列库上训练的 Transformer/BERT 类模型，学习氨基酸共进化关系和结构约束的深层表示，可用于功能预测、结构分析和变异解释。"
+    },
+    {
+      "canonical_name": "基因组基础模型",
+      "entity_type": "method",
+      "description": "在大规模基因组序列上预训练并用于功能注释和变异解释的基础模型。"
+    },
+    {
+      "canonical_name": "药物发现AI",
+      "entity_type": "application",
+      "description": "应用图神经网络和强化学习加速靶点识别和先导化合物优化的AI驱动药物研发流程。"
+    },
+    {
+      "canonical_name": "医学影像基础模型",
+      "entity_type": "method",
+      "description": "在多模态医学影像和报告数据上预训练并迁移到诊断任务的基础模型。"
+    },
+    {
+      "canonical_name": "临床决策支持",
+      "entity_type": "application",
+      "description": "结合患者数据、医学知识和模型推理辅助诊疗决策的 AI 应用。"
+    },
+    {
+      "canonical_name": "科学文献挖掘",
+      "entity_type": "method",
+      "description": "从论文、专利和实验记录中抽取实体、关系、结论和证据的文本挖掘方法。"
+    },
+    {
+      "canonical_name": "科研知识图谱",
+      "entity_type": "application",
+      "description": "组织科学实体、实验、文献、数据集和发现关系的知识图谱应用。"
+    },
+    {
+      "canonical_name": "假设生成",
+      "entity_type": "method",
+      "description": "利用模型、知识图谱和文献证据提出可检验科学假设的方法。"
+    },
+    {
+      "canonical_name": "自动化实验室",
+      "entity_type": "application",
+      "description": "结合机器人、仪器控制、主动学习和实验规划的自动化科研平台。"
+    },
+    {
+      "canonical_name": "闭环科学发现",
+      "entity_type": "method",
+      "description": "在模型预测、实验执行、结果反馈和策略更新之间形成自动迭代的发现流程。"
+    },
+    {
+      "canonical_name": "多尺度建模",
+      "entity_type": "method",
+      "description": "整合微观、介观和宏观尺度信息进行科学系统建模的方法。"
+    },
+    {
+      "canonical_name": "科学数据同化",
+      "entity_type": "method",
+      "description": "将观测数据与数值模型融合以改进状态估计和预测的方法。"
+    },
+    {
+      "canonical_name": "气候模型降尺度",
+      "entity_type": "application",
+      "description": "用机器学习把粗分辨率气候模拟转化为局部高分辨率预测的应用。"
+    },
+    {
+      "canonical_name": "遥感智能解译",
+      "entity_type": "application",
+      "description": "使用视觉和多模态模型分析遥感影像中的地物、变化和灾害信息的任务。"
+    },
+    {
+      "canonical_name": "科学数据治理",
+      "entity_type": "method",
+      "description": "管理科学数据来源、质量、元数据、许可和可复现性的治理方法。"
+    },
+    {
+      "canonical_name": "可复现实验记录",
+      "entity_type": "method",
+      "description": "记录数据、代码、参数、环境和过程以支持科学实验复现的方法。"
+    },
+    {
+      "canonical_name": "科学模型可解释性",
+      "entity_type": "method",
+      "description": "解释模型预测与科学变量、机制和证据之间关系的方法。"
+    },
+    {
+      "canonical_name": "科学基准数据集",
+      "entity_type": "concept",
+      "description": "用于比较科学机器学习模型性能、泛化和物理一致性的标准数据集。"
+    },
+    {
+      "canonical_name": "实验机器人调度",
+      "entity_type": "method",
+      "description": "为自动化实验设备安排实验顺序、资源和异常处理的调度方法。"
+    },
+    {
+      "canonical_name": "科学多模态模型",
+      "entity_type": "method",
+      "description": "联合建模文本、图像、谱图、序列、结构和实验表格等科学模态的模型。"
+    },
+    {
+      "canonical_name": "科研智能体",
+      "entity_type": "application",
+      "description": "辅助阅读文献、设计实验、调用工具和生成科研报告的智能体应用。"
+    }
+  ],
+  "relations": [
+    [
+      "科学机器学习",
+      "AI for Science",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分子与材料智能",
+      "AI for Science",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生物医学智能",
+      "AI for Science",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学发现工作流",
+      "AI for Science",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "微分方程",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "物理约束神经网络",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经算子",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "傅里叶神经算子",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "PDE求解学习",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "代理模型",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "不确定性量化",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "主动学习实验设计",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "贝叶斯优化实验",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分子图表示",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分子性质预测",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分子生成模型",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逆向材料设计",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "晶体结构预测",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蛋白质结构预测",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蛋白质语言模型",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "基因组基础模型",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "药物发现AI",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "医学影像基础模型",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "临床决策支持",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学文献挖掘",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科研知识图谱",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "假设生成",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自动化实验室",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "闭环科学发现",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多尺度建模",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学数据同化",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "气候模型降尺度",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "遥感智能解译",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学数据治理",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可复现实验记录",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学模型可解释性",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学基准数据集",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "实验机器人调度",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学多模态模型",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科研智能体",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "微分方程",
+      "PDE求解学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "微分方程",
+      "物理约束神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "PDE求解学习",
+      "物理约束神经网络",
+      "RELATED_TO"
+    ],
+    [
+      "神经算子",
+      "傅里叶神经算子",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "代理模型",
+      "贝叶斯优化实验",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "不确定性量化",
+      "主动学习实验设计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "主动学习实验设计",
+      "闭环科学发现",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "贝叶斯优化实验",
+      "闭环科学发现",
+      "APPLIES_TO"
+    ],
+    [
+      "分子图表示",
+      "分子性质预测",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "分子性质预测",
+      "分子生成模型",
+      "RELATED_TO"
+    ],
+    [
+      "分子生成模型",
+      "逆向材料设计",
+      "APPLIES_TO"
+    ],
+    [
+      "蛋白质语言模型",
+      "蛋白质结构预测",
+      "RELATED_TO"
+    ],
+    [
+      "蛋白质结构预测",
+      "药物发现AI",
+      "APPLIES_TO"
+    ],
+    [
+      "医学影像基础模型",
+      "临床决策支持",
+      "APPLIES_TO"
+    ],
+    [
+      "科学文献挖掘",
+      "科研知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "科研知识图谱",
+      "假设生成",
+      "APPLIES_TO"
+    ],
+    [
+      "自动化实验室",
+      "闭环科学发现",
+      "PART_OF"
+    ],
+    [
+      "实验机器人调度",
+      "自动化实验室",
+      "PART_OF"
+    ],
+    [
+      "科学数据治理",
+      "可复现实验记录",
+      "RELATED_TO"
+    ],
+    [
+      "科学模型可解释性",
+      "科学基准数据集",
+      "RELATED_TO"
+    ],
+    [
+      "科学多模态模型",
+      "科研智能体",
+      "APPLIES_TO"
+    ],
+    [
+      "图神经网络",
+      "分子图表示",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "知识图谱",
+      "科研知识图谱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多模态学习",
+      "科学多模态模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Agent系统",
+      "科研智能体",
+      "RELATED_TO"
+    ]
+  ]
+}

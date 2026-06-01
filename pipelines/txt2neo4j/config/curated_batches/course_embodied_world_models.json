@@ -1,0 +1,533 @@
+{
+  "source": "course_embodied_world_models",
+  "course_title": "具身智能与世界模型",
+  "nodes": [
+    {
+      "canonical_name": "具身智能与世界模型",
+      "entity_type": "topic",
+      "description": "研究智能体在物理或仿真环境中通过感知、世界模型、规划和动作闭环完成任务的课程。"
+    },
+    {
+      "canonical_name": "具身感知",
+      "entity_type": "topic",
+      "description": "围绕视觉、语言、触觉、深度和状态估计支撑具身任务理解的主题。"
+    },
+    {
+      "canonical_name": "世界模型",
+      "entity_type": "concept",
+      "description": "学习环境动态性内在表示的生成模型，使智能体可以在想象中规划而无需真实环境交互。"
+    },
+    {
+      "canonical_name": "视觉语言动作模型",
+      "entity_type": "topic",
+      "description": "把视觉观察、语言指令和机器人动作统一建模的具身基础模型主题。"
+    },
+    {
+      "canonical_name": "具身策略学习",
+      "entity_type": "topic",
+      "description": "围绕模仿学习、强化学习、扩散策略和离线数据训练动作策略的主题。"
+    },
+    {
+      "canonical_name": "机器人基础模型",
+      "entity_type": "method",
+      "description": "在多任务、多机器人或多场景数据上训练并可迁移到具身任务的基础模型。"
+    },
+    {
+      "canonical_name": "视觉语言导航",
+      "entity_type": "application",
+      "description": "智能体根据自然语言指令和视觉观察在环境中导航到目标的任务。"
+    },
+    {
+      "canonical_name": "室内具身问答",
+      "entity_type": "application",
+      "description": "智能体在真实或仿真空间中探索环境并回答问题的具身问答任务。"
+    },
+    {
+      "canonical_name": "操作技能学习",
+      "entity_type": "method",
+      "description": "使机器人通过学习获得抓取、放置、组装等精细操作能力的综合方法。"
+    },
+    {
+      "canonical_name": "机器人模仿学习",
+      "entity_type": "method",
+      "description": "从人类示范、遥操作或专家轨迹中学习机器人策略的方法。"
+    },
+    {
+      "canonical_name": "行为克隆",
+      "entity_type": "algorithm",
+      "description": "使用监督学习从专家示教数据中直接学习状态到动作映射的模仿学习算法，实现简单高效但对分布偏移敏感。"
+    },
+    {
+      "canonical_name": "逆向强化学习",
+      "entity_type": "method",
+      "description": "从专家示教轨迹或行为数据中反推隐含奖励函数或偏好结构，再据此训练策略的强化学习方法。"
+    },
+    {
+      "canonical_name": "离线强化学习",
+      "entity_type": "method",
+      "description": "仅使用预先收集的固定数据集进行策略学习而不与环境在线交互，并通过保守估计或行为正则化控制分布外动作风险的强化学习方法。"
+    },
+    {
+      "canonical_name": "扩散策略",
+      "entity_type": "algorithm",
+      "description": "将扩散模型作为机器人动作分布的生成模型，通过学习去噪过程逐步细化动作轨迹以完成连续控制任务的策略学习算法。"
+    },
+    {
+      "canonical_name": "动作分块",
+      "entity_type": "method",
+      "description": "把长时序控制拆分为短动作片段以降低策略学习难度的方法。"
+    },
+    {
+      "canonical_name": "技能库",
+      "entity_type": "concept",
+      "description": "可复用的低层动作技能、工具使用技能或任务子程序集合。"
+    },
+    {
+      "canonical_name": "层级控制",
+      "entity_type": "method",
+      "description": "用高层任务决策和低层动作控制分层组织具身智能行为的方法。"
+    },
+    {
+      "canonical_name": "模型预测控制",
+      "entity_type": "method",
+      "description": "在滚动时域内利用动态模型优化未来动作序列的控制方法。"
+    },
+    {
+      "canonical_name": "可微物理仿真",
+      "entity_type": "method",
+      "description": "使物理仿真过程可求导以支持梯度优化和模型学习的仿真方法。"
+    },
+    {
+      "canonical_name": "仿真到现实迁移",
+      "entity_type": "method",
+      "description": "将仿真环境中训练的策略迁移到真实机器人和物理场景的方法。"
+    },
+    {
+      "canonical_name": "域随机化",
+      "entity_type": "method",
+      "description": "在仿真训练中随机化纹理、动力学、光照和噪声以提升现实泛化的方法。"
+    },
+    {
+      "canonical_name": "数字孪生环境",
+      "entity_type": "application",
+      "description": "用虚拟环境映射真实设备、空间和物理过程以支持训练和验证的系统。"
+    },
+    {
+      "canonical_name": "场景图表示",
+      "entity_type": "method",
+      "description": "用对象、属性、关系和空间结构表达具身环境的图表示方法。"
+    },
+    {
+      "canonical_name": "3D视觉语言模型",
+      "entity_type": "method",
+      "description": "联合理解点云、三维场景、图像和语言指令的多模态模型。"
+    },
+    {
+      "canonical_name": "神经辐射场",
+      "entity_type": "method",
+      "description": "用神经网络表示三维场景辐射和密度并支持新视角合成的方法。"
+    },
+    {
+      "canonical_name": "高斯溅射表示",
+      "entity_type": "method",
+      "description": "用三维高斯基元表示场景并实现高效渲染和重建的方法。"
+    },
+    {
+      "canonical_name": "神经渲染",
+      "entity_type": "method",
+      "description": "结合神经表示和可微渲染生成或重建视觉场景的方法。"
+    },
+    {
+      "canonical_name": "主动感知",
+      "entity_type": "method",
+      "description": "智能体主动选择观察位置、视角或传感动作以减少不确定性的方法。"
+    },
+    {
+      "canonical_name": "空间记忆",
+      "entity_type": "concept",
+      "description": "智能体保存环境布局、对象位置和已探索区域的内部记忆。"
+    },
+    {
+      "canonical_name": "拓扑地图",
+      "entity_type": "concept",
+      "description": "用地点节点和连通关系表示环境可达结构的地图形式。"
+    },
+    {
+      "canonical_name": "语义地图",
+      "entity_type": "concept",
+      "description": "在几何或拓扑地图中加入物体、区域功能和语义标签的环境地图。"
+    },
+    {
+      "canonical_name": "可供性",
+      "entity_type": "concept",
+      "description": "对象或环境对智能体可执行动作和任务机会的功能属性。"
+    },
+    {
+      "canonical_name": "任务与运动规划",
+      "entity_type": "method",
+      "description": "将高层任务逻辑规划与低层连续运动轨迹优化联合求解，使机器人生成可执行行为序列的方法。"
+    },
+    {
+      "canonical_name": "接触丰富操作",
+      "entity_type": "application",
+      "description": "涉及摩擦、碰撞、柔顺和接触状态切换的复杂机器人操作任务。"
+    },
+    {
+      "canonical_name": "多机器人协作",
+      "entity_type": "application",
+      "description": "多个机器人通过通信、分工和协同控制完成任务的应用场景。"
+    },
+    {
+      "canonical_name": "人形机器人智能",
+      "entity_type": "application",
+      "description": "面向人形机器人感知、平衡、操作、导航和人机交互的具身智能应用。"
+    },
+    {
+      "canonical_name": "具身评测基准",
+      "entity_type": "method",
+      "description": "衡量具身智能体导航、操作、泛化、安全和交互能力的标准评测方法。"
+    },
+    {
+      "canonical_name": "安全约束控制",
+      "entity_type": "method",
+      "description": "在控制过程中满足碰撞、速度、力、稳定性和人机安全约束的方法。"
+    },
+    {
+      "canonical_name": "人机共享控制",
+      "entity_type": "method",
+      "description": "人类操作者与自主系统共同控制机器人行为的交互控制方法。"
+    },
+    {
+      "canonical_name": "具身数据采集",
+      "entity_type": "method",
+      "description": "通过遥操作、仿真、互联网视频或传感器记录收集具身学习数据的方法。"
+    }
+  ],
+  "relations": [
+    [
+      "具身感知",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "世界模型",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "视觉语言动作模型",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "具身策略学习",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器人基础模型",
+      "视觉语言动作模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "视觉语言导航",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "室内具身问答",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "操作技能学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器人模仿学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "行为克隆",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逆向强化学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "离线强化学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "扩散策略",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "动作分块",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "技能库",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "层级控制",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型预测控制",
+      "世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可微物理仿真",
+      "世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "仿真到现实迁移",
+      "世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "域随机化",
+      "世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数字孪生环境",
+      "世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "场景图表示",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "3D视觉语言模型",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经辐射场",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "高斯溅射表示",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经渲染",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "主动感知",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "空间记忆",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "拓扑地图",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语义地图",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可供性",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "任务与运动规划",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "接触丰富操作",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多机器人协作",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人形机器人智能",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "具身评测基准",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全约束控制",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "人机共享控制",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "具身数据采集",
+      "具身智能与世界模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "机器人模仿学习",
+      "行为克隆",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "行为克隆",
+      "扩散策略",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "离线强化学习",
+      "扩散策略",
+      "RELATED_TO"
+    ],
+    [
+      "逆向强化学习",
+      "机器人模仿学习",
+      "RELATED_TO"
+    ],
+    [
+      "动作分块",
+      "扩散策略",
+      "PART_OF"
+    ],
+    [
+      "技能库",
+      "层级控制",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "层级控制",
+      "任务与运动规划",
+      "RELATED_TO"
+    ],
+    [
+      "模型预测控制",
+      "任务与运动规划",
+      "APPLIES_TO"
+    ],
+    [
+      "可微物理仿真",
+      "仿真到现实迁移",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "域随机化",
+      "仿真到现实迁移",
+      "APPLIES_TO"
+    ],
+    [
+      "数字孪生环境",
+      "仿真到现实迁移",
+      "APPLIES_TO"
+    ],
+    [
+      "场景图表示",
+      "语义地图",
+      "RELATED_TO"
+    ],
+    [
+      "拓扑地图",
+      "语义地图",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "语义地图",
+      "视觉语言导航",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "3D视觉语言模型",
+      "室内具身问答",
+      "APPLIES_TO"
+    ],
+    [
+      "神经辐射场",
+      "神经渲染",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "高斯溅射表示",
+      "神经渲染",
+      "RELATED_TO"
+    ],
+    [
+      "主动感知",
+      "空间记忆",
+      "RELATED_TO"
+    ],
+    [
+      "可供性",
+      "操作技能学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "安全约束控制",
+      "人机共享控制",
+      "RELATED_TO"
+    ],
+    [
+      "具身数据采集",
+      "机器人基础模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "具身评测基准",
+      "机器人基础模型",
+      "RELATED_TO"
+    ],
+    [
+      "计算机视觉",
+      "具身感知",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "强化学习",
+      "具身策略学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "多智能体系统",
+      "多机器人协作",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "路径规划",
+      "视觉语言导航",
+      "PREREQUISITE_OF"
+    ]
+  ]
+}

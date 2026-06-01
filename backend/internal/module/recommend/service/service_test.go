@@ -18,7 +18,7 @@ func TestGetPathReturnsFallbackRecommendation(t *testing.T) {
 	ctx := ctxmeta.WithUserID(context.Background(), "2")
 	graphRepo := repository.NewNeo4jRepository(nil)
 	graphSvc := graphservice.New(graphRepo)
-	service := New(graphSvc, learningrepo.NewRedisRepository(nil), nil)
+	service := New(graphSvc, learningrepo.NewRedisRepository(nil), nil, nil)
 	resp, err := service.GetPath(ctx, recommenddto.PathQuery{Target: "kp_001", Limit: 3})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -29,7 +29,7 @@ func TestGetPathReturnsFallbackRecommendation(t *testing.T) {
 }
 
 func TestInferLearnerProfileReturnsStrugglingStyle(t *testing.T) {
-	profile := inferLearnerProfile([]studentKnowledgeState{
+	profile := inferLearnerProfile([]StudentKnowledgeState{
 		{KnowledgeID: "a", MasteryScore: 22, CorrectRate: 0.32, AnsweredCount: 6},
 		{KnowledgeID: "b", MasteryScore: 35, CorrectRate: 0.41, AnsweredCount: 4},
 		{KnowledgeID: "c", MasteryScore: 48, CorrectRate: 0.57, AnsweredCount: 2},
@@ -45,7 +45,7 @@ func TestInferLearnerProfileReturnsStrugglingStyle(t *testing.T) {
 
 func TestDetectLearningBottlenecksIncludesWeaknessAndTransfer(t *testing.T) {
 	service := &Service{}
-	progressList := []studentKnowledgeState{
+	progressList := []StudentKnowledgeState{
 		{
 			KnowledgeID:    "weak-node",
 			CanonicalName:  "Weak Node",
@@ -64,7 +64,7 @@ func TestDetectLearningBottlenecksIncludesWeaknessAndTransfer(t *testing.T) {
 		},
 	}
 
-	insights := service.DetectLearningBottlenecks(context.Background(), recommenddto.PathQuery{}, progressList, map[string]studentKnowledgeState{}, []recommenddto.PathItemView{
+	insights := service.DetectLearningBottlenecks(context.Background(), recommenddto.PathQuery{}, progressList, map[string]StudentKnowledgeState{}, []recommenddto.PathItemView{
 		{
 			KnowledgeID:  "transfer-node",
 			Route:        "/knowledge/transfer-node",
@@ -113,7 +113,7 @@ func TestGraphNodeCourseTitleNormalizesLegacyMetadata(t *testing.T) {
 }
 
 func TestFirstNonEmptyCourseNormalizesAlias(t *testing.T) {
-	title := firstNonEmptyCourse("", "人工智能基础知识骨架", "机器学习")
+	title := firstNonEmptyCourse("", "人工智能基础知识骨架", "绪论")
 	if title != "人工智能导论" {
 		t.Fatalf("expected normalized alias, got %q", title)
 	}

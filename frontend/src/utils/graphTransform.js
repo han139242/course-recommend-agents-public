@@ -73,6 +73,9 @@ function hexToRgb(color = '#CBD5E1') {
       .map((char) => char + char)
       .join('')
   }
+  if (hex.length === 8) {
+    hex = hex.slice(0, 6)
+  }
   if (hex.length !== 6) return null
 
   return {

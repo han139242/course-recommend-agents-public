@@ -9,7 +9,7 @@ import {
   fetchGraphSeeds,
   fetchKnowledgeDetail,
 } from '../api/graph'
-import { fetchRecommendedPath } from '../api/recommend'
+import { fetchRecommendedPath, fetchUnifiedPath } from '../api/recommend'
 import {
   NEIGHBOR_LIMIT,
   MAX_EXPAND_DEPTH,
@@ -877,7 +877,7 @@ export const useGraphStore = defineStore('graph', () => {
     if (recommendCache.value[cacheKey]) return recommendCache.value[cacheKey]
 
     try {
-      const payload = await fetchRecommendedPath({ target, knowledgeId, scene, limit: 10 })
+      const payload = await fetchUnifiedPath({ target, knowledgeId, scene, limit: 10 })
       recommendCache.value = {
         ...recommendCache.value,
         [cacheKey]: payload,

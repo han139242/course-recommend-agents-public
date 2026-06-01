@@ -54,14 +54,14 @@ func TestInferClientActions(t *testing.T) {
 		},
 		{
 			name:        "filter course",
-			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u4eba\u5de5\u667a\u80fd\u8bfe\u7a0b\u77e5\u8bc6\u56fe\u8c31",
+			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u77e5\u8bc6\u56fe\u8c31",
 			wantType:    "filter_course",
 			wantCourse:  "\u77e5\u8bc6\u56fe\u8c31",
 			wantActions: 1,
 		},
 		{
 			name:        "filter course legacy alias",
-			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u4eba\u5de5\u667a\u80fd\u57fa\u7840\u77e5\u8bc6\u9aa8\u67b6",
+			message:     "\u6309\u8bfe\u7a0b\u7b5b\u9009 \u7eea\u8bba",
 			wantType:    "filter_course",
 			wantCourse:  "\u4eba\u5de5\u667a\u80fd\u5bfc\u8bba",
 			wantActions: 1,

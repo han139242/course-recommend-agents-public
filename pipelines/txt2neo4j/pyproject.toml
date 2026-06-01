@@ -13,6 +13,7 @@ dependencies = [
 [project.scripts]
 txt2neo4j = "txt2neo4j.cli:main"
 txt2neo4j-normalize = "txt2neo4j.normalize_graph:main"
+txt2neo4j-graph-audit = "txt2neo4j.graph_audit:main"
 
 [build-system]
 requires = ["setuptools>=80.0"]

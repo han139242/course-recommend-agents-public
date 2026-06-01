@@ -1,0 +1,523 @@
+{
+  "source": "course_ai_infrastructure",
+  "course_title": "AI基础设施与高性能智能计算",
+  "nodes": [
+    {
+      "canonical_name": "AI基础设施",
+      "entity_type": "topic",
+      "description": "支撑人工智能训练、推理、部署、监控和治理的计算系统、硬件平台与工程能力集合。"
+    },
+    {
+      "canonical_name": "AI基础设施与高性能智能计算",
+      "entity_type": "topic",
+      "description": "面向大规模模型训练、推理服务、硬件加速和系统优化的人工智能工程基础课程。"
+    },
+    {
+      "canonical_name": "AI硬件体系",
+      "entity_type": "topic",
+      "description": "研究 GPU、TPU、NPU、AI芯片和互连网络支撑智能计算的硬件体系。"
+    },
+    {
+      "canonical_name": "并行训练系统",
+      "entity_type": "topic",
+      "description": "综合运用数据并行、模型并行、流水线并行和混合并行等策略，将大规模神经网络训练任务分布到多个GPU或节点上的系统化方法。"
+    },
+    {
+      "canonical_name": "推理服务系统",
+      "entity_type": "topic",
+      "description": "围绕模型部署、请求调度、KV缓存管理、批处理和延迟优化构建的在线模型推理服务化平台。"
+    },
+    {
+      "canonical_name": "AI算力运维",
+      "entity_type": "topic",
+      "description": "涵盖GPU集群资源调度、训练任务管理、故障检测恢复、性能监控和成本优化的AI基础设施运维体系。"
+    },
+    {
+      "canonical_name": "AI芯片",
+      "entity_type": "concept",
+      "description": "面向神经网络矩阵运算、稀疏计算和低精度计算优化的专用或半专用处理器。"
+    },
+    {
+      "canonical_name": "GPU并行训练",
+      "entity_type": "method",
+      "description": "使用多个 GPU 对神经网络训练任务进行并行加速的训练方法。"
+    },
+    {
+      "canonical_name": "CUDA编程模型",
+      "entity_type": "method",
+      "description": "使用线程块、网格、核函数和显存层次组织 GPU 并行计算的编程模型。"
+    },
+    {
+      "canonical_name": "张量并行",
+      "entity_type": "method",
+      "description": "将单个算子或权重张量切分到多个设备上协同计算的模型并行方法。"
+    },
+    {
+      "canonical_name": "流水线并行",
+      "entity_type": "method",
+      "description": "将模型按层切分为多个阶段，每个阶段在不同设备上执行，通过微批次流水线减少设备空闲时间的模型并行策略。"
+    },
+    {
+      "canonical_name": "数据并行",
+      "entity_type": "method",
+      "description": "每个设备持有完整模型副本，在不同数据子集上独立计算梯度，通过AllReduce等集合通信同步参数更新的分布式训练方法。"
+    },
+    {
+      "canonical_name": "混合并行",
+      "entity_type": "method",
+      "description": "组合数据并行、张量并行、流水线并行和专家并行的分布式训练策略。"
+    },
+    {
+      "canonical_name": "专家并行",
+      "entity_type": "method",
+      "description": "在混合专家模型中把不同专家分配到不同设备以提升容量和效率的并行方法。"
+    },
+    {
+      "canonical_name": "ZeRO优化",
+      "entity_type": "algorithm",
+      "description": "通过切分优化器状态、梯度和参数降低大模型训练显存占用的分布式优化技术。"
+    },
+    {
+      "canonical_name": "检查点重计算",
+      "entity_type": "method",
+      "description": "训练时仅保存部分中间激活，反向传播时重新计算被丢弃的激活值，以计算换显存的显存优化技术。"
+    },
+    {
+      "canonical_name": "梯度累积",
+      "entity_type": "method",
+      "description": "连续执行多个小批量前向反向传播，累积梯度后再统一更新参数，在有限显存下模拟大批量训练效果的方法。"
+    },
+    {
+      "canonical_name": "混合精度训练",
+      "entity_type": "method",
+      "description": "结合低精度计算和高精度主权重以提升训练速度并控制数值稳定性的训练方法。"
+    },
+    {
+      "canonical_name": "低精度推理",
+      "entity_type": "method",
+      "description": "使用 INT8、FP8 或更低位宽表示执行模型推理以降低延迟和显存占用的方法。"
+    },
+    {
+      "canonical_name": "KV缓存",
+      "entity_type": "concept",
+      "description": "Transformer自回归生成时缓存历史token的Key和Value张量，避免每步重新计算所有历史注意力，将推理复杂度从O(n^2)降至O(n)的机制。"
+    },
+    {
+      "canonical_name": "上下文缓存",
+      "entity_type": "method",
+      "description": "复用长上下文公共前缀的中间状态以降低多轮推理成本的缓存方法。"
+    },
+    {
+      "canonical_name": "连续批处理",
+      "entity_type": "method",
+      "description": "推理服务中不等待一个批次全部完成，而是动态插入新请求的解码步到当前批次中，最大限度提高GPU计算单元利用率的调度技术。"
+    },
+    {
+      "canonical_name": "推测解码",
+      "entity_type": "method",
+      "description": "使用轻量草稿模型快速生成候选token序列，再由目标大模型并行验证并接受匹配前缀，在不损失输出质量的前提下加速自回归解码的算法。"
+    },
+    {
+      "canonical_name": "PagedAttention",
+      "entity_type": "method",
+      "description": "借鉴操作系统分页思想，将KV缓存划分为固定大小的内存块，允许非连续存储以减少显存碎片和浪费的注意力内存管理技术。"
+    },
+    {
+      "canonical_name": "模型服务网关",
+      "entity_type": "method",
+      "description": "作为推理服务的统一入口，负责请求鉴权、流量控制、模型路由、协议转换和审计日志的前置网关层。"
+    },
+    {
+      "canonical_name": "模型路由",
+      "entity_type": "method",
+      "description": "根据请求复杂度、延迟预算和质量要求，将推理请求动态分发到不同规模或不同微调版本的模型实例上的调度策略。"
+    },
+    {
+      "canonical_name": "弹性伸缩推理",
+      "entity_type": "method",
+      "description": "根据实时请求负载自动扩缩模型推理实例数量，结合预热、流量预测和降级策略，平衡服务可用性与算力成本的运维机制。"
+    },
+    {
+      "canonical_name": "推理延迟优化",
+      "entity_type": "method",
+      "description": "综合运用模型量化、算子融合、KV缓存、推测解码和批处理调度等手段，降低单个推理请求端到端响应时间的系统优化工程。"
+    },
+    {
+      "canonical_name": "吞吐量优化",
+      "entity_type": "method",
+      "description": "通过提高批处理效率、减少显存碎片、优化计算图编译和调度策略，最大化单位时间模型服务处理请求或生成token数量的系统工程。"
+    },
+    {
+      "canonical_name": "算子融合",
+      "entity_type": "method",
+      "description": "将多个连续的张量运算合并为单个GPU内核调用，消除中间显存读写往返，降低内存带宽瓶颈的编译优化技术。"
+    },
+    {
+      "canonical_name": "图编译优化",
+      "entity_type": "method",
+      "description": "将模型计算图转换为中间表示，通过常量折叠、死代码消除、算子融合和自动并行化等编译器Pass，生成高效执行计划的编译技术。"
+    },
+    {
+      "canonical_name": "AI集群调度",
+      "entity_type": "method",
+      "description": "在多用户共享GPU集群中，根据作业优先级、资源需求和拓扑亲和性，动态分配和抢占GPU、CPU、网络和存储资源的分布式调度系统。"
+    },
+    {
+      "canonical_name": "显存碎片管理",
+      "entity_type": "method",
+      "description": "通过内存池预分配、张量生命周期分析、碎片整理和动态释放策略，减少GPU显存中不可用的小块空闲区域的内存管理技术。"
+    },
+    {
+      "canonical_name": "分布式容错训练",
+      "entity_type": "method",
+      "description": "在大规模分布式训练中，通过心跳检测、检查点恢复、弹性扩缩容和冗余计算等机制，容忍节点故障和网络异常的系统可靠性方案。"
+    },
+    {
+      "canonical_name": "训练检查点管理",
+      "entity_type": "method",
+      "description": "对大规模训练的状态进行周期性保存、版本管理和快速恢复的工程实践。"
+    },
+    {
+      "canonical_name": "算力成本建模",
+      "entity_type": "method",
+      "description": "综合GPU租用费、电力成本、网络带宽、存储费用和时间折旧，建立训练和推理任务总拥有成本的量化估算模型。"
+    },
+    {
+      "canonical_name": "能效比优化",
+      "entity_type": "method",
+      "description": "在满足精度和延迟约束下，通过混合精度、稀疏计算、动态电压频率调节和液冷散热等手段，最大化每瓦功耗产生有效计算量的优化方向。"
+    },
+    {
+      "canonical_name": "数据中心AI基础设施",
+      "entity_type": "application",
+      "description": "由万卡GPU集群、高速互联网络、分布式存储、液冷散热和统一调度平台构成的，支撑大模型训练和推理服务的物理基础设施。"
+    },
+    {
+      "canonical_name": "边缘大模型部署",
+      "entity_type": "application",
+      "description": "在算力、内存和功耗极度受限的边缘设备上，通过模型压缩、蒸馏和专用推理引擎部署大模型的工程方案。"
+    },
+    {
+      "canonical_name": "AI系统可观测性",
+      "entity_type": "method",
+      "description": "采集训练和推理系统的日志、分布式追踪、性能指标和GPU利用率数据，构建实时监控、告警和根因分析能力的运维体系。"
+    },
+    {
+      "canonical_name": "模型服务SLA",
+      "entity_type": "concept",
+      "description": "定义模型推理服务的可用性百分比、P50/P95/P99延迟上限、最低吞吐量、错误率预算和降级策略的服务等级协议。"
+    }
+  ],
+  "relations": [
+    [
+      "AI基础设施与高性能智能计算",
+      "AI基础设施",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI硬件体系",
+      "AI基础设施与高性能智能计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "并行训练系统",
+      "AI基础设施与高性能智能计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "推理服务系统",
+      "AI基础设施与高性能智能计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI算力运维",
+      "AI基础设施与高性能智能计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI芯片",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CUDA编程模型",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "GPU并行训练",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "张量并行",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "流水线并行",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据并行",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合并行",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "专家并行",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ZeRO优化",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "检查点重计算",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "梯度累积",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合精度训练",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "低精度推理",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "KV缓存",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文缓存",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "连续批处理",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "推测解码",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "PagedAttention",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型服务网关",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型路由",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "弹性伸缩推理",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "推理延迟优化",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "吞吐量优化",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "算子融合",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "图编译优化",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI集群调度",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "显存碎片管理",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分布式容错训练",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练检查点管理",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "算力成本建模",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "能效比优化",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据中心AI基础设施",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "边缘大模型部署",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI系统可观测性",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型服务SLA",
+      "AI算力运维",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "CUDA编程模型",
+      "GPU并行训练",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据并行",
+      "混合并行",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "张量并行",
+      "混合并行",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "流水线并行",
+      "混合并行",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "混合精度训练",
+      "低精度推理",
+      "RELATED_TO"
+    ],
+    [
+      "KV缓存",
+      "上下文缓存",
+      "RELATED_TO"
+    ],
+    [
+      "KV缓存",
+      "PagedAttention",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "连续批处理",
+      "吞吐量优化",
+      "APPLIES_TO"
+    ],
+    [
+      "推测解码",
+      "推理延迟优化",
+      "APPLIES_TO"
+    ],
+    [
+      "算子融合",
+      "图编译优化",
+      "RELATED_TO"
+    ],
+    [
+      "AI集群调度",
+      "分布式容错训练",
+      "RELATED_TO"
+    ],
+    [
+      "训练检查点管理",
+      "分布式容错训练",
+      "APPLIES_TO"
+    ],
+    [
+      "模型路由",
+      "模型服务网关",
+      "PART_OF"
+    ],
+    [
+      "模型服务SLA",
+      "模型服务网关",
+      "RELATED_TO"
+    ],
+    [
+      "算力成本建模",
+      "弹性伸缩推理",
+      "APPLIES_TO"
+    ],
+    [
+      "能效比优化",
+      "边缘大模型部署",
+      "APPLIES_TO"
+    ],
+    [
+      "矩阵乘法",
+      "GPU并行训练",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "KV缓存",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型压缩",
+      "低精度推理",
+      "RELATED_TO"
+    ],
+    [
+      "MLOps",
+      "AI系统可观测性",
+      "RELATED_TO"
+    ],
+    [
+      "AI芯片",
+      "数据中心AI基础设施",
+      "PART_OF"
+    ],
+    [
+      "AI基础设施",
+      "数据中心AI基础设施",
+      "RELATED_TO"
+    ]
+  ]
+}

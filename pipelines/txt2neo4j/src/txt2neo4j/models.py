@@ -5,7 +5,30 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-EntityType = Literal["topic", "concept", "method", "algorithm", "application", "exercise"]
+ENTITY_TYPE_VALUES = (
+    "topic",
+    "concept",
+    "method",
+    "algorithm",
+    "application",
+    "model",
+    "tool",
+    "framework",
+    "exercise",
+)
+COURSE_ENTITY_TYPE_VALUES = tuple(item for item in ENTITY_TYPE_VALUES if item != "exercise")
+
+EntityType = Literal[
+    "topic",
+    "concept",
+    "method",
+    "algorithm",
+    "application",
+    "model",
+    "tool",
+    "framework",
+    "exercise",
+]
 StructureType = Literal["book", "chapter", "section", "subsection"]
 
 

@@ -9,7 +9,7 @@ import {
 
 const AUTH_STORAGE_KEY = 'kg-auth-session'
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-/** 开发环境优先走同源 /api，由 Vite 代理到后端，避免 CORS 与直连失败 */
+/** 默认走同源 /api；单端口运行时由 Go 后端同时托管前端和 API。 */
 const API_BASE_URL_CANDIDATES = ENV_API_BASE_URL
   ? [ENV_API_BASE_URL]
   : ['/api', 'http://localhost:8080/api', 'http://localhost:3000/api', 'http://localhost:3002/api', 'http://localhost:3001/api']
@@ -200,7 +200,7 @@ async function apiRequest(path, options = {}) {
       const msg = error?.message || ''
       if (msg === 'Failed to fetch' || error?.name === 'TypeError') {
         lastError = new Error(
-          '无法连接后端（Failed to fetch）。请确认已启动 API 服务，并使用 npm run dev 启动前端以启用 /api 代理。',
+          '无法连接后端（Failed to fetch）。请确认 Go 后端已启动，并使用 http://127.0.0.1:8080 访问系统。',
         )
       } else {
         lastError = error

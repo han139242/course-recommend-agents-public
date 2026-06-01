@@ -1,0 +1,283 @@
+{
+  "source": "expansion_AI安全攻防",
+  "course_title": "AI安全攻防",
+  "nodes": [
+    {
+      "canonical_name": "模型投毒检测",
+      "entity_type": "method",
+      "description": "通过数据审计、离群点检测、鲁棒统计和差分隐私训练等手段，检测训练数据中是否存在恶意投毒样本，并降低其对模型影响的方法。"
+    },
+    {
+      "canonical_name": "对抗训练",
+      "entity_type": "method",
+      "description": "在训练过程中动态生成对抗样本并纳入损失函数进行联合优化，使模型学会抵抗对抗扰动的鲁棒性提升方法。"
+    },
+    {
+      "canonical_name": "PGD攻击",
+      "entity_type": "method",
+      "description": "通过多步梯度上升和投影操作生成最大化模型损失的对抗样本的迭代式白盒攻击算法，是评估模型鲁棒性的标准基准。"
+    },
+    {
+      "canonical_name": "FGSM攻击",
+      "entity_type": "method",
+      "description": "沿损失函数梯度方向施加单步扰动生成对抗样本的快速攻击方法，计算效率高但攻击强度弱于迭代式方法。"
+    },
+    {
+      "canonical_name": "C&W攻击",
+      "entity_type": "method",
+      "description": "将对抗样本生成为最小扰动优化问题，使用自定义损失函数在误分类和扰动大小之间寻找最优权衡的强攻击算法。"
+    },
+    {
+      "canonical_name": "黑盒对抗攻击",
+      "entity_type": "method",
+      "description": "在不访问模型内部梯度信息的前提下，通过查询反馈、迁移性或替代模型等策略生成对抗样本的攻击方法，更具实际威胁性。"
+    },
+    {
+      "canonical_name": "可证明鲁棒性",
+      "entity_type": "method",
+      "description": "利用区间约束传播、Lipschitz常数限制或抽象解释等严格数学方法，给出模型在给定扰动范围内的最小预测精度的可证明下界。"
+    },
+    {
+      "canonical_name": "隐私攻击",
+      "entity_type": "topic",
+      "description": "通过模型输出、梯度或中间表示推断训练数据中的敏感信息的各种攻击方法，包括成员推断、属性推断、模型反演和梯度泄露等。"
+    },
+    {
+      "canonical_name": "同态加密推理",
+      "entity_type": "method",
+      "description": "在密文域上执行神经网络的矩阵运算和非线性激活，使服务端可在不解密用户数据的情况下完成推理，保护用户输入隐私。"
+    },
+    {
+      "canonical_name": "安全聚合",
+      "entity_type": "method",
+      "description": "联邦学习中各参与者上传加密或掩码后的梯度，服务器只能获得聚合结果而无法获取个体梯度值的安全多方计算协议。"
+    },
+    {
+      "canonical_name": "DP-SGD",
+      "entity_type": "algorithm",
+      "description": "在SGD的每步更新中对梯度进行裁剪并添加高斯噪声，满足差分隐私保证的训练算法，由Abadi等人2016年提出。"
+    },
+    {
+      "canonical_name": "内容安全过滤",
+      "entity_type": "method",
+      "description": "在模型输入输出两端检测、拦截或降级有害、违规和敏感内容的安全机制。"
+    },
+    {
+      "canonical_name": "宪法AI",
+      "entity_type": "method",
+      "description": "通过明确的规则和价值观（宪法）指导模型训练和对齐，使用AI自我批评和自我改进减少对人类反馈依赖的对齐方法。"
+    },
+    {
+      "canonical_name": "RLHF安全对齐",
+      "entity_type": "method",
+      "description": "在RLHF奖励模型中融入安全性维度（有用性、无害性、真实性），通过人类偏好排序训练使模型行为符合社会伦理价值观。"
+    },
+    {
+      "canonical_name": "模型水印",
+      "entity_type": "method",
+      "description": "在模型输出或模型权重中嵌入可验证标识，用于支持内容溯源、版权保护、模型来源追踪和未授权复用检测的方法。"
+    },
+    {
+      "canonical_name": "深度伪造检测",
+      "entity_type": "method",
+      "description": "利用频域分析、生理信号异常检测和Transformer等深度模型识别AI生成或篡改的音视频内容的取证技术。"
+    },
+    {
+      "canonical_name": "AI供应链安全",
+      "entity_type": "concept",
+      "description": "确保从预训练权重、微调数据集、依赖库到部署环境的整个AI开发生命周期中不引入恶意代码、后门和许可风险的系统安全工程。"
+    },
+    {
+      "canonical_name": "红队自动化",
+      "entity_type": "method",
+      "description": "使用LLM自动生成多样化越狱提示和对抗输入，对目标模型进行大规模快速安全探测以发现对齐漏洞的自动化测试方法。"
+    },
+    {
+      "canonical_name": "公平性与安全协同",
+      "entity_type": "concept",
+      "description": "在模型设计和评估中同时考虑安全防护和公平性两个维度，避免安全策略对不同群体产生不均衡影响的设计原则。"
+    },
+    {
+      "canonical_name": "零知识证明推理",
+      "entity_type": "method",
+      "description": "证明模型推理结果正确而不泄露模型参数或用户输入的密码学协议，用于需要验证计算完整性同时保护隐私的场景。"
+    }
+  ],
+  "relations": [
+    [
+      "模型投毒检测",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗训练",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "PGD攻击",
+      "对抗样本攻击",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "FGSM攻击",
+      "对抗样本攻击",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "C&W攻击",
+      "对抗样本攻击",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "黑盒对抗攻击",
+      "对抗样本攻击",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可证明鲁棒性",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "同态加密推理",
+      "隐私增强机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全聚合",
+      "隐私增强机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DP-SGD",
+      "隐私增强机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "内容安全过滤",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "宪法AI",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RLHF安全对齐",
+      "安全策略对齐",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型水印",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "深度伪造检测",
+      "模型滥用防控",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI供应链安全",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "红队自动化",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "公平性与安全协同",
+      "AI安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "零知识证明推理",
+      "隐私增强机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "FGSM攻击",
+      "PGD攻击",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "PGD攻击",
+      "对抗训练",
+      "RELATED_TO"
+    ],
+    [
+      "C&W攻击",
+      "PGD攻击",
+      "RELATED_TO"
+    ],
+    [
+      "黑盒对抗攻击",
+      "对抗样本攻击",
+      "RELATED_TO"
+    ],
+    [
+      "可证明鲁棒性",
+      "对抗训练",
+      "RELATED_TO"
+    ],
+    [
+      "隐私攻击",
+      "同态加密推理",
+      "RELATED_TO"
+    ],
+    [
+      "安全聚合",
+      "联邦学习",
+      "APPLIES_TO"
+    ],
+    [
+      "DP-SGD",
+      "差分隐私",
+      "APPLIES_TO"
+    ],
+    [
+      "宪法AI",
+      "RLHF安全对齐",
+      "RELATED_TO"
+    ],
+    [
+      "内容安全过滤",
+      "输出审查",
+      "RELATED_TO"
+    ],
+    [
+      "红队自动化",
+      "安全基准测试",
+      "APPLIES_TO"
+    ],
+    [
+      "AI供应链安全",
+      "模型签名校验",
+      "RELATED_TO"
+    ],
+    [
+      "模型水印",
+      "生成内容溯源",
+      "RELATED_TO"
+    ],
+    [
+      "公平性与安全协同",
+      "公平性",
+      "RELATED_TO"
+    ],
+    [
+      "零知识证明推理",
+      "同态加密推理",
+      "RELATED_TO"
+    ]
+  ]
+}

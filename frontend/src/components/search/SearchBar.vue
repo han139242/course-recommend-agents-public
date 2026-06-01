@@ -1,4 +1,5 @@
 <script setup>
+import { Search } from '@lucide/vue'
 import { computed, ref, watch } from 'vue'
 
 import { ALL_COURSE_TITLE } from '../../utils/courseMeta'
@@ -67,12 +68,12 @@ defineExpose({ focusInput })
 <template>
   <div class="search-bar-wrap">
     <div class="search-bar">
-      <span class="search-bar__icon">搜</span>
+      <Search class="search-bar__icon" :size="18" aria-hidden="true" />
       <input
         ref="inputRef"
         :value="modelValue"
         type="text"
-        placeholder="搜索知识点、课程、主题... (Ctrl+K)"
+        placeholder="搜索课程、知识点或主题"
         @focus="focused = true"
         @blur="handleBlur"
         @input="emit('update:modelValue', $event.target.value)"

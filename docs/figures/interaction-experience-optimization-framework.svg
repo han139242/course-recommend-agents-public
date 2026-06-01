@@ -1,0 +1,147 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EDF4FB"/>
+    </linearGradient>
+    <linearGradient id="blueCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E8F1FF"/>
+      <stop offset="1" stop-color="#DCE7F5"/>
+    </linearGradient>
+    <linearGradient id="mintCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EBF8F2"/>
+      <stop offset="1" stop-color="#D8EFE4"/>
+    </linearGradient>
+    <linearGradient id="warmCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF3E7"/>
+      <stop offset="1" stop-color="#F4E2D4"/>
+    </linearGradient>
+    <linearGradient id="hubCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EDF4FF"/>
+      <stop offset="1" stop-color="#D8E5F4"/>
+    </linearGradient>
+    <filter id="shadow2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#A8BCD4" flood-opacity="0.28"/>
+    </filter>
+    <marker id="arrow2" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <path d="M0 0L14 7L0 14V0Z" fill="#4F6A8B"/>
+    </marker>
+    <marker id="arrow2soft" markerWidth="14" markerHeight="14" refX="12" refY="7" orient="auto">
+      <path d="M0 0L14 7L0 14V0Z" fill="#7A98B9"/>
+    </marker>
+    <style>
+      .title { font: 700 34px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #111827; }
+      .section { font: 700 27px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #111827; }
+      .label { font: 600 20px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #1E2B3B; }
+      .small { font: 500 17px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #334155; }
+      .tiny { font: 500 15px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #475569; }
+      .note { font: 700 18px 'Microsoft YaHei','PingFang SC',sans-serif; fill: #294765; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" rx="28" fill="url(#bg2)"/>
+  <text x="800" y="58" text-anchor="middle" class="title">[复杂交互体验优化框架]</text>
+
+  <rect x="60" y="132" width="340" height="230" rx="24" fill="url(#blueCard)" stroke="#425A79" stroke-width="3" filter="url(#shadow2)"/>
+  <text x="230" y="172" text-anchor="middle" class="section">[核心主路径已可用]</text>
+  <rect x="95" y="206" width="270" height="44" rx="14" fill="#F8FCFF" stroke="#7089A8" stroke-width="2"/>
+  <rect x="95" y="262" width="270" height="44" rx="14" fill="#F8FCFF" stroke="#7089A8" stroke-width="2"/>
+  <rect x="95" y="318" width="270" height="44" rx="14" fill="#F8FCFF" stroke="#7089A8" stroke-width="2"/>
+  <text x="230" y="234" text-anchor="middle" class="label">图谱浏览</text>
+  <text x="230" y="290" text-anchor="middle" class="label">路径推荐</text>
+  <text x="230" y="346" text-anchor="middle" class="label">智能助学对话</text>
+
+  <path d="M400 247C462 247 487 247 545 247" stroke="#4F6A8B" stroke-width="5" marker-end="url(#arrow2)"/>
+
+  <rect x="565" y="126" width="470" height="510" rx="42" fill="url(#hubCard)" stroke="#425A79" stroke-width="3" filter="url(#shadow2)"/>
+  <text x="800" y="170" text-anchor="middle" class="section">[交互协同枢纽]</text>
+
+  <rect x="615" y="208" width="170" height="105" rx="22" fill="#F8FCFF" stroke="#6F88A6" stroke-width="2"/>
+  <rect x="715" y="208" width="170" height="105" rx="22" fill="#F8FCFF" stroke="#6F88A6" stroke-width="2"/>
+  <rect x="815" y="208" width="170" height="105" rx="22" fill="#F8FCFF" stroke="#6F88A6" stroke-width="2"/>
+  <text x="700" y="250" text-anchor="middle" class="label">会话上下文</text>
+  <text x="700" y="278" text-anchor="middle" class="tiny">保持当前节点、推荐链与页面状态</text>
+  <text x="800" y="250" text-anchor="middle" class="label">交互状态</text>
+  <text x="800" y="278" text-anchor="middle" class="tiny">同步图谱操作、侧栏、对话面板</text>
+  <text x="900" y="250" text-anchor="middle" class="label">反馈回路</text>
+  <text x="900" y="278" text-anchor="middle" class="tiny">根据用户操作修正展示与建议</text>
+
+  <rect x="620" y="356" width="360" height="212" rx="30" fill="#F7FBFF" stroke="#6A84A3" stroke-width="3"/>
+  <text x="800" y="394" text-anchor="middle" class="section">[重点优化域]</text>
+
+  <rect x="650" y="424" width="130" height="54" rx="15" fill="#E6F0FC" stroke="#7290B1" stroke-width="2"/>
+  <rect x="800" y="424" width="130" height="54" rx="15" fill="#E6F0FC" stroke="#7290B1" stroke-width="2"/>
+  <rect x="650" y="494" width="130" height="54" rx="15" fill="#E6F0FC" stroke="#7290B1" stroke-width="2"/>
+  <rect x="800" y="494" width="130" height="54" rx="15" fill="#E6F0FC" stroke="#7290B1" stroke-width="2"/>
+  <text x="715" y="456" text-anchor="middle" class="label">会话连贯性</text>
+  <text x="865" y="456" text-anchor="middle" class="label">异常提示</text>
+  <text x="715" y="526" text-anchor="middle" class="label">弱网容错</text>
+  <text x="865" y="526" text-anchor="middle" class="label">加载反馈</text>
+
+  <circle cx="1125" cy="258" r="92" fill="url(#mintCard)" stroke="#507666" stroke-width="3" filter="url(#shadow2)"/>
+  <circle cx="1125" cy="258" r="58" fill="#F8FCFF" stroke="#6C9A88" stroke-width="2"/>
+  <path d="M1090 245H1160M1090 272H1146" stroke="#6C9A88" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="1174" cy="257" r="10" fill="#9BC9B3"/>
+  <text x="1125" y="382" text-anchor="middle" class="label">信息密度调优</text>
+  <text x="1125" y="406" text-anchor="middle" class="tiny">降低首次使用门槛，增强可读性</text>
+
+  <circle cx="1125" cy="514" r="92" fill="url(#warmCard)" stroke="#876954" stroke-width="3" filter="url(#shadow2)"/>
+  <rect x="1070" y="462" width="110" height="104" rx="24" fill="#FFF9F3" stroke="#C38E70" stroke-width="2"/>
+  <rect x="1100" y="476" width="50" height="10" rx="5" fill="#CFE1F4"/>
+  <rect x="1092" y="500" width="66" height="10" rx="5" fill="#CFE1F4"/>
+  <rect x="1100" y="524" width="50" height="10" rx="5" fill="#CFE1F4"/>
+  <text x="1125" y="638" text-anchor="middle" class="label">移动端与终端适配</text>
+  <text x="1125" y="662" text-anchor="middle" class="tiny">复杂交互在不同屏幕下保持稳定</text>
+
+  <path d="M1035 258C1060 258 1070 258 1085 258" stroke="#6F8CAC" stroke-width="4" marker-end="url(#arrow2soft)"/>
+  <path d="M1035 514C1060 514 1070 514 1085 514" stroke="#6F8CAC" stroke-width="4" marker-end="url(#arrow2soft)"/>
+
+  <rect x="1240" y="120" width="300" height="270" rx="28" fill="url(#blueCard)" stroke="#425A79" stroke-width="3" filter="url(#shadow2)"/>
+  <text x="1390" y="160" text-anchor="middle" class="section">[前端展示层]</text>
+  <rect x="1272" y="194" width="236" height="146" rx="18" fill="#F8FCFF" stroke="#6D87A7" stroke-width="2"/>
+  <rect x="1295" y="220" width="92" height="86" rx="16" fill="#EAF2FE" stroke="#6D87A7" stroke-width="2"/>
+  <rect x="1402" y="220" width="84" height="18" rx="9" fill="#D5E4F7"/>
+  <rect x="1402" y="252" width="84" height="18" rx="9" fill="#D5E4F7"/>
+  <rect x="1402" y="284" width="56" height="18" rx="9" fill="#D5E4F7"/>
+  <circle cx="1320" cy="252" r="10" fill="#8AB3DE"/>
+  <circle cx="1356" cy="270" r="10" fill="#F39D7A"/>
+  <circle cx="1338" cy="289" r="10" fill="#98CFB7"/>
+  <line x1="1320" y1="252" x2="1356" y2="270" stroke="#617A9C" stroke-width="3"/>
+  <line x1="1356" y1="270" x2="1338" y2="289" stroke="#617A9C" stroke-width="3"/>
+  <text x="1390" y="362" text-anchor="middle" class="label">图谱画布、知识详情、AI 对话联动</text>
+
+  <rect x="1240" y="474" width="300" height="270" rx="28" fill="url(#mintCard)" stroke="#507666" stroke-width="3" filter="url(#shadow2)"/>
+  <text x="1390" y="514" text-anchor="middle" class="section">[稳定性保障层]</text>
+  <rect x="1272" y="548" width="236" height="48" rx="15" fill="#F8FCFF" stroke="#79A08F" stroke-width="2"/>
+  <rect x="1272" y="608" width="236" height="48" rx="15" fill="#F8FCFF" stroke="#79A08F" stroke-width="2"/>
+  <rect x="1272" y="668" width="236" height="48" rx="15" fill="#F8FCFF" stroke="#79A08F" stroke-width="2"/>
+  <text x="1390" y="579" text-anchor="middle" class="label">模型波动下的降级与兜底</text>
+  <text x="1390" y="639" text-anchor="middle" class="label">弱网条件下的请求反馈与重试</text>
+  <text x="1390" y="699" text-anchor="middle" class="label">异常场景下的明确提示与恢复</text>
+
+  <path d="M1220 258C1240 258 1248 258 1260 258" stroke="#4F6A8B" stroke-width="5" marker-end="url(#arrow2)"/>
+  <path d="M1220 514C1240 514 1248 514 1260 514" stroke="#4F6A8B" stroke-width="5" marker-end="url(#arrow2)"/>
+
+  <path d="M390 574C470 540 510 500 590 465" stroke="#7B98B8" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow2soft)"/>
+  <rect x="70" y="486" width="320" height="190" rx="24" fill="url(#warmCard)" stroke="#856752" stroke-width="3" filter="url(#shadow2)"/>
+  <text x="230" y="526" text-anchor="middle" class="section">[待专项优化问题]</text>
+  <text x="104" y="572" class="small">• 复杂会话上下文衔接仍可加强</text>
+  <text x="104" y="608" class="small">• 异常提示与失败恢复不够统一</text>
+  <text x="104" y="644" class="small">• 弱网与模型波动下体验有波动</text>
+
+  <rect x="120" y="762" width="1360" height="92" rx="26" fill="#F7FBFF" stroke="#607A9C" stroke-width="3"/>
+  <text x="800" y="800" text-anchor="middle" class="section">[优化闭环]</text>
+  <path d="M235 823H520" stroke="#7090B1" stroke-width="5" marker-end="url(#arrow2soft)"/>
+  <path d="M650 823H925" stroke="#7090B1" stroke-width="5" marker-end="url(#arrow2soft)"/>
+  <path d="M1070 823H1350" stroke="#7090B1" stroke-width="5" marker-end="url(#arrow2soft)"/>
+  <text x="170" y="828" class="label">问题识别</text>
+  <text x="545" y="828" class="label">交互协同优化</text>
+  <text x="950" y="828" class="label">前端与稳定性联动</text>
+  <text x="1370" y="828" class="label">体验提升</text>
+
+  <path d="M1388 390V468" stroke="#6C88AA" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow2soft)"/>
+  <text x="1412" y="438" class="small">展示层与保障层联动</text>
+
+  <path d="M800 636C800 694 800 716 800 758" stroke="#6C88AA" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow2soft)"/>
+  <text x="846" y="710" class="small">围绕稳定性与易用性持续打磨</text>
+</svg>

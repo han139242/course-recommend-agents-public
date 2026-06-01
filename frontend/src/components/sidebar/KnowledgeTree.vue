@@ -24,6 +24,9 @@ const typeLabelMap = {
   method: '方法',
   algorithm: '算法',
   application: '应用',
+  model: '模型',
+  tool: '工具',
+  framework: '框架',
   topic: '主题',
 }
 
@@ -55,10 +58,10 @@ const entityGroups = computed(() => {
 <template>
   <section class="panel-card">
     <div class="panel-card__head">
-      <strong>知识体系</strong>
+      <strong>课程目录</strong>
       <div class="mini-switch">
-        <button type="button" :class="{ active: mode === 'course' }" @click="mode = 'course'">按学科</button>
-        <button type="button" :class="{ active: mode === 'type' }" @click="mode = 'type'">按类型</button>
+        <button type="button" :class="{ active: mode === 'course' }" @click="mode = 'course'">课程</button>
+        <button type="button" :class="{ active: mode === 'type' }" @click="mode = 'type'">类型</button>
       </div>
     </div>
 

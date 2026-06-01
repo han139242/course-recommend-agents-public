@@ -1,0 +1,528 @@
+{
+  "source": "course_ai_security",
+  "course_title": "AI安全攻防",
+  "nodes": [
+    {
+      "canonical_name": "AI安全攻防",
+      "entity_type": "topic",
+      "description": "研究 AI 系统攻击面、防护机制、红队评估、供应链安全和运行时治理的课程。"
+    },
+    {
+      "canonical_name": "模型攻击面",
+      "entity_type": "topic",
+      "description": "围绕模型输入、训练数据、参数、工具、接口和部署环境形成的攻击入口主题。"
+    },
+    {
+      "canonical_name": "大模型红队",
+      "entity_type": "topic",
+      "description": "通过系统化对抗测试发现大模型安全、合规和滥用风险的主题。"
+    },
+    {
+      "canonical_name": "模型供应链安全",
+      "entity_type": "topic",
+      "description": "围绕模型、数据、代码、依赖、权重和部署流水线完整性展开的安全主题。"
+    },
+    {
+      "canonical_name": "AI安全防护",
+      "entity_type": "topic",
+      "description": "围绕输入输出防护、权限隔离、水印、审计和持续监控展开的防御主题。"
+    },
+    {
+      "canonical_name": "对抗样本攻击",
+      "entity_type": "method",
+      "description": "通过微小扰动诱导模型产生错误预测或不安全输出的攻击方法。"
+    },
+    {
+      "canonical_name": "数据投毒",
+      "entity_type": "method",
+      "description": "攻击者向训练数据注入恶意样本或修改标签，使模型在特定条件下产生攻击者期望的错误输出。"
+    },
+    {
+      "canonical_name": "后门攻击",
+      "entity_type": "method",
+      "description": "在模型训练时植入隐藏触发器，正常输入下表现正常但特定模式输入时输出预设结果的隐蔽攻击。"
+    },
+    {
+      "canonical_name": "模型窃取",
+      "entity_type": "method",
+      "description": "通过大量查询目标模型API并收集输入输出对训练替代模型来复制目标模型的知识产权窃取攻击。"
+    },
+    {
+      "canonical_name": "成员推断攻击",
+      "entity_type": "method",
+      "description": "判断给定样本是否属于模型训练集的隐私攻击方法，可用于审计训练数据泄露风险。"
+    },
+    {
+      "canonical_name": "模型反演攻击",
+      "entity_type": "method",
+      "description": "利用模型输出或中间表示逆向推断训练数据中敏感特征和样本信息的隐私攻击。"
+    },
+    {
+      "canonical_name": "提示注入攻击",
+      "entity_type": "method",
+      "description": "通过恶意输入覆盖系统指令、诱导工具滥用或泄露上下文的攻击方法。"
+    },
+    {
+      "canonical_name": "越狱攻击",
+      "entity_type": "method",
+      "description": "通过角色扮演、编码转换和多步推理绕过LLM安全对齐机制，诱导模型输出违规内容的攻击。"
+    },
+    {
+      "canonical_name": "间接提示注入",
+      "entity_type": "method",
+      "description": "将恶意指令隐藏在网页、文档或检索内容中影响模型行为的攻击方法。"
+    },
+    {
+      "canonical_name": "工具滥用攻击",
+      "entity_type": "method",
+      "description": "诱导模型调用高权限工具执行越权、破坏或数据外泄操作的攻击方法。"
+    },
+    {
+      "canonical_name": "训练数据泄露",
+      "entity_type": "concept",
+      "description": "模型在生成或响应中暴露训练语料、隐私信息或受保护内容的风险。"
+    },
+    {
+      "canonical_name": "敏感信息泄露",
+      "entity_type": "concept",
+      "description": "AI 系统输出、日志、提示或工具结果中暴露个人、商业或系统敏感信息的风险。"
+    },
+    {
+      "canonical_name": "AI红队评估",
+      "entity_type": "method",
+      "description": "用攻击者视角系统测试 AI 系统安全边界和滥用可能性的评估方法。"
+    },
+    {
+      "canonical_name": "攻击用例库",
+      "entity_type": "method",
+      "description": "沉淀提示注入、越狱、隐私泄露和工具滥用等攻击样例的测试资产。"
+    },
+    {
+      "canonical_name": "安全基准测试",
+      "entity_type": "method",
+      "description": "使用标准任务和指标比较模型安全风险、防护效果和鲁棒性的评测方法。"
+    },
+    {
+      "canonical_name": "安全策略对齐",
+      "entity_type": "method",
+      "description": "通过规则、训练、反馈和拒答策略让模型遵守安全边界的方法。"
+    },
+    {
+      "canonical_name": "内容安全分类器",
+      "entity_type": "method",
+      "description": "识别有害、违法、隐私、偏见或违规内容的分类模型或规则系统。"
+    },
+    {
+      "canonical_name": "输入净化",
+      "entity_type": "method",
+      "description": "在模型处理前检测、过滤、转义或隔离恶意输入内容的防护方法。"
+    },
+    {
+      "canonical_name": "输出审查",
+      "entity_type": "method",
+      "description": "在模型输出返回前进行安全、合规、隐私和质量检查的防护方法。"
+    },
+    {
+      "canonical_name": "工具权限沙箱",
+      "entity_type": "method",
+      "description": "限制模型工具调用权限、网络访问、文件访问和执行范围的隔离机制。"
+    },
+    {
+      "canonical_name": "最小权限工具调用",
+      "entity_type": "method",
+      "description": "只授予模型完成当前任务所需最低权限和最短时效工具能力的设计原则。"
+    },
+    {
+      "canonical_name": "审计日志",
+      "entity_type": "method",
+      "description": "记录请求、提示、工具调用、模型输出和安全判定以支持追踪与问责的日志机制。"
+    },
+    {
+      "canonical_name": "模型水印",
+      "entity_type": "method",
+      "description": "在模型输出或模型权重中嵌入可验证标识，用于支持内容溯源、版权保护、模型来源追踪和未授权复用检测的方法。"
+    },
+    {
+      "canonical_name": "生成内容溯源",
+      "entity_type": "method",
+      "description": "识别 AI 生成内容来源、生成过程和可信元数据的技术与流程。"
+    },
+    {
+      "canonical_name": "模型签名校验",
+      "entity_type": "method",
+      "description": "通过签名、哈希和证明验证模型权重与发布来源完整性的方法。"
+    },
+    {
+      "canonical_name": "依赖漏洞扫描",
+      "entity_type": "method",
+      "description": "检测 AI 应用代码、镜像、库和运行环境中已知漏洞的方法。"
+    },
+    {
+      "canonical_name": "数据集许可证审计",
+      "entity_type": "method",
+      "description": "检查训练、微调和评测数据来源、授权和使用限制的合规审计方法。"
+    },
+    {
+      "canonical_name": "合成数据治理",
+      "entity_type": "method",
+      "description": "管理合成数据质量、来源、偏差、隐私和版权风险的治理方法。"
+    },
+    {
+      "canonical_name": "安全事件响应",
+      "entity_type": "method",
+      "description": "对 AI 系统安全事件进行发现、隔离、修复、复盘和通报的响应流程。"
+    },
+    {
+      "canonical_name": "模型风险分级",
+      "entity_type": "method",
+      "description": "根据能力、应用场景、影响范围和滥用风险对模型进行风险等级划分的方法。"
+    },
+    {
+      "canonical_name": "AI安全监控",
+      "entity_type": "method",
+      "description": "持续监测异常提示、违规输出、工具调用和滥用模式的运行时安全机制。"
+    },
+    {
+      "canonical_name": "对抗训练防御",
+      "entity_type": "method",
+      "description": "用对抗样本或攻击数据增强训练以提升模型鲁棒性的防御方法。"
+    },
+    {
+      "canonical_name": "隐私增强机器学习",
+      "entity_type": "method",
+      "description": "结合差分隐私、联邦学习、安全计算等技术降低模型训练和推理隐私风险的方法。"
+    },
+    {
+      "canonical_name": "AI安全治理平台",
+      "entity_type": "application",
+      "description": "集成策略、评测、审计、监控和事件响应能力的 AI 安全治理系统。"
+    },
+    {
+      "canonical_name": "模型滥用防控",
+      "entity_type": "application",
+      "description": "识别和限制欺诈、恶意代码、虚假内容、社会工程等模型滥用行为的应用场景。"
+    }
+  ],
+  "relations": [
+    [
+      "模型攻击面",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "大模型红队",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型供应链安全",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI安全防护",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗样本攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据投毒",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "后门攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型窃取",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "成员推断攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型反演攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示注入攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "越狱攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "间接提示注入",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工具滥用攻击",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练数据泄露",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "敏感信息泄露",
+      "模型攻击面",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI红队评估",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "攻击用例库",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全基准测试",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全策略对齐",
+      "大模型红队",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "内容安全分类器",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "输入净化",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "输出审查",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "工具权限沙箱",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "最小权限工具调用",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "审计日志",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型水印",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生成内容溯源",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型签名校验",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "依赖漏洞扫描",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据集许可证审计",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "合成数据治理",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全事件响应",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型风险分级",
+      "模型供应链安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI安全监控",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗训练防御",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私增强机器学习",
+      "AI安全防护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI安全治理平台",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型滥用防控",
+      "AI安全攻防",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗样本攻击",
+      "对抗训练防御",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据投毒",
+      "后门攻击",
+      "RELATED_TO"
+    ],
+    [
+      "成员推断攻击",
+      "训练数据泄露",
+      "RELATED_TO"
+    ],
+    [
+      "模型反演攻击",
+      "敏感信息泄露",
+      "RELATED_TO"
+    ],
+    [
+      "提示注入攻击",
+      "间接提示注入",
+      "RELATED_TO"
+    ],
+    [
+      "提示注入攻击",
+      "工具滥用攻击",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "越狱攻击",
+      "AI红队评估",
+      "APPLIES_TO"
+    ],
+    [
+      "攻击用例库",
+      "安全基准测试",
+      "PART_OF"
+    ],
+    [
+      "安全基准测试",
+      "模型风险分级",
+      "APPLIES_TO"
+    ],
+    [
+      "内容安全分类器",
+      "输出审查",
+      "PART_OF"
+    ],
+    [
+      "输入净化",
+      "提示注入攻击",
+      "RELATED_TO"
+    ],
+    [
+      "工具权限沙箱",
+      "工具滥用攻击",
+      "RELATED_TO"
+    ],
+    [
+      "最小权限工具调用",
+      "工具权限沙箱",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "审计日志",
+      "安全事件响应",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型水印",
+      "生成内容溯源",
+      "RELATED_TO"
+    ],
+    [
+      "模型签名校验",
+      "模型供应链安全",
+      "APPLIES_TO"
+    ],
+    [
+      "依赖漏洞扫描",
+      "模型供应链安全",
+      "APPLIES_TO"
+    ],
+    [
+      "数据集许可证审计",
+      "合成数据治理",
+      "RELATED_TO"
+    ],
+    [
+      "AI安全监控",
+      "安全事件响应",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型风险分级",
+      "AI安全治理平台",
+      "PART_OF"
+    ],
+    [
+      "安全策略对齐",
+      "模型滥用防控",
+      "APPLIES_TO"
+    ],
+    [
+      "隐私保护",
+      "隐私增强机器学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "对抗样本攻击",
+      "对抗训练防御",
+      "RELATED_TO"
+    ],
+    [
+      "工具调用",
+      "工具滥用攻击",
+      "RELATED_TO"
+    ],
+    [
+      "AI应用安全边界",
+      "最小权限工具调用",
+      "RELATED_TO"
+    ]
+  ]
+}

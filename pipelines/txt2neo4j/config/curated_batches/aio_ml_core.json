@@ -1,0 +1,2198 @@
+{
+  "source": "aio_ontology_ml_core",
+  "course_title": "AIO Ontology ML/DL 核心概念",
+  "nodes": [
+    {
+      "canonical_name": "AIO:Mathematical Function",
+      "entity_type": "topic",
+      "description": "A mathematical rule that gives the value of a dependent variable corresponding to specified values of one or more independent variables."
+    },
+    {
+      "canonical_name": "AIO:Layer",
+      "entity_type": "topic",
+      "description": "A structure or network topology in a deep learning model that takes information from previous layers and passes it to the next layer."
+    },
+    {
+      "canonical_name": "AIO:Network",
+      "entity_type": "topic",
+      "description": "computation or data exchange.\""
+    },
+    {
+      "canonical_name": "AIO:Exponential Function",
+      "entity_type": "concept",
+      "description": "A mathematical function denoted by f(x)=exp or e^{x}."
+    },
+    {
+      "canonical_name": "AIO:GELU Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that computes x * P(X <= x) where P(X) ~ N(0 1) weighting inputs by their value rather than gating inputs by their sign as in ReLU."
+    },
+    {
+      "canonical_name": "AIO:Hard Sigmoid Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is a faster approximation of the sigmoid activation using a piecewise linear approximation."
+    },
+    {
+      "canonical_name": "AIO:Softmax Function",
+      "entity_type": "concept",
+      "description": "A mathematical function where the elements of the output vector are in range (0 1) and sum to 1 and each vector is handled independently."
+    },
+    {
+      "canonical_name": "AIO:Sigmoid Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that applies the sigmoid activation function sigmoid(x) = 1 / (1 + exp(-x)) always returning a value between 0 and 1."
+    },
+    {
+      "canonical_name": "AIO:Linear Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that has the form f(x) = a + bx."
+    },
+    {
+      "canonical_name": "AIO:Softplus Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is softplus(x) = log(exp(x) + 1)."
+    },
+    {
+      "canonical_name": "AIO:Softsign Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is softsign(x) = x / (abs(x) + 1)."
+    },
+    {
+      "canonical_name": "AIO:Tanh Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is the hyperbolic tangent activation function."
+    },
+    {
+      "canonical_name": "AIO:ELU Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is x if x > 0 and alpha * (exp(x) - 1) if x < 0 where alpha controls the value to which an ELU saturates for negative net inputs."
+    },
+    {
+      "canonical_name": "AIO:Swish Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that is x*sigmoid(x) a smooth non-monotonic function that consistently matches or outperforms ReLU on deep networks."
+    },
+    {
+      "canonical_name": "AIO:SELU Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that multiplies scale (> 1) with the output of the ELU function to ensure a slope larger than one for positive inputs."
+    },
+    {
+      "canonical_name": "AIO:ReLU Function",
+      "entity_type": "concept",
+      "description": "A mathematical function that returns max(x 0) the element-wise maximum of 0 and the input tensor."
+    },
+    {
+      "canonical_name": "AIO:Supervised Biclustering",
+      "entity_type": "method",
+      "description": "A biclustering task focused on methods that simultaneously cluster the rows and columns of a labeled matrix considering data labels to enhance cluster coherence."
+    },
+    {
+      "canonical_name": "AIO:Unsupervised Biclustering",
+      "entity_type": "method",
+      "description": "A biclustering task focused on methods that simultaneously cluster the rows and columns of an unlabeled input matrix to identify submatrices with coherent patterns."
+    },
+    {
+      "canonical_name": "AIO:K-nearest Neighbor Classification Algorithm",
+      "entity_type": "method",
+      "description": "assigning each object to the class most common among its k nearest neighbors.\""
+    },
+    {
+      "canonical_name": "AIO:Binary Classification",
+      "entity_type": "method",
+      "description": "A classification focused on methods that classify elements into two groups based on a classification rule."
+    },
+    {
+      "canonical_name": "AIO:Multiclass Classification",
+      "entity_type": "method",
+      "description": "A classification focused on methods that classify instances into one of three or more classes."
+    },
+    {
+      "canonical_name": "AIO:Hierarchical Classification",
+      "entity_type": "method",
+      "description": "A classification focused on methods that group things according to a hierarchy."
+    },
+    {
+      "canonical_name": "AIO:Decision Tree",
+      "entity_type": "method",
+      "description": "A classification that uses a tree-like model of decisions and their possible consequences including chance event outcomes resource costs and utilities."
+    },
+    {
+      "canonical_name": "AIO:Unsupervised Clustering",
+      "entity_type": "method",
+      "description": "A clustering focused on methods that group a set of unlabeled objects such that objects in the same group are more similar to each other than to those in other groups."
+    },
+    {
+      "canonical_name": "AIO:Supervised Clustering",
+      "entity_type": "method",
+      "description": "A clustering focused on methods that group labeled objects such that objects in the same group have similar labels relative to those in other groups."
+    },
+    {
+      "canonical_name": "AIO:Hierarchical Clustering",
+      "entity_type": "method",
+      "description": "A clustering that builds a hierarchy of clusters."
+    },
+    {
+      "canonical_name": "AIO:t-Distributed Stochastic Neighbor embedding",
+      "entity_type": "method",
+      "description": "A dimensionality reduction for visualizing high-dimensional data by giving each datapoint a location in a two or three-dimensional map."
+    },
+    {
+      "canonical_name": "AIO:Manifold Learning",
+      "entity_type": "method",
+      "description": "A dimensionality reduction method based on the assumption that observed data lie on a low-dimensional manifold embedded in a higher-dimensional space."
+    },
+    {
+      "canonical_name": "AIO:Principal Component Analysis",
+      "entity_type": "method",
+      "description": "A dimensionality reduction method for analyzing large datasets with high-dimensional features per observation increasing data interpretability while preserving maximum information and enabling visualization."
+    },
+    {
+      "canonical_name": "AIO:Multidimensional Scaling",
+      "entity_type": "method",
+      "description": "A dimensionality reduction method that translates information about the pairwise distances among a set of objects or individuals into a configuration of points mapped into an abstract Cartesian space."
+    },
+    {
+      "canonical_name": "AIO:Machine Learning Task",
+      "entity_type": "method",
+      "description": "A process intended to build methods that learn from data."
+    },
+    {
+      "canonical_name": "AIO:Unsupervised Learning",
+      "entity_type": "method",
+      "description": "A machine learning task focused on algorithms that learn patterns from unlabeled data."
+    },
+    {
+      "canonical_name": "AIO:Survival Analysis",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods for analyzing the expected duration of time until one or more events occur such as death in biological organisms or failure in mechanical systems."
+    },
+    {
+      "canonical_name": "AIO:Time Series Analysis",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods for analyzing time series data to extract meaningful statistics and characteristics."
+    },
+    {
+      "canonical_name": "AIO:Reinforcement Learning",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that do not require labeled input/output pairs or explicit correction of sub-optimal actions focusing instead on balancing exploration and exploitation to optimize performance over time."
+    },
+    {
+      "canonical_name": "AIO:Clustering",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that group a set of objects such that objects in the same group are more similar to each other than to those in other groups."
+    },
+    {
+      "canonical_name": "AIO:Active Learning",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that interactively query a user or another information source to label new data points with the desired outputs."
+    },
+    {
+      "canonical_name": "AIO:Supervised Learning",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that learn a function mapping input to output based on example input-output pairs."
+    },
+    {
+      "canonical_name": "AIO:Time Series Forecasting",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that predict future values based on previously observed values."
+    },
+    {
+      "canonical_name": "AIO:Data Imputation",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that replace missing data with substituted values."
+    },
+    {
+      "canonical_name": "AIO:Biclustering",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that simultaneously cluster the rows and columns of a matrix to identify submatrices with coherent patterns."
+    },
+    {
+      "canonical_name": "AIO:Ensemble Learning",
+      "entity_type": "method",
+      "description": "A machine learning task focused on methods that use multiple learning algorithms to achieve better predictive performance than any of the constituent algorithms alone."
+    },
+    {
+      "canonical_name": "AIO:Natural Language Processing",
+      "entity_type": "method",
+      "description": "A machine learning task focused on the interactions between computers and human language including programming computers to process and analyze large amounts of natural language data."
+    },
+    {
+      "canonical_name": "AIO:Probabilistic Graphical Model",
+      "entity_type": "method",
+      "description": "A machine learning task in which a graph expresses the conditional dependence structure between random variables."
+    },
+    {
+      "canonical_name": "AIO:K-nearest Neighbor Algorithm",
+      "entity_type": "method",
+      "description": "assigning each object to the class most common among its k nearest neighbors.\""
+    },
+    {
+      "canonical_name": "AIO:Self-supervised Learning",
+      "entity_type": "method",
+      "description": "A machine learning task that is intermediate between supervised and unsupervised learning and predicts parts of the input data from other observed parts without relying on human-annotated labels."
+    },
+    {
+      "canonical_name": "AIO:Probabilistic Topic Model",
+      "entity_type": "method",
+      "description": "A probabilistic graphical model that uses statistical techniques to analyze the words in each text to discover common themes their connections and their changes over time."
+    },
+    {
+      "canonical_name": "AIO:Causal Graphical Model",
+      "entity_type": "method",
+      "description": "A probabilistic graphical model used to encode assumptions about the data-generating process."
+    },
+    {
+      "canonical_name": "AIO:Proportional Hazards Model",
+      "entity_type": "method",
+      "description": "A regression analysis for survival analysis where the unique effect of a unit increase in a covariate is multiplicative with respect to the hazard rate."
+    },
+    {
+      "canonical_name": "AIO:Fixed Effects Model",
+      "entity_type": "method",
+      "description": "A regression analysis in which the model parameters are fixed or non-random quantities."
+    },
+    {
+      "canonical_name": "AIO:Ridge Regression",
+      "entity_type": "method",
+      "description": "A regression analysis that estimates the coefficients of multiple regression models in scenarios where the independent variables are highly correlated."
+    },
+    {
+      "canonical_name": "AIO:Logistic Regression",
+      "entity_type": "method",
+      "description": "A regression analysis that estimates the probability of an event occurring by modeling the log-odds of the event as a linear combination of one or more independent variables."
+    },
+    {
+      "canonical_name": "AIO:Linear Regression",
+      "entity_type": "method",
+      "description": "A regression analysis that is a linear approach for modeling the relationship between a scalar response and one or more explanatory variables."
+    },
+    {
+      "canonical_name": "AIO:Lasso Regression",
+      "entity_type": "method",
+      "description": "A regression analysis that performs both variable selection and regularization to enhance prediction accuracy and interpretability."
+    },
+    {
+      "canonical_name": "AIO:Generalized Linear Model",
+      "entity_type": "method",
+      "description": "A regression analysis that relates the linear model to the response variable via a link function and allowing the variance of each measurement to be a function of its predicted value."
+    },
+    {
+      "canonical_name": "AIO:Spatial Regression",
+      "entity_type": "method",
+      "description": "A regression analysis used to model spatial relationships."
+    },
+    {
+      "canonical_name": "AIO:Random Effects Model",
+      "entity_type": "method",
+      "description": "A regression analysis where the model parameters are random variables."
+    },
+    {
+      "canonical_name": "AIO:Least-squares Analysis",
+      "entity_type": "method",
+      "description": "A regression analysis which approximates the solution of overdetermined systems by minimizing the sum of the squares of the residuals."
+    },
+    {
+      "canonical_name": "AIO:Regression Analysis",
+      "entity_type": "method",
+      "description": "A set of statistical processes for estimating the relationships between a dependent variable and one or more independent variables."
+    },
+    {
+      "canonical_name": "AIO:Association Rule Learning",
+      "entity_type": "method",
+      "description": "A supervised learning focused on a rule-based approach for discovering interesting relations between variables in large databases."
+    },
+    {
+      "canonical_name": "AIO:Classification",
+      "entity_type": "method",
+      "description": "\"A supervised learning focused on methods that distinguish and distribute kinds of \"\"things\"\" into different groups.\""
+    },
+    {
+      "canonical_name": "AIO:Random Forest",
+      "entity_type": "method",
+      "description": "An ensemble learning method for classification regression and other tasks that constructs a multitude of decision trees during training."
+    },
+    {
+      "canonical_name": "AIO:K-nearest Neighbor Regression Algorithm",
+      "entity_type": "method",
+      "description": "An regression analysis that assigns the average of the values of k nearest neighbors to objects."
+    },
+    {
+      "canonical_name": "AIO:Dimensionality Reduction",
+      "entity_type": "method",
+      "description": "An unsupervised learning focused on the process of transforming data from a high-dimensional space into a lower-dimensional space while retaining meaningful properties of the original data."
+    },
+    {
+      "canonical_name": "AIO:Recursive Language Model",
+      "entity_type": "model",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Large Language Model",
+      "entity_type": "model",
+      "description": "A language model consisting of a neural network with many parameters (typically billions of weights or more) trained on large quantities of unlabeled text using self-supervised learning or semi-supervised learning."
+    },
+    {
+      "canonical_name": "AIO:Modular Language Model",
+      "entity_type": "model",
+      "description": "A language model that consists of multiple specialized components or skills that can be dynamically composed and recombined to solve complex tasks mimicking the modular structure of human cognition."
+    },
+    {
+      "canonical_name": "AIO:Generative Language Interface",
+      "entity_type": "model",
+      "description": "A language model that enables users to engage in an interactive dialogue with an LLM providing feedback to guide and refine the generated outputs iteratively."
+    },
+    {
+      "canonical_name": "AIO:Autoregressive Language Model",
+      "entity_type": "model",
+      "description": "A language model that generates text sequentially predicting one token at a time based on the previously generated tokens excelling at natural language generation tasks by modeling the probability distribution over sequences of tokens."
+    },
+    {
+      "canonical_name": "AIO:Masked Language Model",
+      "entity_type": "model",
+      "description": "A language model that is trained to predict randomly masked tokens in a sequence based on the remaining unmasked tokens allowing it to build deep bidirectional representations that can be effectively transferred to various NLP tasks via fine-tuning."
+    },
+    {
+      "canonical_name": "AIO:Multimodal Language Model",
+      "entity_type": "model",
+      "description": "A language model that learns joint representations across different modalities like text vision and audio in an end-to-end fashion for better cross-modal understanding and generation."
+    },
+    {
+      "canonical_name": "AIO:Graph Language Model",
+      "entity_type": "model",
+      "description": "A language model that operates over structured inputs or outputs represented as graphs enabling reasoning over explicit relational knowledge representations during language tasks."
+    },
+    {
+      "canonical_name": "AIO:Hierarchical Language Model",
+      "entity_type": "model",
+      "description": "A language model that represents language at multiple levels of granularity learning hierarchical representations that capture both low-level patterns and high-level abstractions."
+    },
+    {
+      "canonical_name": "AIO:Implicit Language Model",
+      "entity_type": "model",
+      "description": "A language model that uses an energy function to score entire sequences instead of factorizing probabilities autoregressively better capturing global properties and long-range dependencies."
+    },
+    {
+      "canonical_name": "AIO:Recursive LLM",
+      "entity_type": "model",
+      "description": "A language model that uses recursive neural network architectures like TreeLSTMs to learn syntactic composition functions improving systematic generalization abilities."
+    },
+    {
+      "canonical_name": "AIO:Transformer Language Model",
+      "entity_type": "model",
+      "description": "A language model that uses the transformer architecture based on multi-head attention mechanisms allowing it to contextualize tokens within a context window for effective language understanding and generation."
+    },
+    {
+      "canonical_name": "AIO:Factored Language Model",
+      "entity_type": "model",
+      "description": "A language model that views each word as a vector of multiple factors such as part-of-speech morphology and semantics to improve language modeling."
+    },
+    {
+      "canonical_name": "AIO:Encoder-Decoder LLM",
+      "entity_type": "model",
+      "description": "while the decoder uses this hidden representation to generate the desired output sequence.\""
+    },
+    {
+      "canonical_name": "AIO:Personalized LLM",
+      "entity_type": "model",
+      "description": "A large language model that adapts its language modeling and generation to the preferences style and persona of individual users or audiences."
+    },
+    {
+      "canonical_name": "AIO:Controllable LLM",
+      "entity_type": "model",
+      "description": "A large language model that allows for explicit control over certain attributes of the generated text such as style tone topic or other desired characteristics through conditioning or specialized training objectives."
+    },
+    {
+      "canonical_name": "AIO:Evolutionary LLM",
+      "entity_type": "model",
+      "description": "A large language model that applies principles of evolutionary computation to optimize its structure and parameters evolving over time to improve performance."
+    },
+    {
+      "canonical_name": "AIO:Continual Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that continually acquires new knowledge and skills over time without forgetting previously learned information allowing the model to adapt and expand its capabilities as new data becomes available."
+    },
+    {
+      "canonical_name": "AIO:Lifelong Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that continually acquires new knowledge over time without forgetting previously learned information maintaining a balance between plasticity and stability."
+    },
+    {
+      "canonical_name": "AIO:Factorized LLM",
+      "entity_type": "model",
+      "description": "A large language model that decomposes the full language modeling task into multiple sub-components or experts that each focus on a subset of the information enabling more efficient scaling."
+    },
+    {
+      "canonical_name": "AIO:Data-to-Text LLM",
+      "entity_type": "model",
+      "description": "requiring grounding in meaning representations.\""
+    },
+    {
+      "canonical_name": "AIO:Differentiable LLM",
+      "entity_type": "model",
+      "description": "A large language model that has an architecture amenable to full end-to-end training via backpropagation without relying on teacher forcing or unlikelihood training objectives."
+    },
+    {
+      "canonical_name": "AIO:Reasoning LLM",
+      "entity_type": "model",
+      "description": "A large language model that incorporates explicit reasoning capabilities leveraging logical rules axioms or external knowledge to make deductive inferences during language tasks."
+    },
+    {
+      "canonical_name": "AIO:Embodied LLM",
+      "entity_type": "model",
+      "description": "A large language model that integrates language with other modalities like vision audio and robotics to enable grounded language understanding in real-world environments."
+    },
+    {
+      "canonical_name": "AIO:Explainable LLM",
+      "entity_type": "model",
+      "description": "A large language model that is designed to provide insights into its decision-making process making it easier for users to understand and trust the model's outputs by incorporating mechanisms for interpreting and explaining its predictions in human-understandable terms."
+    },
+    {
+      "canonical_name": "AIO:Reinforcement Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that is fine-tuned using reinforcement learning where the model receives rewards for generating text that satisfies certain desired properties or objectives improving the quality safety or alignment of generated text."
+    },
+    {
+      "canonical_name": "AIO:Dialogue LLM",
+      "entity_type": "model",
+      "description": "A large language model that is optimized for engaging in multi-turn conversations understanding context and generating relevant coherent responses continuously over many dialogue turns."
+    },
+    {
+      "canonical_name": "AIO:Curriculum Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained by presenting learning examples in a meaningful order from simple to complex mimicking the learning trajectory followed by humans."
+    },
+    {
+      "canonical_name": "AIO:Federated LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained in a decentralized manner across multiple devices or silos without directly sharing private data enabling collaborative training while preserving data privacy and security."
+    },
+    {
+      "canonical_name": "AIO:Multilingual LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained on text from multiple languages learning shared representations that enable zero-shot or few-shot transfer to new languages."
+    },
+    {
+      "canonical_name": "AIO:Unsupervised LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained solely on unlabeled data using self-supervised objectives like masked language modeling without any supervised fine-tuning."
+    },
+    {
+      "canonical_name": "AIO:Ordinal LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained to model ordinal relationships and rank outputs rather than model probability distributions over text sequences directly."
+    },
+    {
+      "canonical_name": "AIO:Contrastive Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained to pull semantically similar samples closer together and push dissimilar samples apart in the representation space learning high-quality features useful for downstream tasks."
+    },
+    {
+      "canonical_name": "AIO:Generative Commonsense LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained to understand and model basic physics causality and common sense about how the real world works."
+    },
+    {
+      "canonical_name": "AIO:Compositional Generalization LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained to understand and recombine the underlying compositional structures in language enabling better generalization to novel combinations and out-of-distribution examples."
+    },
+    {
+      "canonical_name": "AIO:Ethical LLM",
+      "entity_type": "model",
+      "description": "A large language model that is trained to uphold certain ethical principles values or rules in its language generation to increase safety and trustworthiness."
+    },
+    {
+      "canonical_name": "AIO:Multimodal Fusion LLM",
+      "entity_type": "model",
+      "description": "A large language model that learns joint representations across different modalities like text vision and audio in an end-to-end fashion for better cross-modal understanding and generation."
+    },
+    {
+      "canonical_name": "AIO:Transfer Learning LLM",
+      "entity_type": "model",
+      "description": "A large language model that leverages knowledge acquired during training on one task to improve performance on different but related tasks facilitating more efficient learning and adaptation."
+    },
+    {
+      "canonical_name": "AIO:Causal LLM",
+      "entity_type": "model",
+      "description": "A large language model that only attends to previous tokens in the sequence when generating text modeling the probability distribution autoregressively from left-to-right or causally."
+    },
+    {
+      "canonical_name": "AIO:Cross-Domain LLM",
+      "entity_type": "model",
+      "description": "facilitated by advanced domain adaptation techniques.\""
+    },
+    {
+      "canonical_name": "AIO:Language Interface LLM",
+      "entity_type": "model",
+      "description": "A large language model that supports interactive semantic parsing enabling users to provide feedback and corrections to dynamically refine and update the language model."
+    },
+    {
+      "canonical_name": "AIO:Decoder LLM",
+      "entity_type": "model",
+      "description": "A large language model that uses a decoder-only architecture consisting of only a decoder trained to predict the next token in a sequence given the previous tokens."
+    },
+    {
+      "canonical_name": "AIO:Encoder LLM",
+      "entity_type": "model",
+      "description": "A large language model that uses an encoder-only architecture to encode the input sequence into a fixed-length representation which is then used as input to a classifier or regressor for prediction."
+    },
+    {
+      "canonical_name": "AIO:Sparse LLM",
+      "entity_type": "model",
+      "description": "A large language model that uses techniques like pruning or quantization to reduce the number of non-zero parameters in the model making it more parameter-efficient and easier to deploy on resource-constrained devices."
+    },
+    {
+      "canonical_name": "AIO:Retrieval-Augmented LLM",
+      "entity_type": "model",
+      "description": "improving factual accuracy and knowledge grounding.\""
+    },
+    {
+      "canonical_name": "AIO:Neuro-Symbolic LLM",
+      "entity_type": "model",
+      "description": "leveraging structured knowledge representations and logical inferences to improve reasoning capabilities.\""
+    },
+    {
+      "canonical_name": "AIO:Semi-Supervised LLM",
+      "entity_type": "model",
+      "description": "A large language model which combines self-supervised pretraining on unlabeled data with supervised fine-tuning on labeled task data."
+    },
+    {
+      "canonical_name": "AIO:Mixture-of-Experts LLM",
+      "entity_type": "model",
+      "description": "allowing for efficient scaling by conditionally activating only a subset of model components for each input.\""
+    },
+    {
+      "canonical_name": "AIO:Generative Adversarial Network-Augmented LLM",
+      "entity_type": "model",
+      "description": "using a discriminator network to provide a signal for generating more realistic and coherent text. This adversarial training can improve the quality and diversity of generated text.\""
+    },
+    {
+      "canonical_name": "AIO:Knowledge-Grounded LLM",
+      "entity_type": "model",
+      "description": "enabling it to generate more factually accurate and knowledge-aware text.\""
+    },
+    {
+      "canonical_name": "AIO:Memory-Augmented LLM",
+      "entity_type": "model",
+      "description": "allowing it to store and retrieve information over long contexts.\""
+    },
+    {
+      "canonical_name": "AIO:Prompt-based Fine-Tuning LLM",
+      "entity_type": "model",
+      "description": "leveraging the model's few-shot learning capabilities.\""
+    },
+    {
+      "canonical_name": "AIO:Instruction-Tuned LLM",
+      "entity_type": "model",
+      "description": "learning to map from instructions to desired model behavior in a more controlled and principled way.\""
+    },
+    {
+      "canonical_name": "AIO:Low-Resource LLM",
+      "entity_type": "model",
+      "description": "or for languages with sparse datasets.\""
+    },
+    {
+      "canonical_name": "AIO:Domain-Adapted LLM",
+      "entity_type": "model",
+      "description": "like scientific literature or code generation.\""
+    },
+    {
+      "canonical_name": "AIO:Meta-Learning LLM",
+      "entity_type": "model",
+      "description": "leveraging meta-learned priors about how to efficiently learn.\""
+    },
+    {
+      "canonical_name": "AIO:Multi-Task LLM",
+      "entity_type": "model",
+      "description": "learning shared representations that transfer across tasks.\""
+    },
+    {
+      "canonical_name": "AIO:Self-Supervised LLM",
+      "entity_type": "model",
+      "description": "without relying on human-annotated labels.\""
+    },
+    {
+      "canonical_name": "AIO:Energy-Based LLM",
+      "entity_type": "model",
+      "description": "rather than an autoregressive factorization. This can improve modeling of long-range dependencies and global coherence.\""
+    },
+    {
+      "canonical_name": "AIO:Zero-Shot Learning LLM",
+      "entity_type": "model",
+      "description": "demonstrating a high degree of generalization and understanding.\""
+    },
+    {
+      "canonical_name": "AIO:Language Model",
+      "entity_type": "model",
+      "description": "A model designed to predict the next word in a sequence or assign probabilities to sequences of words in natural language."
+    },
+    {
+      "canonical_name": "AIO:Threshold Autoregressive",
+      "entity_type": "model",
+      "description": "enabling the capture of nonlinear behaviors.\""
+    },
+    {
+      "canonical_name": "AIO:Dynamic Conditional Correlation",
+      "entity_type": "model",
+      "description": "used in financial econometrics to model and forecast covariances.\""
+    },
+    {
+      "canonical_name": "AIO:Vector Autoregression",
+      "entity_type": "model",
+      "description": "where each variable is modeled as a linear function of its own past values and the past values of all other variables in the system.\""
+    },
+    {
+      "canonical_name": "AIO:Autoregressive Moving Average",
+      "entity_type": "model",
+      "description": "suitable for stationary series without the need for differencing.\""
+    },
+    {
+      "canonical_name": "AIO:Exponential Smoothing State Space Model",
+      "entity_type": "model",
+      "description": "allowing for the inclusion of both trend and seasonal components. Used in  forecasting.\""
+    },
+    {
+      "canonical_name": "AIO:Autoregressive Conditional Heteroskedasticity",
+      "entity_type": "model",
+      "description": "capturing volatility clustering. Used for time series data.\""
+    },
+    {
+      "canonical_name": "AIO:Seasonal Autoregressive Integrated Moving-Average",
+      "entity_type": "model",
+      "description": "combining seasonal differencing with ARIMA modeling.\""
+    },
+    {
+      "canonical_name": "AIO:Autoregressive Distributed Lag",
+      "entity_type": "model",
+      "description": "capturing dynamic relationships over time. Used in time series analysis.\""
+    },
+    {
+      "canonical_name": "AIO:Generalized Autoregressive Conditional Heteroskedasticity",
+      "entity_type": "model",
+      "description": "allowing for more flexibility in modeling time-varying volatility.\""
+    },
+    {
+      "canonical_name": "AIO:Autoregressive Integrated Moving Average",
+      "entity_type": "model",
+      "description": "and moving average (MA) components. Used for analyzing and forecasting time series data.\""
+    },
+    {
+      "canonical_name": "AIO:Modular LLM",
+      "entity_type": "model",
+      "description": "A modular language model that consists of multiple specialized components or skills that can be dynamically composed and recombined to solve complex tasks mimicking the modular structure of human cognition."
+    },
+    {
+      "canonical_name": "AIO:Multimodal LLM",
+      "entity_type": "model",
+      "description": "A multimodal large language model that learns joint representations across different modalities like text vision and audio in an end-to-end fashion for better cross-modal understanding and generation."
+    },
+    {
+      "canonical_name": "AIO:Multimodal Prompt-based Language Model",
+      "entity_type": "model",
+      "description": "to generate relevant responses.\""
+    },
+    {
+      "canonical_name": "AIO:Markov Chain",
+      "entity_type": "model",
+      "description": "A network that is a stochastic model describing a sequence of possible events where the probability of each event depends only on the previous event's state."
+    },
+    {
+      "canonical_name": "AIO:Bidirectional Transformer Language Model",
+      "entity_type": "model",
+      "description": "A transformer language model such as BERT that uses the transformer architecture to build deep bidirectional representations by predicting masked tokens based on their context."
+    },
+    {
+      "canonical_name": "AIO:Transformer LLM",
+      "entity_type": "model",
+      "description": "A transformer language model with large training corpuses and sets of parameters that uses the transformer architecture based on multi-head attention mechanisms allowing it to contextualize tokens within a context window for effective language understanding and generation."
+    },
+    {
+      "canonical_name": "AIO:Multimodal Transformer",
+      "entity_type": "model",
+      "description": "A transformer network that processes and relates information from different modalities such as text images and audio using a shared embedding space and attention mechanism to learn joint representations across modalities."
+    },
+    {
+      "canonical_name": "AIO:Model",
+      "entity_type": "model",
+      "description": "An abstract representation of a complex system generally assembled as a set of logical mathematical or conceptual properties to simulate or understand the system's behavior."
+    },
+    {
+      "canonical_name": "AIO:Restricted Boltzmann Machine",
+      "entity_type": "framework",
+      "description": "https://en.wikipedia.org/wiki/Restricted_Boltzmann_machine"
+    },
+    {
+      "canonical_name": "AIO:Neural Turing Machine Network",
+      "entity_type": "framework",
+      "description": "Hidden"
+    },
+    {
+      "canonical_name": "AIO:Radial Basis Network",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Contrastive Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network self-supervised learning approach that learns to distinguish between similar and dissimilar data samples."
+    },
+    {
+      "canonical_name": "AIO:Deep Convolutional Network",
+      "entity_type": "framework",
+      "description": "Convolutional/Pool"
+    },
+    {
+      "canonical_name": "AIO:One-shot Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that classified objects from one or only a few examples."
+    },
+    {
+      "canonical_name": "AIO:Deep Active Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that combines deep learning and active learning to maximize model performance while annotating the fewest samples possible."
+    },
+    {
+      "canonical_name": "AIO:Representation Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that discovers representations required for feature detection or classification from raw data."
+    },
+    {
+      "canonical_name": "AIO:Residual Neural Network",
+      "entity_type": "framework",
+      "description": "BN"
+    },
+    {
+      "canonical_name": "AIO:Metric Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that learns a representation function mapping objects into an embedded space."
+    },
+    {
+      "canonical_name": "AIO:Generalized Few-shot Learning",
+      "entity_type": "framework",
+      "description": "preventing catastrophic forgetting of base classes and ensuring classifier calibration.\""
+    },
+    {
+      "canonical_name": "AIO:Continual Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that learns sequential tasks without forgetting knowledge from preceding tasks and without access to old task data during new task training."
+    },
+    {
+      "canonical_name": "AIO:Graph Convolutional Network",
+      "entity_type": "framework",
+      "description": "Hidden"
+    },
+    {
+      "canonical_name": "AIO:Zero-shot Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that predicts classes at test time from classes not observed during training."
+    },
+    {
+      "canonical_name": "AIO:Multimodal Deep Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that processes and links information using various modalities."
+    },
+    {
+      "canonical_name": "AIO:Deep Feed-Forward Network",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Recursive Neural Network",
+      "entity_type": "framework",
+      "description": "A deep neural network that recursively applies weights over structured input to generate structured or scalar predictions."
+    },
+    {
+      "canonical_name": "AIO:Deep Transfer Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network that relaxes the hypothesis that training data must be independent and identically distributed with test data to address insufficient training data."
+    },
+    {
+      "canonical_name": "AIO:Deconvolutional Network",
+      "entity_type": "framework",
+      "description": "Kernel"
+    },
+    {
+      "canonical_name": "AIO:Transformer Network",
+      "entity_type": "framework",
+      "description": "A deep neural network that utilizes attention mechanisms to weigh the significance of input data."
+    },
+    {
+      "canonical_name": "AIO:Federated Learning",
+      "entity_type": "framework",
+      "description": "A deep neural network trained across decentralized edge devices or servers holding local data samples without exchanging them."
+    },
+    {
+      "canonical_name": "AIO:Incremenetal Few-shot Learning",
+      "entity_type": "framework",
+      "description": "each with few labeled examples.\""
+    },
+    {
+      "canonical_name": "AIO:Extreme Learning Machine",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Graph Convolutional Policy Network",
+      "entity_type": "framework",
+      "description": "Hidden"
+    },
+    {
+      "canonical_name": "AIO:Gated Recurrent Unit",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:node2vec",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Transfer Learning",
+      "entity_type": "framework",
+      "description": "A machine learning task focused on methods that reuse or transfer information from previously learned tasks to facilitate the learning of new tasks."
+    },
+    {
+      "canonical_name": "AIO:Meta-Learning",
+      "entity_type": "framework",
+      "description": "A machine learning task that automatically learns from metadata about machine learning experiments."
+    },
+    {
+      "canonical_name": "AIO:word2vec",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Multimodal Learning",
+      "entity_type": "framework",
+      "description": "A machine learning task that uses multiple modalities of data such as text audio and images to improve learning outcomes."
+    },
+    {
+      "canonical_name": "AIO:Artificial Neural Network",
+      "entity_type": "framework",
+      "description": "A network based on a collection of connected units called artificial neurons modeled after biological neurons."
+    },
+    {
+      "canonical_name": "AIO:Unsupervised Pretrained Network",
+      "entity_type": "framework",
+      "description": "A network that initializes a discriminative neural net from one trained using an unsupervised criterion."
+    },
+    {
+      "canonical_name": "AIO:Bayesian Network",
+      "entity_type": "framework",
+      "description": "A network that is a probabilistic graphical model representing variables and their conditional dependencies via a directed acyclic graph."
+    },
+    {
+      "canonical_name": "AIO:Symmetrically Connected Network",
+      "entity_type": "framework",
+      "description": "A network that is a type of recurrent neural network where connections between units are symmetrical with equal weights in both directions."
+    },
+    {
+      "canonical_name": "AIO:Liquid State Machine Network",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Kohonen Network",
+      "entity_type": "framework",
+      "description": "https://en.wikipedia.org/wiki/Self-organizing_map"
+    },
+    {
+      "canonical_name": "AIO:Recurrent Neural Network",
+      "entity_type": "framework",
+      "description": "A network with connections forming a directed graph along a temporal sequence enabling dynamic behavior."
+    },
+    {
+      "canonical_name": "AIO:Support Vector Machine",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:node2vec-CBOW",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:node2vec-SkipGram",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Echo State Network",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Long Short Term Memory",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Sparse Learning",
+      "entity_type": "framework",
+      "description": "A representation learning network that finds sparse representations of input data as a linear combination of basic elements and identifies those elements."
+    },
+    {
+      "canonical_name": "AIO:Hopfield Network",
+      "entity_type": "framework",
+      "description": "A symmetrically connected network that is a type of recurrent artificial neural network serving as a content-addressable memory system."
+    },
+    {
+      "canonical_name": "AIO:Boltzmann Machine Network",
+      "entity_type": "framework",
+      "description": "https://en.wikipedia.org/wiki/Boltzmann_machine"
+    },
+    {
+      "canonical_name": "AIO:word2vec-SkipGram",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:word2vec-CBOW",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Deep Neural Network",
+      "entity_type": "framework",
+      "description": "An artificial neural network characterized by multiple hidden layers between the input and output layers."
+    },
+    {
+      "canonical_name": "AIO:Feedback Network",
+      "entity_type": "framework",
+      "description": "Hidden"
+    },
+    {
+      "canonical_name": "AIO:Perceptron",
+      "entity_type": "framework",
+      "description": "Perceptron (AIO Ontology)"
+    },
+    {
+      "canonical_name": "AIO:Variational Auto Encoder",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Deep Convolutional Inverse Graphics Network",
+      "entity_type": "framework",
+      "description": "Convolutional/Pool"
+    },
+    {
+      "canonical_name": "AIO:Denoising Auto Encoder",
+      "entity_type": "framework",
+      "description": "\"Layers: Noisy Input"
+    },
+    {
+      "canonical_name": "AIO:Sparse Auto Encoder",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Deep Belief Network",
+      "entity_type": "framework",
+      "description": "Probabilistic Hidden"
+    },
+    {
+      "canonical_name": "AIO:Generative Adversarial Network",
+      "entity_type": "framework",
+      "description": "Matched Output-Input"
+    },
+    {
+      "canonical_name": "AIO:Auto Encoder Network",
+      "entity_type": "framework",
+      "description": "\"Layers: Input"
+    },
+    {
+      "canonical_name": "AIO:Feature Extraction",
+      "entity_type": "method",
+      "description": "enhancing the ability to make accurate predictions.\""
+    },
+    {
+      "canonical_name": "AIO:Data Augmentation",
+      "entity_type": "method",
+      "description": "A data enhancement used to increase the diversity and quantity of training data by applying various transformations such as rotation scaling flipping and cropping to existing data samples enhancing the robustness and performance of machine learning models."
+    },
+    {
+      "canonical_name": "AIO:Tokenization",
+      "entity_type": "method",
+      "description": "A data preparation that converts a sequence of text into smaller meaningful units called tokens typically words or subwords for the purpose of analysis or processing by language models."
+    },
+    {
+      "canonical_name": "AIO:Subword Segmentation",
+      "entity_type": "method",
+      "description": "A data preparation that divides text into subword units which are smaller than words but larger than individual characters to improve the efficiency and effectiveness of natural language processing models by capturing meaningful subunits of words."
+    },
+    {
+      "canonical_name": "AIO:Vocabulary Reduction",
+      "entity_type": "method",
+      "description": "A data preparation that limits the number of unique tokens in a language model's vocabulary by merging or eliminating less frequent tokens thereby optimizing computational efficiency and resource usage."
+    },
+    {
+      "canonical_name": "AIO:Cleaning",
+      "entity_type": "method",
+      "description": "A data preparation that removes noise inconsistencies and irrelevant information from data to enhance its quality and prepare it for analysis or further processing."
+    },
+    {
+      "canonical_name": "AIO:Normalization",
+      "entity_type": "method",
+      "description": "A data preparation that transforms data into a standard format or scale typically to reduce redundancy and improve consistency often involving the adjustment of values measured on different scales to a common scale."
+    },
+    {
+      "canonical_name": "AIO:Data Preparation",
+      "entity_type": "method",
+      "description": "ensuring the quality and relevance of the data for machine learning tasks.\""
+    },
+    {
+      "canonical_name": "AIO:Distillation",
+      "entity_type": "method",
+      "description": "A preprocessing that trains a smaller model to replicate the behavior of a larger model aiming to compress the knowledge into a more compact form without significant loss of performance."
+    },
+    {
+      "canonical_name": "AIO:DataEnhancement",
+      "entity_type": "method",
+      "description": "such as data augmentation synthesis and enrichment to enhance model robustness and accuracy.\""
+    },
+    {
+      "canonical_name": "AIO:TrainingStrategy",
+      "entity_type": "method",
+      "description": "A preprocessing used to train machine learning models including techniques such as supervised learning unsupervised learning reinforcement learning and transfer learning aimed at optimizing model performance."
+    },
+    {
+      "canonical_name": "AIO:Curriculum Learning",
+      "entity_type": "method",
+      "description": "A training strategy in machine learning where models are trained on data in a meaningful order starting with simpler examples and gradually increasing the complexity to improve learning efficiency and model performance."
+    },
+    {
+      "canonical_name": "AIO:Knowledge Transfer",
+      "entity_type": "method",
+      "description": "A training strategy in which knowledge is passed from one entity such as a person organization or system to another facilitating learning and adaptation in the receiving entity through various methods such as teaching training or data exchange."
+    },
+    {
+      "canonical_name": "AIO:Preprocessing",
+      "entity_type": "method",
+      "description": "to ensure the data is in an appropriate format and quality for analysis.\""
+    },
+    {
+      "canonical_name": "AIO:Computational Bias",
+      "entity_type": "concept",
+      "description": "A bias caused by differences between results and facts in the process of data analysis (including the source of data the estimator chose) and analysis methods."
+    },
+    {
+      "canonical_name": "AIO:Individual Bias",
+      "entity_type": "concept",
+      "description": "applied by an individual.\""
+    },
+    {
+      "canonical_name": "AIO:Societal Bias",
+      "entity_type": "concept",
+      "description": "A systemic bias characterized by being for or against groups or individuals based on social identities demographic factors or immutable physical characteristics often manifesting as stereotypes."
+    },
+    {
+      "canonical_name": "AIO:Historical Bias",
+      "entity_type": "concept",
+      "description": "A bias characterized by long-standing biases encoded in society over time distinct from biases in historical description or interpretation."
+    },
+    {
+      "canonical_name": "AIO:Institutional Bias",
+      "entity_type": "concept",
+      "description": "A systemic bias exhibited at the level of entire institutions where practices or norms result in the favoring or disadvantaging of certain social groups."
+    },
+    {
+      "canonical_name": "AIO:Human Bias",
+      "entity_type": "concept",
+      "description": "A bias in human thought based on heuristic principles leading to simplified judgmental operations."
+    },
+    {
+      "canonical_name": "AIO:Systemic Bias",
+      "entity_type": "concept",
+      "description": "A bias resulting from procedures and practices of systems that operate in ways which result in certain social groups being advantaged or favored and others being disadvantaged or devalued."
+    },
+    {
+      "canonical_name": "AIO:Use And Interpretation Bias",
+      "entity_type": "concept",
+      "description": "A computational bias characterized by inappropriately analyzing ambiguous stimuli scenarios and events."
+    },
+    {
+      "canonical_name": "AIO:Selection And Sampling Bias",
+      "entity_type": "concept",
+      "description": "A computational bias introduced by non-random selection of individuals groups or data failing to ensure representativeness."
+    },
+    {
+      "canonical_name": "AIO:Processing Bias",
+      "entity_type": "concept",
+      "description": "A computational bias resulting from judgment modulated by affect influenced by the level of efficacy and efficiency in information processing."
+    },
+    {
+      "canonical_name": "AIO:Group Bias",
+      "entity_type": "concept",
+      "description": "A systemic bias characterized by favoring members of one's in-group over out-group members expressed in evaluation resource allocation and other ways."
+    }
+  ],
+  "relations": [
+    [
+      "AIO:Exponential Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:GELU Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Hard Sigmoid Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Softmax Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Sigmoid Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Linear Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Softplus Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Softsign Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Tanh Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:ELU Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Swish Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:SELU Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:ReLU Function",
+      "AIO:Mathematical Function",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Supervised Biclustering",
+      "AIO:Biclustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Unsupervised Biclustering",
+      "AIO:Biclustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:K-nearest Neighbor Classification Algorithm",
+      "AIO:Clustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Binary Classification",
+      "AIO:Classification",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multiclass Classification",
+      "AIO:Classification",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Hierarchical Classification",
+      "AIO:Classification",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Decision Tree",
+      "AIO:Classification",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Unsupervised Clustering",
+      "AIO:Clustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Supervised Clustering",
+      "AIO:Clustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Hierarchical Clustering",
+      "AIO:Clustering",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:t-Distributed Stochastic Neighbor embedding",
+      "AIO:Dimensionality Reduction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Manifold Learning",
+      "AIO:Dimensionality Reduction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Principal Component Analysis",
+      "AIO:Dimensionality Reduction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multidimensional Scaling",
+      "AIO:Dimensionality Reduction",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Unsupervised Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Survival Analysis",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Time Series Analysis",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Reinforcement Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Clustering",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Active Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Supervised Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Time Series Forecasting",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Data Imputation",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Biclustering",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Ensemble Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Natural Language Processing",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Probabilistic Graphical Model",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:K-nearest Neighbor Algorithm",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Self-supervised Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Probabilistic Topic Model",
+      "AIO:Probabilistic Graphical Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Causal Graphical Model",
+      "AIO:Probabilistic Graphical Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Proportional Hazards Model",
+      "AIO:Survival Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Fixed Effects Model",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Ridge Regression",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Logistic Regression",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Linear Regression",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Lasso Regression",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generalized Linear Model",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Spatial Regression",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Random Effects Model",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Least-squares Analysis",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Regression Analysis",
+      "AIO:Supervised Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Association Rule Learning",
+      "AIO:Supervised Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Classification",
+      "AIO:Supervised Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Random Forest",
+      "AIO:Ensemble Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:K-nearest Neighbor Regression Algorithm",
+      "AIO:Regression Analysis",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Dimensionality Reduction",
+      "AIO:Unsupervised Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Recursive Language Model",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Large Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Modular Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generative Language Interface",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Autoregressive Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Masked Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Graph Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Hierarchical Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Implicit Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Recursive LLM",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Transformer Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Factored Language Model",
+      "AIO:Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Encoder-Decoder LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Personalized LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Controllable LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Evolutionary LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Continual Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Lifelong Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Factorized LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Data-to-Text LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Differentiable LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Reasoning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Embodied LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Explainable LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Reinforcement Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Dialogue LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Curriculum Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Federated LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multilingual LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Unsupervised LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Ordinal LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Contrastive Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generative Commonsense LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Compositional Generalization LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Ethical LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Fusion LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Transfer Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Causal LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Cross-Domain LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Language Interface LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Decoder LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Encoder LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Sparse LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Retrieval-Augmented LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Neuro-Symbolic LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Semi-Supervised LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Mixture-of-Experts LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generative Adversarial Network-Augmented LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Knowledge-Grounded LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Memory-Augmented LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Prompt-based Fine-Tuning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Instruction-Tuned LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Low-Resource LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Domain-Adapted LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Meta-Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multi-Task LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Self-Supervised LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Energy-Based LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Zero-Shot Learning LLM",
+      "AIO:Large Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Language Model",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Threshold Autoregressive",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Dynamic Conditional Correlation",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Vector Autoregression",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Autoregressive Moving Average",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Exponential Smoothing State Space Model",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Autoregressive Conditional Heteroskedasticity",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Seasonal Autoregressive Integrated Moving-Average",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Autoregressive Distributed Lag",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generalized Autoregressive Conditional Heteroskedasticity",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Autoregressive Integrated Moving Average",
+      "AIO:Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Modular LLM",
+      "AIO:Modular Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal LLM",
+      "AIO:Multimodal Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Prompt-based Language Model",
+      "AIO:Multimodal Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Markov Chain",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Bidirectional Transformer Language Model",
+      "AIO:Transformer Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Transformer LLM",
+      "AIO:Transformer Language Model",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Transformer",
+      "AIO:Transformer Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Restricted Boltzmann Machine",
+      "AIO:Boltzmann Machine Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Neural Turing Machine Network",
+      "AIO:Deep Feed-Forward Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Radial Basis Network",
+      "AIO:Deep Feed-Forward Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Contrastive Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Convolutional Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:One-shot Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Active Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Representation Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Residual Neural Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Metric Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generalized Few-shot Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Continual Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Graph Convolutional Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Zero-shot Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Deep Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Feed-Forward Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Recursive Neural Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Transfer Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deconvolutional Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Transformer Network",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Federated Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Incremenetal Few-shot Learning",
+      "AIO:Deep Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Extreme Learning Machine",
+      "AIO:Feedback Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Graph Convolutional Policy Network",
+      "AIO:Graph Convolutional Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Gated Recurrent Unit",
+      "AIO:Long Short Term Memory",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:node2vec",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Transfer Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Meta-Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:word2vec",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Multimodal Learning",
+      "AIO:Machine Learning Task",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Artificial Neural Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Unsupervised Pretrained Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Bayesian Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Symmetrically Connected Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Liquid State Machine Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Kohonen Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Recurrent Neural Network",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Support Vector Machine",
+      "AIO:Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:node2vec-CBOW",
+      "AIO:node2vec",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:node2vec-SkipGram",
+      "AIO:node2vec",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Echo State Network",
+      "AIO:Recurrent Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Long Short Term Memory",
+      "AIO:Recurrent Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Sparse Learning",
+      "AIO:Representation Learning",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Hopfield Network",
+      "AIO:Symmetrically Connected Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Boltzmann Machine Network",
+      "AIO:Symmetrically Connected Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:word2vec-SkipGram",
+      "AIO:word2vec",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:word2vec-CBOW",
+      "AIO:word2vec",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Neural Network",
+      "AIO:Artificial Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Feedback Network",
+      "AIO:Artificial Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Perceptron",
+      "AIO:Artificial Neural Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Variational Auto Encoder",
+      "AIO:Auto Encoder Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Convolutional Inverse Graphics Network",
+      "AIO:Auto Encoder Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Denoising Auto Encoder",
+      "AIO:Auto Encoder Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Sparse Auto Encoder",
+      "AIO:Auto Encoder Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Deep Belief Network",
+      "AIO:Unsupervised Pretrained Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Generative Adversarial Network",
+      "AIO:Unsupervised Pretrained Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Auto Encoder Network",
+      "AIO:Unsupervised Pretrained Network",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Feature Extraction",
+      "AIO:DataEnhancement",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Data Augmentation",
+      "AIO:DataEnhancement",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Tokenization",
+      "AIO:Data Preparation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Subword Segmentation",
+      "AIO:Data Preparation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Vocabulary Reduction",
+      "AIO:Data Preparation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Cleaning",
+      "AIO:Data Preparation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Normalization",
+      "AIO:Data Preparation",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Data Preparation",
+      "AIO:Preprocessing",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Distillation",
+      "AIO:TrainingStrategy",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:DataEnhancement",
+      "AIO:Preprocessing",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Curriculum Learning",
+      "AIO:TrainingStrategy",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Knowledge Transfer",
+      "AIO:TrainingStrategy",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Societal Bias",
+      "AIO:Systemic Bias",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Institutional Bias",
+      "AIO:Systemic Bias",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Use And Interpretation Bias",
+      "AIO:Computational Bias",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Selection And Sampling Bias",
+      "AIO:Computational Bias",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Processing Bias",
+      "AIO:Computational Bias",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AIO:Group Bias",
+      "AIO:Systemic Bias",
+      "SUBTOPIC_OF"
+    ]
+  ]
+}

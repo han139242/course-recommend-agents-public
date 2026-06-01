@@ -14,19 +14,29 @@ export const COURSE_TITLE_ORDER = [
   '强化学习',
   '知识图谱',
   '大模型',
+  '高级大模型应用开发',
   'AI工程',
+  'AI基础设施与高性能智能计算',
+  'AI for Science',
+  '具身智能与世界模型',
+  'AI安全攻防',
   'AI伦理',
   DEFAULT_COURSE_TITLE,
 ]
 
 export const COURSE_SOURCE_TITLE_MAP = {
+  course_advanced_llm_applications: '高级大模型应用开发',
   course_ai_engineering: 'AI工程',
   course_ai_ethics: 'AI伦理',
+  course_ai_for_science: 'AI for Science',
+  course_ai_infrastructure: 'AI基础设施与高性能智能计算',
   course_ai_intro: '人工智能导论',
+  course_ai_security: 'AI安全攻防',
   course_calculus: '高等数学',
   course_cv: '计算机视觉',
   course_data_structure: '数据结构',
   course_deep_learning: '深度学习',
+  course_embodied_world_models: '具身智能与世界模型',
   course_knowledge_graph: '知识图谱',
   course_linear_algebra: '线性代数',
   course_llm: '大模型',
@@ -115,6 +125,26 @@ const COURSE_TITLE_KEYWORD_RULES = [
   {
     pattern: /ai[_\s-]*ethics|可信ai|负责任ai|算法治理|ethics|fairness|privacy|safety|xai|governance/i,
     title: 'AI伦理',
+  },
+  {
+    pattern: /高级.*大模型|agent.*开发|langchain|llamaindex|langgraph|crewai|autogen|function[_\s-]*calling|多.*agent|agent.*协作|对话.*管理|guardrail|dpo|rlhf|指令微调|语义路由|结构化输出|mcp.*协议|a2a.*协议|提示.*工程|lo[_-]?ra|qlo[_-]?ra/i,
+    title: '高级大模型应用开发',
+  },
+  {
+    pattern: /(ai|人工智能)[_\s-]*基础设施|高性能.*计算|infrastructure|gpu.*并行|cuda|nvlink|infiniband|roce|deepspeed|megatron|tensorrt|onnx.*runtime|vllm|nccl|kv[_\s-]*缓存|推理.*优化|算力.*运维|万卡.*集群|fspd|模型.*服务.*sla/i,
+    title: 'AI基础设施与高性能智能计算',
+  },
+  {
+    pattern: /ai[_\s-]*for[_\s-]*science|alphafold|分子.*动力学|量子.*化学|药物.*发现|蛋白质.*工程|科学.*机器.*学习|基因组学|气候.*建模|材料.*基因组|蛋白.*设计|密度泛函|科学.*大模型|单细胞.*组学|逆合成|分子.*生成/i,
+    title: 'AI for Science',
+  },
+  {
+    pattern: /具身智能|世界模型|robot|sim[_\s-]*to[_\s-]*real|模仿学习|触觉感知|灵巧操作|四足.*机器人|人形.*机器人|运动规划|视觉伺服|自主驾驶|抓取|操作.*技能|embodied|manipulation|navigation|locomotion|domain[_\s-]*randomization/i,
+    title: '具身智能与世界模型',
+  },
+  {
+    pattern: /ai[_\s-]*安全|adversarial|对抗.*攻击|对抗.*防御|后门.*攻击|模型.*窃取|成员.*推断|越狱|提示.*注入|红队|对齐.*安全|模型.*签名|拜占庭|梯度.*泄露|差分.*隐私.*训练|同态.*加密.*推理|可信.*执行|深度.*伪造.*检测|ai.*供应链.*安全/i,
+    title: 'AI安全攻防',
   },
   {
     pattern: /人工智能导论|知识表示|推理|搜索|规划|专家系统|多智能体|博弈搜索|启发式搜索|A\*|reasoning|search|planning|expert[_\s-]*system|multi[_\s-]*agent|game[_\s-]*ai|intelligent[_\s-]*computing/i,

@@ -38,6 +38,33 @@ func (s *Service) GetBriefing(ctx context.Context, query frontierdto.BriefingQue
 	return response, nil
 }
 
+// ListLibrary 查询前沿资料中心列表。
+func (s *Service) ListLibrary(ctx context.Context, query frontierdto.LibraryQuery) (*frontierdto.LibraryResponse, error) {
+	if s.repo == nil {
+		return nil, apperr.ErrDependencyUnavailable
+	}
+	limit := query.Limit
+	if limit <= 0 {
+		limit = 30
+	}
+	response, err := s.repo.ListLibrary(ctx, limit)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	if response == nil {
+		return &frontierdto.LibraryResponse{Status: "not_ready", Items: []frontierdto.LibraryItemView{}}, nil
+	}
+	status := strings.ToLower(strings.TrimSpace(strings.ReplaceAll(response.Status, "-", "_")))
+	if status == "" {
+		status = "not_ready"
+	}
+	response.Status = status
+	if response.Items == nil {
+		response.Items = []frontierdto.LibraryItemView{}
+	}
+	return response, nil
+}
+
 func (s *Service) normalizeStatus(response *frontierdto.BriefingResponse) {
 	if response == nil {
 		return

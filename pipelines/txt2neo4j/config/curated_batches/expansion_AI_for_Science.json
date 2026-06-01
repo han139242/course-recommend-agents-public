@@ -1,0 +1,258 @@
+{
+  "source": "expansion_AI_for_Science",
+  "course_title": "AI for Science",
+  "nodes": [
+    {
+      "canonical_name": "几何深度学习",
+      "entity_type": "method",
+      "description": "处理非欧几里德空间（流形、图和三维点云）数据的深度学习方法，利用群等变性和对称性约束提高分子和材料建模的泛化能力。"
+    },
+    {
+      "canonical_name": "等变神经网络",
+      "entity_type": "model",
+      "description": "保证输出对三维旋转、平移和反射操作具有与输入一致的变换性质的神经网络架构，是分子建模和力场构造的核心技术。"
+    },
+    {
+      "canonical_name": "蛋白质语言模型",
+      "entity_type": "model",
+      "description": "在大规模蛋白质序列库上训练的 Transformer/BERT 类模型，学习氨基酸共进化关系和结构约束的深层表示，可用于功能预测、结构分析和变异解释。"
+    },
+    {
+      "canonical_name": "扩散模型分子生成",
+      "entity_type": "method",
+      "description": "将逐步去噪的扩散过程应用于分子三维构象和图结构的生成，在构象集合生成和药物分子从头设计任务中取得最先进结果。"
+    },
+    {
+      "canonical_name": "分子对接",
+      "entity_type": "method",
+      "description": "通过搜索算法和打分函数预测小分子配体与蛋白质靶标结合位点的最优结合构象和亲和力的计算化学方法。"
+    },
+    {
+      "canonical_name": "虚拟筛选",
+      "entity_type": "method",
+      "description": "对大规模化合物库进行基于结构或配体的计算筛选，快速富集潜在活性分子并降低生物实验成本的计算药物发现方法。"
+    },
+    {
+      "canonical_name": "自监督分子预训练",
+      "entity_type": "method",
+      "description": "在大规模未标注分子数据上通过掩码、对比学习和自编码等预训练任务学习通用分子表示，再在下游性质预测任务上微调的迁移学习方法。"
+    },
+    {
+      "canonical_name": "神经势能面",
+      "entity_type": "model",
+      "description": "使用图神经网络或等变网络学习高精度量子力学计算能量与力场的替代模型，精度接近第一性原理但速度快数个数量级。"
+    },
+    {
+      "canonical_name": "增强采样",
+      "entity_type": "method",
+      "description": "通过元动力学、伞形采样和副本交换等施加外部偏置势，加速穿越高能垒区域从而在合理计算时间内采样稀有事件的分子模拟方法。"
+    },
+    {
+      "canonical_name": "粗粒化分子动力学",
+      "entity_type": "method",
+      "description": "将多个原子合并为有效珠子减少自由度，配合系统学推导有效力场，在牺牲原子级细节的同时大幅扩展可模拟的时间和空间尺度。"
+    },
+    {
+      "canonical_name": "深度学习求解器",
+      "entity_type": "method",
+      "description": "使用傅里叶神经算子或DeepONet等深度模型学习偏微分方程解算子的映射，实现比传统数值方法快速数个数量级的求解和参数扫描。"
+    },
+    {
+      "canonical_name": "科学数据管理",
+      "entity_type": "concept",
+      "description": "对大规模科学实验和模拟数据的采集、清洗、元数据标注、版本管理和可复现性保障的系统化数据工程方法。"
+    },
+    {
+      "canonical_name": "AI蛋白质设计",
+      "entity_type": "application",
+      "description": "综合运用蛋白质语言模型、结构预测、分子动力学模拟和高通量筛选，从零设计自然界不存在的新型功能蛋白质的AI辅助工程。"
+    },
+    {
+      "canonical_name": "催化反应预测",
+      "entity_type": "method",
+      "description": "使用图神经网络学习催化剂结构与反应活性和选择性之间的定量构效关系，加速催化剂筛选和反应条件优化的计算化学方法。"
+    },
+    {
+      "canonical_name": "材料带隙预测",
+      "entity_type": "method",
+      "description": "使用图神经网络或晶体图卷积网络从材料晶体结构直接预测电子能带结构的计算方法，加速光伏和半导体材料的筛选。"
+    },
+    {
+      "canonical_name": "天气预测AI",
+      "entity_type": "application",
+      "description": "使用Transformer/图神经网络对数值天气预报的再分析数据进行训练，实现与传统NWP精度相当但推理速度快数个数量级的数据驱动天气预报。"
+    },
+    {
+      "canonical_name": "湍流建模",
+      "entity_type": "method",
+      "description": "使用深度生成模型或算子学习方法对大涡模拟中的亚格子尺度湍流封闭模型进行训练，提升CFD湍流模拟精度和效率。"
+    },
+    {
+      "canonical_name": "AI辅助定理证明",
+      "entity_type": "application",
+      "description": "使用强化学习和语言模型自动搜索数学定理的证明路径，从公理和已知引理出发生成形式化证明步骤的方向。"
+    },
+    {
+      "canonical_name": "反向设计",
+      "entity_type": "method",
+      "description": "从目标材料性能出发，利用生成模型和优化算法逆向搜索可实现该性能的晶体结构或分子组成的材料设计方法。"
+    },
+    {
+      "canonical_name": "药代动力学预测",
+      "entity_type": "method",
+      "description": "使用机器学习模型从分子结构预测候选药物的吸收、分布、代谢、排泄和毒性参数，在临床试验前评估成药性。"
+    }
+  ],
+  "relations": [
+    [
+      "几何深度学习",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "等变神经网络",
+      "几何深度学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "蛋白质语言模型",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "扩散模型分子生成",
+      "分子生成模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分子对接",
+      "药物发现AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "虚拟筛选",
+      "药物发现AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自监督分子预训练",
+      "分子图表示",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "神经势能面",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "增强采样",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "粗粒化分子动力学",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "深度学习求解器",
+      "PDE求解学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "科学数据管理",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI蛋白质设计",
+      "生物医学智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "催化反应预测",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "材料带隙预测",
+      "分子与材料智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "天气预测AI",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "湍流建模",
+      "科学机器学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI辅助定理证明",
+      "科学发现工作流",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "反向设计",
+      "逆向材料设计",
+      "RELATED_TO"
+    ],
+    [
+      "药代动力学预测",
+      "药物发现AI",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "几何深度学习",
+      "等变神经网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自监督分子预训练",
+      "蛋白质语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "蛋白质语言模型",
+      "AI蛋白质设计",
+      "APPLIES_TO"
+    ],
+    [
+      "分子对接",
+      "虚拟筛选",
+      "PART_OF"
+    ],
+    [
+      "虚拟筛选",
+      "药代动力学预测",
+      "RELATED_TO"
+    ],
+    [
+      "神经势能面",
+      "增强采样",
+      "RELATED_TO"
+    ],
+    [
+      "深度学习求解器",
+      "湍流建模",
+      "APPLIES_TO"
+    ],
+    [
+      "科学数据管理",
+      "闭环科学发现",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "反向设计",
+      "材料带隙预测",
+      "RELATED_TO"
+    ],
+    [
+      "AI辅助定理证明",
+      "科研智能体",
+      "RELATED_TO"
+    ]
+  ]
+}

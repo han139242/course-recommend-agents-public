@@ -1,0 +1,127 @@
+{
+  "source": "batch_33_student_learning_support_bridge",
+  "nodes": [
+    {
+      "canonical_name": "课程知识图谱",
+      "entity_type": "concept",
+      "description": "围绕课程、章节、知识点和先修关系组织教学内容的知识图谱，用于支撑导航、推荐和诊断。"
+    },
+    {
+      "canonical_name": "学习目标建模",
+      "entity_type": "method",
+      "description": "将学习者当前目标、课程要求和能力差距转化为可计算约束的建模方法。"
+    },
+    {
+      "canonical_name": "薄弱点识别",
+      "entity_type": "method",
+      "description": "根据掌握度、练习表现和学习行为判断学习者尚未稳定掌握知识点的分析方法。"
+    },
+    {
+      "canonical_name": "错题诊断",
+      "entity_type": "application",
+      "description": "结合题目知识点映射和作答记录定位错误原因、前置缺口和复习重点的应用任务。"
+    },
+    {
+      "canonical_name": "练习反馈",
+      "entity_type": "application",
+      "description": "面向学习者生成针对作答结果、知识缺口和下一步训练建议的反馈任务。"
+    },
+    {
+      "canonical_name": "个性化学习路径",
+      "entity_type": "application",
+      "description": "根据学习目标、先修依赖和学习者状态生成的个体化学习顺序与行动安排。"
+    },
+    {
+      "canonical_name": "学习路径推荐",
+      "entity_type": "application",
+      "description": "在候选知识点之间选择下一步学习顺序，并解释推荐理由的推荐任务。"
+    },
+    {
+      "canonical_name": "先修链路推理",
+      "entity_type": "method",
+      "description": "基于知识点之间的前置依赖关系推断可学习顺序、缺口链路和补弱路径的方法。"
+    },
+    {
+      "canonical_name": "复习间隔调度",
+      "entity_type": "method",
+      "description": "根据遗忘风险、掌握度和练习反馈安排复习时间与复习频率的调度方法。"
+    },
+    {
+      "canonical_name": "学习资源匹配",
+      "entity_type": "application",
+      "description": "将知识点、学习目标和学习者状态映射到合适课程材料、练习和讲解资源的任务。"
+    },
+    {
+      "canonical_name": "多源学习证据融合",
+      "entity_type": "method",
+      "description": "融合浏览、作答、收藏、问答和测验等多类学习证据以估计学习状态的方法。"
+    },
+    {
+      "canonical_name": "学习解释生成",
+      "entity_type": "application",
+      "description": "面向学生生成可理解的概念讲解、路径理由、错误原因和复习建议的任务。"
+    },
+    {
+      "canonical_name": "知识点难度估计",
+      "entity_type": "method",
+      "description": "根据课程结构、题目表现和历史学习数据估计知识点认知难度的建模方法。"
+    },
+    {
+      "canonical_name": "题目知识点映射",
+      "entity_type": "method",
+      "description": "将练习题、测验题或案例任务标注到一个或多个知识点上的结构化映射方法。"
+    },
+    {
+      "canonical_name": "课程能力图谱",
+      "entity_type": "concept",
+      "description": "将课程知识点映射到能力维度、评价指标和学习目标的结构化能力图谱。"
+    },
+    {
+      "canonical_name": "学习闭环评估",
+      "entity_type": "method",
+      "description": "综合学习路径执行、练习反馈、掌握度变化和目标达成度评估学习闭环效果的方法。"
+    }
+  ],
+  "relations": [
+    ["课程知识图谱", "智能教育", "SUBTOPIC_OF"],
+    ["课程知识图谱", "知识图谱", "RELATED_TO"],
+    ["课程知识图谱", "先修链路推理", "PREREQUISITE_OF"],
+    ["先修关系建模", "先修链路推理", "RELATED_TO"],
+    ["先修链路推理", "学习路径推荐", "PREREQUISITE_OF"],
+    ["学习路径规划", "学习路径推荐", "PREREQUISITE_OF"],
+    ["学习路径推荐", "个性化学习路径", "SUBTOPIC_OF"],
+    ["个性化学习路径", "自适应学习", "SUBTOPIC_OF"],
+    ["学习目标建模", "个性化学习路径", "PREREQUISITE_OF"],
+    ["学习者画像", "学习目标建模", "PREREQUISITE_OF"],
+    ["课程能力图谱", "能力建模", "SUBTOPIC_OF"],
+    ["课程能力图谱", "课程知识图谱", "RELATED_TO"],
+    ["课程能力图谱", "薄弱点识别", "PREREQUISITE_OF"],
+    ["薄弱点识别", "认知诊断", "SUBTOPIC_OF"],
+    ["掌握度估计", "薄弱点识别", "PREREQUISITE_OF"],
+    ["薄弱点识别", "复习间隔调度", "PREREQUISITE_OF"],
+    ["复习间隔调度", "自适应学习", "SUBTOPIC_OF"],
+    ["题目知识点映射", "教育数据挖掘", "SUBTOPIC_OF"],
+    ["知识图谱", "题目知识点映射", "RELATED_TO"],
+    ["题目知识点映射", "错题诊断", "PREREQUISITE_OF"],
+    ["错题诊断", "个性化反馈", "SUBTOPIC_OF"],
+    ["错题诊断", "薄弱点识别", "RELATED_TO"],
+    ["错题诊断", "练习反馈", "PREREQUISITE_OF"],
+    ["练习反馈", "个性化反馈", "SUBTOPIC_OF"],
+    ["学习解释生成", "个性化反馈", "SUBTOPIC_OF"],
+    ["大语言模型", "学习解释生成", "RELATED_TO"],
+    ["学习解释生成", "练习反馈", "RELATED_TO"],
+    ["学习资源排序", "学习资源匹配", "PREREQUISITE_OF"],
+    ["学习资源匹配", "自适应学习", "SUBTOPIC_OF"],
+    ["知识点推荐", "学习资源匹配", "RELATED_TO"],
+    ["多源学习证据融合", "学习分析", "SUBTOPIC_OF"],
+    ["学习行为序列", "多源学习证据融合", "PREREQUISITE_OF"],
+    ["题目知识点映射", "多源学习证据融合", "PREREQUISITE_OF"],
+    ["多源学习证据融合", "掌握度估计", "PREREQUISITE_OF"],
+    ["知识点难度估计", "能力建模", "SUBTOPIC_OF"],
+    ["知识点难度估计", "题目推荐", "PREREQUISITE_OF"],
+    ["知识点难度估计", "学习路径推荐", "PREREQUISITE_OF"],
+    ["学习闭环评估", "学习成效评估", "SUBTOPIC_OF"],
+    ["学习闭环评估", "练习反馈", "RELATED_TO"],
+    ["学习闭环评估", "学习路径推荐", "RELATED_TO"]
+  ]
+}

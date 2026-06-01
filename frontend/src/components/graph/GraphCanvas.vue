@@ -192,17 +192,15 @@ defineExpose({
     <div v-if="loading" class="graph-canvas-status">
       <div class="graph-canvas-status__inner">
         <div class="status-spinner"></div>
-        <strong>知识图谱加载中</strong>
-        <span>正在同步目录与种子节点，并构建 Canvas 力导布局...</span>
+        <strong>知识地图加载中</strong>
+        <span>正在同步课程目录和知识点关系。</span>
       </div>
     </div>
     <div v-else-if="error || renderError" class="graph-canvas-status graph-canvas-status--error">
       <div class="graph-canvas-status__inner">
-        <strong>{{ renderError ? '渲染失败' : '加载失败' }}</strong>
+        <strong>{{ renderError ? '图谱渲染失败' : '数据加载失败' }}</strong>
         <p>{{ renderError || error }}</p>
-        <p style="opacity:0.6;margin-top:4px">
-          {{ renderError ? '如果图谱区域一直空白，请检查浏览器 Canvas 2D 是否可用。' : '请确认后端服务和图谱数据服务已启动。' }}
-        </p>
+        <p class="muted-text">请确认后端服务、图数据库和浏览器 Canvas 能正常使用。</p>
       </div>
     </div>
 
@@ -223,28 +221,22 @@ defineExpose({
         :aria-expanded="legendOpen ? 'true' : 'false'"
         @click="legendOpen = !legendOpen"
       >
-        <span class="graph-legend-toggle__title">图例与交互</span>
+        <span class="graph-legend-toggle__title">图例</span>
         <span class="graph-legend-toggle__meta">{{ legendOpen ? '收起' : '展开' }}</span>
       </button>
 
       <div v-if="legendOpen" class="graph-legend">
         <div class="graph-legend__group">
-          <span class="graph-legend__title">状态</span>
+          <span class="graph-legend__title">学习状态</span>
           <span class="graph-legend__item"><i class="graph-dot graph-dot--mastered"></i>已掌握</span>
           <span class="graph-legend__item"><i class="graph-dot graph-dot--learning"></i>学习中</span>
-          <span class="graph-legend__item"><i class="graph-dot graph-dot--weak"></i>薄弱</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--weak"></i>待巩固</span>
         </div>
         <div class="graph-legend__group">
-          <span class="graph-legend__title">交互</span>
-          <span class="graph-legend__item">单击知识点：聚焦与查看详情</span>
-          <span class="graph-legend__item">双击知识点：展开 / 收回关联节点</span>
-          <span class="graph-legend__item">拖拽节点：局部重排且保持位置</span>
-        </div>
-        <div class="graph-legend__group">
-          <span class="graph-legend__title">关系</span>
-          <span class="graph-legend__item">实线箭头：前置 / 相关 / 应用</span>
-          <span class="graph-legend__item">虚线箭头：属于 / 组成 / 使用</span>
-          <span class="graph-legend__item">同对节点多关系：自动分弧</span>
+          <span class="graph-legend__title">操作</span>
+          <span class="graph-legend__item">单击查看详情</span>
+          <span class="graph-legend__item">双击展开关联节点</span>
+          <span class="graph-legend__item">右键加入路径或收藏</span>
         </div>
       </div>
     </div>

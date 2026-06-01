@@ -47,6 +47,30 @@ func (r *Repository) GetBriefing(ctx context.Context, knowledgeID string, knowle
 	}, nil
 }
 
+// ListLibrary 查询前沿资料中心聚合列表。
+func (r *Repository) ListLibrary(ctx context.Context, limit int) (*frontierdto.LibraryResponse, error) {
+	if r.graphRepo == nil || !r.graphRepo.Enabled() {
+		return notReadyLibraryResponse(), nil
+	}
+	library, err := r.graphRepo.LoadFrontierLibrary(ctx, limit)
+	if err != nil {
+		if errors.Is(err, graphrepo.ErrFrontierBriefingNotReady) {
+			return notReadyLibraryResponse(), nil
+		}
+		return nil, err
+	}
+	if library == nil {
+		return notReadyLibraryResponse(), nil
+	}
+	return &frontierdto.LibraryResponse{
+		Status:      "ready",
+		Message:     "已从图谱载入前沿资料。",
+		GeneratedAt: library.GeneratedAt,
+		Total:       library.Total,
+		Items:       toLibraryItemViews(library.Items),
+	}, nil
+}
+
 func notReadyResponse(knowledgeID string, knowledgeName string) *frontierdto.BriefingResponse {
 	return &frontierdto.BriefingResponse{
 		KnowledgeID:   normalizeKnowledgeID(knowledgeID, knowledgeName),
@@ -57,6 +81,16 @@ func notReadyResponse(knowledgeID string, knowledgeName string) *frontierdto.Bri
 		Topics:        []frontierdto.TopicView{},
 		Papers:        []frontierdto.PaperView{},
 		GeneratedAt:   "",
+	}
+}
+
+func notReadyLibraryResponse() *frontierdto.LibraryResponse {
+	return &frontierdto.LibraryResponse{
+		Status:      "not_ready",
+		Message:     "当前还没有可展示的前沿资料，请先运行前沿同步链路。",
+		GeneratedAt: "",
+		Total:       0,
+		Items:       []frontierdto.LibraryItemView{},
 	}
 }
 
@@ -86,6 +120,33 @@ func toPaperViews(items []graphentity.FrontierPaper) []frontierdto.PaperView {
 	result := make([]frontierdto.PaperView, 0, len(items))
 	for _, item := range items {
 		result = append(result, frontierdto.PaperView{PaperID: item.PaperID, Title: item.Title, Venue: item.Venue, Year: item.Year, URL: item.URL})
+	}
+	return result
+}
+
+func toKnowledgeRefViews(items []graphentity.FrontierKnowledgeRef) []frontierdto.KnowledgeRefView {
+	result := make([]frontierdto.KnowledgeRefView, 0, len(items))
+	for _, item := range items {
+		result = append(result, frontierdto.KnowledgeRefView{KnowledgeID: item.KnowledgeID, Name: item.Name, Course: item.Course, Reason: item.Reason})
+	}
+	return result
+}
+
+func toLibraryItemViews(items []graphentity.FrontierLibraryItem) []frontierdto.LibraryItemView {
+	result := make([]frontierdto.LibraryItemView, 0, len(items))
+	for _, item := range items {
+		result = append(result, frontierdto.LibraryItemView{
+			PaperID:       item.PaperID,
+			Title:         item.Title,
+			Abstract:      item.Abstract,
+			Venue:         item.Venue,
+			Year:          item.Year,
+			URL:           item.URL,
+			Source:        item.Source,
+			UpdatedAt:     item.UpdatedAt,
+			Topics:        toTopicViews(item.Topics),
+			KnowledgeRefs: toKnowledgeRefViews(item.KnowledgeRefs),
+		})
 	}
 	return result
 }

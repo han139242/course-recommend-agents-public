@@ -10,6 +10,7 @@ import (
 	authmodule "github.com/han139242/course-recommend-agents/backend/internal/module/auth"
 	competencymodule "github.com/han139242/course-recommend-agents/backend/internal/module/competency"
 	dashboardmodule "github.com/han139242/course-recommend-agents/backend/internal/module/dashboard"
+	evaluationmodule "github.com/han139242/course-recommend-agents/backend/internal/module/evaluation"
 	frontiermodule "github.com/han139242/course-recommend-agents/backend/internal/module/frontier"
 	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
@@ -27,7 +28,7 @@ import (
 //
 // 路由层只负责统一挂载中间件、健康检查与模块路由，
 // 不在此处处理业务编排，避免入口层承担过多职责。
-func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module, evaluationModule *evaluationmodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -77,6 +78,8 @@ func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisCli
 	dashboardModule.RegisterRoutes(dashboardGroup)
 	assistantGroup := authGroup.Group("/assistant")
 	assistantModule.RegisterRoutes(assistantGroup)
+	evaluationGroup := api.Group("/evaluation")
+	evaluationModule.RegisterRoutes(evaluationGroup)
 	frontierGroup := api.Group("/frontier")
 	frontierModule.RegisterRoutes(frontierGroup)
 	graphGroup := api.Group("/graph")

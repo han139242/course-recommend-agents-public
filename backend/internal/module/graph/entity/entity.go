@@ -49,6 +49,35 @@ type FrontierPaper struct {
 	URL     string
 }
 
+// FrontierKnowledgeRef 表示前沿资料关联到的课程知识点。
+type FrontierKnowledgeRef struct {
+	KnowledgeID string
+	Name        string
+	Course      string
+	Reason      string
+}
+
+// FrontierLibraryItem 表示前沿资料中心中的一条论文或开源线索。
+type FrontierLibraryItem struct {
+	PaperID       string
+	Title         string
+	Abstract      string
+	Venue         string
+	Year          int
+	URL           string
+	Source        string
+	UpdatedAt     string
+	Topics        []FrontierTopic
+	KnowledgeRefs []FrontierKnowledgeRef
+}
+
+// FrontierLibrary 表示前沿资料中心聚合结果。
+type FrontierLibrary struct {
+	GeneratedAt string
+	Total       int
+	Items       []FrontierLibraryItem
+}
+
 // FrontierBriefing 表示知识点的前沿扩展摘要。
 type FrontierBriefing struct {
 	KnowledgeID   string
@@ -63,9 +92,9 @@ type FrontierBriefing struct {
 
 // CompetencyMapping 表示知识点映射到能力维度的权重。
 type CompetencyMapping struct {
-	KnowledgeID     string
-	CompetencyID    string
-	CompetencyName  string
-	Category        string
-	Weight          float64
+	KnowledgeID    string
+	CompetencyID   string
+	CompetencyName string
+	Category       string
+	Weight         float64
 }

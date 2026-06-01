@@ -1,0 +1,24 @@
+topic: learning-path-optimization
+execution:
+  output_dir: research/learning-path-optimization/results
+  batch_size: 6
+  items_per_agent: 1
+items:
+  - name: Knowledge Tracing for Learning Path Recommendation
+    category: Student Modeling
+    description: Survey and representative methods combining knowledge tracing with personalized learning path recommendation from 2023 to 2026.
+  - name: Knowledge Graph-based Learning Path Recommendation
+    category: Knowledge Graph Recommendation
+    description: Research on using educational knowledge graphs, prerequisite graphs, and graph algorithms for personalized learning path recommendation.
+  - name: Reinforcement Learning for Learning Path Recommendation
+    category: Sequential Decision Making
+    description: DQN, policy gradient, bandit, and reinforcement-learning methods for optimizing adaptive learning paths.
+  - name: GraphRAG and KG-RAG for Education
+    category: Retrieval-Augmented Generation
+    description: GraphRAG or knowledge-graph RAG approaches used for education, tutoring, explanation generation, or learning recommendation.
+  - name: LLM Agents for Personalized Tutoring and Recommendation
+    category: Agentic Education Systems
+    description: LLM agent methods that call tools, retrieve learner state, reason over knowledge graphs, or generate personalized learning plans.
+  - name: Evaluation Protocols and Benchmarks for Learning Path Recommendation
+    category: Experimental Design
+    description: Datasets, metrics, baselines, ablations, and user-study protocols suitable for CCF-B style learning path recommendation papers.

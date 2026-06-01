@@ -38,7 +38,7 @@ function getChipStyle(courseTitle) {
       </span>
     </div>
     <p class="bridge-view__copy">
-      {{ item.detail || '系统检测到一个适合跨课程迁移的知识桥梁。' }}
+      {{ item.detail || '系统发现这里可以衔接到另一门课程，适合作为下一步学习桥梁。' }}
     </p>
   </div>
 </template>

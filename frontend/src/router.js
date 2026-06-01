@@ -6,6 +6,9 @@ import { useUserStore } from './stores/userStore'
 const GraphHome = () => import('./views/GraphHome.vue')
 const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
 const DashboardView = () => import('./views/DashboardView.vue')
+const CompetitionShowcaseView = () => import('./views/CompetitionShowcaseView.vue')
+const EvaluationView = () => import('./views/EvaluationView.vue')
+const FrontierLibraryView = () => import('./views/FrontierLibraryView.vue')
 const LoginView = () => import('./views/LoginView.vue')
 const RegisterView = () => import('./views/RegisterView.vue')
 
@@ -34,6 +37,39 @@ const routes = [
     meta: {
       title: '学习仪表盘',
       requiresAuth: true,
+    },
+  },
+  {
+    path: '/competency',
+    name: 'competency-map',
+    component: DashboardView,
+    meta: {
+      title: '能力图谱',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/showcase',
+    name: 'competition-showcase',
+    component: CompetitionShowcaseView,
+    meta: {
+      title: '作品展示中心',
+    },
+  },
+  {
+    path: '/evaluation',
+    name: 'evaluation',
+    component: EvaluationView,
+    meta: {
+      title: '教研评测',
+    },
+  },
+  {
+    path: '/frontier',
+    name: 'frontier-library',
+    component: FrontierLibraryView,
+    meta: {
+      title: '前沿资料',
     },
   },
   {

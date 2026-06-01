@@ -72,11 +72,54 @@ npm run dev
 http://localhost:8080
 ```
 
+浏览器固定访问前端入口：
+
+```text
+http://127.0.0.1:8080
+```
+
+说明：项目运行入口统一为 `8080`。前端先执行生产构建，Go 后端直接托管 `backend/web/dist`，浏览器不再需要打开 Vite 的 `5173` 端口。
+
 如果你要改代理目标，可以设置：
 
 ```text
 VITE_API_PROXY_TARGET=http://localhost:8080
 ```
+
+### 3.1 比赛演示入口
+
+比赛现场建议只打开一个浏览器入口：
+
+```text
+http://127.0.0.1:8080
+```
+
+评委展示中心：
+
+```text
+http://127.0.0.1:8080/showcase
+```
+
+如果需要一键拉起演示环境，可以在项目根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1
+```
+
+脚本会启动 Docker 依赖，构建前端，并启动 Go 后端作为唯一访问入口，日志写入 `artifacts/logs/`。
+
+推荐演示顺序：
+
+1. 作品展示中心：先按创意、技术、应用、设计、效果说明评分点对齐。
+2. 首页：展示课程知识地图、学习导航、当前进度和 AI 助教。
+3. 点击一个知识点：展示前置知识、典型场景、练习测验、推荐路径和学习笔记。
+4. 进入学习总览：展示总体掌握度、待巩固内容、本周节奏和下一步学习建议。
+5. 如需说明后台能力，再进入教研评测页；学生主流程不要从评测页开始。
+
+比赛材料：
+
+- `docs/competition/c4-a-series-score-alignment.md`
+- `docs/competition/national-first-prize-checklist.md`
 
 ### 4. 构建前端并交给 Go 托管
 
@@ -92,6 +135,23 @@ backend/web/dist
 ```
 
 随后只启动 Go 后端，也可以直接访问前端页面。
+
+## 质量门禁
+
+每次提交前至少执行以下检查，确保后端业务逻辑、前端组件行为和生产构建都处于可交付状态：
+
+```bash
+cd backend
+go test ./...
+```
+
+```bash
+cd frontend
+npm test -- --run
+npm run build
+```
+
+当前前端测试环境已经在 `frontend/src/test/setup.js` 中补齐 `ResizeObserver`、`matchMedia`、`requestAnimationFrame` 和 Canvas 2D 上下文 mock，图谱与雷达图相关组件可以在 jsdom 下稳定测试，不应再出现 `HTMLCanvasElement.getContext()` 未实现噪声。
 
 ## Docker 联调
 
@@ -124,9 +184,107 @@ http://localhost:8080
 - `GET /api/knowledge/:knowledgeId`
 - `GET /api/competency/profile`
 - `GET /api/recommend/path`
+- `GET /api/recommend/unified-path`
+- `GET /api/evaluation/demo`
 - `GET /api/frontier/briefing`
 - `POST /api/chat`
 - `POST /api/generate-content`
+
+## 推荐算法设计
+
+### KT-KGPath 统一评分公式
+
+系统采用自研的 KT-KGPath（Knowledge-Traced Knowledge Graph Path）统一评分器对候选知识点进行排序，核心公式：
+
+```
+Score(k) = α·Weakness + β·PrerequisiteReadiness + γ·TargetRelevance
+         + δ·ForgettingRisk + ε·CrossCourseTransfer + θ·FrontierRelevance
+         - λ·MasteredPenalty
+```
+
+**7 个评分因子：**
+
+| 因子 | 权重 | 说明 |
+|------|------|------|
+| Weakness（薄弱度） | α=0.30 | 基于掌握度分档 + 正确率 + 答题次数归一化到 [0,1] |
+| PrerequisiteReadiness（先修满足度） | β=0.20 | 查询 Neo4j 先修链，平均先修节点掌握度 |
+| TargetRelevance（目标相关度） | γ=0.20 | 基于图谱最短路径距离，距离越近越相关 |
+| ForgettingRisk（遗忘风险） | δ=0.10 | 指数遗忘模型 `mastery·exp(-days/7)`，掌握度≥60 时激活 |
+| CrossCourseTransfer（跨课程迁移） | ε=0.10 | 跨课程关系权重 × 源知识掌握度 |
+| FrontierRelevance（前沿关联度） | θ=0.05 | 调用前沿模块查询研究主题和论文数量 |
+| MasteredPenalty（已掌握惩罚） | λ=0.05 | 对 mastery≥70 的知识点施加软惩罚，避免推荐已掌握内容 |
+
+**设计原则：**
+- 薄弱度和先修满足度权重最高，反映"补短板、打基础"的核心策略
+- 遗忘风险基于艾宾浩斯遗忘曲线，识别需要复习的知识点
+- 跨课程迁移发现不同课程间的知识关联，促进迁移学习
+- 前沿关联度为创新因子，连接课堂知识与前沿研究
+- 已掌握惩罚与硬过滤（mastery≥85 且 correctRate≥0.85）互补
+
+### 评测框架
+
+`backend/internal/module/evaluation/` 包含完整的推荐算法评测体系：
+
+- **5 个基线策略**: Random、WeaknessFirst、CourseOrder、PrerequisiteTopo、KTKGPath（可通过评测框架扩展）
+- **10 项评测指标**: Hit@1/3/5、NDCG@5/10、MRR、先修违反率、难度平滑度、平均路径长度、覆盖率
+- 通过 `/api/evaluation/demo` 接口可在线对比各策略表现
+
+### 比赛评分标准对标
+
+| 评分维度（权重） | 对应实现 |
+|-----------------|---------|
+| 创意（20%） | KT-KGPath 7因子统一评分公式，跨课程迁移 + 前沿关联为创新因子 |
+| 技术（30%） | Go + Gin 模块化后端，Neo4j 知识图谱，Redis 实时学习状态，评测框架 |
+| 应用（20%） | 个性化学习路径推荐，薄弱点检测，遗忘曲线提醒 |
+| 设计（30%） | Vue 3 可视化仪表盘，AntV G6 知识图谱交互，评分因子分解展示 |
+| 效果（20%） | 多基线对比评测，Hit@K/NDCG 量化指标，前端评分分解增强可解释性 |
+
+### 方法对比
+
+KT-KGPath 与现有学习路径推荐方法的关键差异：
+
+| 方法 | 知识追踪 | 图谱约束 | 跨课程迁移 | 前沿关联 | 可解释评分 |
+|------|---------|---------|-----------|---------|-----------|
+| 传统课程顺序 | ✗ | ✗ | ✗ | ✗ | ✗ |
+| 薄弱点优先 | ✗ | ✗ | ✗ | ✗ | 部分 |
+| PKT (概率知识追踪) | ✓ | ✗ | ✗ | ✗ | ✗ |
+| KG-based 最短路径 | ✗ | ✓ | ✗ | ✗ | 部分 |
+| GraphRAG 增强推荐 | ✗ | 部分 | ✗ | ✓ | ✓ |
+| **KT-KGPath（本系统）** | **✓** | **✓** | **✓** | **✓** | **✓** |
+
+### 创新点总结
+
+1. **知识追踪融合**：将学生动态掌握状态 (答题正确率、答题次数、掌握度) 融入评分，实现"补短板、打基础"的自适应推荐
+2. **跨课程知识图谱**：构建 2,659 个知识点、21 个课程分类的统一图谱，融合 ACM CCS 2012 和 AIO Ontology 两个权威 AI 知识体系，超越单课程推荐的局限
+3. **跨课程迁移因子**：发现不同课程间的知识关联（如线性代数对深度学习的支撑），促进迁移学习
+4. **前沿关联因子**：将知识点与前沿研究主题关联，连接课堂内容与学术前沿
+5. **可解释评分分解**：7 个评分因子可视化展示，学生和教师可清晰理解每个推荐的理由
+6. **多基线评测框架**：5 种基线策略 + 10 项量化指标，客观验证推荐算法有效性
+
+### 应用场景
+
+**场景一：学生自主学习**
+学生登录后进入知识图谱主页，系统基于薄弱度和先修满足度自动推荐下一步学习知识点。评分分解面板展示每个推荐的详细理由（薄弱环节、前置基础、目标匹配等），学生点击即可进入知识点详情页开始学习。
+
+**场景二：教师教学设计**
+教师通过"我的路径"功能创建自定义学习路径，拖拽排序知识点，发布给学生。系统自动计算路径中每个知识点的掌握度状态，教师可据此调整教学计划。
+
+**场景三：前沿研究追踪**
+学生完成基础知识点学习后，系统通过前沿关联因子推荐与当前知识相关的最新研究主题和论文，引导学生从课堂学习向科研前沿延伸。
+
+### 用户角色
+
+| 功能 | 学生 | 教师 | 管理员 |
+|------|------|------|--------|
+| 知识图谱浏览 | ✓ | ✓ | ✓ |
+| 个性化推荐路径 | ✓ | - | - |
+| 评分因子分解查看 | ✓ | ✓ | - |
+| 练习测验 | ✓ | - | - |
+| AI 学习助手 | ✓ | - | - |
+| 学习仪表盘 | ✓ | ✓ | - |
+| 创建学习路径 | - | ✓ | - |
+| 班级管理 | - | ✓ | - |
+| 评测框架访问 | ✓ | ✓ | ✓ |
 
 ## 知识图谱流水线
 
@@ -135,6 +293,38 @@ http://localhost:8080
 - `pipelines/txt2neo4j/README.md`
 
 用于把教材文本抽取为结构化知识点并导入 Neo4j。
+
+### 外部知识库集成
+
+知识图谱融合了两个权威 AI 知识体系，作为课程知识点的补充骨架：
+
+| 来源 | 节点数 | 说明 |
+|------|--------|------|
+| **ACM CCS 2012** | 82 | 计算机科学分类系统 AI 子树的完整层次结构（8 大分支：NLP、知识表示、规划、搜索、控制方法、哲学基础、分布式 AI、计算机视觉） |
+| **AIO Ontology** | 225 | 人工智能本体论（ML 方法、模型、网络架构、激活函数、预处理、训练策略等 6 大子集） |
+
+导入命令：
+
+```bash
+cd pipelines/txt2neo4j
+python scripts/import_external_knowledge.py
+```
+
+## 前沿论文抓取流水线
+
+`pipelines/frontier-scraper/` 提供自动化的前沿论文抓取 + AI 摘要管线：
+
+1. 从 ArXiv API 抓取 AI 各子领域最新论文
+2. 调用 DeepSeek 为每篇论文生成 knowledge_hints（课程知识点关联）、topic_hints（前沿研究方向）、中文摘要
+3. 输出标准化 JSON，可直接供 `txt2neo4j --frontier-input` 使用
+
+```bash
+cd pipelines/frontier-scraper
+pip install -r requirements.txt
+python main.py --max-per-category 5
+```
+
+详细用法参考 `pipelines/frontier-scraper/README.md` 和 `docs/frontier-knowledge-pipeline.md`。
 
 ## 中间版本交付
 

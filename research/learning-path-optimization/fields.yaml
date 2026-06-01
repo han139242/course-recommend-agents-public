@@ -1,0 +1,52 @@
+fields:
+  name:
+    type: string
+    description: Paper or method name.
+  year:
+    type: string
+    description: Publication year.
+  venue:
+    type: string
+    description: Publication venue or preprint server.
+  url:
+    type: string
+    description: Stable source URL.
+  category:
+    type: string
+    description: Method category.
+  problem_setting:
+    type: string
+    description: Learning path recommendation problem addressed by the work.
+  core_method:
+    type: string
+    description: Main technical idea.
+  data_sources:
+    type: string
+    description: Datasets or data sources used.
+  evaluation_metrics:
+    type: string
+    description: Metrics used in experiments.
+  baselines:
+    type: string
+    description: Baseline methods compared in the work.
+  strengths:
+    type: string
+    description: Technical strengths relevant to learning path optimization.
+  limitations:
+    type: string
+    description: Weaknesses, assumptions, or missing evidence.
+  fit_for_current_project:
+    type: string
+    description: How well the method can be transferred to this course recommendation agent project.
+  implementation_complexity:
+    type: string
+    description: Estimated implementation complexity for this project.
+  paper_patent_value:
+    type: string
+    description: Value for a CCF-B paper and patent claims.
+  recommended_action:
+    type: string
+    description: Concrete next action for this project.
+  uncertain:
+    type: array
+    description: Field names with uncertain values.

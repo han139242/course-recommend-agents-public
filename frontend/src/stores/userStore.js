@@ -229,6 +229,14 @@ export const useUserStore = defineStore('user', () => {
     writeStorage(STORAGE_KEYS.customPaths, customPaths.value)
   }
 
+  function renamePath(pathId, name) {
+    customPaths.value = customPaths.value.map((path) => {
+      if (path.id !== pathId) return path
+      return { ...path, name }
+    })
+    writeStorage(STORAGE_KEYS.customPaths, customPaths.value)
+  }
+
   function markMastered(knowledgeId) {
     masteryOverrides.value = {
       ...masteryOverrides.value,
@@ -278,6 +286,7 @@ export const useUserStore = defineStore('user', () => {
     addToPath,
     removeFromPath,
     reorderPath,
+    renamePath,
     markMastered,
     getProgressMeta,
   }

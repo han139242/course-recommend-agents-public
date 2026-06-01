@@ -84,7 +84,7 @@
     {
       "canonical_name": "提示工程",
       "entity_type": "method",
-      "description": "通过设计输入提示来稳定提升生成模型输出质量和任务表现的方法。"
+      "description": "通过系统设计、测试和迭代优化提示模板，以最少token实现最优模型输出的工程方法论。"
     },
     {
       "canonical_name": "指令对齐",
@@ -103,45 +103,205 @@
     }
   ],
   "relations": [
-    ["生成对抗网络", "生成式模型", "SUBTOPIC_OF"],
-    ["生成器", "生成对抗网络", "PART_OF"],
-    ["判别器", "生成对抗网络", "PART_OF"],
-    ["判别器", "判别式模型", "RELATED_TO"],
-    ["变分自编码器", "生成式模型", "SUBTOPIC_OF"],
-    ["潜变量模型", "变分自编码器", "PREREQUISITE_OF"],
-    ["重参数化技巧", "变分自编码器", "PREREQUISITE_OF"],
-    ["证据下界", "变分自编码器", "PREREQUISITE_OF"],
-    ["潜变量模型", "生成式模型", "RELATED_TO"],
-    ["扩散模型", "生成式模型", "SUBTOPIC_OF"],
-    ["前向扩散过程", "扩散模型", "PART_OF"],
-    ["反向去噪过程", "扩散模型", "PART_OF"],
-    ["噪声预测", "扩散模型", "PREREQUISITE_OF"],
-    ["前向扩散过程", "反向去噪过程", "RELATED_TO"],
-    ["噪声预测", "反向去噪过程", "PREREQUISITE_OF"],
-    ["自回归生成", "生成式模型", "SUBTOPIC_OF"],
-    ["自回归生成", "因果语言模型", "RELATED_TO"],
-    ["束搜索", "自回归生成", "PREREQUISITE_OF"],
-    ["温度采样", "自回归生成", "PREREQUISITE_OF"],
-    ["top-k采样", "自回归生成", "PREREQUISITE_OF"],
-    ["top-p采样", "自回归生成", "PREREQUISITE_OF"],
-    ["束搜索", "机器翻译", "RELATED_TO"],
-    ["温度采样", "大语言模型", "RELATED_TO"],
-    ["top-k采样", "大语言模型", "RELATED_TO"],
-    ["top-p采样", "大语言模型", "RELATED_TO"],
-    ["提示工程", "大语言模型", "RELATED_TO"],
-    ["提示工程", "提示学习", "RELATED_TO"],
-    ["指令对齐", "大语言模型", "RELATED_TO"],
-    ["指令对齐", "指令微调", "RELATED_TO"],
-    ["人类反馈强化学习", "指令对齐", "PREREQUISITE_OF"],
-    ["人类反馈强化学习", "强化学习", "RELATED_TO"],
-    ["人类反馈强化学习", "大语言模型", "RELATED_TO"],
-    ["多模态生成", "生成式模型", "SUBTOPIC_OF"],
-    ["多模态生成", "大语言模型", "RELATED_TO"],
-    ["视觉 Transformer", "多模态生成", "PREREQUISITE_OF"],
-    ["Transformer", "自回归生成", "PREREQUISITE_OF"],
-    ["深度学习", "扩散模型", "PREREQUISITE_OF"],
-    ["深度学习", "生成对抗网络", "PREREQUISITE_OF"],
-    ["自编码器", "变分自编码器", "PREREQUISITE_OF"],
-    ["生成器", "多模态生成", "RELATED_TO"]
+    [
+      "生成对抗网络",
+      "生成式模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "生成器",
+      "生成对抗网络",
+      "PART_OF"
+    ],
+    [
+      "判别器",
+      "生成对抗网络",
+      "PART_OF"
+    ],
+    [
+      "判别器",
+      "判别式模型",
+      "RELATED_TO"
+    ],
+    [
+      "变分自编码器",
+      "生成式模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "潜变量模型",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "重参数化技巧",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "证据下界",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "潜变量模型",
+      "生成式模型",
+      "RELATED_TO"
+    ],
+    [
+      "扩散模型",
+      "生成式模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "前向扩散过程",
+      "扩散模型",
+      "PART_OF"
+    ],
+    [
+      "反向去噪过程",
+      "扩散模型",
+      "PART_OF"
+    ],
+    [
+      "噪声预测",
+      "扩散模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "前向扩散过程",
+      "反向去噪过程",
+      "RELATED_TO"
+    ],
+    [
+      "噪声预测",
+      "反向去噪过程",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自回归生成",
+      "生成式模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "自回归生成",
+      "因果语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "束搜索",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "温度采样",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "top-k采样",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "top-p采样",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "束搜索",
+      "机器翻译",
+      "RELATED_TO"
+    ],
+    [
+      "温度采样",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "top-k采样",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "top-p采样",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "提示工程",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "提示工程",
+      "提示学习",
+      "RELATED_TO"
+    ],
+    [
+      "指令对齐",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "指令对齐",
+      "指令微调",
+      "RELATED_TO"
+    ],
+    [
+      "人类反馈强化学习",
+      "指令对齐",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "人类反馈强化学习",
+      "强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "人类反馈强化学习",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "多模态生成",
+      "生成式模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "多模态生成",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "视觉 Transformer",
+      "多模态生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "深度学习",
+      "扩散模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "深度学习",
+      "生成对抗网络",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自编码器",
+      "变分自编码器",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "生成器",
+      "多模态生成",
+      "RELATED_TO"
+    ]
   ]
 }

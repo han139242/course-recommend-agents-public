@@ -365,7 +365,7 @@
     {
       "canonical_name": "模型预测控制",
       "entity_type": "method",
-      "description": "基于短期预测滚动优化动作序列的控制方法。"
+      "description": "在滚动时域内利用动态模型优化未来动作序列的控制方法。"
     },
     {
       "canonical_name": "多智能体强化学习",
@@ -405,12 +405,12 @@
     {
       "canonical_name": "逆向强化学习",
       "entity_type": "method",
-      "description": "从专家行为中反推出潜在奖励函数的学习方法。"
+      "description": "从专家示教轨迹或行为数据中反推隐含奖励函数或偏好结构，再据此训练策略的强化学习方法。"
     },
     {
       "canonical_name": "离线强化学习",
       "entity_type": "method",
-      "description": "仅使用静态历史数据训练策略而不在线交互的学习方法。"
+      "description": "仅使用预先收集的固定数据集进行策略学习而不与环境在线交互，并通过保守估计或行为正则化控制分布外动作风险的强化学习方法。"
     },
     {
       "canonical_name": "分层强化学习",
@@ -430,7 +430,7 @@
     {
       "canonical_name": "模仿学习",
       "entity_type": "method",
-      "description": "通过学习专家演示行为快速获得策略的强化学习相关方法。"
+      "description": "从专家示教轨迹中学习策略函数的行为克隆方法。"
     },
     {
       "canonical_name": "机器人学",

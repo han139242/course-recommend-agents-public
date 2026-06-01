@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lucide/vue": "^1.17.0",
     "d3-dispatch": "^3.0.1",
     "d3-drag": "^3.0.0",
     "d3-force": "^3.0.0",

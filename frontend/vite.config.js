@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 const envDir = '..'
 const env = loadEnv('', envDir, '')
 const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8080'
+const devServerPort = 5173
 
 export default defineConfig({
   envDir,
@@ -35,6 +36,9 @@ export default defineConfig({
     },
   },
   server: {
+    host: '127.0.0.1',
+    port: devServerPort,
+    strictPort: true,
     proxy: {
       '/api': {
         target: apiProxyTarget,

@@ -350,7 +350,7 @@
     {
       "canonical_name": "指令微调",
       "entity_type": "method",
-      "description": "利用指令数据对预训练语言模型进行任务泛化能力增强的微调方法。"
+      "description": "使用（指令,回答）格式数据对预训练模型进行监督微调以提升模型对人类指令理解执行能力。"
     },
     {
       "canonical_name": "零样本提示",

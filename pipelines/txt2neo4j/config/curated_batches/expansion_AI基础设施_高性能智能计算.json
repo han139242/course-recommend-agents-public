@@ -1,0 +1,318 @@
+{
+  "source": "expansion_AI基础设施_高性能智能计算",
+  "course_title": "AI基础设施与高性能智能计算",
+  "nodes": [
+    {
+      "canonical_name": "GPU架构演进",
+      "entity_type": "concept",
+      "description": "从Kepler到Hopper/H100架构的GPU计算能力演进，涵盖Tensor Core代数、稀疏计算支持和Transformer Engine等大模型关键硬件特性。"
+    },
+    {
+      "canonical_name": "TPU架构",
+      "entity_type": "concept",
+      "description": "Google设计的大规模矩阵乘法专用处理器，通过脉动阵列和低精度计算（bfloat16/int8）实现高能效比的训练和推理加速。"
+    },
+    {
+      "canonical_name": "NPU",
+      "entity_type": "concept",
+      "description": "面向神经网络推理优化的专用处理单元，通过片上存储层次和高效卷积/矩阵运算引擎实现边缘场景下的低功耗AI计算。"
+    },
+    {
+      "canonical_name": "NVLink",
+      "entity_type": "concept",
+      "description": "NVIDIA GPU之间的高带宽片间互联技术，支持多GPU共享显存地址空间和高速AllReduce集合通信，是万卡集群的关键互联组件。"
+    },
+    {
+      "canonical_name": "InfiniBand",
+      "entity_type": "concept",
+      "description": "高性能计算和AI训练集群中使用的超低延迟、高带宽网络互联技术，支持RDMA和自适应路由，适用于大规模分布式训练的通信需求。"
+    },
+    {
+      "canonical_name": "RoCE",
+      "entity_type": "concept",
+      "description": "基于融合以太网实现RDMA的网络协议，在成本低于InfiniBand的同时提供接近的远程直接内存访问性能，广泛用于中大规模GPU集群互联。"
+    },
+    {
+      "canonical_name": "DeepSpeed",
+      "entity_type": "tool",
+      "description": "微软开源的深度学习优化框架，通过ZeRO显存优化、3D并行和混合精度训练等技术使千亿参数模型在有限GPU上的训练成为可能。"
+    },
+    {
+      "canonical_name": "Megatron-LM",
+      "entity_type": "framework",
+      "description": "NVIDIA开发的大规模Transformer训练框架，实现高效的张量并行和流水线并行策略，支持GPT和BERT等模型的万卡级别分布式训练。"
+    },
+    {
+      "canonical_name": "FSDP",
+      "entity_type": "method",
+      "description": "PyTorch原生提供的全分片数据并行策略，将模型参数、梯度和优化器状态分片到各GPU上，在反向传播时通过AllGather按需恢复完整参数。"
+    },
+    {
+      "canonical_name": "NCCL",
+      "entity_type": "concept",
+      "description": "NVIDIA集体通信库，提供针对GPU拓扑优化的AllReduce、AllGather、ReduceScatter等集合通信原语，是分布式训练通信的底层基础设施。"
+    },
+    {
+      "canonical_name": "分布式键值存储",
+      "entity_type": "concept",
+      "description": "在大模型训练中用于存储和管理嵌入表、模型参数分片和优化器状态的分布式存储系统，需支持高吞吐低延迟的稀疏参数访问。"
+    },
+    {
+      "canonical_name": "TensorRT",
+      "entity_type": "tool",
+      "description": "NVIDIA 的高性能推理优化引擎，通过层融合、精度校准、内核自动调优和动态形状支持，将训练后的模型编译为高度优化的推理执行计划。"
+    },
+    {
+      "canonical_name": "ONNX Runtime",
+      "entity_type": "tool",
+      "description": "跨平台的高性能模型推理引擎，支持多种框架导出的ONNX格式模型，提供图优化、量化推理和执行提供者扩展能力。"
+    },
+    {
+      "canonical_name": "vLLM",
+      "entity_type": "framework",
+      "description": "开源的高吞吐 LLM 推理引擎，基于 PagedAttention 的显存管理实现高效 KV 缓存利用，并通过连续批处理提升 GPU 利用率。"
+    },
+    {
+      "canonical_name": "Text Generation Inference",
+      "entity_type": "framework",
+      "description": "HuggingFace推出的LLM推理服务框架，支持张量并行、动态批处理、水印和量化推理。"
+    },
+    {
+      "canonical_name": "模型量化校准",
+      "entity_type": "method",
+      "description": "通过代表性数据校准量化参数（缩放因子和零点），使低精度推理的精度损失最小化的关键步骤，涵盖PTQ和QAT两种范式。"
+    },
+    {
+      "canonical_name": "KV缓存压缩",
+      "entity_type": "method",
+      "description": "通过KV缓存共享、选择性丢弃和低精度存储等手段，减少长上下文推理的KV缓存显存占用和内存带宽压力的优化方法。"
+    },
+    {
+      "canonical_name": "调度亲和性",
+      "entity_type": "method",
+      "description": "利用GPU拓扑感知的调度策略，将同一训练任务的GPU分配到NVLink带宽最高的物理节点上，减少跨节点通信延迟的资源管理方法。"
+    },
+    {
+      "canonical_name": "梯度压缩",
+      "entity_type": "method",
+      "description": "通过稀疏化、量化和低秩近似等手段压缩通信梯度体积，在大规模分布式训练中降低通信瓶颈对扩展效率的制约。"
+    },
+    {
+      "canonical_name": "万卡集群",
+      "entity_type": "concept",
+      "description": "由一万张以上GPU通过高速互联网络连接而成的超级计算集群，支撑万亿参数大模型的分布式训练，面临故障容错、通信效率和能耗的巨大工程挑战。"
+    },
+    {
+      "canonical_name": "训练弹性恢复",
+      "entity_type": "method",
+      "description": "训练任务在部分节点故障时自动缩减可用GPU数继续训练，故障节点恢复后动态扩容回原始规模的能力，减少大规模训练的中断损耗。"
+    },
+    {
+      "canonical_name": "异步流水线并行",
+      "entity_type": "method",
+      "description": "打破传统同步流水线并行的梯度同步壁垒，允许各微批次在不同阶段异步推进，减少流水线气泡提升训练吞吐量的并行策略。"
+    },
+    {
+      "canonical_name": "激活检查点策略",
+      "entity_type": "method",
+      "description": "选择性地保存特定Transformer层的激活而非全部，在显存和重计算开销之间进行精细权衡的工程策略。"
+    },
+    {
+      "canonical_name": "模型编译缓存",
+      "entity_type": "method",
+      "description": "将编译优化的计算图序列化和缓存，相同模型重复推理时跳过编译阶段直接加载执行计划以加快冷启动的优化方法。"
+    }
+  ],
+  "relations": [
+    [
+      "GPU架构演进",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TPU架构",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NPU",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NVLink",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "InfiniBand",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "RoCE",
+      "AI硬件体系",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "DeepSpeed",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Megatron-LM",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "FSDP",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NCCL",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "分布式键值存储",
+      "AI基础设施",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "TensorRT",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "ONNX Runtime",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "vLLM",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Text Generation Inference",
+      "推理服务系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型量化校准",
+      "低精度推理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "KV缓存压缩",
+      "KV缓存",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "调度亲和性",
+      "AI集群调度",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "梯度压缩",
+      "并行训练系统",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "万卡集群",
+      "数据中心AI基础设施",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "训练弹性恢复",
+      "分布式容错训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "异步流水线并行",
+      "流水线并行",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "激活检查点策略",
+      "检查点重计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型编译缓存",
+      "图编译优化",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "NVLink",
+      "万卡集群",
+      "PART_OF"
+    ],
+    [
+      "InfiniBand",
+      "万卡集群",
+      "PART_OF"
+    ],
+    [
+      "RoCE",
+      "万卡集群",
+      "PART_OF"
+    ],
+    [
+      "NCCL",
+      "万卡集群",
+      "PART_OF"
+    ],
+    [
+      "DeepSpeed",
+      "ZeRO优化",
+      "USES"
+    ],
+    [
+      "Megatron-LM",
+      "张量并行",
+      "USES"
+    ],
+    [
+      "FSDP",
+      "ZeRO优化",
+      "RELATED_TO"
+    ],
+    [
+      "KV缓存",
+      "KV缓存压缩",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "PagedAttention",
+      "vLLM",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "TensorRT",
+      "模型编译缓存",
+      "RELATED_TO"
+    ],
+    [
+      "ONNX Runtime",
+      "模型编译缓存",
+      "RELATED_TO"
+    ],
+    [
+      "vLLM",
+      "Text Generation Inference",
+      "RELATED_TO"
+    ],
+    [
+      "梯度压缩",
+      "分布式容错训练",
+      "RELATED_TO"
+    ],
+    [
+      "调度亲和性",
+      "万卡集群",
+      "APPLIES_TO"
+    ]
+  ]
+}

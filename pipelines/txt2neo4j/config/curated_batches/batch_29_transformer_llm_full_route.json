@@ -129,7 +129,7 @@
     {
       "canonical_name": "LoRA",
       "entity_type": "method",
-      "description": "通过在权重更新中引入低秩分解适配器实现参数高效微调的方法。"
+      "description": "通过将权重更新矩阵分解为低秩矩阵乘积仅训练少量参数实现大模型高效微调的方法。"
     },
     {
       "canonical_name": "提示调优",
@@ -154,7 +154,7 @@
     {
       "canonical_name": "KV缓存",
       "entity_type": "concept",
-      "description": "在自回归解码时复用历史键值张量以减少重复计算的推理缓存机制。"
+      "description": "Transformer自回归生成时缓存历史token的Key和Value张量，避免每步重新计算所有历史注意力，将推理复杂度从O(n^2)降至O(n)的机制。"
     },
     {
       "canonical_name": "上下文扩展",
@@ -179,77 +179,329 @@
     {
       "canonical_name": "推测解码",
       "entity_type": "method",
-      "description": "利用草稿模型与验证模型协同生成以提升大模型解码吞吐的方法。"
+      "description": "使用轻量草稿模型快速生成候选token序列，再由目标大模型并行验证并接受匹配前缀，在不损失输出质量的前提下加速自回归解码的算法。"
     }
   ],
   "relations": [
-    ["分词器", "分词", "RELATED_TO"],
-    ["分词器", "词元", "PREREQUISITE_OF"],
-    ["词元", "词嵌入", "PREREQUISITE_OF"],
-    ["词元", "上下文窗口", "PREREQUISITE_OF"],
-    ["分词器", "大语言模型", "PREREQUISITE_OF"],
-    ["子词分词", "分词器", "SUBTOPIC_OF"],
-    ["BPE分词", "子词分词", "SUBTOPIC_OF"],
-    ["SentencePiece", "子词分词", "SUBTOPIC_OF"],
-    ["子词分词", "子词表示", "RELATED_TO"],
-
-    ["位置编码", "Transformer", "PREREQUISITE_OF"],
-    ["绝对位置编码", "位置编码", "SUBTOPIC_OF"],
-    ["相对位置编码", "位置编码", "SUBTOPIC_OF"],
-    ["旋转位置编码", "位置编码", "SUBTOPIC_OF"],
-    ["旋转位置编码", "长上下文建模", "RELATED_TO"],
-    ["词嵌入", "Transformer", "PREREQUISITE_OF"],
-    ["位置编码", "词嵌入", "RELATED_TO"],
-
-    ["查询向量", "缩放点积注意力", "PART_OF"],
-    ["键向量", "缩放点积注意力", "PART_OF"],
-    ["值向量", "缩放点积注意力", "PART_OF"],
-    ["缩放点积注意力", "自注意力", "PREREQUISITE_OF"],
-    ["缩放点积注意力", "多头注意力", "PREREQUISITE_OF"],
-    ["自注意力", "Transformer", "PREREQUISITE_OF"],
-    ["自注意力", "注意力机制", "RELATED_TO"],
-    ["多头注意力", "Transformer", "PART_OF"],
-    ["多头注意力", "自注意力", "RELATED_TO"],
-    ["多头注意力", "视觉 Transformer", "PREREQUISITE_OF"],
-    ["注意力掩码", "Transformer", "PART_OF"],
-    ["因果掩码", "注意力掩码", "SUBTOPIC_OF"],
-    ["因果掩码", "因果语言模型", "PREREQUISITE_OF"],
-    ["前馈网络", "Transformer", "PART_OF"],
-    ["残差连接", "Transformer", "PART_OF"],
-    ["层归一化", "Transformer", "PART_OF"],
-    ["Transformer编码器", "Transformer", "PART_OF"],
-    ["Transformer解码器", "Transformer", "PART_OF"],
-    ["交叉注意力", "Transformer解码器", "PART_OF"],
-    ["Transformer编码器", "BERT", "PREREQUISITE_OF"],
-    ["Transformer解码器", "因果语言模型", "PREREQUISITE_OF"],
-    ["交叉注意力", "机器翻译", "PREREQUISITE_OF"],
-    ["交叉注意力", "问答系统", "RELATED_TO"],
-
-    ["预训练", "大语言模型", "PREREQUISITE_OF"],
-    ["下一个词预测", "预训练", "SUBTOPIC_OF"],
-    ["下一个词预测", "因果语言模型", "PREREQUISITE_OF"],
-    ["预训练", "监督微调", "PREREQUISITE_OF"],
-    ["监督微调", "指令微调", "RELATED_TO"],
-    ["参数高效微调", "监督微调", "SUBTOPIC_OF"],
-    ["LoRA", "参数高效微调", "SUBTOPIC_OF"],
-    ["提示调优", "参数高效微调", "SUBTOPIC_OF"],
-    ["参数高效微调", "大语言模型", "APPLIES_TO"],
-    ["奖励模型", "人类反馈强化学习", "PREREQUISITE_OF"],
-    ["奖励模型", "指令对齐", "PREREQUISITE_OF"],
-    ["监督微调", "直接偏好优化", "PREREQUISITE_OF"],
-    ["直接偏好优化", "指令对齐", "RELATED_TO"],
-    ["直接偏好优化", "人类反馈强化学习", "RELATED_TO"],
-    ["上下文学习", "提示学习", "RELATED_TO"],
-    ["上下文学习", "大语言模型", "RELATED_TO"],
-
-    ["KV缓存", "自回归生成", "PREREQUISITE_OF"],
-    ["KV缓存", "推理加速", "PREREQUISITE_OF"],
-    ["推理加速", "自回归生成", "RELATED_TO"],
-    ["推测解码", "推理加速", "SUBTOPIC_OF"],
-    ["上下文扩展", "长上下文建模", "SUBTOPIC_OF"],
-    ["稀疏注意力", "长上下文建模", "RELATED_TO"],
-    ["稀疏注意力", "上下文扩展", "PREREQUISITE_OF"],
-    ["滑动窗口注意力", "稀疏注意力", "SUBTOPIC_OF"],
-    ["旋转位置编码", "上下文扩展", "RELATED_TO"]
+    [
+      "分词器",
+      "分词",
+      "RELATED_TO"
+    ],
+    [
+      "分词器",
+      "词元",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "词元",
+      "词嵌入",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "词元",
+      "上下文窗口",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "分词器",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "子词分词",
+      "分词器",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "BPE分词",
+      "子词分词",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "SentencePiece",
+      "子词分词",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "子词分词",
+      "子词表示",
+      "RELATED_TO"
+    ],
+    [
+      "位置编码",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "绝对位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "相对位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "旋转位置编码",
+      "位置编码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "旋转位置编码",
+      "长上下文建模",
+      "RELATED_TO"
+    ],
+    [
+      "词嵌入",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "位置编码",
+      "词嵌入",
+      "RELATED_TO"
+    ],
+    [
+      "查询向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "键向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "值向量",
+      "缩放点积注意力",
+      "PART_OF"
+    ],
+    [
+      "缩放点积注意力",
+      "自注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "缩放点积注意力",
+      "多头注意力",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自注意力",
+      "Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "自注意力",
+      "注意力机制",
+      "RELATED_TO"
+    ],
+    [
+      "多头注意力",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "多头注意力",
+      "自注意力",
+      "RELATED_TO"
+    ],
+    [
+      "多头注意力",
+      "视觉 Transformer",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "注意力掩码",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "因果掩码",
+      "注意力掩码",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "因果掩码",
+      "因果语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "前馈网络",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "残差连接",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "层归一化",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "Transformer编码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "Transformer解码器",
+      "Transformer",
+      "PART_OF"
+    ],
+    [
+      "交叉注意力",
+      "Transformer解码器",
+      "PART_OF"
+    ],
+    [
+      "Transformer编码器",
+      "BERT",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "Transformer解码器",
+      "因果语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "交叉注意力",
+      "机器翻译",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "交叉注意力",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "预训练",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "下一个词预测",
+      "预训练",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "下一个词预测",
+      "因果语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "预训练",
+      "监督微调",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "监督微调",
+      "指令微调",
+      "RELATED_TO"
+    ],
+    [
+      "参数高效微调",
+      "监督微调",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "LoRA",
+      "参数高效微调",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "提示调优",
+      "参数高效微调",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "参数高效微调",
+      "大语言模型",
+      "APPLIES_TO"
+    ],
+    [
+      "奖励模型",
+      "人类反馈强化学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "奖励模型",
+      "指令对齐",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "监督微调",
+      "直接偏好优化",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "直接偏好优化",
+      "指令对齐",
+      "RELATED_TO"
+    ],
+    [
+      "直接偏好优化",
+      "人类反馈强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "上下文学习",
+      "提示学习",
+      "RELATED_TO"
+    ],
+    [
+      "上下文学习",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "KV缓存",
+      "自回归生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "KV缓存",
+      "推理加速",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "推理加速",
+      "自回归生成",
+      "RELATED_TO"
+    ],
+    [
+      "推测解码",
+      "推理加速",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文扩展",
+      "长上下文建模",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "稀疏注意力",
+      "长上下文建模",
+      "RELATED_TO"
+    ],
+    [
+      "稀疏注意力",
+      "上下文扩展",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "滑动窗口注意力",
+      "稀疏注意力",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "旋转位置编码",
+      "上下文扩展",
+      "RELATED_TO"
+    ]
   ]
 }

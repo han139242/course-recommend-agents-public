@@ -1,0 +1,2824 @@
+﻿import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import App from './App.vue'
+import router from './router'
+import './style.css'
+import { useUserStore } from './stores/userStore'
+const app = createApp(App)
+const pinia = createPinia()
+app.use(pinia)
+app.use(router)
+const userStore = useUserStore()
+userStore.bootstrap().finally(() => {
+  app.mount('#app')
+})
+<script setup>
+import { RouterView } from 'vue-router'
+</script>
+<template>
+  <RouterView />
+</template>
+import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from './stores/userStore'
+const GraphHome = () => import('./views/GraphHome.vue')
+const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
+const DashboardView = () => import('./views/DashboardView.vue')
+const LoginView = () => import('./views/LoginView.vue')
+const RegisterView = () => import('./views/RegisterView.vue')
+const routes = [
+  {
+    path: '/',
+    name: 'graph-home',
+    component: GraphHome,
+    meta: {
+      title: '知识图谱',
+      fullscreen: true,
+    },
+  },
+  {
+    path: '/knowledge/:knowledgeId',
+    name: 'knowledge-detail',
+    component: KnowledgeDetail,
+    meta: {
+      title: '知识详情',
+    },
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: DashboardView,
+    meta: {
+      title: '学习仪表盘',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
+    meta: {
+      title: '登录',
+      guestOnly: true,
+    },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView,
+    meta: {
+      title: '注册',
+      guestOnly: true,
+    },
+  },
+]
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+})
+router.beforeEach(async (to) => {
+  const userStore = useUserStore()
+  await userStore.bootstrap()
+  if (to.meta?.title) {
+    document.title = `${to.meta.title} | 突破课程边界 · 知识点推荐智能体`
+  }
+  if (to.meta?.requiresAuth && !userStore.isAuthenticated) {
+    return {
+      name: 'login',
+      query: { redirect: to.fullPath },
+    }
+  }
+  if (to.meta?.guestOnly && userStore.isAuthenticated) {
+    return { name: 'graph-home' }
+  }
+  return true
+})
+export default router
+<script setup>
+import { reactive, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '../stores/userStore'
+const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
+const form = reactive({
+  email: '',
+  password: '',
+})
+const loading = ref(false)
+const error =
+  ref('')
+function clearForm() {
+  form.email = ''
+  form.password = ''
+}
+async function submit() {
+  error.value = ''
+  loading.value = true
+  try {
+    await userStore.login(form.email, form.password)
+    const redirect = route.query.redirect ? decodeURIComponent(route.query.redirect) : '/'
+    router.push(redirect)
+  } catch (loginError) {
+    error.value = loginError?.message || '登录失败，请检查用户名和密码。'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+<template>
+  <section class="auth-view page-frame">
+    <div class="auth-card page-card">
+      <p class="eyebrow">欢迎回来</p>
+      <h1>登录学习空间</h1>
+      <p>登录后可以同步个人学习进度、收藏和推荐路径。</p>
+      <p>请输入已开通的学习账号和登录密码。</p>
+      <button type="button" class="secondary-btn" @click="clearForm">清空当前输入</button>
+      <label>
+        邮箱
+        <input v-model="form.email" type="email" placeholder="请输入登录邮箱" />
+      </label>
+      <label>
+        密码
+        <input v-model="form.password" type="password" placeholder="请输入登录密码" />
+      </label>
+      <p v-if="error" class="form-error">{{ error }}</p>
+      <button type="button" class="primary-btn" :disabled="loading" @click="submit">
+        {{ loading ? '登录中...' : '登录' }}
+      </button>
+      <RouterLink class="link-button" to="/register">没有账号？去注册</RouterLink>
+      <RouterLink class="secondary-btn" to="/">返回图谱</RouterLink>
+    </div>
+  </section>
+</template>
+<script setup>
+import { reactive, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { useUserStore } from '../stores/userStore'
+const router = useRouter()
+const userStore = useUserStore()
+const form = reactive({
+  email: '',
+  password: '',
+})
+const loading = ref(false)
+const error = ref('')
+async function submit() {
+  error.value = ''
+  loading.value = true
+  try {
+    await userStore.register(form.email, form.password, 'student')
+    router.push('/dashboard')
+  } catch (registerError) {
+    error.value = registerError?.message || '注册暂时不可用，请联系管理员创建账号。'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+<template>
+  <section class="auth-view page-frame">
+    <div class="auth-card page-card">
+      <p class="eyebrow">创建账号</p>
+      <h1>注册学生身份</h1>
+      <p>如果后端暂未开放自助注册，这里会给出清晰提示。</p>
+      <label>
+        邮箱
+        <input v-model="form.email" type="email" placeholder="new_student@school.edu" />
+      </label>
+      <label>
+        密码
+        <input v-model="form.password" type="password" placeholder="至少 6 位密码" />
+        <span class="muted-text">密码至少 6 位，建议包含数字和字母</span>
+      </label>
+      <p v-if="error" class="form-error">{{ error }}</p>
+      <button type="button" class="primary-btn" :disabled="loading" @click="submit">
+        {{ loading ? '提交中...' : '注册' }}
+      </button>
+      <RouterLink class="link-button" to="/login">已有账号？去登录</RouterLink>
+      <RouterLink class="secondary-btn" to="/">返回图谱</RouterLink>
+    </div>
+  </section>
+</template>
+<script setup>
+import { computed, ref, watch } from 'vue'
+import { ALL_COURSE_TITLE } from '../../utils/courseMeta'
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
+  suggestions: {
+    type: Array,
+    default: () => [],
+  },
+  courses: {
+    type: Array,
+    default: () => [ALL_COURSE_TITLE],
+  },
+  courseFilter: {
+    type: String,
+    default: ALL_COURSE_TITLE,
+  },
+})
+const emit = defineEmits(['update:modelValue', 'select', 'update:courseFilter'])
+const inputRef = ref(null)
+const focused = ref(false)
+let blurTimer = null
+const showSuggestions = computed(() => focused.value && props.modelValue && props.suggestions.length)
+function focusInput() {
+  inputRef.value?.focus()
+}
+function handleKeydown(event) {
+  if (event.key === 'Enter' && props.suggestions[0]) {
+    emit('select', props.suggestions[0])
+    focused.value = false
+  }
+}
+function handleBlur() {
+  blurTimer = window.setTimeout(() => {
+    focused.value = false
+  }, 120)
+}
+function handleSuggestionMouseDown(item) {
+  if (blurTimer) {
+    window.clearTimeout(blurTimer)
+  }
+  emit('select', item)
+  focused.value = false
+}
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (!value) focused.value = false
+  },
+)
+defineExpose({ focusInput })
+</script>
+<template>
+  <div class="search-bar-wrap">
+    <div class="search-bar">
+      <span class="search-bar__icon">搜</span>
+      <input
+        ref="inputRef"
+        :value="modelValue"
+        type="text"
+        placeholder="搜索知识点、课程、主题... (Ctrl+K)"
+        @focus="focused = true"
+        @blur="handleBlur"
+        @input="emit('update:modelValue', $event.target.value)"
+        @keydown="handleKeydown"
+      />
+      <div class="search-bar__select-wrap">
+        <select class="search-bar__select" :value="courseFilter" @change="emit('update:courseFilter', $event.target.value)">
+          <option v-for="course in courses" :key="course" :value="course">{{ course }}</option>
+        </select>
+      </div>
+    </div>
+    <div v-if="showSuggestions" class="search-suggestions">
+      <button
+        v-for="item in suggestions"
+        :key="item.id"
+        type="button"
+        class="search-suggestion"
+        @mousedown.prevent="handleSuggestionMouseDown(item)"
+      >
+        <strong>{{ item.name }}</strong>
+        <span>{{ item.chapterTitle }}</span>
+      </button>
+    </div>
+  </div>
+</template>
+<script setup>
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import SearchBar from '../components/search/SearchBar.vue'
+import LeftPanel from '../components/sidebar/LeftPanel.vue'
+import { buildGraphStateMap } from '../composables/useNodeFocus'
+import { useGraphStore } from '../stores/graphStore'
+import { useUserStore } from '../stores/userStore'
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../utils/courseMeta'
+const GraphCanvas = defineAsyncComponent(() => import('../components/graph/GraphCanvas.vue'))
+const RightPanel = defineAsyncComponent(() => import('../components/detail/RightPanel.vue'))
+const AiAssistant = defineAsyncComponent(() => import('../components/ai/AiAssistant.vue'))
+const graphStore = useGraphStore()
+const userStore = useUserStore()
+const router = useRouter()
+const searchValue = ref('')
+const leftCollapsed = ref(false)
+const rightCollapsed = ref(false)
+const aiOpen = ref(false)
+const aiAutoPrompt = ref(null)
+const searchBarRef = ref(null)
+const graphCanvasRef = ref(null)
+const recommendedPath = ref([])
+const recommendationMeta = ref({
+  path: [],
+  insights: [],
+  learnerProfile: null,
+})
+let recommendationRequestId = 0
+const sceneMeta = computed(() => graphStore.graphData?.meta || { totalNodes: 0, visibleNodes: 0, visibleEdges: 0, rootCount: 0, expandedCount: 0 })
+const nextLearningNodes = computed(() =>
+  graphStore.getNextLearningOptions(graphStore.selectedRouteKnowledgeId).map((routeKnowledgeId) => {
+    const node = graphStore.routeNodeMap.get(routeKnowledgeId)
+    return {
+      routeKnowledgeId,
+      label: node?.canonicalName || node?.name || routeKnowledgeId,
+    }
+  }),
+)
+const searchResults = computed(() => graphStore.searchNodes(searchValue.value))
+const stateMap = computed(() =>
+  buildGraphStateMap({
+    nodes: graphStore.graphData.nodes,
+    edges: graphStore.graphData.edges,
+    focusedNodeId: graphStore.focusedNodeId,
+    selectedNodeId: graphStore.selectedNodeId,
+    highlightFilter: graphStore.highlightFilter,
+    highlightPath: graphStore.highlightPath,
+    courseFilter: graphStore.activeCourseFilter,
+    progressMap: userStore.progressMap,
+    bookmarks: userStore.bookmarks,
+  }),
+)
+const selectedProgress = computed(() => userStore.getProgressMeta(graphStore.selectedRouteKnowledgeId))
+function upsertKnowledgeLookup(lookup, node) {
+  const routeKnowledgeId = String(node?.routeKnowledgeId || '').trim()
+  if (!routeKnowledgeId) return
+  const label = String(node?.canonicalName || node?.name || routeKnowledgeId).trim() || routeKnowledgeId
+  lookup[routeKnowledgeId] = {
+    label,
+    canonicalName: String(node?.canonicalName || '').trim(),
+    name: String(node?.name || '').trim(),
+  }
+}
+const aiKnowledgeLookup = computed(() => {
+  const lookup = {}
+  graphStore.rawNodes.forEach((node) => upsertKnowledgeLookup(lookup, node))
+  Object.values(graphStore.detailCache || {}).forEach((detail) => upsertKnowledgeLookup(lookup, detail))
+  return lookup
+})
+const knowledgeMentions = computed(() => Object.keys(aiKnowledgeLookup.value))
+function getCourseLabel(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
+}
+function getRecommendationTarget(node) {
+  const preferred = String(node?.canonicalName || node?.name || '').trim()
+  return preferred || getCourseLabel(node)
+}
+function applyRecommendationState(payload) {
+  recommendationMeta.value = payload || {
+    path: [],
+    insights: [],
+    learnerProfile: null,
+  }
+  recommendedPath.value = payload?.path || []
+}
+async function refreshRecommendationContext(routeKnowledgeId) {
+  const requestId = ++recommendationRequestId
+  if (routeKnowledgeId) {
+    await graphStore.ensureNodeDetail(routeKnowledgeId)
+    const detail = graphStore.detailCache[routeKnowledgeId]
+    const target = getRecommendationTarget(detail)
+    const recommendation = await graphStore.ensureRecommendedPath(target, routeKnowledgeId, 'detail')
+    if (requestId !== recommendationRequestId) return
+    applyRecommendationState(recommendation)
+    return
+  }
+  const recommendation = await graphStore.ensureRecommendedPath('', '', 'assistant')
+  if (requestId !== recommendationRequestId) return
+  applyRecommendationState(recommendation)
+}
+async function bootstrapPage() {
+  await Promise.all([
+    graphStore.initGraph().catch((err) => console.warn('[Bootstrap] graph init failed:', err?.message)),
+    userStore.loadProgress().catch(() => null),
+    userStore.loadDashboard().catch(() => null),
+    userStore.loadCompetency().catch(() => null),
+  ])
+}
+function getRevealOptions() {
+  return {
+    anchorPosition: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    occupiedNodes: graphCanvasRef.value?.getNodeSnapshots?.() || [],
+  }
+}
+function queueExpandedClusterFocus(nodeId, childIds = [], options = {}) {
+  graphCanvasRef.value?.queueViewportFocus?.(nodeId, {
+    zoomLevel: options.zoomLevel ?? 1.06,
+    duration: options.duration ?? 220,
+    lockDuration: options.lockDuration ?? 880,
+    relatedNodeIds: childIds,
+    mode: childIds.length ? 'keep-visible' : 'center',
+  })
+}
+async function revealAndFocus(routeKnowledgeId, options = {}) {
+  const node = await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
+  if (node?.id) {
+    await graphCanvasRef.value?.focusElement?.(node.id, options.duration ?? 200)
+    if (options.flash) {
+      await graphCanvasRef.value?.flashNode?.(node.id)
+    }
+  }
+  return node
+}
+function resolveAssistantTarget(target) {
+  const normalized = String(target || '').trim()
+  if (!normalized) return null
+  const direct = graphStore.routeNodeMap.get(normalized)
+  if (direct?.routeKnowledgeId) return direct
+  const candidate = graphStore.searchNodes(normalized)[0]
+  if (candidate?.routeKnowledgeId) {
+    return graphStore.routeNodeMap.get(candidate.routeKnowledgeId) || candidate
+  }
+  return null
+}
+async function expandKnowledgeFromAssistant(target) {
+  const resolved = resolveAssistantTarget(target)
+  if (!resolved?.routeKnowledgeId) return
+  const node = await revealAndFocus(resolved.routeKnowledgeId, { flash: true, duration: 220 })
+  if (!node?.id) return
+  if (!graphStore.isNodeExpanded(node.id)) {
+    const anchorSnapshot = graphCanvasRef.value?.getNodeSnapshot?.(node.id)
+    const occupiedNodes = graphCanvasRef.value?.getNodeSnapshots?.() || []
+    const newChildIds = await graphStore.expandNode(node.id, {
+      anchorPosition: anchorSnapshot,
+      viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+      occupiedNodes,
+    })
+    queueExpandedClusterFocus(node.id, newChildIds, {
+      zoomLevel: 1.08,
+      duration: 220,
+      lockDuration: 820,
+    })
+  }
+  await graphStore.selectNode(node.id)
+  rightCollapsed.value = false
+}
+async function handleAssistantActions(actions = []) {
+  for (const action of actions) {
+    const type = String(action?.type || '').trim()
+    if (!type) continue
+    if (type === 'focus_knowledge') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        await revealAndFocus(resolved.routeKnowledgeId, {
+          flash: action.flash !== false,
+          duration: 220,
+        })
+        rightCollapsed.value = false
+      }
+      continue
+    }
+    if (type === 'expand_knowledge') {
+      await expandKnowledgeFromAssistant(action.target)
+      continue
+    }
+    if (type === 'highlight_prerequisite_chain') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        await revealAndFocus(resolved.routeKnowledgeId, { flash: true, duration: 200 })
+        await graphStore.ensureNodeDetail(resolved.routeKnowledgeId)
+        const path = graphStore.getPrerequisiteRouteChain(resolved.routeKnowledgeId)
+        graphStore.highlightPathNodes(path)
+        rightCollapsed.value = false
+      }
+      continue
+    }
+    if (type === 'open_knowledge_detail') {
+      const resolved = resolveAssistantTarget(action.target)
+      if (resolved?.routeKnowledgeId) {
+        router.push(`/knowledge/${encodeURIComponent(resolved.routeKnowledgeId)}`)
+      }
+      continue
+    }
+    if (type === 'filter_course') {
+      const courseTitle = String(action.courseTitle || action.target || '').trim()
+      if (!courseTitle) continue
+      graphStore.setCourseFilter(courseTitle)
+      const node = await graphStore.focusCourseRepresentative(courseTitle, getRevealOptions())
+      if (node?.id) {
+        await graphStore.selectNode(node.id)
+        await graphCanvasRef.value?.focusElement?.(node.id, 180)
+      }
+      continue
+    }
+    if (type === 'fit_graph_view') {
+      await graphCanvasRef.value?.fitView?.()
+      continue
+    }
+    if (type === 'reset_graph_scene') {
+      await handleSceneReset()
+    }
+  }
+}
+async function handleSearchSelect(item) {
+  searchValue.value = item.name
+  await revealAndFocus(item.routeKnowledgeId, { flash: true, duration: 220 })
+  rightCollapsed.value = false
+}
+async function handleNodeSelect(nodeId) {
+  await graphStore.selectNode(nodeId)
+  rightCollapsed.value = false
+  graphCanvasRef.value?.softFollowElement?.(nodeId, {
+    duration: 180,
+  })
+}
+async function handleNodeDoubleClick(nodeId) {
+  const wasExpanded = graphStore.isNodeExpanded(nodeId)
+  const anchorSnapshot = graphCanvasRef.value?.getNodeSnapshot?.(nodeId)
+  const occupiedNodes = graphCanvasRef.value?.getNodeSnapshots?.() || []
+  const changedNodeIds = await graphStore.toggleNodeExpansion(nodeId, {
+    anchorPosition: anchorSnapshot,
+    viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
+    occupiedNodes,
+  })
+  if (!wasExpanded) {
+    queueExpandedClusterFocus(nodeId, changedNodeIds, {
+      zoomLevel: 1.08,
+      duration: 240,
+      lockDuration: 920,
+    })
+  }
+  await graphStore.selectNode(nodeId)
+  rightCollapsed.value = false
+}
+function handleClearSelection() {
+  graphStore.clearSelection()
+}
+function extractCourseTitle(hubId) {
+  return String(hubId || '').replace(/^hub:/, '')
+}
+function handleHubClick(hubId) {
+  const courseTitle = extractCourseTitle(hubId)
+  if (!courseTitle) return
+  graphStore.setCourseFilter(courseTitle)
+}
+function handleHubDoubleClick(hubId) {
+  const courseTitle = extractCourseTitle(hubId)
+  if (!courseTitle) return
+  graphStore.setCourseFilter(courseTitle)
+}
+async function handleCourseFocus(courseTitle) {
+  graphStore.setCourseFilter(courseTitle)
+  const node = await graphStore.focusCourseRepresentative(courseTitle, getRevealOptions())
+  if (!node?.id) return
+  await graphStore.selectNode(node.id)
+  await graphCanvasRef.value?.focusElement?.(node.id, 180)
+}
+async function handleTreeNodeFocus(routeKnowledgeId) {
+  await revealAndFocus(routeKnowledgeId, { flash: true })
+  rightCollapsed.value = false
+}
+async function handleContextAction({ action, node }) {
+  const routeKnowledgeId = node?.data?.routeKnowledgeId
+  if (!routeKnowledgeId) return
+  if (action === 'toggle-bookmark') {
+    userStore.toggleBookmark(routeKnowledgeId)
+    return
+  }
+  if (action === 'note') {
+    await revealAndFocus(routeKnowledgeId)
+    rightCollapsed.value = false
+    return
+  }
+  if (action === 'detail') {
+    router.push(`/knowledge/${encodeURIComponent(routeKnowledgeId)}`)
+    return
+  }
+  if (action === 'ai') {
+    await revealAndFocus(routeKnowledgeId)
+    rightCollapsed.value = false
+    aiAutoPrompt.value = {
+      id: Date.now(),
+      text: `请帮我解释知识点“${routeKnowledgeId}”，并结合前置知识给出学习建议。`,
+    }
+    aiOpen.value = true
+    return
+  }
+  if (action === 'chain') {
+    await graphStore.ensureNodeDetail(routeKnowledgeId)
+    const path = graphStore.getPrerequisiteRouteChain(routeKnowledgeId)
+    graphStore.highlightPathNodes(path)
+    return
+  }
+  if (action === 'mastered') {
+    userStore.markMastered(routeKnowledgeId)
+    return
+  }
+  if (action === 'add-to-path') {
+    const path = userStore.customPaths[0] || userStore.createCustomPath('我的学习路径')
+    userStore.addToPath(path.id, routeKnowledgeId)
+  }
+}
+function handleToggleLeft() {
+  leftCollapsed.value = !leftCollapsed.value
+}
+function handleToggleRight() {
+  rightCollapsed.value = !rightCollapsed.value
+}
+async function handleBookmarkSelect(routeKnowledgeId) {
+  await revealAndFocus(routeKnowledgeId, { flash: true })
+  rightCollapsed.value = false
+}
+function handleCreatePath() {
+  const name = window.prompt('输入路径名称', '我的学习路径')
+  if (!name) return
+  userStore.createCustomPath(name)
+}
+async function handleShowPath(nodeIds) {
+  const routeIds = [...new Set((nodeIds || []).filter(Boolean))]
+  if (!routeIds.length) return
+  for (const routeKnowledgeId of routeIds) {
+    await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
+  }
+  graphStore.highlightPathNodes(routeIds)
+  rightCollapsed.value = false
+  await nextTick()
+  await graphCanvasRef.value?.fitView?.(240)
+}
+function handleRemovePathNode({ pathId, knowledgeId }) {
+  if (!pathId || !knowledgeId) return
+  userStore.removeFromPath(pathId, knowledgeId)
+}
+function handleReorderPath({ pathId, fromIndex, toIndex }) {
+  if (!pathId) return
+  if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return
+  const path = userStore.customPaths.find((item) => item.id === pathId)
+  if (!path) return
+  if (toIndex < 0 || toIndex >= path.nodes.length || fromIndex === toIndex) return
+  userStore.reorderPath(pathId, fromIndex, toIndex)
+}
+function handleStartPath(nodeIds) {
+  const routeIds = (nodeIds || []).filter(Boolean)
+  if (!routeIds.length) return
+  graphStore.highlightPathNodes(routeIds)
+  const targetRouteKnowledgeId =
+    routeIds.find((item) => Number(userStore.getProgressMeta(item).masteryScore || 0) < 80) || routeIds[0]
+  router.push(`/knowledge/${encodeURIComponent(targetRouteKnowledgeId)}`)
+}
+async function handleRelatedSelect(routeKnowledgeId) {
+  await revealAndFocus(routeKnowledgeId)
+  rightCollapsed.value = false
+}
+function handleOpenAi() {
+  aiAutoPrompt.value = {
+    id: Date.now(),
+    text: graphStore.selectedRouteKnowledgeId
+      ? `请围绕“${graphStore.selectedRouteKnowledgeId}”做一段易懂讲解，并指出我下一步该学什么。`
+      : '请先概览当前知识图谱，并给我一个适合现在开始的学习建议。',
+  }
+  aiOpen.value = true
+}
+async function handleSceneReset() {
+  searchValue.value = ''
+  graphStore.setCourseFilter('全部')
+  graphCanvasRef.value?.cancelViewportAutomation?.()
+  graphStore.clearSelection()
+  await graphStore.loadSeeds(14, { silent: true })
+  await nextTick()
+  await new Promise((resolve) => window.requestAnimationFrame(resolve))
+  await graphCanvasRef.value?.syncNow?.({ flushPendingFocus: false })
+  await graphCanvasRef.value?.fitView?.(0)
+}
+watch(
+  () => graphStore.selectedRouteKnowledgeId,
+  async (routeKnowledgeId) => {
+    await refreshRecommendationContext(routeKnowledgeId)
+  },
+  { immediate: true },
+)
+watch(
+  () => userStore.isAuthenticated,
+  async () => {
+    await refreshRecommendationContext(graphStore.selectedRouteKnowledgeId)
+  },
+)
+let onKeydown = null
+onMounted(() => {
+  bootstrapPage()
+  const isMobile = window.innerWidth < 768
+  leftCollapsed.value = isMobile
+  rightCollapsed.value = isMobile
+  onKeydown = (event) => {
+    if ((event.ctrlKey && event.key.toLowerCase() === 'k') || event.key === '/') {
+      event.preventDefault()
+      searchBarRef.value?.focusInput?.()
+    }
+    if (event.key === 'Escape') {
+      graphStore.clearSelection()
+      graphCanvasRef.value?.closeContextMenu?.()
+      leftCollapsed.value = isMobile
+      rightCollapsed.value = isMobile
+      aiOpen.value = false
+    }
+    if (event.key === ' ') {
+      event.preventDefault()
+      Promise.resolve(graphCanvasRef.value?.fitView?.()).catch(() => null)
+    }
+    if (event.key === '0') {
+      event.preventDefault()
+      handleSceneReset().catch(() => null)
+    }
+    if (event.key === '[') {
+      leftCollapsed.value = !leftCollapsed.value
+    }
+    if (event.key === ']') {
+      rightCollapsed.value = !rightCollapsed.value
+    }
+  }
+  window.addEventListener('keydown', onKeydown)
+})
+onBeforeUnmount(() => {
+  if (onKeydown) {
+    window.removeEventListener('keydown', onKeydown)
+  }
+})
+</script>
+<template>
+  <section class="graph-home">
+    <header class="topbar">
+      <div class="topbar__brand">
+        <div class="topbar__logo">
+          <span class="topbar__logo-icon">智</span>
+          <span class="topbar__logo-pulse"></span>
+        </div>
+        <div>
+          <strong class="topbar__title">突破课程边界<span class="topbar__title-accent"> · 知识点学习推荐系统</span></strong>
+          <p>分层展开的关联知识图谱，优先保证大图流畅、节点可读和逐层探索体验。</p>
+        </div>
+      </div>
+      <SearchBar
+        ref="searchBarRef"
+        v-model="searchValue"
+        :suggestions="searchResults"
+        :courses="graphStore.courseOptions"
+        :course-filter="graphStore.activeCourseFilter"
+        @select="handleSearchSelect"
+        @update:course-filter="graphStore.setCourseFilter"
+      />
+      <div class="topbar__actions">
+        <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">登录</RouterLink>
+        <template v-else>
+          <RouterLink class="secondary-btn" to="/dashboard">仪表盘</RouterLink>
+          <RouterLink class="profile-chip" to="/">
+            <span class="profile-chip__dot"></span>
+            <span>{{ userStore.user?.username || userStore.user?.email || '已登录' }}</span>
+          </RouterLink>
+        </template>
+      </div>
+    </header>
+    <div class="graph-layout">
+      <LeftPanel
+        :collapsed="leftCollapsed"
+        :course-groups="graphStore.courseGroups"
+        :nodes="graphStore.rawNodes"
+        :progress-map="userStore.progressMap"
+        :bookmarks="userStore.bookmarks"
+        :custom-paths="userStore.customPaths"
+        :recommended-path="recommendedPath"
+        :is-authenticated="userStore.isAuthenticated"
+        @toggle="handleToggleLeft"
+        @focus-course="handleCourseFocus"
+        @focus-node="handleTreeNodeFocus"
+        @highlight-status="graphStore.highlightByStatus"
+        @show-path="handleShowPath"
+        @bookmark-select="handleBookmarkSelect"
+        @create-path="handleCreatePath"
+        @reorder-path="handleReorderPath"
+        @remove-path-node="handleRemovePathNode"
+        @start-path="handleStartPath"
+      />
+      <main class="graph-stage">
+        <div class="graph-stage__hint">
+          <span>
+            首屏只保留少量关键知识点，双击任意知识点会按层级展开它的关联节点；再次双击已经展开的节点，会把它展开出的关联节点收回去。
+          </span>
+          <span>
+            鼠标滚轮缩放，左键选中知识点，双击展开或收回关联网络，右键打开学习菜单，<kbd>Space</kbd> 适配视图，<kbd>Ctrl+K</kbd> 搜索，<kbd>0</kbd> 重置。
+          </span>
+        </div>
+        <div class="graph-scene-bar">
+          <div class="graph-scene-bar__group">
+            <span class="graph-scene-bar__label">Scene</span>
+            <strong>{{ graphStore.activeCourseFilter === '全部' ? '全局总览' : graphStore.activeCourseFilter }}</strong>
+            <span>
+              {{ sceneMeta.totalNodes }} 个知识点 · 首屏种子 {{ sceneMeta.rootCount }} 个 · 当前可见 {{ sceneMeta.visibleNodes }} 个 · 可见关系 {{ sceneMeta.visibleEdges }} 条 · 已展开节点 {{ sceneMeta.expandedCount }} 个
+            </span>
+          </div>
+          <div class="graph-scene-bar__actions">
+            <button type="button" class="graph-scene-btn" @click="graphCanvasRef?.fitView?.()">适配视图</button>
+            <button type="button" class="graph-scene-btn" @click="handleSceneReset">重置场景</button>
+          </div>
+        </div>
+        <GraphCanvas
+          ref="graphCanvasRef"
+          :graph-data="graphStore.graphData"
+          :state-map="stateMap"
+          :highlight-path="graphStore.highlightPath"
+          :selected-node-id="graphStore.selectedNodeId"
+          :loading="graphStore.loading"
+          :error="graphStore.error"
+          @select-node="handleNodeSelect"
+          @node-double-click="handleNodeDoubleClick"
+          @hub-click="handleHubClick"
+          @hub-double-click="handleHubDoubleClick"
+          @clear-selection="handleClearSelection"
+          @context-action="handleContextAction"
+        />
+      </main>
+      <RightPanel
+        :collapsed="rightCollapsed"
+        :detail="graphStore.selectedDetail"
+        :progress="selectedProgress"
+        :next-nodes="nextLearningNodes"
+        :recommended-path="recommendedPath"
+        @toggle="handleToggleRight"
+        @select-related="handleRelatedSelect"
+        @open-ai="handleOpenAi"
+        @show-recommend-path="handleShowPath"
+      />
+    </div>
+    <AiAssistant
+      v-model="aiOpen"
+      :detail="graphStore.selectedDetail"
+      :is-authenticated="userStore.isAuthenticated"
+      :auto-prompt="aiAutoPrompt"
+      :knowledge-mentions="knowledgeMentions"
+      :knowledge-lookup="aiKnowledgeLookup"
+      :recommended-path="recommendedPath"
+      :proactive-hints="recommendationMeta.insights || []"
+      :learner-profile="recommendationMeta.learnerProfile || null"
+      @focus-knowledge="handleRelatedSelect"
+      @show-recommend-path="handleShowPath"
+      @run-actions="handleAssistantActions"
+    />
+    <div class="mobile-dock">
+      <button type="button" class="mobile-dock__btn" @click="leftCollapsed = !leftCollapsed">导航</button>
+      <button type="button" class="mobile-dock__btn" @click="rightCollapsed = !rightCollapsed">详情</button>
+      <button type="button" class="mobile-dock__btn mobile-dock__btn--primary" @click="aiOpen = !aiOpen">助手</button>
+    </div>
+  </section>
+</template>
+<script setup>
+import { computed, ref } from 'vue'
+import ContextMenu from './ContextMenu.vue'
+import GraphControls from './GraphControls.vue'
+import NodeTooltip from './NodeTooltip.vue'
+import { useGraph } from '../../composables/useGraph'
+import { useUserStore } from '../../stores/userStore'
+const props = defineProps({
+  graphData: {
+    type: Object,
+    required: true,
+  },
+  stateMap: {
+    type: Object,
+    required: true,
+  },
+  highlightPath: {
+    type: Array,
+    default: () => [],
+  },
+  selectedNodeId: {
+    type: String,
+    default: null,
+  },
+  loading: Boolean,
+  error: String,
+})
+const emit = defineEmits([
+  'select-node',
+  'node-double-click',
+  'hub-click',
+  'hub-double-click',
+  'clear-selection',
+  'context-action',
+])
+const userStore = useUserStore()
+const tooltip = ref({ visible: false, x: 0, y: 0, node: null, progress: null })
+const contextMenu = ref({ visible: false, x: 0, y: 0, node: null })
+const legendOpen = ref(false)
+function findGraphNode(nodeId) {
+  return props.graphData.nodes.find((item) => item.id === nodeId) || null
+}
+function isKnowledgeNode(node) {
+  return Boolean(node?.data?.routeKnowledgeId) && !node?.data?.isHub && !node?.data?.synthetic
+}
+function getRelativePoint(event) {
+  const bounds = containerRef.value?.getBoundingClientRect()
+  if (!bounds) return { x: 0, y: 0 }
+  const clientX = event?.client?.x ?? event?.clientX ?? bounds.left
+  const clientY = event?.client?.y ?? event?.clientY ?? bounds.top
+  return {
+    x: clientX - bounds.left + 12,
+    y: clientY - bounds.top + 12,
+  }
+}
+function handleNodeEnter(event) {
+  const node = findGraphNode(event.target.id)
+  if (!isKnowledgeNode(node)) {
+    tooltip.value.visible = false
+    return
+  }
+  const point = getRelativePoint(event)
+  tooltip.value = {
+    visible: true,
+    x: point.x,
+    y: point.y,
+    node,
+    progress: userStore.getProgressMeta(node?.data?.routeKnowledgeId),
+  }
+}
+function handleNodeLeave() {
+  tooltip.value.visible = false
+}
+function handleNodeContextMenu(event) {
+  event.preventDefault?.()
+  const node = findGraphNode(event.target.id)
+  if (!isKnowledgeNode(node)) return
+  const point = getRelativePoint(event)
+  contextMenu.value = {
+    visible: true,
+    x: point.x,
+    y: point.y,
+    node,
+  }
+}
+function closeContextMenu() {
+  contextMenu.value.visible = false
+}
+function handleContextAction(action) {
+  emit('context-action', {
+    action,
+    node: contextMenu.value.node,
+  })
+  closeContextMenu()
+}
+async function toggleFullscreen() {
+  if (!containerRef.value) return
+  if (document.fullscreenElement) {
+    await document.exitFullscreen()
+    return
+  }
+  await containerRef.value.requestFullscreen()
+}
+const {
+  containerRef,
+  graphMountRef,
+  renderError,
+  zoom,
+  fitView,
+  centerGraph,
+  centerElement,
+  queueViewportFocus,
+  zoomIn,
+  zoomOut,
+  focusElement,
+  softFollowElement,
+  cancelViewportAutomation,
+  flashNode,
+  getNodeSnapshot,
+  getNodeSnapshots,
+  getViewportCenterWorld,
+  syncNow,
+} = useGraph({
+  data: computed(() => props.graphData),
+  stateMap: computed(() => props.stateMap),
+  selectedNodeId: computed(() => props.selectedNodeId),
+  onNodeClick: (event) => {
+    closeContextMenu()
+    const node = findGraphNode(event.target.id)
+    if (!isKnowledgeNode(node)) return
+    emit('select-node', event.target.id)
+  },
+  onNodeDoubleClick: (event) => {
+    closeContextMenu()
+    const node = findGraphNode(event.target.id)
+    if (!isKnowledgeNode(node)) return
+    emit('node-double-click', event.target.id)
+  },
+  onHubClick: (event) => {
+    closeContextMenu()
+    tooltip.value.visible = false
+    emit('hub-click', event.target.id)
+  },
+  onHubDoubleClick: (event) => {
+    closeContextMenu()
+    tooltip.value.visible = false
+    emit('hub-double-click', event.target.id)
+  },
+  onCanvasClick: () => {
+    closeContextMenu()
+    tooltip.value.visible = false
+    emit('clear-selection')
+  },
+  onNodeEnter: handleNodeEnter,
+  onNodeLeave: handleNodeLeave,
+  onNodeContextMenu: handleNodeContextMenu,
+})
+defineExpose({
+  fitView,
+  centerGraph,
+  centerElement,
+  queueViewportFocus,
+  flashNode,
+  closeContextMenu,
+  focusElement,
+  softFollowElement,
+  cancelViewportAutomation,
+  getNodeSnapshot,
+  getNodeSnapshots,
+  getViewportCenterWorld,
+  syncNow,
+})
+</script>
+<template>
+  <div ref="containerRef" class="graph-canvas-shell">
+    <div v-if="loading" class="graph-canvas-status">
+      <div class="graph-canvas-status__inner">
+        <div class="status-spinner"></div>
+        <strong>知识图谱加载中</strong>
+        <span>正在同步目录与种子节点，并构建 Canvas 力导布局...</span>
+      </div>
+    </div>
+    <div v-else-if="error || renderError" class="graph-canvas-status graph-canvas-status--error">
+      <div class="graph-canvas-status__inner">
+        <strong>{{ renderError ? '渲染失败' : '加载失败' }}</strong>
+        <p>{{ renderError || error }}</p>
+        <p style="opacity:0.6;margin-top:4px">
+          {{ renderError ? '如果图谱区域一直空白，请检查浏览器 Canvas 2D 是否可用。' : '请确认后端服务和图谱数据服务已启动。' }}
+        </p>
+      </div>
+    </div>
+    <canvas ref="graphMountRef" class="graph-canvas-stage"></canvas>
+    <GraphControls
+      :zoom="zoom"
+      @fit="fitView"
+      @zoom-in="zoomIn"
+      @zoom-out="zoomOut"
+      @fullscreen="toggleFullscreen"
+    />
+    <div class="graph-overlay-stack">
+      <button
+        type="button"
+        class="graph-legend-toggle"
+        :aria-expanded="legendOpen ? 'true' : 'false'"
+        @click="legendOpen = !legendOpen"
+      >
+        <span class="graph-legend-toggle__title">图例与交互</span>
+        <span class="graph-legend-toggle__meta">{{ legendOpen ? '收起' : '展开' }}</span>
+      </button>
+      <div v-if="legendOpen" class="graph-legend">
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">状态</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--mastered"></i>已掌握</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--learning"></i>学习中</span>
+          <span class="graph-legend__item"><i class="graph-dot graph-dot--weak"></i>薄弱</span>
+        </div>
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">交互</span>
+          <span class="graph-legend__item">单击知识点：聚焦与查看详情</span>
+          <span class="graph-legend__item">双击知识点：展开 / 收回关联节点</span>
+          <span class="graph-legend__item">拖拽节点：局部重排且保持位置</span>
+        </div>
+        <div class="graph-legend__group">
+          <span class="graph-legend__title">关系</span>
+          <span class="graph-legend__item">实线箭头：前置 / 相关 / 应用</span>
+          <span class="graph-legend__item">虚线箭头：属于 / 组成 / 使用</span>
+          <span class="graph-legend__item">同对节点多关系：自动分弧</span>
+        </div>
+      </div>
+    </div>
+    <NodeTooltip
+      :visible="tooltip.visible"
+      :x="tooltip.x"
+      :y="tooltip.y"
+      :node="tooltip.node"
+      :progress="tooltip.progress"
+    />
+    <ContextMenu
+      :visible="contextMenu.visible"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :node="contextMenu.node"
+      :bookmarked="userStore.bookmarks.includes(contextMenu.node?.data?.routeKnowledgeId)"
+      @action="handleContextAction"
+      @close="closeContextMenu"
+    />
+  </div>
+</template>
+<script setup>
+import BookmarkPanel from './BookmarkPanel.vue'
+import KnowledgeTree from './KnowledgeTree.vue'
+import PathPanel from './PathPanel.vue'
+import ProgressPanel from './ProgressPanel.vue'
+defineProps({
+  collapsed: Boolean,
+  courseGroups: {
+    type: Array,
+    default: () => [],
+  },
+  progressMap: {
+    type: Object,
+    default: () => ({}),
+  },
+  nodes: {
+    type: Array,
+    default: () => [],
+  },
+  bookmarks: {
+    type: Array,
+    default: () => [],
+  },
+  customPaths: {
+    type: Array,
+    default: () => [],
+  },
+  recommendedPath: {
+    type: Array,
+    default: () => [],
+  },
+  isAuthenticated: Boolean,
+})
+const emit = defineEmits([
+  'toggle',
+  'focus-course',
+  'focus-node',
+  'highlight-status',
+  'show-path',
+  'bookmark-select',
+  'create-path',
+  'add-path-node',
+  'reorder-path',
+  'remove-path-node',
+  'start-path',
+])
+</script>
+<template>
+  <aside class="left-panel" :class="{ 'left-panel--collapsed': collapsed }">
+    <div class="panel-header">
+      <strong>学习导航</strong>
+      <button type="button" class="panel-toggle" @click="emit('toggle')">
+        {{ collapsed ? '展开' : '折叠' }}
+      </button>
+    </div>
+    <div v-if="!collapsed" class="panel-stack">
+      <KnowledgeTree
+        :course-groups="courseGroups"
+        :nodes="nodes"
+        :progress-map="progressMap"
+        @focus-course="emit('focus-course', $event)"
+        @focus-node="emit('focus-node', $event)"
+      />
+      <ProgressPanel
+        :nodes="nodes"
+        :progress-map="progressMap"
+        :bookmarks="bookmarks"
+        :is-authenticated="isAuthenticated"
+        @highlight-status="emit('highlight-status', $event)"
+      />
+      <PathPanel
+        :recommended-path="recommendedPath"
+        :custom-paths="customPaths"
+        :progress-map="progressMap"
+        @show-path="emit('show-path', $event)"
+        @create-path="emit('create-path')"
+        @reorder-path="emit('reorder-path', $event)"
+        @remove-node="emit('remove-path-node', $event)"
+        @focus-node="emit('focus-node', $event)"
+        @start-path="emit('start-path', $event)"
+      />
+      <BookmarkPanel
+        :bookmarks="bookmarks"
+        :nodes="nodes"
+        @select="emit('bookmark-select', $event)"
+      />
+    </div>
+  </aside>
+</template>
+<script setup>
+import { computed, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import BridgeView from './BridgeView.vue'
+import { useUserStore } from '../../stores/userStore'
+import { useGraphStore } from '../../stores/graphStore'
+import { DEFAULT_COURSE_TITLE, normalizeCourseTitle } from '../../utils/courseMeta'
+const props = defineProps({
+  collapsed: Boolean,
+  detail: Object,
+  progress: Object,
+  nextNodes: {
+    type: Array,
+    default: () => [],
+  },
+  recommendedPath: {
+    type: Array,
+    default: () => [],
+  },
+})
+const emit = defineEmits(['toggle', 'select-related', 'open-ai', 'show-recommend-path'])
+const userStore = useUserStore()
+const graphStore = useGraphStore()
+const draftNote = ref('')
+const entityTypeLabelMap = {
+  concept: '概念',
+  method: '方法',
+  algorithm: '算法',
+  application: '应用',
+  topic: '主题',
+}
+watch(
+  () => props.detail?.routeKnowledgeId,
+  (routeKnowledgeId) => {
+    draftNote.value = userStore.notes[routeKnowledgeId] || ''
+  },
+  { immediate: true },
+)
+const masteryPercent = computed(() =>
+  Math.round(props.progress?.masteryScore || props.detail?.masteryScore || 0),
+)
+function getStatusMeta(routeKnowledgeId) {
+  const progress = userStore.getProgressMeta(routeKnowledgeId)
+  const mastery = Number(progress.masteryScore || 0)
+  const answeredCount = Number(progress.answeredCount || 0)
+  if (mastery >= 80) return '✅'
+  if (mastery < 30 && answeredCount > 0) return '⚠️'
+  if (mastery >= 40) return '📖'
+  return '⬜'
+}
+const crossCourseRecommends = computed(() => {
+  const currentCourse = normalizeCourseTitle(props.detail?.chapterTitle, DEFAULT_COURSE_TITLE)
+  return (props.recommendedPath || [])
+    .map((item) => {
+      const node = graphStore.routeNodeMap.get(item.knowledgeId || item.title)
+      const displayTitle =
+        String(node?.canonicalName || node?.name || item.title || item.knowledgeId || '').trim()
+      return {
+        ...item,
+        displayTitle,
+        sourceCourse: normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE),
+        targetCourse: normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
+        courseLabel:
+          item.reasonCode === 'cross_course_transfer'
+            ? `${normalizeCourseTitle(item.sourceCourse || currentCourse, DEFAULT_COURSE_TITLE)} → ${normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE)}`
+            : normalizeCourseTitle(item.targetCourse || node?.chapterTitle, DEFAULT_COURSE_TITLE),
+      }
+    })
+    .filter((item) => {
+      if (!item?.title && !item?.knowledgeId) return false
+      if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
+        return item.sourceCourse !== item.targetCourse
+      }
+      return Boolean(item.targetCourse && item.targetCourse !== currentCourse)
+    })
+    .slice(0, 3)
+})
+function saveNote() {
+  if (!props.detail?.routeKnowledgeId) return
+  userStore.saveNote(props.detail.routeKnowledgeId, draftNote.value)
+}
+</script>
+<template>
+  <aside class="right-panel" :class="{ 'right-panel--collapsed': collapsed }">
+    <div class="panel-header">
+      <strong>节点详情</strong>
+      <button type="button" class="panel-toggle" @click="emit('toggle')">
+        {{ collapsed ? '展开' : '折叠' }}
+      </button>
+    </div>
+    <div v-if="!collapsed" class="panel-stack">
+      <div v-if="detail" class="panel-card detail-card">
+        <div class="detail-title-row">
+          <div>
+            <h2>{{ detail.canonicalName || detail.name }}</h2>
+            <p>{{ detail.chapterTitle || '其他课程' }} · {{ entityTypeLabelMap[detail.entityType] || '知识点' }}</p>
+          </div>
+          <button type="button" class="icon-btn" @click="userStore.toggleBookmark(detail.routeKnowledgeId)">
+            {{ userStore.bookmarks.includes(detail.routeKnowledgeId) ? '★' : '☆' }}
+          </button>
+        </div>
+        <div class="detail-progress">
+          <span>掌握度 {{ masteryPercent }}%</span>
+          <div class="progress-track">
+            <span class="progress-fill" :style="{ width: `${masteryPercent}%` }"></span>
+          </div>
+        </div>
+        <p class="detail-copy">
+          {{ detail.description || detail.summary || '当前知识点暂时还没有补充说明。' }}
+        </p>
+        <div class="detail-section">
+          <span class="panel-label">前置知识</span>
+          <button
+            v-for="item in detail.prerequisites || []"
+            :key="item"
+            type="button"
+            class="inline-link"
+            @click="emit('select-related', item)"
+          >
+            {{ getStatusMeta(item) }} {{ item }}
+          </button>
+        </div>
+        <div class="detail-section">
+          <span class="panel-label">后续可学</span>
+          <button
+            v-for="item in nextNodes"
+            :key="item.routeKnowledgeId || item"
+            type="button"
+            class="inline-link"
+            @click="emit('select-related', item.routeKnowledgeId || item)"
+          >
+            {{ getStatusMeta(item.routeKnowledgeId || item) }} {{ item.label || item }}
+          </button>
+          <span v-if="!nextNodes.length" class="muted-text">当前还没有明确的后续可学节点。</span>
+        </div>
+        <div class="detail-section">
+          <span class="panel-label">相关知识</span>
+          <button
+            v-for="item in detail.related || []"
+            :key="item"
+            type="button"
+            class="inline-link"
+            @click="emit('select-related', item)"
+          >
+            {{ getStatusMeta(item) }} {{ item }}
+          </button>
+        </div>
+        <div v-if="crossCourseRecommends.length" class="detail-section recommend-section">
+          <span class="panel-label">智能推荐 · 突破课程边界</span>
+          <div class="recommend-card" v-for="item in crossCourseRecommends" :key="item.knowledgeId || item.title">
+            <div class="recommend-card__head">
+              <span class="recommend-card__badge">{{ item.reasonLabel || '推荐' }}</span>
+              <span class="recommend-card__course">{{ item.courseLabel || item.targetCourse || '当前课程' }}</span>
+            </div>
+            <div
+              v-if="item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse"
+            >
+              <BridgeView :item="item" />
+            </div>
+            <button type="button" class="recommend-card__title" @click="emit('select-related', item.knowledgeId || item.title)">
+              {{ item.displayTitle || item.title }}
+            </button>
+            <p v-if="item.reasonCode !== 'cross_course_transfer'" class="recommend-card__detail">
+              {{ item.detail || '基于你当前的学习路径，推荐探索此知识点' }}
+            </p>
+            <div class="recommend-card__bar">
+              <div class="progress-track">
+                <span class="progress-fill" :style="{ width: `${Math.round(item.masteryScore || 0)}%` }"></span>
+              </div>
+              <span class="recommend-card__score">掌握 {{ Math.round(item.masteryScore || 0) }}%</span>
+            </div>
+          </div>
+          <button
+            v-if="recommendedPath.length > 3"
+            type="button"
+            class="inline-link--ai"
+            @click="emit('show-recommend-path', recommendedPath.map(p => p.knowledgeId || p.title))"
+          >
+            在图谱中查看完整推荐路径 →
+          </button>
+        </div>
+        <div class="detail-section">
+          <span class="panel-label">我的笔记</span>
+          <textarea v-model="draftNote" rows="5" placeholder="记录你的理解、误区和启发..."></textarea>
+          <button type="button" class="secondary-btn" @click="saveNote">保存笔记</button>
+        </div>
+        <div class="detail-actions">
+          <RouterLink class="primary-btn" :to="`/knowledge/${encodeURIComponent(detail.routeKnowledgeId)}`">
+            开始学习
+          </RouterLink>
+          <button type="button" class="secondary-btn" @click="emit('open-ai')">学习讲解</button>
+        </div>
+      </div>
+      <div v-else class="panel-card empty-card empty-card--guide">
+        <div class="empty-card__icon">
+          <span>?</span>
+        </div>
+        <strong>在图谱中点选知识点</strong>
+        <p>系统将为你分析该知识点的跨课程关联，并给出后续学习路径建议。</p>
+        <div class="empty-card__tips">
+          <span>左键点击 → 聚焦邻域</span>
+          <span>右键点击 → 学习操作</span>
+          <span>双击知识点 → 展开关联节点</span>
+          <span>再次双击已展开节点 → 收回关联节点</span>
+      </div>
+    </div>
+  </aside>
+</template>
+const RELATION_CONFIG = {
+  RELATED_TO: {
+    label: '相关',
+    stroke: '#E2E8F0',
+    lineWidth: 1.5,
+    lineDash: [],
+    endArrow: true,
+    opacity: 0.82,
+    weight: 1.6,
+  },
+  USES: {
+    label: '使用',
+    stroke: '#93C5FD',
+    lineWidth: 1.45,
+    lineDash: [4, 4],
+    endArrow: true,
+    opacity: 0.76,
+    weight: 1.6,
+  },
+  APPLIES_TO: {
+    label: '应用到',
+    stroke: '#6EE7B7',
+    lineWidth: 1.45,
+    lineDash: [6, 4],
+    endArrow: true,
+    opacity: 0.76,
+    weight: 1.6,
+  },
+}
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value))
+}
+function hexToRgb(color = '#CBD5E1') {
+  const normalized = String(color || '').trim()
+  if (!normalized.startsWith('#')) return null
+  let hex = normalized.slice(1)
+  if (hex.length === 3) hex = hex.split('').map((char) => char + char).join('')
+  if (hex.length !== 6) return null
+  const red = Number.parseInt(hex.slice(0, 2), 16)
+  const green = Number.parseInt(hex.slice(2, 4), 16)
+  const blue = Number.parseInt(hex.slice(4, 6), 16)
+  return { red, green, blue }
+}
+function mixCourseColor(fromColor, toColor, ratio, alpha = 1) {
+  const left = hexToRgb(fromColor)
+  const right = hexToRgb(toColor)
+  const t = clamp(Number(ratio || 0), 0, 1)
+  if (!left || !right) return String(toColor || fromColor || '#CBD5E1')
+  const red = Math.round(left.red + (right.red - left.red) * t)
+  const green = Math.round(left.green + (right.green - left.green) * t)
+  const blue = Math.round(left.blue + (right.blue - left.blue) * t)
+  return `rgba(${red}, ${green}, ${blue}, ${clamp(alpha, 0, 1)})`
+}
+function getChapterTitle(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
+}
+export function getNodeDisplayName(node) {
+  return String(node?.canonicalName || node?.name || node?.routeKnowledgeId || node?.id || '未命名节点').trim()
+}
+function splitLabelLines(label = '', lineLength = 5, maxLines = 3) {
+  const cleaned = String(label || '').replace(/\s+/g, ' ').trim()
+  if (!cleaned) return ['未命名']
+  const lines = []
+  for (let index = 0; index < cleaned.length; index += lineLength) {
+    if (lines.length >= maxLines) break
+    lines.push(cleaned.slice(index, index + lineLength))
+  }
+  if (cleaned.length > lineLength * maxLines && lines.length) {
+    const last = lines[lines.length - 1]
+    lines[lines.length - 1] = `${last.slice(0, Math.max(1, last.length - 1))}…`
+  }
+  return lines
+}
+function estimateCollisionRadius(label = '', radius = 32, options = {}) {
+  const isRoot = Boolean(options.isRoot)
+  const isExpanded = Boolean(options.isExpanded)
+  const fontSize = isRoot ? 13.8 : 10.9
+  const lines = splitLabelLines(label, isRoot ? 6 : 5, 3)
+  const widest = Math.max(...lines.map((line) => String(line || '').length), 1)
+  const textWidth = widest * fontSize * 1.04
+  const textHeight = lines.length * (fontSize + 5)
+  const labelRadius = Math.hypot(textWidth * 0.58, textHeight * 0.68)
+  const labelSpreadBoost = Math.min(
+    isRoot ? 32 : 24,
+    Math.max(0, widest - 3) * (isRoot ? 2.8 : 2.3) + Math.max(0, lines.length - 1) * 5,
+  )
+  const basePadding = isRoot ? (isExpanded ? 32 : 28) : isExpanded ? 24 : 21
+  return Math.ceil(
+    Math.max(radius + basePadding, labelRadius + radius * (isRoot ? 0.46 : 0.4) + labelSpreadBoost),
+  )
+}
+function resolveProgressState(progress = {}) {
+  const mastery = Number(progress?.masteryScore || 0)
+  const answeredCount = Number(progress?.answeredCount || 0)
+  if (mastery >= 80) return 'mastered'
+  if (mastery < 30 && answeredCount > 0) return 'weak'
+  if (mastery >= 30) return 'learning'
+  return 'default'
+}
+function buildNodeColors(courseTitle, progress = {}) {
+  const palette = getCoursePalette(courseTitle)
+  const masteryRatio = clamp(Number(progress?.masteryScore || 0), 0, 100) / 100
+  const easedRatio = masteryRatio ** 0.88
+  return {
+    fill: mixCourseColor(palette.light, palette.primary, easedRatio, 0.99),
+    stroke: mixCourseColor(palette.ring, palette.primary, 0.28 + easedRatio * 0.5, 0.98),
+    shadow: mixCourseColor(palette.ring, palette.primary, 0.14 + easedRatio * 0.36, 0.2),
+    accent: palette.primary,
+    ring: palette.ring,
+    courseLight: palette.light,
+    masteryRatio,
+  }
+}
+function buildNodeStyle(node, options) {
+  const progress = options.progressMap?.[node.routeKnowledgeId] || {}
+  const colors = buildNodeColors(getChapterTitle(node), progress)
+  const isRoot = Boolean(node.isRoot)
+  const isExpanded = options.expandedSet.has(node.id)
+  const isPinned = options.pinnedSet.has(node.id)
+  const isSelected = options.selectedNodeId === node.id
+  const radius = isRoot ? 42 : 30
+  const shadowBlur = isSelected ? 24 : isExpanded ? 18 : isRoot ? 14 : 9
+  const borderWidth = isSelected ? 4 : isExpanded ? 3 : isPinned ? 2.4 : 2
+  return {
+    radius,
+    collisionRadius: estimateCollisionRadius(getNodeDisplayName(node), radius, {
+      isRoot,
+      isExpanded,
+    }),
+    fill: colors.fill,
+    stroke: isSelected || isExpanded ? 'rgba(103, 232, 249, 1)' : colors.stroke,
+    borderWidth,
+    shadowBlur,
+    shadowColor: isSelected ? 'rgba(103, 232, 249, 0.42)' : colors.shadow,
+    badgeColor: colors.accent,
+    ringColor: colors.ring,
+    courseLight: colors.courseLight,
+    masteryRatio: colors.masteryRatio,
+    labelColor: '#F8FAFC',
+    labelStroke: 'rgba(15, 23, 42, 0.88)',
+    opacity: 1,
+    fontSize: isRoot ? 14 : 11,
+  }
+}
+function normalizeGraphNode(node, options) {
+  const label = getNodeDisplayName(node)
+  const style = buildNodeStyle(node, options)
+  return {
+    id: node.id,
+    label,
+    x: Number.isFinite(node.x) ? node.x : 0,
+    y: Number.isFinite(node.y) ? node.y : 0,
+    fx: Number.isFinite(node.fx) ? node.fx : null,
+    fy: Number.isFinite(node.fy) ? node.fy : null,
+    style,
+    data: {
+      routeKnowledgeId: node.routeKnowledgeId,
+      chapterTitle: getChapterTitle(node),
+      entityType: node.entityType || 'concept',
+      description: node.description || '',
+      canonicalName: node.canonicalName || '',
+      isRoot: Boolean(node.isRoot),
+      isExpanded: options.expandedSet.has(node.id),
+      isPinned: options.pinnedSet.has(node.id),
+      rootId: node.rootId || node.id,
+      layoutDepth: Number(node.depth || 0),
+      expandMeta: node.expandMeta || null,
+      layoutLock: node.layoutLock || null,
+      synthetic: false,
+    },
+  }
+}
+function normalizeGraphEdge(edge, nodeMap) {
+  const relation = RELATION_CONFIG[edge.relationType] || RELATION_CONFIG.RELATED_TO
+  const sourceNode = nodeMap.get(edge.sourceId)
+  const targetNode = nodeMap.get(edge.targetId)
+  const sourceCourse = getChapterTitle(sourceNode)
+  const targetCourse = getChapterTitle(targetNode)
+  const sourcePalette = getCoursePalette(sourceCourse)
+  const targetPalette = getCoursePalette(targetCourse)
+  return {
+    id: edge.id,
+    source: edge.sourceId,
+    target: edge.targetId,
+    data: {
+      label: relation.label,
+      relationType: edge.relationType,
+      sourceName: edge.sourceName || '',
+      targetName: edge.targetName || '',
+      sourceCourse,
+      targetCourse,
+      crossCourse: sourceCourse !== targetCourse,
+    },
+    style: {
+      stroke: relation.stroke,
+      lineWidth: relation.lineWidth,
+      lineDash: relation.lineDash,
+      endArrow: relation.endArrow,
+      opacity: relation.opacity,
+      sourceRing: sourcePalette.ring,
+      targetRing: targetPalette.ring,
+      sourceLight: sourcePalette.light,
+      targetLight: targetPalette.light,
+    },
+  }
+}
+export function transformGraphData(nodes = [], edges = [], options = {}) {
+  const expandedSet = new Set(options.expandedNodeIds || [])
+  const pinnedSet = new Set(options.pinnedNodeIds || [])
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]))
+  const visibleNodes = [...nodes]
+    .sort((left, right) => {
+      const rootDelta = Number(right.isRoot) - Number(left.isRoot)
+      if (rootDelta !== 0) return rootDelta
+      const depthDelta = Number(left.depth || 0) - Number(right.depth || 0)
+      if (depthDelta !== 0) return depthDelta
+      return getNodeDisplayName(left).localeCompare(getNodeDisplayName(right), 'zh-CN')
+    })
+    .map((node) =>
+      normalizeGraphNode(node, {
+        progressMap: options.progressMap || {},
+        expandedSet,
+        pinnedSet,
+        selectedNodeId: options.selectedNodeId || null,
+      }),
+    )
+  const visibleEdges = edges
+    .filter((edge) => nodeMap.has(edge.sourceId) && nodeMap.has(edge.targetId))
+    .map((edge) => normalizeGraphEdge(edge, nodeMap))
+  return {
+    nodes: visibleNodes,
+    edges: visibleEdges,
+    meta: {
+      totalNodes: Number(options.totalNodes || visibleNodes.length),
+      visibleNodes: visibleNodes.length,
+      visibleEdges: visibleEdges.length,
+      rootCount: visibleNodes.filter((node) => node.data?.isRoot).length,
+      expandedCount: expandedSet.size,
+      rootNodeIds: [...(options.rootNodeIds || [])],
+    },
+  }
+}
+export { clamp }
+export function createGraphOptions({
+  container,
+  width,
+  height,
+  data,
+  minimapContainer,
+}) {
+  return {
+    container,
+    width,
+    height,
+    data,
+    animation: false,
+    autoResize: false,
+    zoomRange: [0.08, 4],
+    padding: 60,
+    layout: {
+      type: 'd3-force',
+      preventOverlap: true,
+      nodeSize: 32,
+      alphaDecay: 0.028,
+      velocityDecay: 0.4,
+      forceSimulation: {
+        alphaMin: 0.001,
+      },
+      manyBody: {
+        strength: -280,
+        distanceMax: 600,
+      },
+      link: {
+        distance: 100,
+        strength: 0.3,
+      },
+      collide: {
+        radius: 30,
+        strength: 0.7,
+      },
+      x: { strength: 0.04 },
+      y: { strength: 0.04 },
+    },
+    behaviors: [
+      { type: 'drag-canvas', key: 'drag-canvas' },
+      { type: 'zoom-canvas', key: 'zoom-canvas', sensitivity: 0.72 },
+      { type: 'drag-element', key: 'drag-element' },
+    ],
+    plugins: [
+      {
+        type: 'minimap',
+        key: 'minimap',
+        size: [180, 130],
+        container: minimapContainer,
+        className: 'graph-minimap-inner',
+        maskStyle: {
+          border: '1px solid rgba(99, 102, 241, 0.4)',
+          background: 'rgba(99, 102, 241, 0.08)',
+        },
+        containerStyle: {
+          border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: '14px',
+          background: 'rgba(10, 15, 28, 0.95)',
+          overflow: 'hidden',
+        },
+      },
+    ],
+    node: {
+      type: 'circle',
+      style: {
+        labelMaxWidth: 120,
+        cursor: 'pointer',
+      },
+      state: {
+        dimmed: {
+          opacity: 0.08,
+          labelOpacity: 0,
+        },
+        active: {
+          opacity: 1,
+          labelOpacity: 1,
+          halo: true,
+          haloLineWidth: 2,
+          haloStroke: 'rgba(129, 140, 248, 0.3)',
+        },
+        selected: {
+          halo: true,
+          haloStroke: 'rgba(129, 140, 248, 0.5)',
+          haloLineWidth: 3,
+          haloOpacity: 0.6,
+        },
+        path: {
+          lineWidth: 4,
+          halo: true,
+          haloStroke: '#818CF8',
+          haloLineWidth: 2,
+        },
+      },
+    },
+    edge: {
+      type: 'line',
+      style: {
+        cursor: 'pointer',
+      },
+      state: {
+        dimmed: {
+          opacity: 0.04,
+          labelOpacity: 0,
+        },
+        active: {
+          opacity: 0.95,
+          lineWidth: 3,
+          labelOpacity: 1,
+          stroke: '#C7D2FE',
+        },
+        path: {
+          opacity: 1,
+          lineWidth: 3.2,
+          stroke: '#818CF8',
+          labelOpacity: 1,
+          lineDash: [10, 6],
+        },
+      },
+    },
+  }
+}
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from './courseMeta'
+function normalizeKeyword(value = '') {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, '')
+}
+function scoreResult(item, query) {
+  const name = normalizeKeyword(item.name)
+  const canonical = normalizeKeyword(item.canonicalName)
+  const chapter = normalizeKeyword(item.chapterTitle)
+  if (!query) return 0
+  if (canonical === query || name === query) return 100
+  if (canonical.startsWith(query) || name.startsWith(query)) return 80
+  if (canonical.includes(query) || name.includes(query)) return 60
+  if (chapter.includes(query)) return 30
+  return 0
+}
+export function createSearchIndex(nodes = []) {
+  return nodes.map((node) => ({
+    id: node.id,
+    routeKnowledgeId: node.routeKnowledgeId,
+    name: node.name || node.canonicalName || node.routeKnowledgeId || '',
+    canonicalName: node.canonicalName || node.name || '',
+    chapterTitle: resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE),
+    entityType: node.entityType || 'concept',
+  }))
+}
+export function searchInIndex(index = [], keyword = '', limit = 8) {
+  const query = normalizeKeyword(keyword)
+  if (!query) return []
+  return index
+    .map((item) => ({ item, score: scoreResult(item, query) }))
+    .filter(({ score }) => score > 0)
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score
+      return String(left.item.name).localeCompare(String(right.item.name), 'zh-CN')
+    })
+    .slice(0, limit)
+    .map(({ item }) => item)
+}
+function buildLookupVariants(value = '') {
+  const normalized = String(value || '').trim()
+  if (!normalized) return []
+  const lower = normalized.toLowerCase()
+  return lower === normalized ? [normalized] : [normalized, lower]
+}
+function readLookupLabel(entry) {
+  if (!entry) return ''
+  if (typeof entry === 'string') {
+    return String(entry).trim()
+  }
+  return String(entry.label || entry.canonicalName || entry.name || '').trim()
+}
+export function looksLikeMachineKnowledgeId(value = '') {
+  const normalized = String(value || '').trim()
+  return /^[0-9a-f]{16,}$/i.test(normalized)
+}
+export function extractKnowledgeIdFromRoute(route = '') {
+  const normalized = String(route || '').trim()
+  const match = normalized.match(/\/knowledge\/([^/?#]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+export function buildKnowledgeTitleLookup(nodes = []) {
+  const lookup = {}
+  ;(nodes || []).forEach((node) => {
+    const label =
+      String(node?.canonicalName || node?.name || node?.routeKnowledgeId || node?.id || '').trim()
+    if (!label) return
+    const keys = [
+      node?.routeKnowledgeId,
+      node?.id,
+      node?.canonicalName,
+      node?.name,
+      extractKnowledgeIdFromRoute(node?.route),
+    ]
+    keys.forEach((key) => {
+      buildLookupVariants(key).forEach((variant) => {
+        const existing = readLookupLabel(lookup[variant])
+        if (!existing || looksLikeMachineKnowledgeId(existing)) {
+          lookup[variant] = { label }
+        }
+      })
+    })
+  })
+  return lookup
+}
+export function resolveKnowledgeTitle(value = '', lookup = {}) {
+  for (const variant of buildLookupVariants(value)) {
+    const label = readLookupLabel(lookup?.[variant])
+    if (label) return label
+  }
+  return ''
+}
+export function replaceKnowledgeIdsInText(text = '', lookup = {}) {
+  return String(text || '').replace(/\b[0-9a-f]{16,}\b/gi, (matched) => {
+    const label = resolveKnowledgeTitle(matched, lookup)
+    return label || matched
+  })
+}
+export function resolveRecommendationTitle(item = {}, lookup = {}) {
+  const rawTitle = String(item?.title || '').trim()
+  const candidates = [
+    item?.knowledgeId,
+    item?.routeKnowledgeId,
+    extractKnowledgeIdFromRoute(item?.route),
+    rawTitle,
+  ]
+  const resolvedLabel = candidates.map((value) => resolveKnowledgeTitle(value, lookup)).find(Boolean) || ''
+  if (resolvedLabel && (!rawTitle || looksLikeMachineKnowledgeId(rawTitle))) {
+    return resolvedLabel
+  }
+  const normalizedTitle = replaceKnowledgeIdsInText(rawTitle, lookup)
+  return normalizedTitle || resolvedLabel || String(item?.knowledgeId || '').trim() || '推荐知识点'
+}
+export function normalizeRecommendationPresentation(item = {}, lookup = {}) {
+  const displayTitle = resolveRecommendationTitle(item, lookup)
+  const displayDetail = replaceKnowledgeIdsInText(item?.detail || '', lookup)
+  const sourceCourse = String(item?.sourceCourse || '').trim()
+  const targetCourse = String(item?.targetCourse || '').trim()
+  return {
+    ...item,
+    title: displayTitle,
+    detail: displayDetail,
+    displayTitle,
+    displayDetail,
+    displayReasonLabel: String(item?.reasonLabel || '').trim() || '图谱推荐',
+    displayCourseLabel:
+      sourceCourse && targetCourse && sourceCourse !== targetCourse
+        ? `${sourceCourse} → ${targetCourse}`
+        : targetCourse || sourceCourse || '',
+  }
+}
+import { domains } from '../data/courseData'
+const MANUAL_ALIASES = {
+  derivative: ['导数', '导数与微分'],
+  'partial-derivative': ['偏导数', '梯度', '偏导数与梯度'],
+  'matrix-ops': ['矩阵', '矩阵乘法', '矩阵运算与线性代数'],
+  optimization: ['最优化问题', '最优化方法', '优化方法'],
+  cnn: ['卷积神经网络', '卷积神经网络 CNN'],
+  rag: ['检索增强生成', 'RAG', '检索增强生成 RAG'],
+  'knowledge-graph': ['知识图谱', '知识图谱构建与查询', '知识图谱建模'],
+  'graph-basic': ['图结构', '图结构与图算法'],
+  'entity-relation': ['实体关系', '实体关系建模'],
+  'python-data': ['Python 数据处理', 'Python数据处理'],
+  'numpy-sci': ['NumPy 与科学计算', 'NumPy科学计算', '科学计算'],
+  'dl-framework': ['深度学习框架入门', 'PyTorch', 'TensorFlow'],
+  'model-deploy': ['模型工程化部署', '模型部署'],
+  'gradient-descent': ['梯度下降'],
+  'loss-function': ['损失函数'],
+  'linear-logistic': ['线性回归与逻辑回归', '线性回归', '逻辑回归'],
+  'decision-tree': ['决策树与集成方法', '决策树', '集成方法'],
+  'model-eval': ['模型评估与调参', '模型评估', '调参'],
+  'nn-basic': ['神经网络基础'],
+  backprop: ['反向传播', '反向传播算法'],
+  rnn: ['循环神经网络', '循环神经网络 RNN'],
+  attention: ['注意力机制'],
+  transformer: ['Transformer', 'Transformer 架构'],
+  'pretrain-finetune': ['预训练与微调'],
+  'prompt-eng': ['Prompt Engineering', '提示词工程'],
+  'agent-tool': ['Agent 与工具调用', 'Agent', '工具调用'],
+  'image-classify': ['图像分类项目'],
+  sentiment: ['文本情感分析'],
+  recsys: ['推荐系统实践', '推荐系统'],
+  'llm-app': ['大模型应用开发'],
+}
+function normalizeLookupKey(value = '') {
+  return String(value || '').trim().toLowerCase().replace(/\s+/g, '')
+}
+function buildKnowledgeCatalog() {
+  const byRouteId = {}
+  const aliasToRouteId = {}
+  for (const domain of domains) {
+    for (const point of domain.points) {
+      const entry = {
+        id: point.id,
+        route: point.route,
+        name: point.name,
+        domainId: domain.id,
+        domainName: domain.name,
+        level: point.level,
+        levelLabel: point.levelLabel,
+        description: point.description,
+        mastery: point.mastery,
+      }
+      byRouteId[point.id] = entry
+      const aliases = new Set([
+        point.id,
+        point.name,
+        point.route?.replace('/knowledge/', ''),
+        ...(MANUAL_ALIASES[point.id] || []),
+      ])
+      for (const alias of aliases) {
+        const key = normalizeLookupKey(alias)
+        if (!key) continue
+        aliasToRouteId[key] = point.id
+      }
+    }
+  }
+  return { byRouteId, aliasToRouteId }
+}
+const KNOWLEDGE_CATALOG = buildKnowledgeCatalog()
+export function resolveKnowledgeCatalogEntry(value = '') {
+  const raw = String(value || '').trim()
+  if (!raw) return null
+  return (
+    KNOWLEDGE_CATALOG.byRouteId[raw] ||
+    KNOWLEDGE_CATALOG.byRouteId[KNOWLEDGE_CATALOG.aliasToRouteId[normalizeLookupKey(raw)]] ||
+    null
+  )
+}
+export function buildKnowledgeLookupCandidates({ knowledgeId = '', currentPoint = null, detailSnapshot = null } = {}) {
+  const entry = resolveKnowledgeCatalogEntry(knowledgeId) || resolveKnowledgeCatalogEntry(currentPoint?.name)
+  const aliases = new Set([
+    detailSnapshot?.routeKnowledgeId,
+    detailSnapshot?.id,
+    detailSnapshot?.name,
+    detailSnapshot?.canonicalName,
+    currentPoint?.id,
+    currentPoint?.name,
+    entry?.id,
+    entry?.name,
+    ...(MANUAL_ALIASES[entry?.id] || MANUAL_ALIASES[String(knowledgeId || '').trim()] || []),
+    knowledgeId,
+  ])
+  return [...aliases]
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+}
+export function resolveFriendlyKnowledgeRouteId(node = {}) {
+  const routeCandidates = [
+    node?.routeKnowledgeId,
+    node?.knowledgeId,
+    node?.slug,
+    node?.id,
+    node?.name,
+    node?.canonicalName,
+  ]
+  for (const candidate of routeCandidates) {
+    const entry = resolveKnowledgeCatalogEntry(candidate)
+    if (entry) {
+      return entry.id
+    }
+  }
+  return String(node?.routeKnowledgeId || node?.knowledgeId || node?.slug || node?.id || '').trim()
+}
+export function resolveFriendlyKnowledgeRoute(route = '', title = '') {
+  const routeId = resolveFriendlyKnowledgeRouteId({
+    routeKnowledgeId: String(route || '').replace('/knowledge/', ''),
+    name: title,
+  })
+  return routeId ? `/knowledge/${routeId}` : route
+}
+import {
+  ALL_COURSE_TITLE,
+  COURSE_TITLE_ORDER,
+  DEFAULT_COURSE_TITLE,
+  normalizeCourseTitle,
+  resolveNodeCourseTitle,
+} from './courseMeta'
+const COURSE_COLOR_MAP = {
+  高等数学: { primary: '#4DB8C7', light: '#E3F4F7', ring: '#A0D8E1', dark: '#227C89' },
+  线性代数: { primary: '#5BA3D9', light: '#E5F0FA', ring: '#A5CBE8', dark: '#2D709F' },
+  概率与统计: { primary: '#4DB8A5', light: '#E3F5F0', ring: '#A0D8CA', dark: '#267B6C' },
+  数据结构: { primary: '#4DB87A', light: '#E3F5EA', ring: '#A0D8B2', dark: '#25774C' },
+  Python编程: { primary: '#4F8ACC', light: '#E5EFFB', ring: '#A6C2EB', dark: '#255D96' },
+  人工智能导论: { primary: '#7A8DA6', light: '#EDF1F5', ring: '#BEC9D5', dark: '#46586F' },
+  机器学习: { primary: '#6C8EEF', light: '#E8EDFC', ring: '#B0C4F5', dark: '#3656B7' },
+  深度学习: { primary: '#9B7FE6', light: '#EDE8FB', ring: '#C4B3F0', dark: '#6347B8' },
+  自然语言处理: { primary: '#E0A542', light: '#FCF1DE', ring: '#EFC98A', dark: '#9F6C19' },
+  计算机视觉: { primary: '#E07272', light: '#FCE6E6', ring: '#EFA5A5', dark: '#A94444' },
+  强化学习: { primary: '#D97757', light: '#FAE8E2', ring: '#E8B19E', dark: '#9A4C30' },
+  知识图谱: { primary: '#A570E0', light: '#EFE4FB', ring: '#C9A8EF', dark: '#6B38A8' },
+  大模型: { primary: '#E06090', light: '#FCE1EB', ring: '#EFA0BC', dark: '#A93C69' },
+  AI工程: { primary: '#6D9F5A', light: '#EEF6E9', ring: '#BDD8B1', dark: '#416930' },
+  AI伦理: { primary: '#C98B3C', light: '#F8EEDC', ring: '#E6C48F', dark: '#86551A' },
+  其他: { primary: '#8C9BB5', light: '#EBEEF4', ring: '#B5C0D5', dark: '#55627B' },
+}
+const FALLBACK_PALETTE = ['#6C8EEF', '#E06090', '#E0A542', '#4DB87A', '#5BA3D9', '#A570E0']
+const ENTITY_LABEL_MAP = {
+  algorithm: '算法',
+  concept: '概念',
+  method: '方法',
+  application: '应用',
+  topic: '主题',
+}
+function stringHash(value = '') {
+  return [...String(value)].reduce((hash, char) => hash + char.charCodeAt(0), 0)
+}
+function withAlpha(hex = '#64748B', alpha = '22') {
+  const normalized = String(hex || '').trim()
+  return normalized.startsWith('#') && normalized.length === 7 ? `${normalized}${alpha}` : normalized
+}
+export function getCoursePalette(courseTitle = DEFAULT_COURSE_TITLE) {
+  const key = normalizeCourseTitle(courseTitle, DEFAULT_COURSE_TITLE)
+  if (COURSE_COLOR_MAP[key]) return COURSE_COLOR_MAP[key]
+  const seed = stringHash(key)
+  const primary = FALLBACK_PALETTE[seed % FALLBACK_PALETTE.length]
+  return {
+    primary,
+    light: withAlpha(primary, '22'),
+    ring: withAlpha(primary, '66'),
+    dark: primary,
+  }
+}
+export function getEntityLabel(entityType = '') {
+  return ENTITY_LABEL_MAP[String(entityType || '').trim()] || '知识点'
+}
+export function getCourseOptions(nodes = []) {
+  const courses = new Set([ALL_COURSE_TITLE])
+  nodes.forEach((node) => {
+    courses.add(resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE))
+  })
+  const orderIndex = new Map(COURSE_TITLE_ORDER.map((title, index) => [title, index]))
+  return [...courses].sort((left, right) => {
+    if (left === ALL_COURSE_TITLE) return -1
+    if (right === ALL_COURSE_TITLE) return 1
+    const leftRank = orderIndex.get(left) ?? Number.MAX_SAFE_INTEGER
+    const rightRank = orderIndex.get(right) ?? Number.MAX_SAFE_INTEGER
+    if (leftRank !== rightRank) return leftRank - rightRank
+    return String(left).localeCompare(String(right), 'zh-CN')
+  })
+}
+export { COURSE_COLOR_MAP, FALLBACK_PALETTE }
+<script setup>
+import { computed, ref } from 'vue'
+const props = defineProps({
+  recommendedPath: {
+    type: Array,
+    default: () => [],
+  },
+  customPaths: {
+    type: Array,
+    default: () => [],
+  },
+  progressMap: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+const emit = defineEmits([
+  'show-path',
+  'create-path',
+  'remove-node',
+  'reorder-path',
+  'focus-node',
+  'start-path',
+])
+const dragState = ref({
+  pathId: '',
+  fromIndex: -1,
+})
+const recommendedRouteIds = computed(() =>
+  props.recommendedPath.map((item) => item.knowledgeId || item.title).filter(Boolean),
+)
+function getNodeMeta(routeKnowledgeId) {
+  const progress = props.progressMap[String(routeKnowledgeId || '').trim()] || {}
+  const mastery = Number(progress.masteryScore || 0)
+  const answeredCount = Number(progress.answeredCount || 0)
+  if (mastery >= 80) {
+    return {
+      label: '已掌握',
+      tone: 'mastered',
+    }
+  }
+  if (mastery < 30 && answeredCount > 0) {
+    return {
+      label: '薄弱点',
+      tone: 'weak',
+    }
+  }
+  if (mastery >= 40) {
+    return {
+      label: '学习中',
+      tone: 'learning',
+    }
+  }
+  return {
+    label: '未学习',
+    tone: 'idle',
+  }
+}
+function getPathSummary(path) {
+  const total = Array.isArray(path?.nodes) ? path.nodes.length : 0
+  const completed = (path?.nodes || []).filter((nodeId) => getNodeMeta(nodeId).tone === 'mastered').length
+  return {
+    total,
+    completed,
+  }
+}
+function resetDragState() {
+  dragState.value = {
+    pathId: '',
+    fromIndex: -1,
+  }
+}
+function handleDragStart(pathId, fromIndex, event) {
+  dragState.value = {
+    pathId,
+    fromIndex,
+  }
+  if (event?.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', `${pathId}:${fromIndex}`)
+  }
+}
+function handleDrop(pathId, toIndex) {
+  const { pathId: sourcePathId, fromIndex } = dragState.value
+  if (!sourcePathId || sourcePathId !== pathId) {
+    resetDragState()
+    return
+  }
+  if (fromIndex < 0 || fromIndex === toIndex) {
+    resetDragState()
+    return
+  }
+  emit('reorder-path', {
+    pathId,
+    fromIndex,
+    toIndex,
+  })
+  resetDragState()
+}
+function handleMove(pathId, fromIndex, delta) {
+  emit('reorder-path', {
+    pathId,
+    fromIndex,
+    toIndex: fromIndex + delta,
+  })
+}
+function handleStartPath(nodeIds) {
+  const routeIds = (nodeIds || []).filter(Boolean)
+  if (!routeIds.length) return
+  emit('start-path', routeIds)
+}
+function getRecommendedPathLabel(item) {
+  if (!item) return ''
+  const title = String(item.displayTitle || item.title || item.knowledgeId || '').trim()
+  const reason = String(item.reasonLabel || '').trim()
+  if (item.reasonCode === 'cross_course_transfer' && item.sourceCourse && item.targetCourse) {
+    return `${reason || '跨课程迁移'} · ${item.sourceCourse} → ${item.targetCourse} · ${title}`
+  }
+  return `${reason || '推荐'} · ${title}`
+}
+</script>
+<template>
+  <section class="panel-card">
+    <div class="panel-card__head">
+      <strong>学习路径</strong>
+      <button type="button" class="link-button" @click="emit('create-path')">新建</button>
+    </div>
+    <div class="path-block">
+      <span class="panel-label">推荐路径</span>
+      <template v-if="recommendedRouteIds.length">
+        <div class="path-chain">
+          <span v-for="item in recommendedPath" :key="item.knowledgeId || item.title">
+            {{ getRecommendedPathLabel(item) }}
+          </span>
+        </div>
+        <div class="path-block__actions">
+          <button
+            type="button"
+            class="secondary-btn"
+            @click="emit('show-path', recommendedRouteIds)"
+          >
+            在图谱中显示
+          </button>
+          <button type="button" class="primary-btn" @click="handleStartPath(recommendedRouteIds)">
+            开始学习
+          </button>
+        </div>
+      </template>
+      <p v-else class="muted-text">选中知识点后，将自动尝试获取推荐路径。</p>
+    </div>
+    <div class="path-block">
+      <span class="panel-label">我的路径</span>
+      <div v-if="customPaths.length" class="panel-stack panel-stack--compact">
+        <div v-for="path in customPaths" :key="path.id" class="custom-path-card">
+          <div class="custom-path-card__head">
+            <div class="path-card__meta">
+              <strong>{{ path.name }}</strong>
+              <span class="path-progress">
+                {{ getPathSummary(path).completed }}/{{ getPathSummary(path).total || 0 }} 已掌握
+              </span>
+            </div>
+            <div class="path-card__actions">
+              <button type="button" class="link-button" @click="emit('show-path', path.nodes)">高亮</button>
+              <button
+                type="button"
+                class="secondary-btn"
+                :disabled="!path.nodes.length"
+                @click="handleStartPath(path.nodes)"
+              >
+                开始学习
+              </button>
+            </div>
+          </div>
+          <div v-if="path.nodes.length" class="path-stack">
+            <article
+              v-for="(nodeId, index) in path.nodes"
+              :key="`${path.id}-${nodeId}-${index}`"
+              class="path-node"
+              :class="{ 'path-node--dragging': dragState.pathId === path.id && dragState.fromIndex === index }"
+              draggable="true"
+              @dragstart="handleDragStart(path.id, index, $event)"
+              @dragend="resetDragState"
+              @dragover.prevent
+              @drop="handleDrop(path.id, index)"
+            >
+              <button type="button" class="path-node__main" @click="emit('focus-node', nodeId)">
+                <span class="path-node__handle" aria-hidden="true">⋮⋮</span>
+                <span class="path-node__label">{{ nodeId }}</span>
+                <span
+                  class="path-node__status"
+                  :class="`path-node__status--${getNodeMeta(nodeId).tone}`"
+                >
+                  {{ getNodeMeta(nodeId).label }}
+                </span>
+              </button>
+              <div class="path-node__actions">
+                <button
+                  type="button"
+                  class="path-action-btn"
+                  title="上移"
+                  :disabled="index === 0"
+                  @click="handleMove(path.id, index, -1)"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  class="path-action-btn"
+                  title="下移"
+                  :disabled="index === path.nodes.length - 1"
+                  @click="handleMove(path.id, index, 1)"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  class="path-action-btn path-action-btn--danger"
+                  title="移除"
+                  @click="emit('remove-node', { pathId: path.id, knowledgeId: nodeId })"
+                >
+                  ×
+                </button>
+              </div>
+            </article>
+          </div>
+          <p v-else class="muted-text">右键图谱节点并选择“加入学习路径”后，会出现在这里。</p>
+        </div>
+      </div>
+      <p v-else class="muted-text">还没有自定义路径，先从图谱里收藏几个关键节点吧。</p>
+    </div>
+  </section>
+</template>
+<script setup>
+import { computed } from 'vue'
+const props = defineProps({
+  nodes: {
+    type: Array,
+    default: () => [],
+  },
+  progressMap: {
+    type: Object,
+    default: () => ({}),
+  },
+  bookmarks: {
+    type: Array,
+    default: () => [],
+  },
+  isAuthenticated: Boolean,
+})
+const emit = defineEmits(['highlight-status'])
+const stats = computed(() => {
+  let mastered = 0
+  let learning = 0
+  let weak = 0
+  props.nodes.forEach((node) => {
+    const progress = props.progressMap[node.routeKnowledgeId] || {}
+    const mastery = Number(progress.masteryScore || 0)
+    const answeredCount = Number(progress.answeredCount || 0)
+    if (mastery >= 80) mastered += 1
+    else if (mastery >= 40) learning += 1
+    if (mastery < 30 && answeredCount > 0) weak += 1
+  })
+  return {
+    total: props.nodes.length,
+    mastered,
+    learning,
+    weak,
+    bookmarked: props.bookmarks.length,
+  }
+})
+const totalProgress = computed(() => {
+  if (!stats.value.total) return 0
+  return Math.round(((stats.value.mastered + stats.value.learning * 0.6) / stats.value.total) * 100)
+})
+const weeklyTrend = computed(() => {
+  const { total, mastered, learning, weak } = stats.value
+  if (!total) {
+    return Array.from({ length: 7 }, (_, i) => ({ label: `D${i + 1}`, value: 0 }))
+  }
+  const masteredPct = Math.round((mastered / total) * 100)
+  const learningPct = Math.round((learning / total) * 100)
+  const weakPct = Math.round((weak / Math.max(total, 1)) * 100)
+  const baseActivity = Math.min(100, masteredPct + learningPct * 0.6)
+  return [
+    { label: '已掌握', value: masteredPct },
+    { label: '学习中', value: learningPct },
+    { label: '薄弱', value: weakPct },
+    { label: '收藏', value: Math.min(100, Math.round((props.bookmarks.length / Math.max(total, 1)) * 100)) },
+    { label: '总覆盖', value: Math.min(100, Math.round(((mastered + learning) / total) * 100)) },
+    { label: '活跃度', value: Math.min(100, Math.round(baseActivity)) },
+    { label: '总进度', value: Math.min(100, Math.round(((mastered + learning * 0.6) / total) * 100)) },
+  ]
+})
+</script>
+<template>
+  <section class="panel-card">
+    <div class="panel-card__head">
+      <strong>学习进度</strong>
+      <span v-if="isAuthenticated">个人画像</span>
+      <span v-else>登录后更完整</span>
+    </div>
+    <div class="total-progress">
+      <div class="tree-item__meta">
+        <strong>总进度</strong>
+        <span>{{ totalProgress }}%</span>
+      </div>
+      <div class="progress-track">
+        <span class="progress-fill" :style="{ width: `${totalProgress}%` }"></span>
+      </div>
+    </div>
+    <div class="progress-summary">
+      <button type="button" class="stat-chip" @click="emit('highlight-status', 'mastered')">
+        已掌握 {{ stats.mastered }}
+      </button>
+      <button type="button" class="stat-chip" @click="emit('highlight-status', 'learning')">
+        学习中 {{ stats.learning }}
+      </button>
+      <button type="button" class="stat-chip" @click="emit('highlight-status', 'weak')">
+        薄弱点 {{ stats.weak }}
+      </button>
+      <button type="button" class="stat-chip" @click="emit('highlight-status', 'bookmarked')">
+        收藏 {{ stats.bookmarked }}
+      </button>
+    </div>
+    <div class="trend-card">
+      <span class="panel-label">本周学习趋势</span>
+      <div class="trend-bars">
+        <div v-for="item in weeklyTrend" :key="item.label" class="trend-bar">
+          <span class="trend-bar__col" :style="{ height: `${item.value}%` }"></span>
+          <small>{{ item.label }}</small>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+<script setup>
+import { computed, ref } from 'vue'
+const props = defineProps({
+  courseGroups: {
+    type: Array,
+    default: () => [],
+  },
+  nodes: {
+    type: Array,
+    default: () => [],
+  },
+  progressMap: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+const emit = defineEmits(['focus-course', 'focus-node'])
+const mode = ref('course')
+const typeLabelMap = {
+  concept: '概念',
+  method: '方法',
+  algorithm: '算法',
+  application: '应用',
+  topic: '主题',
+}
+const entityGroups = computed(() => {
+  const map = {}
+  props.nodes.forEach((node) => {
+    const entityType = String(node.entityType || 'concept').trim() || 'concept'
+    if (!map[entityType]) {
+      map[entityType] = {
+        key: entityType,
+        title: entityType,
+        total: 0,
+        mastered: 0,
+        firstRouteKnowledgeId: node.routeKnowledgeId,
+      }
+    }
+    map[entityType].total += 1
+    if (Number(props.progressMap[node.routeKnowledgeId]?.masteryScore || 0) >= 80) {
+      map[entityType].mastered += 1
+    }
+  })
+  return Object.values(map).sort((left, right) => right.total - left.total)
+})
+</script>
+<template>
+  <section class="panel-card">
+    <div class="panel-card__head">
+      <strong>知识体系</strong>
+      <div class="mini-switch">
+        <button type="button" :class="{ active: mode === 'course' }" @click="mode = 'course'">按学科</button>
+        <button type="button" :class="{ active: mode === 'type' }" @click="mode = 'type'">按类型</button>
+      </div>
+    </div>
+    <template v-if="mode === 'course'">
+      <button
+        v-for="group in courseGroups"
+        :key="group.title"
+        type="button"
+        class="tree-item"
+        @click="emit('focus-course', group.title)"
+      >
+        <div class="tree-item__meta">
+          <strong>{{ group.title }}</strong>
+          <span>{{ group.mastered }}/{{ group.total }}</span>
+        </div>
+        <div class="progress-track">
+          <span
+            class="progress-fill"
+            :style="{ width: `${group.total ? (group.mastered / group.total) * 100 : 0}%` }"
+          ></span>
+        </div>
+      </button>
+    </template>
+    <template v-else>
+      <button
+        v-for="group in entityGroups"
+        :key="group.key"
+        type="button"
+        class="tree-item"
+        @click="emit('focus-node', group.firstRouteKnowledgeId)"
+      >
+        <div class="tree-item__meta">
+          <strong>{{ typeLabelMap[group.title] || group.title }}</strong>
+          <span>{{ group.mastered }}/{{ group.total }}</span>
+        </div>
+        <div class="progress-track">
+          <span
+            class="progress-fill"
+            :style="{ width: `${group.total ? (group.mastered / group.total) * 100 : 0}%` }"
+          ></span>
+        </div>
+      </button>
+    </template>
+  </section>
+</template>
+<script setup>
+import { computed } from 'vue'
+import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../../utils/courseMeta'
+const props = defineProps({
+  bookmarks: {
+    type: Array,
+    default: () => [],
+  },
+  nodes: {
+    type: Array,
+    default: () => [],
+  },
+})
+const emit = defineEmits(['select'])
+const bookmarkNodes = computed(() =>
+  props.bookmarks
+    .map((bookmark) => props.nodes.find((node) => node.routeKnowledgeId === bookmark))
+    .filter(Boolean),
+)
+function getCourseTitle(node) {
+  return resolveNodeCourseTitle(node, DEFAULT_COURSE_TITLE)
+}
+</script>
+<template>
+  <section class="panel-card">
+    <div class="panel-card__head">
+      <strong>收藏夹</strong>
+      <span>{{ bookmarkNodes.length }} 个</span>
+    </div>
+    <div v-if="bookmarkNodes.length" class="bookmark-list">
+      <button
+        v-for="node in bookmarkNodes"
+        :key="node.id"
+        type="button"
+        class="bookmark-item"
+        @click="emit('select', node.routeKnowledgeId)"
+      >
+        <strong>{{ node.canonicalName || node.name }}</strong>
+        <span>{{ getCourseTitle(node) }}</span>
+      </button>
+    </div>
+    <p v-else class="muted-text">右键节点后，可以把重点知识点加入收藏。</p>
+  </section>
+</template>
+<script setup>
+defineProps({
+  zoom: {
+    type: Number,
+    default: 1,
+  },
+})
+const emit = defineEmits(['fit', 'zoom-in', 'zoom-out', 'fullscreen'])
+</script>
+<template>
+  <div class="graph-controls">
+    <button type="button" class="graph-control-btn" @click="emit('zoom-out')">-</button>
+    <button type="button" class="graph-control-btn graph-control-btn--value" @click="emit('fit')">
+      {{ Math.round(zoom * 100) }}%
+    </button>
+    <button type="button" class="graph-control-btn" @click="emit('zoom-in')">+</button>
+    <button type="button" class="graph-control-btn" @click="emit('fullscreen')">全屏</button>
+  </div>
+</template>
+import { readStorage, STORAGE_KEYS } from '../utils/storage'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const LEGACY_AUTH_STORAGE_KEY = 'course-recommend-auth'
+export class ApiError extends Error {
+  constructor(message, status = 500, payload = null) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.payload = payload
+  }
+}
+function readAuthSession() {
+  const primary = readStorage(STORAGE_KEYS.auth, null)
+  if (primary && typeof primary === 'object') {
+    return primary
+  }
+  const legacy = readStorage(LEGACY_AUTH_STORAGE_KEY, null)
+  if (legacy && typeof legacy === 'object') {
+    return legacy
+  }
+  return null
+}
+function extractToken(session) {
+  if (!session || typeof session !== 'object') return ''
+  return (
+    session.token ||
+    session.accessToken ||
+    session?.data?.token ||
+    session?.data?.accessToken ||
+    session?.user?.token ||
+    session?.user?.accessToken ||
+    ''
+  )
+}
+function getToken() {
+  return String(extractToken(readAuthSession()) || '').trim()
+}
+function buildHeaders(headers = {}, auth = true) {
+  const nextHeaders = { ...headers }
+  const token = auth ? getToken() : ''
+  if (token) {
+    nextHeaders.Authorization = `Bearer ${token}`
+  }
+  return nextHeaders
+}
+async function parsePayload(response) {
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType.includes('application/json')) {
+    return response.json()
+  }
+  return response.text()
+}
+export async function request(path, options = {}) {
+  const {
+    auth = true,
+    headers = {},
+    body,
+    ...restOptions
+  } = options
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  const requestHeaders = buildHeaders(headers, auth)
+  if (body !== undefined && !isFormData && !requestHeaders['Content-Type']) {
+    requestHeaders['Content-Type'] = 'application/json'
+  }
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions,
+    headers: requestHeaders,
+    body: body === undefined ? undefined : isFormData || typeof body === 'string' ? body : JSON.stringify(body),
+  })
+  const payload = await parsePayload(response)
+  if (!response.ok) {
+    const message = payload?.message || payload?.error || '请求失败，请稍后重试。'
+    throw new ApiError(message, response.status, payload)
+  }
+  if (payload && typeof payload === 'object' && 'code' in payload && payload.code !== 0) {
+    throw new ApiError(payload.message || '请求失败，请稍后重试。', response.status, payload)
+  }
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return payload.data
+  }
+  return payload
+}
+export async function streamRequest(path, options = {}) {
+  const {
+    auth = true,
+    headers = {},
+    body,
+    onMessage,
+    onEvent,
+    signal,
+    ...restOptions
+  } = options
+  async function openStream(useAuth) {
+    return fetch(`${API_BASE_URL}${path}`, {
+      ...restOptions,
+      headers: {
+        Accept: 'text/event-stream',
+        ...buildHeaders(headers, useAuth),
+        'Content-Type': 'application/json',
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    })
+  }
+  let response = await openStream(auth)
+  if (auth && response.status === 401) {
+    response = await openStream(false)
+  }
+  if (!response.ok) {
+    const payload = await parsePayload(response).catch(() => null)
+    throw new ApiError(payload?.message || payload?.error || '学习助手暂时不可用。', response.status, payload)
+  }
+  if (!response.body) {
+    throw new ApiError('浏览器当前不支持流式响应。', response.status)
+  }
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder('utf-8')
+  let buffer = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const chunks = buffer.split('\n\n')
+    buffer = chunks.pop() || ''
+    for (const chunk of chunks) {
+      const line = chunk
+        .split('\n')
+        .map((item) => item.trim())
+        .find((item) => item.startsWith('data:'))
+      if (!line) continue
+      const content = line.replace(/^data:\s*/, '')
+      if (content === '[DONE]') return
+      const payload = JSON.parse(content)
+      const token = payload?.choices?.[0]?.delta?.content || ''
+      if (token && typeof onMessage === 'function') {
+        onMessage(token, payload)
+      }
+      if (typeof onEvent === 'function') {
+        onEvent(payload)
+      }
+    }
+  }
+}
+import { request } from './request'
+export function fetchGraphCatalog() {
+  return request('/graph/catalog')
+}
+export function fetchGraphSeeds(count = 14) {
+  return request(`/graph/seeds?count=${encodeURIComponent(count)}`)
+}
+export function fetchGraphNeighbors(nodeId, options = {}) {
+  const query = new URLSearchParams({
+    nodeId: String(nodeId || ''),
+    depth: String(options.depth ?? 1),
+    direction: String(options.direction || 'both'),
+    limit: String(options.limit ?? 20),
+  })
+  return request(`/graph/neighbors?${query.toString()}`)
+}
+export function fetchFullGraph(limit = 2000) {
+  return request(`/graph/full?limit=${encodeURIComponent(limit)}`)
+}
+export function fetchKnowledgeDetail(knowledgeId) {
+  return request(`/knowledge/${encodeURIComponent(knowledgeId)}`)
+}
+export function fetchFrontierBriefing(query = {}) {
+  const normalized =
+    typeof query === 'string'
+      ? {
+          knowledgeId: query,
+          knowledge: query,
+        }
+      : (query || {})
+  const params = new URLSearchParams()
+  if (normalized.knowledgeId) {
+    params.set('knowledgeId', String(normalized.knowledgeId))
+  }
+  if (normalized.knowledge) {
+    params.set('knowledge', String(normalized.knowledge))
+  }
+  const suffix = params.toString() ? `?${params.toString()}` : ''
+  return request(`/frontier/briefing${suffix}`)
+}
+import { request } from './request'
+export function fetchLearningProgress() {
+  return request('/learning/progress')
+}
+export function fetchDashboardSummary() {
+  return request('/dashboard/summary')
+}
+export function fetchCompetencyProfile() {
+  return request('/competency/profile')
+}
+export function fetchStudentQuestions(params = {}) {
+  const query = new URLSearchParams()
+  if (params.knowledgeId) query.set('knowledgeId', String(params.knowledgeId))
+  if (params.page) query.set('page', String(params.page))
+  if (params.pageSize) query.set('pageSize', String(params.pageSize))
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+  return request(`/learning/questions${suffix}`)
+}
+export function submitStudentAnswer(payload) {
+  return request('/learning/answers', {
+    method: 'POST',
+    body: payload,
+  })
+}
+import { request } from './request'
+export function fetchRecommendedPath(params = {}) {
+  const query = new URLSearchParams()
+  if (params.target) query.set('target', String(params.target))
+  if (params.knowledgeId) query.set('knowledgeId', String(params.knowledgeId))
+  if (params.limit) query.set('limit', String(params.limit))
+  if (params.scene) query.set('scene', String(params.scene))
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+  return request(`/recommend/path${suffix}`)
+}
+import { request, streamRequest } from './request'
+export function streamAssistantChat(messages, { authenticated = true, signal, onMessage, onEvent } = {}) {
+  return streamRequest(authenticated ? '/assistant/chat' : '/assistant/public-chat', {
+    method: 'POST',
+    auth: authenticated,
+    body: { messages },
+    signal,
+    onMessage,
+    onEvent,
+  })
+}
+export function generateKnowledgeCard(payload) {
+  return request('/assistant/knowledge-card', {
+    method: 'POST',
+    body: payload,
+  })
+}

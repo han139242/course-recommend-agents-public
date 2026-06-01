@@ -79,7 +79,7 @@
     {
       "canonical_name": "模型监控",
       "entity_type": "method",
-      "description": "持续监测模型性能、输入分布和服务状态以发现异常的方法。"
+      "description": "对模型在生产中的预测质量、延迟、分布偏移和错误率等指标进行持续观测和告警的运维实践。"
     },
     {
       "canonical_name": "数据漂移",
@@ -103,45 +103,205 @@
     }
   ],
   "relations": [
-    ["数据工程", "机器学习", "RELATED_TO"],
-    ["数据采集", "数据工程", "SUBTOPIC_OF"],
-    ["数据清洗", "数据工程", "SUBTOPIC_OF"],
-    ["数据标注", "数据工程", "SUBTOPIC_OF"],
-    ["数据采集", "数据清洗", "PREREQUISITE_OF"],
-    ["数据清洗", "数据标注", "PREREQUISITE_OF"],
-    ["训练集", "机器学习", "PREREQUISITE_OF"],
-    ["验证集", "模型选择", "PREREQUISITE_OF"],
-    ["测试集", "模型评估", "PREREQUISITE_OF"],
-    ["训练集", "验证集", "RELATED_TO"],
-    ["验证集", "测试集", "RELATED_TO"],
-    ["数据标注", "训练集", "PREREQUISITE_OF"],
-    ["数据管道", "数据工程", "SUBTOPIC_OF"],
-    ["数据采集", "数据管道", "PREREQUISITE_OF"],
-    ["数据清洗", "数据管道", "PREREQUISITE_OF"],
-    ["数据版本控制", "数据工程", "SUBTOPIC_OF"],
-    ["数据版本控制", "实验跟踪", "PREREQUISITE_OF"],
-    ["实验跟踪", "MLOps", "SUBTOPIC_OF"],
-    ["超参数调优", "模型选择", "RELATED_TO"],
-    ["超参数调优", "验证集", "PREREQUISITE_OF"],
-    ["特征存储", "特征工程", "RELATED_TO"],
-    ["特征存储", "MLOps", "RELATED_TO"],
-    ["模型部署", "MLOps", "SUBTOPIC_OF"],
-    ["在线推理", "模型部署", "SUBTOPIC_OF"],
-    ["离线推理", "模型部署", "SUBTOPIC_OF"],
-    ["特征存储", "在线推理", "PREREQUISITE_OF"],
-    ["特征存储", "离线推理", "PREREQUISITE_OF"],
-    ["模型监控", "MLOps", "SUBTOPIC_OF"],
-    ["模型监控", "模型部署", "PREREQUISITE_OF"],
-    ["数据漂移", "模型监控", "RELATED_TO"],
-    ["概念漂移", "模型监控", "RELATED_TO"],
-    ["数据漂移", "概念漂移", "RELATED_TO"],
-    ["持续训练", "MLOps", "SUBTOPIC_OF"],
-    ["持续训练", "模型监控", "PREREQUISITE_OF"],
-    ["持续训练", "迁移学习", "RELATED_TO"],
-    ["MLOps", "机器学习", "RELATED_TO"],
-    ["MLOps", "深度学习", "RELATED_TO"],
-    ["数据版本控制", "合规性", "RELATED_TO"],
-    ["实验跟踪", "可追溯性", "RELATED_TO"],
-    ["模型监控", "风险评估", "RELATED_TO"]
+    [
+      "数据工程",
+      "机器学习",
+      "RELATED_TO"
+    ],
+    [
+      "数据采集",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据清洗",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据标注",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据采集",
+      "数据清洗",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据清洗",
+      "数据标注",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "训练集",
+      "机器学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "验证集",
+      "模型选择",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "测试集",
+      "模型评估",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "训练集",
+      "验证集",
+      "RELATED_TO"
+    ],
+    [
+      "验证集",
+      "测试集",
+      "RELATED_TO"
+    ],
+    [
+      "数据标注",
+      "训练集",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据管道",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据采集",
+      "数据管道",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据清洗",
+      "数据管道",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据版本控制",
+      "数据工程",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "数据版本控制",
+      "实验跟踪",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "实验跟踪",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "超参数调优",
+      "模型选择",
+      "RELATED_TO"
+    ],
+    [
+      "超参数调优",
+      "验证集",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "特征存储",
+      "特征工程",
+      "RELATED_TO"
+    ],
+    [
+      "特征存储",
+      "MLOps",
+      "RELATED_TO"
+    ],
+    [
+      "模型部署",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "在线推理",
+      "模型部署",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "离线推理",
+      "模型部署",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "特征存储",
+      "在线推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "特征存储",
+      "离线推理",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "模型监控",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型监控",
+      "模型部署",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "数据漂移",
+      "模型监控",
+      "RELATED_TO"
+    ],
+    [
+      "概念漂移",
+      "模型监控",
+      "RELATED_TO"
+    ],
+    [
+      "数据漂移",
+      "概念漂移",
+      "RELATED_TO"
+    ],
+    [
+      "持续训练",
+      "MLOps",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "持续训练",
+      "模型监控",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "持续训练",
+      "迁移学习",
+      "RELATED_TO"
+    ],
+    [
+      "MLOps",
+      "机器学习",
+      "RELATED_TO"
+    ],
+    [
+      "MLOps",
+      "深度学习",
+      "RELATED_TO"
+    ],
+    [
+      "数据版本控制",
+      "合规性",
+      "RELATED_TO"
+    ],
+    [
+      "实验跟踪",
+      "可追溯性",
+      "RELATED_TO"
+    ],
+    [
+      "模型监控",
+      "风险评估",
+      "RELATED_TO"
+    ]
   ]
 }

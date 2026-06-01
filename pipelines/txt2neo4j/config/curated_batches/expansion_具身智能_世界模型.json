@@ -1,0 +1,268 @@
+{
+  "source": "expansion_具身智能_世界模型",
+  "course_title": "具身智能与世界模型",
+  "nodes": [
+    {
+      "canonical_name": "RT-2",
+      "entity_type": "model",
+      "description": "Google开发的视觉-语言-动作模型，将互联网规模的视觉语言预训练与机器人操作数据结合，使机器人能理解自然语言指令并执行未见过的任务。"
+    },
+    {
+      "canonical_name": "Octo",
+      "entity_type": "model",
+      "description": "跨多种机器人形态和任务的通用机器人基础模型，通过大规模异构机器人数据训练实现不同平台间的策略迁移。"
+    },
+    {
+      "canonical_name": "扩散策略",
+      "entity_type": "algorithm",
+      "description": "将扩散模型作为机器人动作分布的生成模型，通过学习去噪过程逐步细化动作轨迹以完成连续控制任务的策略学习算法。"
+    },
+    {
+      "canonical_name": "视觉-语言-动作模型",
+      "entity_type": "concept",
+      "description": "将视觉感知、语言理解和动作控制统一到同一Transformer架构中的多模态模型，使机器人能直接根据图像和文字指令生成控制信号。"
+    },
+    {
+      "canonical_name": "深度强化学习",
+      "entity_type": "method",
+      "description": "在机器人控制中使用深度神经网络近似的值函数或策略函数，通过与环境交互的自监督学习实现对高维连续控制任务的端到端训练的框架。"
+    },
+    {
+      "canonical_name": "行为克隆",
+      "entity_type": "algorithm",
+      "description": "使用监督学习从专家示教数据中直接学习状态到动作映射的模仿学习算法，实现简单高效但对分布偏移敏感。"
+    },
+    {
+      "canonical_name": "逆向强化学习",
+      "entity_type": "method",
+      "description": "从专家示教轨迹或行为数据中反推隐含奖励函数或偏好结构，再据此训练策略的强化学习方法。"
+    },
+    {
+      "canonical_name": "交互式模仿学习",
+      "entity_type": "method",
+      "description": "学习过程中允许人类通过远程操作或纠正信号实时干预和指导智能体策略的迭代改进方法，显著提升样本效率和成功率。"
+    },
+    {
+      "canonical_name": "任务与运动规划",
+      "entity_type": "method",
+      "description": "将高层任务逻辑规划与低层连续运动轨迹优化联合求解，使机器人生成可执行行为序列的方法。"
+    },
+    {
+      "canonical_name": "物理模拟器MuJoCo",
+      "entity_type": "tool",
+      "description": "DeepMind维护的高效刚体动力学物理仿真引擎，支持前向和逆向动力学计算，广泛用于机器人学和强化学习的仿真训练。"
+    },
+    {
+      "canonical_name": "Isaac Sim",
+      "entity_type": "tool",
+      "description": "NVIDIA基于Omniverse开发的机器人仿真平台，支持高保真视觉渲染、物理仿真和域随机化，提供从仿真到真实的无缝迁移工具链。"
+    },
+    {
+      "canonical_name": "Isaac Gym",
+      "entity_type": "tool",
+      "description": "NVIDIA的GPU加速强化学习仿真环境，支持数千个环境在单GPU上并行仿真和训练以极大提升策略学习效率。"
+    },
+    {
+      "canonical_name": "端到端自动驾驶",
+      "entity_type": "method",
+      "description": "将原始传感器数据通过单一深度神经网络直接映射为转向、加速和制动控制信号，放弃传统模块化方法的驾驶策略学习范式。"
+    },
+    {
+      "canonical_name": "语言条件操作",
+      "entity_type": "method",
+      "description": "将自然语言指令作为策略网络的条件输入，使机器人根据不同语言描述执行不同操作行为的语义理解与控制融合方法。"
+    },
+    {
+      "canonical_name": "感觉运动学习",
+      "entity_type": "concept",
+      "description": "将触觉、力觉和本体感觉等物理交互反馈与运动控制策略学习相结合，使机器人获得超越纯视觉的精细操作能力的学习范式。"
+    },
+    {
+      "canonical_name": "离线强化学习",
+      "entity_type": "method",
+      "description": "仅使用预先收集的固定数据集进行策略学习而不与环境在线交互，并通过保守估计或行为正则化控制分布外动作风险的强化学习方法。"
+    },
+    {
+      "canonical_name": "技能链",
+      "entity_type": "method",
+      "description": "将复杂长期任务分解为一系列可复用的原子技能，通过学习技能的前置条件和效果在规划中自动组合技能序列的层次化方法。"
+    },
+    {
+      "canonical_name": "本体感受",
+      "entity_type": "concept",
+      "description": "机器人通过内部传感器（关节编码器、力矩传感器、IMU）感知自身运动状态、姿态和受力信息的感觉模态。"
+    },
+    {
+      "canonical_name": "预抓取推理",
+      "entity_type": "method",
+      "description": "在物体抓取前分析物体几何、质心、表面特性和周围环境，推理最优抓取姿态和接近路径的前置规划过程。"
+    },
+    {
+      "canonical_name": "联合空间控制",
+      "entity_type": "method",
+      "description": "在机器人关节构型空间中直接对每个关节的位置、速度或力矩进行控制的底层运动控制方法。"
+    }
+  ],
+  "relations": [
+    [
+      "RT-2",
+      "视觉-语言-动作模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Octo",
+      "机器人基础模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "扩散策略",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "视觉-语言-动作模型",
+      "视觉语言动作模型",
+      "RELATED_TO"
+    ],
+    [
+      "深度强化学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "行为克隆",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "逆向强化学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "交互式模仿学习",
+      "机器人模仿学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "任务与运动规划",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "物理模拟器MuJoCo",
+      "仿真到现实迁移",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Isaac Sim",
+      "仿真到现实迁移",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "Isaac Gym",
+      "仿真到现实迁移",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "端到端自动驾驶",
+      "具身智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "语言条件操作",
+      "视觉-语言-动作模型",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "感觉运动学习",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "离线强化学习",
+      "具身策略学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "技能链",
+      "技能库",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "本体感受",
+      "具身感知",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "预抓取推理",
+      "操作技能学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联合空间控制",
+      "操作技能学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "视觉-语言-动作模型",
+      "RT-2",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "具身数据采集",
+      "Octo",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "行为克隆",
+      "扩散策略",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "离线强化学习",
+      "扩散策略",
+      "RELATED_TO"
+    ],
+    [
+      "深度强化学习",
+      "离线强化学习",
+      "RELATED_TO"
+    ],
+    [
+      "交互式模仿学习",
+      "行为克隆",
+      "RELATED_TO"
+    ],
+    [
+      "任务与运动规划",
+      "技能链",
+      "RELATED_TO"
+    ],
+    [
+      "物理模拟器MuJoCo",
+      "Isaac Gym",
+      "RELATED_TO"
+    ],
+    [
+      "Isaac Sim",
+      "Isaac Gym",
+      "RELATED_TO"
+    ],
+    [
+      "本体感受",
+      "感觉运动学习",
+      "PART_OF"
+    ],
+    [
+      "预抓取推理",
+      "任务与运动规划",
+      "PART_OF"
+    ],
+    [
+      "联合空间控制",
+      "安全约束控制",
+      "RELATED_TO"
+    ]
+  ]
+}

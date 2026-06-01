@@ -1,4 +1,16 @@
-﻿<script setup>
+<script setup>
+import {
+  BookOpen,
+  Bot,
+  BrainCircuit,
+  CircleUserRound,
+  GraduationCap,
+  Newspaper,
+  LayoutDashboard,
+  LogIn,
+  Maximize2,
+  RefreshCcw,
+} from '@lucide/vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
@@ -34,6 +46,29 @@ const recommendationMeta = ref({
 let recommendationRequestId = 0
 
 const sceneMeta = computed(() => graphStore.graphData?.meta || { totalNodes: 0, visibleNodes: 0, visibleEdges: 0, rootCount: 0, expandedCount: 0 })
+
+const learningStats = computed(() => {
+  let mastered = 0
+  let learning = 0
+  let weak = 0
+
+  graphStore.rawNodes.forEach((node) => {
+    const progress = userStore.getProgressMeta(node.routeKnowledgeId)
+    const mastery = Number(progress.masteryScore || 0)
+    const answeredCount = Number(progress.answeredCount || 0)
+    if (mastery >= 80) mastered += 1
+    else if (mastery >= 40) learning += 1
+    if (mastery < 30 && answeredCount > 0) weak += 1
+  })
+
+  return {
+    total: graphStore.rawNodes.length,
+    mastered,
+    learning,
+    weak,
+    courseCount: Math.max((graphStore.courseOptions || []).length - 1, 0),
+  }
+})
 
 const nextLearningNodes = computed(() =>
   graphStore.getNextLearningOptions(graphStore.selectedRouteKnowledgeId).map((routeKnowledgeId) => {
@@ -151,9 +186,7 @@ async function revealAndFocus(routeKnowledgeId, options = {}) {
   const node = await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
   if (node?.id) {
     await graphCanvasRef.value?.focusElement?.(node.id, options.duration ?? 200)
-    if (options.flash) {
-      await graphCanvasRef.value?.flashNode?.(node.id)
-    }
+    if (options.flash) await graphCanvasRef.value?.flashNode?.(node.id)
   }
   return node
 }
@@ -188,11 +221,7 @@ async function expandKnowledgeFromAssistant(target) {
       viewportCenterWorld: graphCanvasRef.value?.getViewportCenterWorld?.() || null,
       occupiedNodes,
     })
-    queueExpandedClusterFocus(node.id, newChildIds, {
-      zoomLevel: 1.08,
-      duration: 220,
-      lockDuration: 820,
-    })
+    queueExpandedClusterFocus(node.id, newChildIds, { zoomLevel: 1.08, duration: 220, lockDuration: 820 })
   }
 
   await graphStore.selectNode(node.id)
@@ -207,10 +236,7 @@ async function handleAssistantActions(actions = []) {
     if (type === 'focus_knowledge') {
       const resolved = resolveAssistantTarget(action.target)
       if (resolved?.routeKnowledgeId) {
-        await revealAndFocus(resolved.routeKnowledgeId, {
-          flash: action.flash !== false,
-          duration: 220,
-        })
+        await revealAndFocus(resolved.routeKnowledgeId, { flash: action.flash !== false, duration: 220 })
         rightCollapsed.value = false
       }
       continue
@@ -235,9 +261,7 @@ async function handleAssistantActions(actions = []) {
 
     if (type === 'open_knowledge_detail') {
       const resolved = resolveAssistantTarget(action.target)
-      if (resolved?.routeKnowledgeId) {
-        router.push(`/knowledge/${encodeURIComponent(resolved.routeKnowledgeId)}`)
-      }
+      if (resolved?.routeKnowledgeId) router.push(`/knowledge/${encodeURIComponent(resolved.routeKnowledgeId)}`)
       continue
     }
 
@@ -258,9 +282,7 @@ async function handleAssistantActions(actions = []) {
       continue
     }
 
-    if (type === 'reset_graph_scene') {
-      await handleSceneReset()
-    }
+    if (type === 'reset_graph_scene') await handleSceneReset()
   }
 }
 
@@ -273,9 +295,7 @@ async function handleSearchSelect(item) {
 async function handleNodeSelect(nodeId) {
   await graphStore.selectNode(nodeId)
   rightCollapsed.value = false
-  graphCanvasRef.value?.softFollowElement?.(nodeId, {
-    duration: 180,
-  })
+  graphCanvasRef.value?.softFollowElement?.(nodeId, { duration: 180 })
 }
 
 async function handleNodeDoubleClick(nodeId) {
@@ -288,11 +308,7 @@ async function handleNodeDoubleClick(nodeId) {
     occupiedNodes,
   })
   if (!wasExpanded) {
-    queueExpandedClusterFocus(nodeId, changedNodeIds, {
-      zoomLevel: 1.08,
-      duration: 240,
-      lockDuration: 920,
-    })
+    queueExpandedClusterFocus(nodeId, changedNodeIds, { zoomLevel: 1.08, duration: 240, lockDuration: 920 })
   }
   await graphStore.selectNode(nodeId)
   rightCollapsed.value = false
@@ -308,14 +324,12 @@ function extractCourseTitle(hubId) {
 
 function handleHubClick(hubId) {
   const courseTitle = extractCourseTitle(hubId)
-  if (!courseTitle) return
-  graphStore.setCourseFilter(courseTitle)
+  if (courseTitle) graphStore.setCourseFilter(courseTitle)
 }
 
 function handleHubDoubleClick(hubId) {
   const courseTitle = extractCourseTitle(hubId)
-  if (!courseTitle) return
-  graphStore.setCourseFilter(courseTitle)
+  if (courseTitle) graphStore.setCourseFilter(courseTitle)
 }
 
 async function handleCourseFocus(courseTitle) {
@@ -356,7 +370,7 @@ async function handleContextAction({ action, node }) {
     rightCollapsed.value = false
     aiAutoPrompt.value = {
       id: Date.now(),
-      text: `请帮我解释知识点“${routeKnowledgeId}”，并结合前置知识给出学习建议。`,
+      text: `请用学生能听懂的方式讲解“${routeKnowledgeId}”，并告诉我下一步该学什么。`,
     }
     aiOpen.value = true
     return
@@ -418,14 +432,16 @@ function handleRemovePathNode({ pathId, knowledgeId }) {
   userStore.removeFromPath(pathId, knowledgeId)
 }
 
+function handleRenamePath({ pathId, name }) {
+  if (!pathId || !name) return
+  userStore.renamePath(pathId, name)
+}
+
 function handleReorderPath({ pathId, fromIndex, toIndex }) {
   if (!pathId) return
-  if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return
-
   const path = userStore.customPaths.find((item) => item.id === pathId)
-  if (!path) return
+  if (!path || !Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return
   if (toIndex < 0 || toIndex >= path.nodes.length || fromIndex === toIndex) return
-
   userStore.reorderPath(pathId, fromIndex, toIndex)
 }
 
@@ -448,8 +464,8 @@ function handleOpenAi() {
   aiAutoPrompt.value = {
     id: Date.now(),
     text: graphStore.selectedRouteKnowledgeId
-      ? `请围绕“${graphStore.selectedRouteKnowledgeId}”做一段易懂讲解，并指出我下一步该学什么。`
-      : '请先概览当前知识图谱，并给我一个适合现在开始的学习建议。',
+      ? `请围绕“${graphStore.selectedRouteKnowledgeId}”讲解核心概念，并给出一个练习建议。`
+      : '请帮我从当前课程图谱里选一个适合开始学习的知识点。',
   }
   aiOpen.value = true
 }
@@ -513,37 +529,26 @@ onMounted(() => {
       event.preventDefault()
       handleSceneReset().catch(() => null)
     }
-
-    if (event.key === '[') {
-      leftCollapsed.value = !leftCollapsed.value
-    }
-
-    if (event.key === ']') {
-      rightCollapsed.value = !rightCollapsed.value
-    }
   }
 
   window.addEventListener('keydown', onKeydown)
 })
 
 onBeforeUnmount(() => {
-  if (onKeydown) {
-    window.removeEventListener('keydown', onKeydown)
-  }
+  if (onKeydown) window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
 <template>
-  <section class="graph-home">
-    <header class="topbar">
+  <section class="graph-home student-workspace">
+    <header class="topbar student-topbar">
       <div class="topbar__brand">
         <div class="topbar__logo">
-          <span class="topbar__logo-icon">智</span>
-          <span class="topbar__logo-pulse"></span>
+          <GraduationCap :size="22" aria-hidden="true" />
         </div>
         <div>
           <strong class="topbar__title">{{ APP_NAME }}</strong>
-          <p>分层展开的关联知识图谱，优先保证大图流畅、节点可读和逐层探索体验。</p>
+          <p>从课程目录、知识地图和 AI 助教开始你的下一步学习。</p>
         </div>
       </div>
 
@@ -558,14 +563,26 @@ onBeforeUnmount(() => {
       />
 
       <div class="topbar__actions">
-        <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">登录</RouterLink>
-        <template v-else>
-          <RouterLink class="secondary-btn" to="/dashboard">能力图谱</RouterLink>
-          <RouterLink class="profile-chip" to="/">
-            <span class="profile-chip__dot"></span>
-            <span>{{ userStore.user?.username || userStore.user?.email || '已登录' }}</span>
-          </RouterLink>
-        </template>
+        <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/dashboard">
+          <LayoutDashboard :size="16" aria-hidden="true" />
+          学习总览
+        </RouterLink>
+        <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/competency">
+          <BrainCircuit :size="16" aria-hidden="true" />
+          能力图谱
+        </RouterLink>
+        <RouterLink class="secondary-btn" to="/frontier">
+          <Newspaper :size="16" aria-hidden="true" />
+          前沿资料
+        </RouterLink>
+        <RouterLink v-if="!userStore.isAuthenticated" class="secondary-btn" to="/login">
+          <LogIn :size="16" aria-hidden="true" />
+          登录
+        </RouterLink>
+        <RouterLink v-else class="profile-chip" to="/dashboard">
+          <CircleUserRound :size="16" aria-hidden="true" />
+          <span>{{ userStore.user?.username || userStore.user?.email || '我的学习' }}</span>
+        </RouterLink>
       </div>
     </header>
 
@@ -588,49 +605,54 @@ onBeforeUnmount(() => {
         @create-path="handleCreatePath"
         @reorder-path="handleReorderPath"
         @remove-path-node="handleRemovePathNode"
+        @rename-path="handleRenamePath"
         @start-path="handleStartPath"
       />
 
       <main class="graph-stage">
-        <div class="graph-stage__hint">
-          <span>
-            首屏只保留少量关键知识点，双击任意知识点会按层级展开它的关联节点；再次双击已经展开的节点，会把它展开出的关联节点收回去。
-          </span>
-          <span>
-            鼠标滚轮缩放，左键选中知识点，双击展开或收回关联网络，右键打开学习菜单，<kbd>Space</kbd> 适配视图，<kbd>Ctrl+K</kbd> 搜索，<kbd>0</kbd> 重置。
-          </span>
-        </div>
-
-        <div class="graph-scene-bar">
-          <div class="graph-scene-bar__group">
-            <span class="graph-scene-bar__label">Scene</span>
-            <strong>{{ graphStore.activeCourseFilter === '全部' ? '全局总览' : graphStore.activeCourseFilter }}</strong>
-            <span>
-              {{ sceneMeta.totalNodes }} 个知识点 · 首屏种子 {{ sceneMeta.rootCount }} 个 · 当前可见 {{ sceneMeta.visibleNodes }} 个 · 可见关系 {{ sceneMeta.visibleEdges }} 条 · 已展开节点 {{ sceneMeta.expandedCount }} 个
-            </span>
+        <section class="graph-learning-card">
+          <div class="graph-learning-card__head">
+            <div class="graph-learning-card__title">
+              <span class="eyebrow">Knowledge Map</span>
+              <h1>课程知识地图</h1>
+              <p>单击查看知识点，双击展开关联，右键加入学习路径或收藏。</p>
+            </div>
+            <div class="graph-learning-card__meta" aria-label="图谱概览">
+              <span :title="graphStore.activeCourseFilter === '全部' ? '全部课程' : graphStore.activeCourseFilter">
+                {{ graphStore.activeCourseFilter === '全部' ? '全部课程' : graphStore.activeCourseFilter }}
+              </span>
+              <span>{{ learningStats.courseCount }} 门课</span>
+              <span>{{ sceneMeta.visibleNodes }} 点</span>
+              <span>{{ learningStats.mastered }} 已掌握</span>
+            </div>
+            <div class="graph-scene-bar__actions">
+              <button type="button" class="graph-scene-btn" @click="graphCanvasRef?.fitView?.()">
+                <Maximize2 :size="15" aria-hidden="true" />
+                适配
+              </button>
+              <button type="button" class="graph-scene-btn" @click="handleSceneReset">
+                <RefreshCcw :size="15" aria-hidden="true" />
+                重置
+              </button>
+            </div>
           </div>
 
-          <div class="graph-scene-bar__actions">
-            <button type="button" class="graph-scene-btn" @click="graphCanvasRef?.fitView?.()">适配视图</button>
-            <button type="button" class="graph-scene-btn" @click="handleSceneReset">重置场景</button>
-          </div>
-        </div>
-
-        <GraphCanvas
-          ref="graphCanvasRef"
-          :graph-data="graphStore.graphData"
-          :state-map="stateMap"
-          :highlight-path="graphStore.highlightPath"
-          :selected-node-id="graphStore.selectedNodeId"
-          :loading="graphStore.loading"
-          :error="graphStore.error"
-          @select-node="handleNodeSelect"
-          @node-double-click="handleNodeDoubleClick"
-          @hub-click="handleHubClick"
-          @hub-double-click="handleHubDoubleClick"
-          @clear-selection="handleClearSelection"
-          @context-action="handleContextAction"
-        />
+          <GraphCanvas
+            ref="graphCanvasRef"
+            :graph-data="graphStore.graphData"
+            :state-map="stateMap"
+            :highlight-path="graphStore.highlightPath"
+            :selected-node-id="graphStore.selectedNodeId"
+            :loading="graphStore.loading"
+            :error="graphStore.error"
+            @select-node="handleNodeSelect"
+            @node-double-click="handleNodeDoubleClick"
+            @hub-click="handleHubClick"
+            @hub-double-click="handleHubDoubleClick"
+            @clear-selection="handleClearSelection"
+            @context-action="handleContextAction"
+          />
+        </section>
       </main>
 
       <RightPanel
@@ -662,9 +684,15 @@ onBeforeUnmount(() => {
     />
 
     <div class="mobile-dock">
-      <button type="button" class="mobile-dock__btn" @click="leftCollapsed = !leftCollapsed">导航</button>
+      <button type="button" class="mobile-dock__btn" @click="leftCollapsed = !leftCollapsed">
+        <BookOpen :size="16" aria-hidden="true" />
+        导航
+      </button>
       <button type="button" class="mobile-dock__btn" @click="rightCollapsed = !rightCollapsed">详情</button>
-      <button type="button" class="mobile-dock__btn mobile-dock__btn--primary" @click="aiOpen = !aiOpen">助手</button>
+      <button type="button" class="mobile-dock__btn mobile-dock__btn--primary" @click="aiOpen = !aiOpen">
+        <Bot :size="16" aria-hidden="true" />
+        助教
+      </button>
     </div>
   </section>
 </template>

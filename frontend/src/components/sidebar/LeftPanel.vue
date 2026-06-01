@@ -1,4 +1,6 @@
 <script setup>
+import { ChevronLeft, ChevronRight, Library } from '@lucide/vue'
+
 import BookmarkPanel from './BookmarkPanel.vue'
 import KnowledgeTree from './KnowledgeTree.vue'
 import PathPanel from './PathPanel.vue'
@@ -45,19 +47,29 @@ const emit = defineEmits([
   'reorder-path',
   'remove-path-node',
   'start-path',
+  'rename-path',
 ])
 </script>
 
 <template>
   <aside class="left-panel" :class="{ 'left-panel--collapsed': collapsed }">
     <div class="panel-header">
-      <strong>学习导航</strong>
-      <button type="button" class="panel-toggle" @click="emit('toggle')">
-        {{ collapsed ? '展开' : '折叠' }}
+      <div class="panel-header__title">
+        <Library :size="17" aria-hidden="true" />
+        <strong>学习导航</strong>
+      </div>
+      <button type="button" class="panel-toggle" :title="collapsed ? '展开导航' : '收起导航'" @click="emit('toggle')">
+        <ChevronRight v-if="collapsed" :size="16" aria-hidden="true" />
+        <ChevronLeft v-else :size="16" aria-hidden="true" />
       </button>
     </div>
 
     <div v-if="!collapsed" class="panel-stack">
+      <div class="aside-intro">
+        <strong>从课程到知识点</strong>
+        <span>按课程查看知识地图，结合进度和推荐路径继续学习。</span>
+      </div>
+
       <KnowledgeTree
         :course-groups="courseGroups"
         :nodes="nodes"
@@ -85,6 +97,7 @@ const emit = defineEmits([
         @remove-node="emit('remove-path-node', $event)"
         @focus-node="emit('focus-node', $event)"
         @start-path="emit('start-path', $event)"
+        @rename-path="emit('rename-path', $event)"
       />
 
       <BookmarkPanel

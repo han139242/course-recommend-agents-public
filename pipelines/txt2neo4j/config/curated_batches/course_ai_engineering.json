@@ -20,22 +20,22 @@
     {
       "canonical_name": "ML Pipeline",
       "entity_type": "topic",
-      "description": "围绕实验组织、超参数搜索、模型选择与可复现实验展开的流程主题。"
+      "description": "将数据预处理、特征工程、模型训练、评估、部署和监控等环节组织为自动化工作流的工程实践。"
     },
     {
       "canonical_name": "分布式训练",
       "entity_type": "topic",
-      "description": "围绕多卡多机训练并行策略、资源调度与通信优化展开的工程主题。"
+      "description": "在多GPU/多节点上通过集合通信和参数同步策略协同完成大规模模型训练的并行计算方法。"
     },
     {
       "canonical_name": "模型服务",
       "entity_type": "topic",
-      "description": "围绕模型部署、在线服务、推理优化与流量调度展开的工程主题。"
+      "description": "将训练好的ML模型封装为在线API或批处理接口，提供低延迟、高吞吐和高可用的推理服务能力。"
     },
     {
       "canonical_name": "模型监控",
       "entity_type": "method",
-      "description": "持续监测模型性能、输入分布和服务状态以发现异常的方法。"
+      "description": "对模型在生产中的预测质量、延迟、分布偏移和错误率等指标进行持续观测和告警的运维实践。"
     },
     {
       "canonical_name": "MLOps",
@@ -200,7 +200,7 @@
     {
       "canonical_name": "数据并行",
       "entity_type": "method",
-      "description": "数据并行是在 AI 工程数据、训练、部署或运维中常用的方法。"
+      "description": "每个设备持有完整模型副本，在不同数据子集上独立计算梯度，通过AllReduce等集合通信同步参数更新的分布式训练方法。"
     },
     {
       "canonical_name": "模型并行",
@@ -210,12 +210,12 @@
     {
       "canonical_name": "流水线并行",
       "entity_type": "method",
-      "description": "流水线并行是在 AI 工程数据、训练、部署或运维中常用的方法。"
+      "description": "将模型按层切分为多个阶段，每个阶段在不同设备上执行，通过微批次流水线减少设备空闲时间的模型并行策略。"
     },
     {
       "canonical_name": "混合精度训练",
       "entity_type": "method",
-      "description": "混合精度训练是在 AI 工程数据、训练、部署或运维中常用的方法。"
+      "description": "结合低精度计算和高精度主权重以提升训练速度并控制数值稳定性的训练方法。"
     },
     {
       "canonical_name": "ZeRO",
@@ -225,7 +225,7 @@
     {
       "canonical_name": "梯度累积",
       "entity_type": "method",
-      "description": "通过多次前向反向后再统一更新参数来模拟更大批量训练的方法。"
+      "description": "连续执行多个小批量前向反向传播，累积梯度后再统一更新参数，在有限显存下模拟大批量训练效果的方法。"
     },
     {
       "canonical_name": "参数服务器",
@@ -279,8 +279,8 @@
     },
     {
       "canonical_name": "TensorRT",
-      "entity_type": "algorithm",
-      "description": "针对 NVIDIA 硬件进行深度学习推理优化和编译的高性能引擎。"
+      "entity_type": "tool",
+      "description": "NVIDIA 的高性能推理优化引擎，通过层融合、精度校准、内核自动调优和动态形状支持，将训练后的模型编译为高度优化的推理执行计划。"
     },
     {
       "canonical_name": "模型编译优化",
@@ -355,12 +355,12 @@
     {
       "canonical_name": "模型注册",
       "entity_type": "method",
-      "description": "模型注册是在 AI 工程数据、训练、部署或运维中常用的方法。"
+      "description": "将模型版本、部署状态和服役阶段等元数据登记到模型仓库中的生命周期管理操作。"
     },
     {
       "canonical_name": "自动化部署",
       "entity_type": "method",
-      "description": "自动化部署是在 AI 工程数据、训练、部署或运维中常用的方法。"
+      "description": "通过蓝绿部署、金丝雀发布和A/B测试等策略将模型安全高效推进到生产环境的方法。"
     },
     {
       "canonical_name": "工作流编排",

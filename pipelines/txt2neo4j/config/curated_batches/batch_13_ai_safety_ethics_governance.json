@@ -19,17 +19,17 @@
     {
       "canonical_name": "公平性",
       "entity_type": "concept",
-      "description": "人工智能系统在不同群体和个体之间避免不合理差别影响的性质。"
+      "description": "模型在不同人口统计分组间表现一致、不系统性地偏向或损害特定群体的性质。"
     },
     {
       "canonical_name": "偏见",
       "entity_type": "concept",
-      "description": "数据、模型或决策过程中对特定群体产生系统性不公影响的现象。"
+      "description": "模型因训练数据中存在的系统性偏差而对特定群体产生不公平或不准确预测结果的社会技术问题。"
     },
     {
       "canonical_name": "可解释性",
       "entity_type": "concept",
-      "description": "人工智能系统能够向人类说明其决策依据和行为机制的性质。"
+      "description": "以人类可理解的方式揭示模型决策逻辑的能力。"
     },
     {
       "canonical_name": "可追溯性",
@@ -44,7 +44,7 @@
     {
       "canonical_name": "差分隐私",
       "entity_type": "method",
-      "description": "通过引入受控随机扰动来限制个体数据泄露风险的隐私保护方法。"
+      "description": "通过在查询或训练中注入精确校准的随机噪声，提供数学上可证明的个体隐私保护保证。"
     },
     {
       "canonical_name": "联邦学习",
@@ -59,12 +59,12 @@
     {
       "canonical_name": "对抗攻击",
       "entity_type": "method",
-      "description": "通过构造微小但恶意的输入扰动诱导模型输出错误结果的方法。"
+      "description": "通过向输入添加人类不可察觉的微小扰动导致机器学习模型输出错误预测的攻击方法。"
     },
     {
       "canonical_name": "对抗训练",
       "entity_type": "method",
-      "description": "将对抗样本纳入训练过程以提升模型鲁棒性的防御方法。"
+      "description": "在训练过程中动态生成对抗样本并纳入损失函数进行联合优化，使模型学会抵抗对抗扰动的鲁棒性提升方法。"
     },
     {
       "canonical_name": "价值对齐",
@@ -89,7 +89,7 @@
     {
       "canonical_name": "合规性",
       "entity_type": "concept",
-      "description": "人工智能系统满足法律法规、标准和组织规范要求的性质。"
+      "description": "确保AI系统在数据使用和模型决策方面符合隐私法律和行业法规的制度化要求。"
     },
     {
       "canonical_name": "安全护栏",
@@ -103,45 +103,205 @@
     }
   ],
   "relations": [
-    ["AI安全", "人工智能", "SUBTOPIC_OF"],
-    ["AI伦理", "人工智能", "SUBTOPIC_OF"],
-    ["AI治理", "人工智能", "SUBTOPIC_OF"],
-    ["公平性", "AI伦理", "RELATED_TO"],
-    ["偏见", "公平性", "RELATED_TO"],
-    ["偏见", "机器学习", "RELATED_TO"],
-    ["可解释性", "AI伦理", "RELATED_TO"],
-    ["可解释性", "模型审计", "PREREQUISITE_OF"],
-    ["可追溯性", "AI治理", "RELATED_TO"],
-    ["可追溯性", "模型审计", "PREREQUISITE_OF"],
-    ["隐私保护", "AI安全", "RELATED_TO"],
-    ["隐私保护", "AI治理", "RELATED_TO"],
-    ["差分隐私", "隐私保护", "SUBTOPIC_OF"],
-    ["联邦学习", "隐私保护", "SUBTOPIC_OF"],
-    ["联邦学习", "机器学习", "RELATED_TO"],
-    ["鲁棒性", "AI安全", "RELATED_TO"],
-    ["对抗攻击", "AI安全", "SUBTOPIC_OF"],
-    ["对抗训练", "AI安全", "SUBTOPIC_OF"],
-    ["对抗攻击", "鲁棒性", "RELATED_TO"],
-    ["对抗训练", "对抗攻击", "RELATED_TO"],
-    ["对抗训练", "鲁棒性", "RELATED_TO"],
-    ["价值对齐", "AI安全", "RELATED_TO"],
-    ["价值对齐", "AI伦理", "RELATED_TO"],
-    ["价值对齐", "大语言模型", "RELATED_TO"],
-    ["幻觉", "大语言模型", "RELATED_TO"],
-    ["幻觉", "价值对齐", "RELATED_TO"],
-    ["模型审计", "AI治理", "SUBTOPIC_OF"],
-    ["模型审计", "风险评估", "RELATED_TO"],
-    ["风险评估", "AI治理", "SUBTOPIC_OF"],
-    ["合规性", "AI治理", "RELATED_TO"],
-    ["合规性", "风险评估", "RELATED_TO"],
-    ["安全护栏", "AI安全", "SUBTOPIC_OF"],
-    ["安全护栏", "大语言模型", "RELATED_TO"],
-    ["红队测试", "AI安全", "SUBTOPIC_OF"],
-    ["红队测试", "模型审计", "RELATED_TO"],
-    ["红队测试", "风险评估", "RELATED_TO"],
-    ["公平性", "模型审计", "RELATED_TO"],
-    ["偏见", "模型审计", "RELATED_TO"],
-    ["隐私保护", "合规性", "RELATED_TO"],
-    ["安全护栏", "红队测试", "RELATED_TO"]
+    [
+      "AI安全",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI伦理",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "AI治理",
+      "人工智能",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "公平性",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "偏见",
+      "公平性",
+      "RELATED_TO"
+    ],
+    [
+      "偏见",
+      "机器学习",
+      "RELATED_TO"
+    ],
+    [
+      "可解释性",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "可解释性",
+      "模型审计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "可追溯性",
+      "AI治理",
+      "RELATED_TO"
+    ],
+    [
+      "可追溯性",
+      "模型审计",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "隐私保护",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "隐私保护",
+      "AI治理",
+      "RELATED_TO"
+    ],
+    [
+      "差分隐私",
+      "隐私保护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦学习",
+      "隐私保护",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦学习",
+      "机器学习",
+      "RELATED_TO"
+    ],
+    [
+      "鲁棒性",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "对抗攻击",
+      "AI安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗训练",
+      "AI安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "对抗攻击",
+      "鲁棒性",
+      "RELATED_TO"
+    ],
+    [
+      "对抗训练",
+      "对抗攻击",
+      "RELATED_TO"
+    ],
+    [
+      "对抗训练",
+      "鲁棒性",
+      "RELATED_TO"
+    ],
+    [
+      "价值对齐",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "价值对齐",
+      "AI伦理",
+      "RELATED_TO"
+    ],
+    [
+      "价值对齐",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "幻觉",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "幻觉",
+      "价值对齐",
+      "RELATED_TO"
+    ],
+    [
+      "模型审计",
+      "AI治理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "模型审计",
+      "风险评估",
+      "RELATED_TO"
+    ],
+    [
+      "风险评估",
+      "AI治理",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "合规性",
+      "AI治理",
+      "RELATED_TO"
+    ],
+    [
+      "合规性",
+      "风险评估",
+      "RELATED_TO"
+    ],
+    [
+      "安全护栏",
+      "AI安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全护栏",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "红队测试",
+      "AI安全",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "红队测试",
+      "模型审计",
+      "RELATED_TO"
+    ],
+    [
+      "红队测试",
+      "风险评估",
+      "RELATED_TO"
+    ],
+    [
+      "公平性",
+      "模型审计",
+      "RELATED_TO"
+    ],
+    [
+      "偏见",
+      "模型审计",
+      "RELATED_TO"
+    ],
+    [
+      "隐私保护",
+      "合规性",
+      "RELATED_TO"
+    ],
+    [
+      "安全护栏",
+      "红队测试",
+      "RELATED_TO"
+    ]
   ]
 }

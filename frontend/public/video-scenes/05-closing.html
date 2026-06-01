@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1920px; height: 1080px; overflow: hidden;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 50%, #0a0a1a 100%);
+    font-family: 'Noto Sans SC', sans-serif; color: #e0e8f0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .tagline {
+    font-size: 48px; font-weight: 900; color: #fff; margin-bottom: 30px;
+    text-shadow: 0 0 60px rgba(100,180,255,0.3);
+    opacity: 0; animation: fadeUp 0.8s 0.3s forwards;
+  }
+  .tagline span { color: #64b4ff; }
+  .desc {
+    font-size: 22px; color: rgba(200,220,255,0.7); max-width: 900px; line-height: 1.6;
+    margin-bottom: 50px;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .info-grid {
+    display: flex; gap: 40px;
+    opacity: 0; animation: fadeUp 0.8s 0.9s forwards;
+  }
+  .info-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(100,180,255,0.12);
+    border-radius: 14px; padding: 24px 36px; min-width: 200px;
+  }
+  .info-label { font-size: 13px; color: rgba(160,190,220,0.5); margin-bottom: 6px; }
+  .info-value { font-size: 20px; color: #fff; font-weight: 700; }
+  .info-value.hl { color: #64b4ff; }
+  .footer {
+    margin-top: 60px; font-size: 15px; color: rgba(160,190,220,0.35);
+    opacity: 0; animation: fadeUp 0.8s 1.2s forwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="tagline">突破课程边界，让<span> AI 学习</span>有路可循</div>
+<div class="desc">
+  2659 个知识点 · 21 门课程 · 7 因子评分 · 10 项评测指标<br>
+  KT-KGPath 跨课程个性化学习路径推荐智能体系统
+</div>
+<div class="info-grid">
+  <div class="info-card">
+    <div class="info-label">演示入口</div>
+    <div class="info-value hl">:8080</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">作品展示</div>
+    <div class="info-value hl">:8080/showcase</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">技术栈</div>
+    <div class="info-value">Go + Neo4j + Vue 3</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">赛道</div>
+    <div class="info-value">C4 A 系列</div>
+  </div>
+</div>
+<div class="footer">2026 中国高校计算机大赛-网络技术挑战赛 · 选拔赛作品</div>
+</body>
+</html>

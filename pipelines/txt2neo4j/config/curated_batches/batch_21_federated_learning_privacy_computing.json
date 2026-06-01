@@ -39,22 +39,22 @@
     {
       "canonical_name": "安全聚合",
       "entity_type": "method",
-      "description": "在不暴露单个参与方参数更新明文的情况下完成模型聚合的方法。"
+      "description": "联邦学习中各参与者上传加密或掩码后的梯度，服务器只能获得聚合结果而无法获取个体梯度值的安全多方计算协议。"
     },
     {
       "canonical_name": "安全多方计算",
       "entity_type": "method",
-      "description": "让多方在不泄露各自私有输入的前提下联合完成计算的密码学方法。"
+      "description": "允许多个参与方在不泄露各自私有输入前提下联合计算约定函数的密码学协议。"
     },
     {
       "canonical_name": "同态加密",
       "entity_type": "method",
-      "description": "允许在密文上直接执行运算并在解密后得到正确明文结果的加密方法。"
+      "description": "允许在密文上直接执行运算而无需解密，结果解密后等价于明文计算的密码学原语。"
     },
     {
       "canonical_name": "可信执行环境",
       "entity_type": "concept",
-      "description": "在受保护硬件隔离环境中执行敏感计算以降低泄露风险的安全机制。"
+      "description": "在CPU硬件层面隔离出的安全区域，保证代码和数据的机密性与完整性的硬件安全机制。"
     },
     {
       "canonical_name": "本地差分隐私",
@@ -74,12 +74,12 @@
     {
       "canonical_name": "成员推断攻击",
       "entity_type": "method",
-      "description": "判断某条样本是否参与模型训练的隐私攻击方法。"
+      "description": "判断给定样本是否属于模型训练集的隐私攻击方法，可用于审计训练数据泄露风险。"
     },
     {
       "canonical_name": "模型反演攻击",
       "entity_type": "method",
-      "description": "利用模型输出或参数恢复训练数据特征或样本的隐私攻击方法。"
+      "description": "利用模型输出或中间表示逆向推断训练数据中敏感特征和样本信息的隐私攻击。"
     },
     {
       "canonical_name": "非独立同分布数据",
@@ -103,45 +103,205 @@
     }
   ],
   "relations": [
-    ["隐私计算", "人工智能", "RELATED_TO"],
-    ["隐私计算", "隐私保护", "RELATED_TO"],
-    ["横向联邦学习", "联邦学习", "SUBTOPIC_OF"],
-    ["纵向联邦学习", "联邦学习", "SUBTOPIC_OF"],
-    ["联邦迁移学习", "联邦学习", "SUBTOPIC_OF"],
-    ["联邦迁移学习", "迁移学习", "RELATED_TO"],
-    ["联邦平均算法", "联邦学习", "PREREQUISITE_OF"],
-    ["参数服务器", "联邦平均算法", "PREREQUISITE_OF"],
-    ["客户端采样", "联邦平均算法", "PREREQUISITE_OF"],
-    ["安全聚合", "联邦学习", "SUBTOPIC_OF"],
-    ["安全聚合", "安全多方计算", "RELATED_TO"],
-    ["安全多方计算", "隐私计算", "SUBTOPIC_OF"],
-    ["同态加密", "隐私计算", "SUBTOPIC_OF"],
-    ["可信执行环境", "隐私计算", "SUBTOPIC_OF"],
-    ["同态加密", "安全聚合", "RELATED_TO"],
-    ["可信执行环境", "安全聚合", "RELATED_TO"],
-    ["本地差分隐私", "差分隐私", "SUBTOPIC_OF"],
-    ["隐私预算", "差分隐私", "PREREQUISITE_OF"],
-    ["隐私预算", "本地差分隐私", "PREREQUISITE_OF"],
-    ["本地差分隐私", "联邦学习", "RELATED_TO"],
-    ["梯度泄露", "联邦学习", "RELATED_TO"],
-    ["成员推断攻击", "AI安全", "RELATED_TO"],
-    ["模型反演攻击", "AI安全", "RELATED_TO"],
-    ["成员推断攻击", "隐私计算", "RELATED_TO"],
-    ["模型反演攻击", "隐私计算", "RELATED_TO"],
-    ["梯度泄露", "模型反演攻击", "RELATED_TO"],
-    ["梯度泄露", "安全聚合", "RELATED_TO"],
-    ["非独立同分布数据", "联邦学习", "RELATED_TO"],
-    ["非独立同分布数据", "个性化联邦学习", "RELATED_TO"],
-    ["通信开销", "联邦学习", "RELATED_TO"],
-    ["通信开销", "客户端采样", "RELATED_TO"],
-    ["通信开销", "联邦平均算法", "RELATED_TO"],
-    ["个性化联邦学习", "联邦学习", "SUBTOPIC_OF"],
-    ["个性化联邦学习", "横向联邦学习", "RELATED_TO"],
-    ["联邦评估", "联邦学习", "SUBTOPIC_OF"],
-    ["联邦评估", "模型评估", "RELATED_TO"],
-    ["联邦评估", "合规性", "RELATED_TO"],
-    ["安全多方计算", "纵向联邦学习", "RELATED_TO"],
-    ["参数服务器", "联邦评估", "RELATED_TO"],
-    ["隐私计算", "AI治理", "RELATED_TO"]
+    [
+      "隐私计算",
+      "人工智能",
+      "RELATED_TO"
+    ],
+    [
+      "隐私计算",
+      "隐私保护",
+      "RELATED_TO"
+    ],
+    [
+      "横向联邦学习",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "纵向联邦学习",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦迁移学习",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦迁移学习",
+      "迁移学习",
+      "RELATED_TO"
+    ],
+    [
+      "联邦平均算法",
+      "联邦学习",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "参数服务器",
+      "联邦平均算法",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "客户端采样",
+      "联邦平均算法",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "安全聚合",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "安全聚合",
+      "安全多方计算",
+      "RELATED_TO"
+    ],
+    [
+      "安全多方计算",
+      "隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "同态加密",
+      "隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "可信执行环境",
+      "隐私计算",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "同态加密",
+      "安全聚合",
+      "RELATED_TO"
+    ],
+    [
+      "可信执行环境",
+      "安全聚合",
+      "RELATED_TO"
+    ],
+    [
+      "本地差分隐私",
+      "差分隐私",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "隐私预算",
+      "差分隐私",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "隐私预算",
+      "本地差分隐私",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "本地差分隐私",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "梯度泄露",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "成员推断攻击",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "模型反演攻击",
+      "AI安全",
+      "RELATED_TO"
+    ],
+    [
+      "成员推断攻击",
+      "隐私计算",
+      "RELATED_TO"
+    ],
+    [
+      "模型反演攻击",
+      "隐私计算",
+      "RELATED_TO"
+    ],
+    [
+      "梯度泄露",
+      "模型反演攻击",
+      "RELATED_TO"
+    ],
+    [
+      "梯度泄露",
+      "安全聚合",
+      "RELATED_TO"
+    ],
+    [
+      "非独立同分布数据",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "非独立同分布数据",
+      "个性化联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "通信开销",
+      "联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "通信开销",
+      "客户端采样",
+      "RELATED_TO"
+    ],
+    [
+      "通信开销",
+      "联邦平均算法",
+      "RELATED_TO"
+    ],
+    [
+      "个性化联邦学习",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "个性化联邦学习",
+      "横向联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "联邦评估",
+      "联邦学习",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "联邦评估",
+      "模型评估",
+      "RELATED_TO"
+    ],
+    [
+      "联邦评估",
+      "合规性",
+      "RELATED_TO"
+    ],
+    [
+      "安全多方计算",
+      "纵向联邦学习",
+      "RELATED_TO"
+    ],
+    [
+      "参数服务器",
+      "联邦评估",
+      "RELATED_TO"
+    ],
+    [
+      "隐私计算",
+      "AI治理",
+      "RELATED_TO"
+    ]
   ]
 }

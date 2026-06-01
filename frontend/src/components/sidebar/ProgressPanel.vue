@@ -47,38 +47,24 @@ const totalProgress = computed(() => {
   return Math.round(((stats.value.mastered + stats.value.learning * 0.6) / stats.value.total) * 100)
 })
 
-const weeklyTrend = computed(() => {
-  const { total, mastered, learning, weak } = stats.value
-  if (!total) {
-    return Array.from({ length: 7 }, (_, i) => ({ label: `D${i + 1}`, value: 0 }))
-  }
-  const masteredPct = Math.round((mastered / total) * 100)
-  const learningPct = Math.round((learning / total) * 100)
-  const weakPct = Math.round((weak / Math.max(total, 1)) * 100)
-  const baseActivity = Math.min(100, masteredPct + learningPct * 0.6)
-  return [
-    { label: '已掌握', value: masteredPct },
-    { label: '学习中', value: learningPct },
-    { label: '薄弱', value: weakPct },
-    { label: '收藏', value: Math.min(100, Math.round((props.bookmarks.length / Math.max(total, 1)) * 100)) },
-    { label: '总覆盖', value: Math.min(100, Math.round(((mastered + learning) / total) * 100)) },
-    { label: '活跃度', value: Math.min(100, Math.round(baseActivity)) },
-    { label: '总进度', value: Math.min(100, Math.round(((mastered + learning * 0.6) / total) * 100)) },
-  ]
-})
+const progressItems = computed(() => [
+  { key: 'mastered', label: '已掌握', value: stats.value.mastered },
+  { key: 'learning', label: '学习中', value: stats.value.learning },
+  { key: 'weak', label: '待巩固', value: stats.value.weak },
+  { key: 'bookmarked', label: '收藏', value: stats.value.bookmarked },
+])
 </script>
 
 <template>
   <section class="panel-card">
     <div class="panel-card__head">
       <strong>学习进度</strong>
-      <span v-if="isAuthenticated">个人画像</span>
-      <span v-else>登录后更完整</span>
+      <span>{{ isAuthenticated ? '个人同步' : '登录后同步' }}</span>
     </div>
 
     <div class="total-progress">
       <div class="tree-item__meta">
-        <strong>总进度</strong>
+        <strong>总体进度</strong>
         <span>{{ totalProgress }}%</span>
       </div>
       <div class="progress-track">
@@ -87,28 +73,16 @@ const weeklyTrend = computed(() => {
     </div>
 
     <div class="progress-summary">
-      <button type="button" class="stat-chip" @click="emit('highlight-status', 'mastered')">
-        已掌握 {{ stats.mastered }}
+      <button
+        v-for="item in progressItems"
+        :key="item.key"
+        type="button"
+        class="stat-chip"
+        @click="emit('highlight-status', item.key)"
+      >
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
       </button>
-      <button type="button" class="stat-chip" @click="emit('highlight-status', 'learning')">
-        学习中 {{ stats.learning }}
-      </button>
-      <button type="button" class="stat-chip" @click="emit('highlight-status', 'weak')">
-        薄弱点 {{ stats.weak }}
-      </button>
-      <button type="button" class="stat-chip" @click="emit('highlight-status', 'bookmarked')">
-        收藏 {{ stats.bookmarked }}
-      </button>
-    </div>
-
-    <div class="trend-card">
-      <span class="panel-label">本周学习趋势</span>
-      <div class="trend-bars">
-        <div v-for="item in weeklyTrend" :key="item.label" class="trend-bar">
-          <span class="trend-bar__col" :style="{ height: `${item.value}%` }"></span>
-          <small>{{ item.label }}</small>
-        </div>
-      </div>
     </div>
   </section>
 </template>

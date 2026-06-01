@@ -1,4 +1,5 @@
 <script setup>
+import { getEntityLabel } from '../../utils/colorMap'
 import { DEFAULT_COURSE_TITLE, resolveNodeCourseTitle } from '../../utils/courseMeta'
 
 defineProps({
@@ -25,7 +26,7 @@ function getCourseTitle(node) {
   >
     <strong>{{ node.data?.label }}</strong>
     <span>{{ getCourseTitle(node) }}</span>
-    <span>类型：{{ node.data?.entityType || 'concept' }}</span>
+    <span>类型：{{ getEntityLabel(node.data?.entityType) }}</span>
     <span>掌握度：{{ Math.round(progress?.masteryScore || node.data?.masteryScore || 0) }}%</span>
   </div>
 </template>

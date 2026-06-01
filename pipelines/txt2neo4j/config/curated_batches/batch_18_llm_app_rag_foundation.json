@@ -19,7 +19,7 @@
     {
       "canonical_name": "向量数据库",
       "entity_type": "concept",
-      "description": "用于存储向量表示并支持高效近邻搜索和过滤查询的数据系统。"
+      "description": "专门存储和检索高维向量嵌入的数据库系统，通过近似最近邻搜索实现语义相似度快速匹配。"
     },
     {
       "canonical_name": "文档切分",
@@ -44,7 +44,7 @@
     {
       "canonical_name": "混合检索",
       "entity_type": "method",
-      "description": "结合关键词检索与向量检索结果提高覆盖率和相关性的检索方法。"
+      "description": "结合稀疏检索的词汇匹配和稠密检索的语义匹配，融合两者优势提升检索召回率的方法。"
     },
     {
       "canonical_name": "重排序模型",
@@ -69,12 +69,12 @@
     {
       "canonical_name": "函数调用",
       "entity_type": "method",
-      "description": "让大模型按结构化参数调用外部函数或 API 的交互方式。"
+      "description": "让模型根据工具 schema 选择函数并生成参数以调用外部能力的方法。"
     },
     {
       "canonical_name": "工具调用",
       "entity_type": "method",
-      "description": "让大模型在推理过程中使用搜索、计算、数据库等外部工具的方法。"
+      "description": "模型在推理过程中使用搜索、数据库、计算器、代码解释器等外部工具的能力。"
     },
     {
       "canonical_name": "工作流编排",
@@ -84,7 +84,7 @@
     {
       "canonical_name": "提示模板",
       "entity_type": "concept",
-      "description": "用于规范输入结构、角色设定和输出格式的提示组织模板。"
+      "description": "把角色、任务、约束、示例和输出格式组织为可复用提示结构的方法。"
     },
     {
       "canonical_name": "会话记忆",
@@ -94,7 +94,7 @@
     {
       "canonical_name": "长上下文建模",
       "entity_type": "method",
-      "description": "提升模型处理长文本和长时依赖能力的建模与工程方法。"
+      "description": "让模型处理更长输入序列并保持关键信息可用的建模与工程方法。"
     },
     {
       "canonical_name": "答案生成",
@@ -103,45 +103,205 @@
     }
   ],
   "relations": [
-    ["检索增强生成", "大语言模型", "RELATED_TO"],
-    ["检索增强生成", "问答系统", "RELATED_TO"],
-    ["知识库问答", "检索增强生成", "SUBTOPIC_OF"],
-    ["知识库问答", "问答系统", "RELATED_TO"],
-    ["文本嵌入模型", "向量检索", "PREREQUISITE_OF"],
-    ["文本嵌入模型", "语义检索", "PREREQUISITE_OF"],
-    ["文本嵌入模型", "知识库问答", "PREREQUISITE_OF"],
-    ["向量数据库", "向量检索", "PREREQUISITE_OF"],
-    ["向量数据库", "检索增强生成", "PREREQUISITE_OF"],
-    ["文档切分", "检索增强生成", "PREREQUISITE_OF"],
-    ["分块策略", "文档切分", "PREREQUISITE_OF"],
-    ["文档切分", "文本嵌入模型", "PREREQUISITE_OF"],
-    ["查询重写", "检索增强生成", "SUBTOPIC_OF"],
-    ["查询扩展", "检索增强生成", "SUBTOPIC_OF"],
-    ["查询扩展", "语义检索", "RELATED_TO"],
-    ["查询重写", "查询扩展", "RELATED_TO"],
-    ["混合检索", "检索增强生成", "SUBTOPIC_OF"],
-    ["混合检索", "向量检索", "RELATED_TO"],
-    ["混合检索", "BM25", "RELATED_TO"],
-    ["重排序模型", "检索增强生成", "SUBTOPIC_OF"],
-    ["重排序模型", "学习排序", "RELATED_TO"],
-    ["重排序模型", "混合检索", "PREREQUISITE_OF"],
-    ["上下文窗口", "大语言模型", "PREREQUISITE_OF"],
-    ["上下文压缩", "检索增强生成", "SUBTOPIC_OF"],
-    ["上下文压缩", "上下文窗口", "RELATED_TO"],
-    ["上下文压缩", "长上下文建模", "RELATED_TO"],
-    ["引用溯源", "检索增强生成", "SUBTOPIC_OF"],
-    ["引用溯源", "知识库问答", "PREREQUISITE_OF"],
-    ["引用溯源", "可追溯性", "RELATED_TO"],
-    ["函数调用", "工具调用", "RELATED_TO"],
-    ["工具调用", "大语言模型", "RELATED_TO"],
-    ["工具调用", "工作流编排", "PREREQUISITE_OF"],
-    ["函数调用", "工作流编排", "PREREQUISITE_OF"],
-    ["工作流编排", "检索增强生成", "RELATED_TO"],
-    ["提示模板", "提示工程", "RELATED_TO"],
-    ["提示模板", "答案生成", "PREREQUISITE_OF"],
-    ["会话记忆", "知识库问答", "RELATED_TO"],
-    ["长上下文建模", "大语言模型", "RELATED_TO"],
-    ["答案生成", "检索增强生成", "PART_OF"],
-    ["答案生成", "大语言模型", "PREREQUISITE_OF"]
+    [
+      "检索增强生成",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "检索增强生成",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "知识库问答",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "知识库问答",
+      "问答系统",
+      "RELATED_TO"
+    ],
+    [
+      "文本嵌入模型",
+      "向量检索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "文本嵌入模型",
+      "语义检索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "文本嵌入模型",
+      "知识库问答",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "向量数据库",
+      "向量检索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "向量数据库",
+      "检索增强生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "文档切分",
+      "检索增强生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "分块策略",
+      "文档切分",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "文档切分",
+      "文本嵌入模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "查询重写",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "查询扩展",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "查询扩展",
+      "语义检索",
+      "RELATED_TO"
+    ],
+    [
+      "查询重写",
+      "查询扩展",
+      "RELATED_TO"
+    ],
+    [
+      "混合检索",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "混合检索",
+      "向量检索",
+      "RELATED_TO"
+    ],
+    [
+      "混合检索",
+      "BM25",
+      "RELATED_TO"
+    ],
+    [
+      "重排序模型",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "重排序模型",
+      "学习排序",
+      "RELATED_TO"
+    ],
+    [
+      "重排序模型",
+      "混合检索",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "上下文窗口",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "上下文压缩",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "上下文压缩",
+      "上下文窗口",
+      "RELATED_TO"
+    ],
+    [
+      "上下文压缩",
+      "长上下文建模",
+      "RELATED_TO"
+    ],
+    [
+      "引用溯源",
+      "检索增强生成",
+      "SUBTOPIC_OF"
+    ],
+    [
+      "引用溯源",
+      "知识库问答",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "引用溯源",
+      "可追溯性",
+      "RELATED_TO"
+    ],
+    [
+      "函数调用",
+      "工具调用",
+      "RELATED_TO"
+    ],
+    [
+      "工具调用",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "工具调用",
+      "工作流编排",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "函数调用",
+      "工作流编排",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "工作流编排",
+      "检索增强生成",
+      "RELATED_TO"
+    ],
+    [
+      "提示模板",
+      "提示工程",
+      "RELATED_TO"
+    ],
+    [
+      "提示模板",
+      "答案生成",
+      "PREREQUISITE_OF"
+    ],
+    [
+      "会话记忆",
+      "知识库问答",
+      "RELATED_TO"
+    ],
+    [
+      "长上下文建模",
+      "大语言模型",
+      "RELATED_TO"
+    ],
+    [
+      "答案生成",
+      "检索增强生成",
+      "PART_OF"
+    ],
+    [
+      "答案生成",
+      "大语言模型",
+      "PREREQUISITE_OF"
+    ]
   ]
 }
