@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetBriefingRequiresKnowledgeSelector(t *testing.T) {
-	service := New(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)))
+	service := NewWithLiveSource(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)), nil)
 	_, err := service.GetBriefing(context.Background(), frontierdto.BriefingQuery{})
 	if err == nil {
 		t.Fatal("expected bad request error")
@@ -19,7 +19,7 @@ func TestGetBriefingRequiresKnowledgeSelector(t *testing.T) {
 }
 
 func TestGetBriefingReturnsNotReadyWhenGraphUnavailable(t *testing.T) {
-	service := New(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)))
+	service := NewWithLiveSource(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)), nil)
 	resp, err := service.GetBriefing(context.Background(), frontierdto.BriefingQuery{KnowledgeID: "gradient-descent"})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -33,7 +33,7 @@ func TestGetBriefingReturnsNotReadyWhenGraphUnavailable(t *testing.T) {
 }
 
 func TestListLibraryReturnsNotReadyWhenGraphUnavailable(t *testing.T) {
-	service := New(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)))
+	service := NewWithLiveSource(frontierrepo.New(graphrepo.NewNeo4jRepository(nil)), nil)
 	resp, err := service.ListLibrary(context.Background(), frontierdto.LibraryQuery{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -70,5 +70,82 @@ func TestNormalizeStatusNormalizesCaseAndSeparator(t *testing.T) {
 	service.normalizeStatus(resp)
 	if resp.Status != "not_ready" {
 		t.Fatalf("unexpected normalized status: %s", resp.Status)
+	}
+}
+
+func TestLibraryReadyRejectsExampleLinks(t *testing.T) {
+	resp := &frontierdto.LibraryResponse{
+		Status: "ready",
+		Items: []frontierdto.LibraryItemView{
+			{Title: "Seed Paper", URL: "https://example.org/papers/demo", Source: "frontier_seed"},
+		},
+	}
+	if libraryReady(resp) {
+		t.Fatal("expected example.org seed data to be treated as not ready")
+	}
+}
+
+func TestLibraryReadyRejectsExampleLinksEvenWhenSourceLooksTrusted(t *testing.T) {
+	resp := &frontierdto.LibraryResponse{
+		Status: "ready",
+		Items: []frontierdto.LibraryItemView{
+			{Title: "Seed Paper", URL: "https://example.org/papers/demo", Source: "arxiv"},
+		},
+	}
+	if libraryReady(resp) {
+		t.Fatal("expected example.org URL to be rejected before trusting source metadata")
+	}
+}
+
+func TestSanitizeLibraryResponseDropsExampleLinks(t *testing.T) {
+	resp := sanitizeLibraryResponse(&frontierdto.LibraryResponse{
+		Status: "ready",
+		Items: []frontierdto.LibraryItemView{
+			{Title: "Seed Paper", URL: "https://example.org/papers/demo", Source: "frontier_seed_metadata"},
+			{Title: "Real Paper", URL: "https://arxiv.org/abs/2605.12345", Source: "arxiv"},
+		},
+	})
+
+	if resp.Status != "ready" {
+		t.Fatalf("unexpected status: %s", resp.Status)
+	}
+	if len(resp.Items) != 1 || resp.Items[0].Title != "Real Paper" {
+		t.Fatalf("expected only trusted item, got %+v", resp.Items)
+	}
+	if resp.Total != 1 {
+		t.Fatalf("unexpected total: %d", resp.Total)
+	}
+}
+
+func TestSanitizeLibraryResponseMarksOnlyExampleLinksNotReady(t *testing.T) {
+	resp := sanitizeLibraryResponse(&frontierdto.LibraryResponse{
+		Status: "ready",
+		Items: []frontierdto.LibraryItemView{
+			{Title: "Seed Paper", URL: "https://example.org/papers/demo", Source: "frontier_seed_metadata"},
+		},
+	})
+
+	if resp.Status != "not_ready" {
+		t.Fatalf("expected not_ready after filtering examples, got %s", resp.Status)
+	}
+	if len(resp.Items) != 0 {
+		t.Fatalf("expected no items, got %+v", resp.Items)
+	}
+}
+
+func TestSanitizeBriefingResponseDropsExamplePapers(t *testing.T) {
+	resp := sanitizeBriefingResponse(&frontierdto.BriefingResponse{
+		Status: "ready",
+		Papers: []frontierdto.PaperView{
+			{Title: "Seed Paper", URL: "https://example.org/papers/demo", Venue: "CVPR"},
+		},
+		DigestSummary: "seed",
+	}, "kp", "知识点")
+
+	if resp.Status != "not_ready" {
+		t.Fatalf("expected not_ready after filtering example papers, got %s", resp.Status)
+	}
+	if len(resp.Papers) != 0 || resp.DigestSummary != "" {
+		t.Fatalf("unexpected sanitized briefing: %+v", resp)
 	}
 }

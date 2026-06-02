@@ -266,6 +266,83 @@ describe('graphStore', () => {
     expect(store.detailCache.A?.rawChapterTitle).toBe('人工智能基础知识骨架')
   })
 
+  it('localizes mapped AIO ontology nodes and hides unmapped external isolates', async () => {
+    const store = useGraphStore()
+    graphApi.fetchGraphCatalog.mockResolvedValueOnce({
+      nodes: [
+        {
+          id: 'AIO:LargeLanguageModel',
+          name: 'AIO:Large Language Model',
+          canonicalName: 'AIO:Large Language Model',
+          chapterTitle: 'AIO Ontology ML/DL 核心概念',
+        },
+        {
+          id: 'AIO:VerySpecificOntologyTerm',
+          name: 'AIO:Very Specific Ontology Term',
+          canonicalName: 'AIO:Very Specific Ontology Term',
+          chapterTitle: 'AIO Ontology ML/DL 核心概念',
+        },
+      ],
+      prerequisiteEdges: [],
+    })
+    graphApi.fetchGraphSeeds.mockResolvedValueOnce({
+      nodes: [
+        {
+          id: 'AIO:LargeLanguageModel',
+          name: 'AIO:Large Language Model',
+          canonicalName: 'AIO:Large Language Model',
+          chapterTitle: 'AIO Ontology ML/DL 核心概念',
+        },
+        {
+          id: 'AIO:VerySpecificOntologyTerm',
+          name: 'AIO:Very Specific Ontology Term',
+          canonicalName: 'AIO:Very Specific Ontology Term',
+          chapterTitle: 'AIO Ontology ML/DL 核心概念',
+        },
+      ],
+      edges: [],
+    })
+
+    await store.initGraph()
+
+    expect(store.catalogNodes).toHaveLength(1)
+    expect(store.catalogNodes[0]).toEqual(expect.objectContaining({
+      id: 'AIO:LargeLanguageModel',
+      routeKnowledgeId: 'llm-app',
+      canonicalName: '大语言模型',
+      chapterTitle: '大模型',
+    }))
+    expect(store.nodesMap.size).toBe(1)
+    expect(store.nodesMap.get('AIO:LargeLanguageModel')?.name).toBe('大语言模型')
+  })
+
+  it('localizes plain English graph labels from legacy graph payloads', async () => {
+    const store = useGraphStore()
+    graphApi.fetchGraphCatalog.mockResolvedValueOnce({
+      nodes: [
+        makeCatalogNode('deep-rl', '强化学习', { name: 'Deep RL', canonicalName: 'Deep RL' }),
+        makeCatalogNode('series', 'Python编程', { name: 'Series', canonicalName: 'Series' }),
+      ],
+      prerequisiteEdges: [],
+    })
+    graphApi.fetchGraphSeeds.mockResolvedValueOnce({
+      nodes: [
+        makeCatalogNode('deep-rl', '强化学习', { name: 'Deep RL', canonicalName: 'Deep RL' }),
+        makeCatalogNode('series', 'Python编程', { name: 'Series', canonicalName: 'Series' }),
+      ],
+      edges: [],
+    })
+
+    await store.initGraph()
+
+    expect(store.catalogNodes.map((node) => node.canonicalName)).toEqual([
+      '深度强化学习（Deep RL）',
+      '序列对象（Series）',
+    ])
+    expect(store.nodesMap.get('deep-rl')?.canonicalName).toBe('深度强化学习（Deep RL）')
+    expect(store.nodesMap.get('series')?.canonicalName).toBe('序列对象（Series）')
+  })
+
   it('blocks expansions that would exceed the visible-node ceiling', async () => {
     const store = useGraphStore()
     await store.initGraph()

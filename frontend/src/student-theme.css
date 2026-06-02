@@ -441,8 +441,194 @@ textarea:focus {
 }
 
 .graph-stage {
-  grid-template-rows: minmax(0, 1fr);
-  gap: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+}
+
+.study-plan-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, auto) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 52px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.study-plan-card__main {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.study-plan-card__eyebrow {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid rgba(45, 212, 191, 0.18);
+  border-radius: var(--radius-full);
+  color: var(--accent-light);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.study-plan-card__copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.study-plan-card__copy strong {
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-plan-card__copy span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.73rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-plan-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.study-plan-card__actions .primary-btn,
+.study-plan-card__actions .secondary-btn {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
+.study-plan-card__stages {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.study-plan-stage {
+  display: grid;
+  gap: 1px;
+  max-width: 150px;
+  min-width: 96px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.035);
+  color: inherit;
+  text-align: left;
+}
+
+.study-plan-stage strong {
+  overflow: hidden;
+  font-size: 0.73rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-plan-stage span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.66rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.study-goal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(3, 7, 18, 0.62);
+}
+
+.study-goal-modal__panel {
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - 36px));
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.study-goal-modal__head,
+.study-goal-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.study-goal-modal__head h2 {
+  margin: 2px 0 0;
+  font-size: 1.08rem;
+}
+
+.study-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.study-goal-grid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.study-goal-grid input,
+.study-goal-grid select,
+.study-goal-grid textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+}
+
+.study-goal-grid input,
+.study-goal-grid select {
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.study-goal-grid textarea {
+  resize: vertical;
+  padding: 9px 10px;
+  line-height: 1.5;
+}
+
+.study-goal-grid__wide {
+  grid-column: 1 / -1;
 }
 
 .graph-learning-card {
@@ -1418,6 +1604,139 @@ textarea:focus {
   color: var(--text-secondary);
 }
 
+html[data-theme='light'],
+html[data-theme='light'] body {
+  background:
+    linear-gradient(180deg, #f8fafc 0%, #eef4f7 48%, #e7eef3 100%);
+}
+
+html[data-theme='light'] .graph-home,
+html[data-theme='light'] .frontier-library,
+html[data-theme='light'] .page-frame {
+  background:
+    linear-gradient(180deg, rgba(13, 148, 136, 0.06), transparent 260px),
+    #eef4f7;
+}
+
+html[data-theme='light'] .page-card,
+html[data-theme='light'] .panel-card,
+html[data-theme='light'] .topbar,
+html[data-theme='light'] .left-panel,
+html[data-theme='light'] .right-panel,
+html[data-theme='light'] .graph-learning-card,
+html[data-theme='light'] .ai-panel,
+html[data-theme='light'] .dashboard-panel,
+html[data-theme='light'] .dashboard-metric-card,
+html[data-theme='light'] .auth-card,
+html[data-theme='light'] .frontier-library__header,
+html[data-theme='light'] .frontier-library__toolbar,
+html[data-theme='light'] .frontier-paper-card,
+html[data-theme='light'] .frontier-stat,
+html[data-theme='light'] .frontier-empty-state {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.07);
+}
+
+html[data-theme='light'] .topbar__logo {
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.18);
+}
+
+html[data-theme='light'] .search-bar,
+html[data-theme='light'] .frontier-search,
+html[data-theme='light'] .frontier-library__sync span,
+html[data-theme='light'] .frontier-paper-card__meta span,
+html[data-theme='light'] .graph-learning-card__meta span,
+html[data-theme='light'] .tree-item,
+html[data-theme='light'] .bookmark-item,
+html[data-theme='light'] .stat-chip,
+html[data-theme='light'] .recommend-card,
+html[data-theme='light'] .custom-path-card,
+html[data-theme='light'] .path-score-item,
+html[data-theme='light'] .path-node,
+html[data-theme='light'] .bridge-view,
+html[data-theme='light'] .ai-panel__status,
+html[data-theme='light'] .ai-hint-card,
+html[data-theme='light'] .ai-learner-card,
+html[data-theme='light'] .ai-path-card,
+html[data-theme='light'] .ai-message {
+  background: rgba(15, 23, 42, 0.035);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme='light'] .search-bar__select,
+html[data-theme='light'] input,
+html[data-theme='light'] select,
+html[data-theme='light'] textarea {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.86) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+}
+
+html[data-theme='light'] .search-bar__select option {
+  background: #ffffff;
+}
+
+html[data-theme='light'] .search-suggestions,
+html[data-theme='light'] .graph-legend-toggle,
+html[data-theme='light'] .graph-legend,
+html[data-theme='light'] .graph-controls,
+html[data-theme='light'] .context-menu,
+html[data-theme='light'] .node-tooltip,
+html[data-theme='light'] .mobile-dock {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme='light'] .graph-canvas-shell {
+  background:
+    linear-gradient(rgba(71, 85, 105, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(71, 85, 105, 0.07) 1px, transparent 1px),
+    #eaf1f6;
+  background-size: 42px 42px, 42px 42px, auto;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme='light'] .graph-scene-btn,
+html[data-theme='light'] .secondary-btn,
+html[data-theme='light'] .link-button,
+html[data-theme='light'] .icon-btn,
+html[data-theme='light'] .profile-chip,
+html[data-theme='light'] .panel-toggle,
+html[data-theme='light'] .graph-control-btn,
+html[data-theme='light'] .theme-toggle-btn {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme='light'] .frontier-source-pill--arxiv,
+html[data-theme='light'] .frontier-source-pill--paper {
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, 0.18);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+html[data-theme='light'] .frontier-source-pill--github {
+  color: #047857;
+  border-color: rgba(5, 150, 105, 0.18);
+  background: rgba(5, 150, 105, 0.08);
+}
+
+html[data-theme='light'] .frontier-library__notice {
+  color: #854d0e;
+  border-color: rgba(202, 138, 4, 0.18);
+  background: rgba(250, 204, 21, 0.12);
+}
+
+html[data-theme='light'] .frontier-library__notice--error {
+  color: #991b1b;
+  border-color: rgba(220, 38, 38, 0.2);
+  background: rgba(254, 226, 226, 0.72);
+}
+
 .detail-view {
   max-width: 1380px;
   margin: 0 auto;
@@ -2152,6 +2471,26 @@ textarea:focus {
 
   .graph-learning-card {
     min-height: 620px;
+  }
+
+  .study-plan-card,
+  .study-goal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .study-plan-card__stages {
+    justify-content: stretch;
+    flex-wrap: wrap;
+  }
+
+  .study-plan-card__actions,
+  .study-goal-modal__actions {
+    justify-content: stretch;
+  }
+
+  .study-plan-card__actions > *,
+  .study-goal-modal__actions > * {
+    flex: 1 1 150px;
   }
 
   .graph-learning-card__head,

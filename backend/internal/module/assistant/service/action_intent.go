@@ -17,6 +17,10 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 	normalized := normalizeActionText(latestUser)
 	primaryTarget := ""
 
+	if action := inferGoalProfileProposal(normalized); action != nil {
+		actions = append(actions, *action)
+	}
+
 	if target := inferPrerequisiteChainTarget(normalized); target != "" {
 		primaryTarget = firstResolvedTarget(primaryTarget, target)
 		actions = append(actions, assistantdto.ClientAction{
@@ -84,6 +88,133 @@ func inferClientActions(messages []map[string]any) []assistantdto.ClientAction {
 	}
 
 	return dedupeClientActions(actions)
+}
+
+func inferGoalProfileProposal(message string) *assistantdto.ClientAction {
+	if !looksLikeGoalProfileMessage(message) {
+		return nil
+	}
+
+	payload := map[string]any{
+		"gradeLevel":         inferGradeLevel(message),
+		"major":              inferMajor(message),
+		"goalType":           inferGoalType(message),
+		"goalText":           trimGoalText(message),
+		"targetDirection":    inferTargetDirection(message),
+		"learnedTopics":      inferLearnedTopics(message),
+		"foundationLevel":    inferFoundationLevel(message),
+		"weeklyHours":        6,
+		"learningPreference": inferLearningPreference(message),
+	}
+
+	return &assistantdto.ClientAction{
+		Type:    "propose_goal_profile",
+		Payload: payload,
+	}
+}
+
+func looksLikeGoalProfileMessage(message string) bool {
+	if containsAny(message, "学习目标", "制定目标", "学习计划", "规划学习", "想学", "想做", "想要做", "目标是", "我想完成") {
+		return true
+	}
+	return containsAny(message, "大一", "大二", "大三", "大四", "研究生") &&
+		containsAny(message, "学过", "学了", "会一点", "基础", "想")
+}
+
+func inferGradeLevel(message string) string {
+	switch {
+	case containsAny(message, "大一", "一年级"):
+		return "freshman"
+	case containsAny(message, "大二", "二年级"):
+		return "sophomore"
+	case containsAny(message, "大三", "三年级"):
+		return "junior"
+	case containsAny(message, "大四", "四年级"):
+		return "senior"
+	case containsAny(message, "研究生", "研一", "研二", "研三"):
+		return "postgraduate"
+	default:
+		return "other"
+	}
+}
+
+func inferGoalType(message string) string {
+	switch {
+	case containsAny(message, "项目", "作品", "系统", "应用", "智能体", "agent", "Agent"):
+		return "project_building"
+	case containsAny(message, "就业", "岗位", "求职", "算法工程师", "开发", "实习"):
+		return "career_preparation"
+	default:
+		return "course_learning"
+	}
+}
+
+func inferMajor(message string) string {
+	candidates := []string{"人工智能", "软件工程", "计算机科学", "计算机", "数据科学", "自动化", "电子信息"}
+	for _, candidate := range candidates {
+		if strings.Contains(message, candidate) {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func inferTargetDirection(message string) string {
+	candidates := []string{
+		"智能体", "大模型应用", "RAG", "算法工程师", "机器学习", "深度学习", "计算机视觉", "自然语言处理", "知识图谱", "强化学习",
+	}
+	for _, candidate := range candidates {
+		if strings.Contains(message, candidate) {
+			return candidate
+		}
+	}
+	return ""
+}
+
+func inferLearnedTopics(message string) []string {
+	candidates := []string{
+		"Python", "高等数学", "线性代数", "概率论", "机器学习", "深度学习", "神经网络", "数据结构", "知识图谱", "自然语言处理",
+	}
+	result := make([]string, 0, 6)
+	for _, candidate := range candidates {
+		if strings.Contains(strings.ToLower(message), strings.ToLower(candidate)) {
+			result = append(result, candidate)
+		}
+	}
+	return result
+}
+
+func inferFoundationLevel(message string) string {
+	switch {
+	case containsAny(message, "基础很好", "比较熟", "掌握不错", "学得还可以"):
+		return "advanced"
+	case containsAny(message, "一般", "一点", "学过一点", "不太稳", "薄弱"):
+		return "beginner"
+	default:
+		return "intermediate"
+	}
+}
+
+func inferLearningPreference(message string) string {
+	switch {
+	case containsAny(message, "项目", "实践", "做出来", "作品"):
+		return "project_first"
+	case containsAny(message, "考试", "考研", "期末"):
+		return "exam_first"
+	case containsAny(message, "理论", "原理", "公式"):
+		return "theory_first"
+	default:
+		return "balanced"
+	}
+}
+
+func trimGoalText(message string) string {
+	text := strings.TrimSpace(message)
+	runes := []rune(text)
+	if len(runes) > 220 {
+		return string(runes[:220])
+	}
+	return text
 }
 
 func shouldHandleActionsDirectly(messages []map[string]any, actions []assistantdto.ClientAction) bool {
@@ -324,6 +455,8 @@ func buildActionFallbackReply(actions []assistantdto.ClientAction, modelContent 
 	lines := make([]string, 0, len(actions)+1)
 	for _, action := range actions {
 		switch action.Type {
+		case "propose_goal_profile":
+			lines = append(lines, "我已经根据你的描述整理出一份学习目标画像，请确认后生成学习计划。")
 		case "focus_knowledge":
 			lines = append(lines, "已为你尝试聚焦到“"+action.Target+"”。")
 		case "expand_knowledge":

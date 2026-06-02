@@ -15,11 +15,13 @@ type TopicView struct {
 
 // PaperView 定义代表论文视图。
 type PaperView struct {
-	PaperID string `json:"paperId"`
-	Title   string `json:"title"`
-	Venue   string `json:"venue"`
-	Year    int    `json:"year"`
-	URL     string `json:"url"`
+	PaperID     string   `json:"paperId"`
+	Title       string   `json:"title"`
+	Venue       string   `json:"venue"`
+	Year        int      `json:"year"`
+	URL         string   `json:"url"`
+	Authors     []string `json:"authors,omitempty"`
+	PublishedAt string   `json:"publishedAt,omitempty"`
 }
 
 // KnowledgeRefView 定义前沿资料关联知识点视图。
@@ -40,6 +42,8 @@ type LibraryItemView struct {
 	URL           string             `json:"url"`
 	Source        string             `json:"source"`
 	UpdatedAt     string             `json:"updatedAt"`
+	PublishedAt   string             `json:"publishedAt,omitempty"`
+	Authors       []string           `json:"authors,omitempty"`
 	Topics        []TopicView        `json:"topics"`
 	KnowledgeRefs []KnowledgeRefView `json:"knowledgeRefs"`
 }
@@ -51,11 +55,13 @@ type LibraryQuery struct {
 
 // LibraryResponse 定义前沿资料中心响应。
 type LibraryResponse struct {
-	Status      string            `json:"status"`
-	Message     string            `json:"message"`
-	GeneratedAt string            `json:"generatedAt"`
-	Total       int               `json:"total"`
-	Items       []LibraryItemView `json:"items"`
+	Status          string            `json:"status"`
+	Message         string            `json:"message"`
+	GeneratedAt     string            `json:"generatedAt"`
+	NextRefreshAt   string            `json:"nextRefreshAt,omitempty"`
+	RefreshInterval string            `json:"refreshInterval,omitempty"`
+	Total           int               `json:"total"`
+	Items           []LibraryItemView `json:"items"`
 }
 
 // BriefingResponse 定义前沿扩展响应。

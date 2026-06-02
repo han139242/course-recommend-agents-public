@@ -22,6 +22,7 @@ import {
 import { createSearchIndex, searchInIndex } from '../utils/searchIndex'
 import { transformGraphData } from '../utils/graphTransform'
 import { getCourseOptions } from '../utils/colorMap'
+import { canonicalizeExternalKnowledgeNode, localizeKnowledgeDisplayName } from '../utils/knowledgeLookup'
 import {
   ALL_COURSE_TITLE,
   COURSE_TITLE_ORDER,
@@ -37,20 +38,42 @@ function getNormalizedCourseTitle(node) {
 }
 
 function normalizeCatalogNode(node = {}) {
+  const externalAlias = canonicalizeExternalKnowledgeNode(node)
+  if (externalAlias.hidden) {
+    return { id: '', hidden: true }
+  }
   const id = String(node.id || node.routeKnowledgeId || '').trim()
   const sourcePath = String(node.sourcePath || '').trim()
   const curatedSource = String(node.curatedSource || '').trim()
+  const normalizedNode = {
+    ...node,
+    ...externalAlias,
+  }
+  const name = localizeKnowledgeDisplayName(normalizedNode.name || normalizedNode.canonicalName || id, normalizedNode)
+  const canonicalName = localizeKnowledgeDisplayName(normalizedNode.canonicalName || normalizedNode.name || id, normalizedNode)
   return {
     id,
-    routeKnowledgeId: String(node.routeKnowledgeId || id).trim() || id,
-    name: String(node.name || node.canonicalName || id).trim() || id,
-    canonicalName: String(node.canonicalName || node.name || id).trim() || id,
-    chapterTitle: getNormalizedCourseTitle(node),
-    rawChapterTitle: String(node.chapterTitle || '').trim(),
-    entityType: String(node.entityType || 'concept').trim() || 'concept',
-    description: String(node.description || '').trim(),
+    routeKnowledgeId: String(normalizedNode.routeKnowledgeId || id).trim() || id,
+    name: String(name || id).trim() || id,
+    canonicalName: String(canonicalName || name || id).trim() || id,
+    aliases: [
+      node.name,
+      node.canonicalName,
+      ...(Array.isArray(node.aliases) ? node.aliases : []),
+      normalizedNode.name,
+      normalizedNode.canonicalName,
+      name,
+      canonicalName,
+    ]
+      .map((item) => String(item || '').trim())
+      .filter(Boolean),
+    chapterTitle: getNormalizedCourseTitle(normalizedNode),
+    rawChapterTitle: String(normalizedNode.chapterTitle || '').trim(),
+    entityType: String(normalizedNode.entityType || 'concept').trim() || 'concept',
+    description: String(normalizedNode.description || '').trim(),
     sourcePath,
     curatedSource,
+    hidden: false,
   }
 }
 
@@ -197,7 +220,7 @@ export const useGraphStore = defineStore('graph', () => {
     const map = new Map()
     catalogNodes.value.forEach((node) => {
       const normalized = normalizeCatalogNode(node)
-      ;[normalized.routeKnowledgeId, normalized.name, normalized.canonicalName].forEach((key) => {
+      ;[normalized.routeKnowledgeId, normalized.name, normalized.canonicalName, ...(normalized.aliases || [])].forEach((key) => {
         const value = String(key || '').trim()
         if (value) map.set(value, normalized)
       })
@@ -396,7 +419,9 @@ export const useGraphStore = defineStore('graph', () => {
     const nextEdgeOwners = new Map()
     const nextRoots = new Set()
 
-    const normalizedNodes = (payload?.nodes || []).map((node) => normalizeVisibleNode(node, { isRoot: true, depth: 0 }))
+    const normalizedNodes = (payload?.nodes || [])
+      .map((node) => normalizeVisibleNode(node, { isRoot: true, depth: 0 }))
+      .filter((node) => node.id && !node.hidden)
     const placements = createCircularPlacement(normalizedNodes.length, {
       spacing: 132,
       yScale: 0.88,
@@ -439,7 +464,9 @@ export const useGraphStore = defineStore('graph', () => {
     const occupiedNodes = Array.isArray(options.occupiedNodes) ? options.occupiedNodes : []
     const viewportCenterWorld = options.viewportCenterWorld || null
     const expansionStartedAt = Date.now()
-    const normalizedNodes = (payload?.nodes || []).map((node) => normalizeVisibleNode(node))
+    const normalizedNodes = (payload?.nodes || [])
+      .map((node) => normalizeVisibleNode(node))
+      .filter((node) => node.id && !node.hidden)
     const normalizedEdges = (payload?.edges || []).map((edge) => normalizeVisibleEdge(edge))
 
     if (!ensureVisibleCapacity(normalizedNodes)) {
@@ -624,7 +651,7 @@ export const useGraphStore = defineStore('graph', () => {
 
     try {
       const payload = await fetchGraphCatalog()
-      catalogNodes.value = (payload?.nodes || []).map((node) => normalizeCatalogNode(node)).filter((node) => node.id)
+      catalogNodes.value = (payload?.nodes || []).map((node) => normalizeCatalogNode(node)).filter((node) => node.id && !node.hidden)
       prerequisiteIndex.value = (payload?.prerequisiteEdges || [])
         .map((edge) => ({
           sourceRouteKnowledgeId: String(edge.sourceRouteKnowledgeId || '').trim(),
@@ -678,7 +705,7 @@ export const useGraphStore = defineStore('graph', () => {
     error.value = ''
     try {
       const payload = await fetchFullGraph(limit)
-      const nodes = (payload?.nodes || []).map((node) => normalizeCatalogNode(node))
+      const nodes = (payload?.nodes || []).map((node) => normalizeCatalogNode(node)).filter((node) => node.id && !node.hidden)
       const edges = (payload?.edges || []).map((edge) => normalizeVisibleEdge(edge))
       catalogNodes.value = nodes
       prerequisiteIndex.value = edges

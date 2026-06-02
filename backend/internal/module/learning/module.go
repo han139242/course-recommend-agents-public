@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
 	competencyservice "github.com/han139242/course-recommend-agents/backend/internal/module/competency/service"
+	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learninghandler "github.com/han139242/course-recommend-agents/backend/internal/module/learning/handler"
 	learningrepo "github.com/han139242/course-recommend-agents/backend/internal/module/learning/repository"
@@ -19,9 +20,14 @@ type Module struct {
 }
 
 // New 创建学习模块。
-func New(db *gorm.DB, redisClient *redis.Client, authService *authservice.AuthService, graphWriter *graphwriterservice.Service) *Module {
+func New(db *gorm.DB, redisClient *redis.Client, authService *authservice.AuthService, graphWriter *graphwriterservice.Service, graphService ...*graphservice.Service) *Module {
 	repo := learningrepo.NewMySQLRepository(db)
-	service := learningservice.New(repo, redisClient, authService, graphWriter)
+	var service *learningservice.Service
+	if len(graphService) > 0 && graphService[0] != nil {
+		service = learningservice.New(repo, redisClient, authService, graphWriter, graphService[0])
+	} else {
+		service = learningservice.New(repo, redisClient, authService, graphWriter)
+	}
 	return &Module{Handler: learninghandler.New(service), Service: service}
 }
 
@@ -42,9 +48,9 @@ func (m *Module) RegisterTeacherRoutes(group *gin.RouterGroup) {
 }
 
 // RegisterStudentRoutes 注册学生学习路由。
-// 学生侧接口只暴露拉题、答题与学习进度查询，不返回题目答案等教师可见信息，避免路由层误共享视图模型。
 func (m *Module) RegisterStudentRoutes(group *gin.RouterGroup) {
 	group.GET("/questions", m.Handler.ListStudentQuestions)
 	group.POST("/answers", m.Handler.SubmitAnswer)
+	group.POST("/quiz-submit", m.Handler.SubmitQuiz)
 	group.GET("/progress", m.Handler.GetLearningProgress)
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"math"
 	"strconv"
 	"time"
 
@@ -9,6 +10,12 @@ import (
 	"github.com/han139242/course-recommend-agents/backend/pkg/constant"
 	"github.com/han139242/course-recommend-agents/backend/pkg/key"
 	"github.com/redis/go-redis/v9"
+)
+
+const (
+	masteryEvidenceTarget  = 8.0
+	masteryConfidenceFloor = 0.35
+	masteryPrecisionFactor = 100
 )
 
 // RedisRepository 提供学习状态相关的 Redis 操作。
@@ -26,7 +33,7 @@ func (r *RedisRepository) Enabled() bool {
 	return r != nil && r.client != nil
 }
 
-// RecordAnswer 原子记录一次答题状态，并回写统一语义的 masteryScore（correctRate * 100）。
+// RecordAnswer 原子记录一次答题状态，并回写带题量置信度的 masteryScore。
 func (r *RedisRepository) RecordAnswer(ctx context.Context, studentID int64, knowledgeID string, correct bool, answeredAt time.Time) (learningentity.MasteryState, error) {
 	if !r.Enabled() {
 		return learningentity.MasteryState{}, redis.Nil
@@ -41,10 +48,17 @@ local correct = redis.call('HINCRBY', KEYS[2], ARGV[1], ARGV[2])
 redis.call('HSET', KEYS[3], ARGV[1], ARGV[3])
 local mastery = 0
 if answered > 0 then
-  mastery = (correct / answered) * 100
+  local correctRate = tonumber(correct) / tonumber(answered)
+  local evidence = tonumber(answered) / 8
+  if evidence > 1 then
+    evidence = 1
+  end
+  local confidence = 0.35 + 0.65 * evidence
+  mastery = correctRate * 100 * confidence
+  mastery = math.floor(mastery * 100 + 0.5) / 100
 end
 redis.call('HSET', KEYS[4], ARGV[1], tostring(mastery))
-return {answered, correct, mastery}
+return {answered, correct, tostring(mastery)}
 `)
 	values, err := script.Run(ctx, r.client, []string{key.UserKnowledgeProgressAnswered(studentID), key.UserKnowledgeProgressCorrect(studentID), key.UserKnowledgeProgressLastAnswered(studentID), key.UserKnowledgeProgress(studentID)}, knowledgeID, correctInt, answeredAt.Format(time.RFC3339)).Result()
 	if err != nil {
@@ -58,6 +72,16 @@ return {answered, correct, mastery}
 	correctCount, _ := toInt(items[1])
 	masteryScore, _ := toFloat(items[2])
 	return learningentity.MasteryState{KnowledgeID: knowledgeID, MasteryScore: masteryScore, CorrectCount: correctCount, AnsweredCount: answeredCount, LastAnsweredAt: &answeredAt}, nil
+}
+
+func evidenceAdjustedMastery(correctCount int, answeredCount int) float64 {
+	if answeredCount <= 0 || correctCount <= 0 {
+		return 0
+	}
+	correctRate := float64(correctCount) / float64(answeredCount)
+	evidence := math.Min(1, float64(answeredCount)/masteryEvidenceTarget)
+	confidence := masteryConfidenceFloor + (1-masteryConfidenceFloor)*evidence
+	return math.Round(correctRate*100*confidence*masteryPrecisionFactor) / masteryPrecisionFactor
 }
 
 // GetMasteryVector 读取学生掌握度向量。

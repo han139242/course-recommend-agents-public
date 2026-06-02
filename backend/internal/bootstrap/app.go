@@ -86,10 +86,11 @@ func New(ctx context.Context) (*App, error) {
 	graphWriterService := graphwriterservice.New(logger, graphwriterrepo.NewNeo4jWriterRepository(neo4jDriver), redisClient, cfg.GraphWriter)
 	graphWriterModule := graphwritermodule.New(graphWriterService)
 	competencyModule := NewCompetencyModule(logger, redisClient, authModule.AuthService, graphModule.Repo, graphWriterService, cfg.GraphWriter.TopologyChannel)
-	learningModule := NewLearningModule(mysqlDB, redisClient, authModule.AuthService, graphWriterService)
+	learningModule := NewLearningModule(mysqlDB, redisClient, authModule.AuthService, graphWriterService, graphModule.Service)
 	learningModule.SetCompetencyService(competencyModule.Service)
 	go competencyModule.Matrix.Start(context.TODO())
 	recommendModule := NewRecommendModule(neo4jDriver, redisClient, mysqlDB)
+	studyPlanModule := NewStudyPlanModule(mysqlDB, recommendModule.Service)
 	evaluationModule := NewEvaluationModule(recommendModule.Service.Scorer)
 	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
 	frontierModule := frontiermodule.New(graphModule.Repo)
@@ -98,7 +99,7 @@ func New(ctx context.Context) (*App, error) {
 	logStep("modules_ready")
 
 	logStep("router_initializing")
-	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
+	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, studyPlanModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
 	logStep("router_ready")
 
 	server := &http.Server{

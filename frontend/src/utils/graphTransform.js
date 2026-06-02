@@ -152,16 +152,22 @@ function resolveProgressState(progress = {}) {
   return 'default'
 }
 
-function buildNodeColors(courseTitle, progress = {}) {
+function buildNodeColors(courseTitle, progress = {}, theme = 'dark') {
   const palette = getCoursePalette(courseTitle)
   const masteryRatio = clamp(Number(progress?.masteryScore || 0), 0, 100) / 100
   const easedRatio = masteryRatio ** 0.88
+  const isLight = theme === 'light'
 
   return {
-    fill: mixCourseColor(palette.light, palette.primary, easedRatio, 0.99),
-    stroke: mixCourseColor(palette.ring, palette.primary, 0.28 + easedRatio * 0.5, 0.98),
-    shadow: mixCourseColor(palette.ring, palette.primary, 0.14 + easedRatio * 0.36, 0.2),
+    fill: isLight
+      ? mixCourseColor('#ffffff', palette.primary, 0.2 + easedRatio * 0.42, 0.99)
+      : mixCourseColor(palette.light, palette.primary, easedRatio, 0.99),
+    stroke: isLight
+      ? mixCourseColor(palette.ring, palette.dark || palette.primary, 0.34 + easedRatio * 0.42, 0.98)
+      : mixCourseColor(palette.ring, palette.primary, 0.28 + easedRatio * 0.5, 0.98),
+    shadow: mixCourseColor(palette.ring, palette.primary, isLight ? 0.12 + easedRatio * 0.18 : 0.14 + easedRatio * 0.36, isLight ? 0.14 : 0.2),
     accent: palette.primary,
+    dark: palette.dark || palette.primary,
     ring: palette.ring,
     courseLight: palette.light,
     masteryRatio,
@@ -190,7 +196,8 @@ export function getRelationStroke(relationType, theme = 'dark') {
 
 function buildNodeStyle(node, options) {
   const progress = options.progressMap?.[node.routeKnowledgeId] || {}
-  const colors = buildNodeColors(getChapterTitle(node), progress)
+  const theme = options.theme || 'dark'
+  const colors = buildNodeColors(getChapterTitle(node), progress, theme)
   const isRoot = Boolean(node.isRoot)
   const isExpanded = options.expandedSet.has(node.id)
   const isPinned = options.pinnedSet.has(node.id)
@@ -198,7 +205,6 @@ function buildNodeStyle(node, options) {
   const radius = isRoot ? 42 : 30
   const shadowBlur = isSelected ? 24 : isExpanded ? 18 : isRoot ? 14 : 9
   const borderWidth = isSelected ? 4 : isExpanded ? 3 : isPinned ? 2.4 : 2
-  const theme = options.theme || 'dark'
   const isLight = theme === 'light'
 
   return {
@@ -221,7 +227,12 @@ function buildNodeStyle(node, options) {
     courseLight: colors.courseLight,
     masteryRatio: colors.masteryRatio,
     labelColor: isLight ? '#0F172A' : '#F8FAFC',
-    labelStroke: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.88)',
+    labelStroke: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(15, 23, 42, 0.88)',
+    labelBackground: isLight
+      ? (isSelected ? 'rgba(255, 255, 255, 0.96)' : isExpanded || isRoot ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.82)')
+      : (isSelected ? 'rgba(8, 47, 73, 0.82)' : isExpanded || isRoot ? 'rgba(30, 41, 59, 0.74)' : 'rgba(15, 23, 42, 0.62)'),
+    labelBorder: isLight ? 'rgba(15, 23, 42, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+    labelLeaderColor: isLight ? 'rgba(71, 85, 105, 0.45)' : 'rgba(148, 163, 184, 0.62)',
     opacity: 1,
     fontSize: isRoot ? 14 : 11,
   }

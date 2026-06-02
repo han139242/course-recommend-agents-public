@@ -16,8 +16,11 @@ import { RouterLink, useRouter } from 'vue-router'
 
 import SearchBar from '../components/search/SearchBar.vue'
 import LeftPanel from '../components/sidebar/LeftPanel.vue'
+import StudyGoalWizard from '../components/study/StudyGoalWizard.vue'
+import StudyPlanCard from '../components/study/StudyPlanCard.vue'
 import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { APP_NAME } from '../constants/appInfo'
+import { fetchCurrentStudyPlan, fetchGoalProfile, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
 import { useGraphStore } from '../stores/graphStore'
 import { useUserStore } from '../stores/userStore'
 import { useThemeStore } from '../stores/themeStore'
@@ -40,6 +43,11 @@ const aiAutoPrompt = ref(null)
 const searchBarRef = ref(null)
 const graphCanvasRef = ref(null)
 const recommendedPath = ref([])
+const goalWizardOpen = ref(false)
+const pendingGoalDraft = ref(null)
+const studyProfile = ref(null)
+const studyPlan = ref(null)
+const studyPlanLoading = ref(false)
 const recommendationMeta = ref({
   path: [],
   insights: [],
@@ -164,6 +172,26 @@ async function bootstrapPage() {
     userStore.loadDashboard().catch(() => null),
     userStore.loadCompetency().catch(() => null),
   ])
+  await loadStudyPlanContext()
+}
+
+async function loadStudyPlanContext() {
+  if (!userStore.isAuthenticated) {
+    studyProfile.value = null
+    studyPlan.value = null
+    return
+  }
+  try {
+    const [profilePayload, planPayload] = await Promise.all([
+      fetchGoalProfile().catch(() => null),
+      fetchCurrentStudyPlan().catch(() => null),
+    ])
+    studyProfile.value = profilePayload?.profile || planPayload?.profile || null
+    studyPlan.value = planPayload?.plan || null
+  } catch {
+    studyProfile.value = null
+    studyPlan.value = null
+  }
 }
 
 function getRevealOptions() {
@@ -241,6 +269,11 @@ async function handleAssistantActions(actions = []) {
         await revealAndFocus(resolved.routeKnowledgeId, { flash: action.flash !== false, duration: 220 })
         rightCollapsed.value = false
       }
+      continue
+    }
+
+    if (type === 'propose_goal_profile') {
+      handleProposedGoalProfile(action.payload || {})
       continue
     }
 
@@ -457,6 +490,56 @@ function handleStartPath(nodeIds) {
   router.push(`/knowledge/${encodeURIComponent(targetRouteKnowledgeId)}`)
 }
 
+function handleAskGoalAi() {
+  aiAutoPrompt.value = {
+    id: Date.now(),
+    text: '我想制定一个学习目标。请先问我年级、想完成什么、学过什么，然后帮我整理成学习画像。',
+  }
+  aiOpen.value = true
+}
+
+async function handleSaveGoalProfile(payload) {
+  if (!userStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: '/' } })
+    return
+  }
+  studyPlanLoading.value = true
+  try {
+    const profilePayload = await saveGoalProfile(payload)
+    studyProfile.value = profilePayload?.profile || null
+    const planPayload = await generateStudyPlan()
+    studyPlan.value = planPayload?.plan || null
+    pendingGoalDraft.value = null
+    goalWizardOpen.value = false
+    if (studyPlan.value?.nextSteps?.length) {
+      await handleShowPath(studyPlan.value.nextSteps.map((item) => item.knowledgeId || item.title))
+    }
+  } finally {
+    studyPlanLoading.value = false
+  }
+}
+
+async function handleGenerateStudyPlan() {
+  studyPlanLoading.value = true
+  try {
+    const payload = await generateStudyPlan()
+    studyProfile.value = payload?.profile || studyProfile.value
+    studyPlan.value = payload?.plan || null
+  } finally {
+    studyPlanLoading.value = false
+  }
+}
+
+function handleEditGoal(profile = null) {
+  pendingGoalDraft.value = profile || null
+  goalWizardOpen.value = true
+}
+
+function handleProposedGoalProfile(payload) {
+  pendingGoalDraft.value = payload || null
+  goalWizardOpen.value = true
+}
+
 async function handleRelatedSelect(routeKnowledgeId) {
   await revealAndFocus(routeKnowledgeId)
   rightCollapsed.value = false
@@ -523,6 +606,7 @@ watch(
   () => userStore.isAuthenticated,
   async () => {
     await refreshRecommendationContext(graphStore.selectedRouteKnowledgeId)
+    await loadStudyPlanContext()
   },
 )
 
@@ -648,6 +732,18 @@ onBeforeUnmount(() => {
       />
 
       <main class="graph-stage">
+        <StudyPlanCard
+          :authenticated="userStore.isAuthenticated"
+          :profile="studyProfile"
+          :plan="studyPlan"
+          :loading="studyPlanLoading"
+          @ask-ai="handleAskGoalAi"
+          @edit-goal="handleEditGoal(studyProfile)"
+          @generate="handleGenerateStudyPlan"
+          @highlight-path="handleShowPath"
+          @start="handleStartPath"
+        />
+
         <section class="graph-learning-card">
           <div class="graph-learning-card__head">
             <div class="graph-learning-card__title">
@@ -733,6 +829,14 @@ onBeforeUnmount(() => {
       @focus-knowledge="handleRelatedSelect"
       @show-recommend-path="handleShowPath"
       @run-actions="handleAssistantActions"
+    />
+
+    <StudyGoalWizard
+      v-model="goalWizardOpen"
+      :initial-profile="studyProfile"
+      :draft-profile="pendingGoalDraft"
+      @submit="handleSaveGoalProfile"
+      @close="pendingGoalDraft = null"
     />
 
     <div class="mobile-dock">

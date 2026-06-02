@@ -41,7 +41,7 @@ describe('FrontierLibraryView', () => {
     const wrapper = mount(FrontierLibraryView)
     await flushPromises()
 
-    expect(fetchFrontierLibrary).toHaveBeenCalledWith({ limit: 50 })
+    expect(fetchFrontierLibrary).toHaveBeenCalledWith({ limit: 12 })
     expect(wrapper.text()).toContain('AI 前沿资料')
     expect(wrapper.text()).toContain('Retrieval-Augmented Transformer Agents')
     expect(wrapper.text()).toContain('检索增强生成')
@@ -59,5 +59,34 @@ describe('FrontierLibraryView', () => {
 
     await wrapper.find('input[type="search"]').setValue('knowledge graphs')
     expect(wrapper.text()).toContain('Retrieval-Augmented Transformer Agents')
+  })
+
+  it('explains when only old example links were returned by the backend', async () => {
+    fetchFrontierLibrary.mockResolvedValueOnce({
+      status: 'ready',
+      message: '已从图谱载入前沿资料。',
+      generatedAt: '2026-04-17T08:40:00Z',
+      total: 1,
+      items: [
+        {
+          paperId: 'seed',
+          title: 'Seed Paper',
+          abstract: 'old seed',
+          venue: 'CVPR',
+          year: 2025,
+          url: 'https://example.org/papers/seed',
+          source: 'frontier_seed_metadata',
+          topics: [],
+          knowledgeRefs: [],
+        },
+      ],
+    })
+
+    const wrapper = mount(FrontierLibraryView)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('已隐藏示例资料')
+    expect(wrapper.text()).toContain('example.org / example.com 旧示例数据')
+    expect(wrapper.text()).not.toContain('Seed Paper')
   })
 })

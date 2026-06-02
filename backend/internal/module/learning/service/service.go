@@ -7,9 +7,9 @@ import (
 	"time"
 
 	authdto "github.com/han139242/course-recommend-agents/backend/internal/module/auth/dto"
+	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
 	competencydto "github.com/han139242/course-recommend-agents/backend/internal/module/competency/dto"
 	competencyentity "github.com/han139242/course-recommend-agents/backend/internal/module/competency/entity"
-	authservice "github.com/han139242/course-recommend-agents/backend/internal/module/auth/service"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningdto "github.com/han139242/course-recommend-agents/backend/internal/module/learning/dto"
 	learningentity "github.com/han139242/course-recommend-agents/backend/internal/module/learning/entity"
@@ -34,21 +34,21 @@ type competencyBuilder interface {
 }
 
 type Service struct {
-	repo             learningrepo.Repository
-	redis            *redis.Client
-	authService      authReader
-	stateService     stateReader
+	repo              learningrepo.Repository
+	redis             *redis.Client
+	authService       authReader
+	stateService      stateReader
 	competencyService competencyBuilder
 }
 
 // New 创建学习模块服务。
-func New(repo learningrepo.Repository, redisClient *redis.Client, authService *authservice.AuthService, _ *graphwriterservice.Service) *Service {
+func New(repo learningrepo.Repository, redisClient *redis.Client, authService *authservice.AuthService, _ *graphwriterservice.Service, prerequisiteProvider ...PrerequisiteProvider) *Service {
 	redisRepo := learningrepo.NewRedisRepository(redisClient)
 	var stateRepo learningrepo.StateRepository
 	if mysqlRepo, ok := repo.(*learningrepo.MySQLRepository); ok {
 		stateRepo = learningrepo.NewStateMySQLRepository(mysqlRepo.DB())
 	}
-	return &Service{repo: repo, redis: redisClient, authService: authService, stateService: NewStateService(redisRepo, stateRepo)}
+	return &Service{repo: repo, redis: redisClient, authService: authService, stateService: NewStateService(redisRepo, stateRepo, prerequisiteProvider...)}
 }
 
 // SetCompetencyService 注入能力画像聚合服务。
@@ -158,6 +158,68 @@ func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAn
 	s.triggerCompetencySync(ctx, studentID)
 	response := &learningdto.SubmitAnswerResponse{Accepted: result.Accepted, QuestionID: result.QuestionID, KnowledgeID: result.KnowledgeID, Degraded: degraded || s.redis == nil || result.Degraded}
 	return response, nil
+}
+
+// SubmitQuiz 批量提交掌握度挑战的所有答案。
+// 后端统一评分并记录掌握度，前端不可篡改对错判断。
+func (s *Service) SubmitQuiz(ctx context.Context, request learningdto.SubmitQuizRequest) (*learningdto.SubmitQuizResponse, error) {
+	studentID, err := s.requireStudent(ctx)
+	if err != nil {
+		return nil, err
+	}
+	answeredAt, err := time.Parse(time.RFC3339, strings.TrimSpace(request.AnsweredAt))
+	if err != nil {
+		return nil, apperr.ErrBadRequest.WithCause(err)
+	}
+
+	// Build question lookup map
+	qMap := make(map[string]learningdto.QuizQuestion, len(request.Questions))
+	for _, q := range request.Questions {
+		qMap[q.QuestionID] = q
+	}
+
+	results := make([]learningdto.QuizResultItem, 0, len(request.Answers))
+	totalCorrect := 0
+
+	for _, answer := range request.Answers {
+		q, ok := qMap[answer.QuestionID]
+		item := learningdto.QuizResultItem{QuestionID: answer.QuestionID}
+
+		if !ok {
+			item.Correct = false
+			item.Explanation = "题目数据异常，无法评分。"
+		} else {
+			item.Correct = answer.SelectedOption == q.CorrectOption
+			item.CorrectIdx = q.CorrectOption
+			if q.CorrectOption >= 0 && q.CorrectOption < len(q.Options) {
+				item.CorrectText = q.Options[q.CorrectOption]
+			}
+			item.Explanation = q.Explanation
+			if item.Correct {
+				totalCorrect++
+			}
+		}
+		results = append(results, item)
+
+		// 记录掌握度到 Redis
+		if s.stateService != nil {
+			s.stateService.SnapshotMastery(ctx, studentID, strings.TrimSpace(request.KnowledgeID), 0, answeredAt, item.Correct)
+		}
+	}
+
+	s.triggerCompetencySync(ctx, studentID)
+
+	delta := 0.0
+	if len(request.Answers) > 0 {
+		delta = float64(totalCorrect) / float64(len(request.Answers)) * 100
+	}
+
+	return &learningdto.SubmitQuizResponse{
+		Results:      results,
+		TotalCorrect: totalCorrect,
+		Total:        len(request.Answers),
+		MasteryDelta: delta,
+	}, nil
 }
 
 // GetLearningProgress 查询学生当前学习进度，优先读取 Redis，失败时回源 MySQL。

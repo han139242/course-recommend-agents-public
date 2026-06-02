@@ -17,38 +17,17 @@ const library = ref({
 const query = ref('')
 const activeTopic = ref('全部')
 
-const fallbackItems = [
-  {
-    paperId: 'demo-rag-agent',
-    title: 'Retrieval-Augmented Transformer Agents for Knowledge Graph Reasoning',
-    abstract: '围绕检索增强生成、Transformer 智能体和知识图谱推理的代表性前沿方向，用于展示论文如何映射回课程知识点。',
-    venue: 'arXiv',
-    year: 2026,
-    url: 'https://arxiv.org',
-    source: 'demo',
-    updatedAt: '',
-    topics: [
-      { topicId: 'rag-agent', name: 'RAG Agent', reason: '把检索、规划和工具调用组合成可执行智能体。' },
-      { topicId: 'kg-reasoning', name: '知识图谱推理', reason: '让生成模型使用结构化知识降低幻觉。' },
-    ],
-    knowledgeRefs: [
-      { knowledgeId: 'rag', name: '检索增强生成', course: '高级大模型应用开发', reason: '论文方法直接使用 RAG。' },
-      { knowledgeId: 'transformer', name: 'Transformer', course: '大模型基础', reason: '模型主体依赖 Transformer。' },
-      { knowledgeId: 'knowledge-graph', name: '知识图谱', course: '知识工程', reason: '使用图谱作为推理支撑。' },
-    ],
-  },
-]
+const sourceItems = computed(() => (Array.isArray(library.value.items) ? library.value.items.filter(isTrustedItem) : []))
 
 const items = computed(() => {
-  const sourceItems = Array.isArray(library.value.items) && library.value.items.length
-    ? library.value.items
-    : fallbackItems
   const normalizedQuery = query.value.trim().toLowerCase()
-  return sourceItems.filter((item) => {
+  return sourceItems.value.filter((item) => {
     const text = [
       item.title,
       item.abstract,
       item.venue,
+      item.source,
+      ...(item.authors || []),
       ...(item.topics || []).map((topic) => topic.name),
       ...(item.knowledgeRefs || []).map((knowledge) => knowledge.name),
     ].join(' ').toLowerCase()
@@ -62,31 +41,43 @@ const items = computed(() => {
 
 const topicOptions = computed(() => {
   const names = new Set(['全部'])
-  ;(library.value.items?.length ? library.value.items : fallbackItems).forEach((item) => {
+  sourceItems.value.forEach((item) => {
     ;(item.topics || []).forEach((topic) => names.add(topic.name))
     ;(item.knowledgeRefs || []).forEach((knowledge) => names.add(knowledge.name))
   })
-  return [...names].slice(0, 24)
+  return [...names].slice(0, 18)
 })
 
 const stats = computed(() => {
-  const allItems = library.value.items?.length ? library.value.items : fallbackItems
-  const topicCount = new Set(allItems.flatMap((item) => (item.topics || []).map((topic) => topic.name))).size
-  const knowledgeCount = new Set(allItems.flatMap((item) => (item.knowledgeRefs || []).map((knowledge) => knowledge.name))).size
-  const latestYear = Math.max(...allItems.map((item) => Number(item.year || 0)), 0)
+  const paperCount = sourceItems.value.filter((item) => item.source !== 'github' && item.venue !== 'GitHub').length
+  const githubCount = sourceItems.value.filter((item) => item.source === 'github' || item.venue === 'GitHub').length
+  const topicCount = new Set(sourceItems.value.flatMap((item) => (item.topics || []).map((topic) => topic.name))).size
   return [
-    { label: '前沿资料', value: allItems.length },
+    { label: '真实资料', value: sourceItems.value.length },
+    { label: '论文条目', value: paperCount },
+    { label: 'GitHub 更新', value: githubCount },
     { label: '研究主题', value: topicCount },
-    { label: '关联知识点', value: knowledgeCount },
-    { label: '最新年份', value: latestYear || '-' },
   ]
 })
+
+const generatedAtText = computed(() => formatDateTime(library.value.generatedAt))
+const nextRefreshText = computed(() => formatDateTime(library.value.nextRefreshAt))
+const hasItems = computed(() => sourceItems.value.length > 0)
+const hasFilteredItems = computed(() => items.value.length > 0)
+const rawItemCount = computed(() => (Array.isArray(library.value.items) ? library.value.items.length : 0))
+const hiddenExampleCount = computed(() => Math.max(0, rawItemCount.value - sourceItems.value.length))
+const emptyTitle = computed(() => (hiddenExampleCount.value > 0 ? '已隐藏示例资料' : '暂无真实前沿资料'))
+const emptyDescription = computed(() =>
+  hiddenExampleCount.value > 0
+    ? '当前接口返回的仍是 example.org / example.com 旧示例数据，页面已按真实来源要求隐藏。重启后端服务后会改为从 arXiv、OpenAlex 和 GitHub 同步公开资料。'
+    : '后端未能从 arXiv、OpenAlex 或 GitHub 获取到公开数据。请稍后刷新，或检查服务器网络访问。',
+)
 
 async function loadLibrary() {
   loading.value = true
   error.value = ''
   try {
-    library.value = await fetchFrontierLibrary({ limit: 50 })
+    library.value = await fetchFrontierLibrary({ limit: 12 })
   } catch (err) {
     error.value = err?.message || '前沿资料暂时无法加载。'
   } finally {
@@ -98,6 +89,56 @@ function knowledgeRoute(item) {
   return `/knowledge/${encodeURIComponent(item.knowledgeId || item.name || '')}`
 }
 
+function sourceLabel(item) {
+  if (item.source === 'github' || item.venue === 'GitHub') return 'GitHub'
+  if (item.source === 'arxiv' || item.venue === 'arXiv') return 'arXiv'
+  if (item.source === 'openalex') return item.venue || 'OpenAlex'
+  return item.venue || item.source || 'Frontier'
+}
+
+function sourceClass(item) {
+  return item.source === 'github' || item.venue === 'GitHub' ? 'github' : 'paper'
+}
+
+function sourceActionLabel(item) {
+  return item.source === 'github' || item.venue === 'GitHub' ? '查看仓库' : '查看原文'
+}
+
+function isTrustedItem(item) {
+  const source = String(item?.source || item?.venue || '').toLowerCase()
+  const link = String(item?.url || '').toLowerCase()
+  if (source === 'arxiv' || source === 'github' || source === 'openalex') return true
+  if (!link || link.includes('example.org') || link.includes('example.com')) return false
+  return [
+    'arxiv.org',
+    'github.com',
+    'openreview.net',
+    'doi.org',
+    'aclanthology.org',
+    'proceedings.mlr.press',
+    'neurips.cc',
+    'ieee.org',
+    'dl.acm.org',
+  ].some((domain) => link.includes(domain))
+}
+
+function formatDateTime(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
+
+function authorsText(item) {
+  const authors = Array.isArray(item.authors) ? item.authors.filter(Boolean) : []
+  if (!authors.length) return ''
+  return authors.slice(0, 3).join('、') + (authors.length > 3 ? ' 等' : '')
+}
+
 onMounted(loadLibrary)
 </script>
 
@@ -105,10 +146,14 @@ onMounted(loadLibrary)
   <section class="frontier-library page-frame">
     <div class="frontier-library__shell">
       <header class="frontier-library__header">
-        <div>
-          <span class="eyebrow">Frontier Library</span>
+        <div class="frontier-library__title">
+          <span class="eyebrow">Frontier Watch</span>
           <h1>AI 前沿资料</h1>
-          <p>按论文、研究主题和课程知识点组织最新 AI 资料，帮助你从课堂概念延伸到当代研究。</p>
+          <p>少量精选，真实来源。每周从 arXiv 最新论文和 GitHub 公开更新中同步一次，并映射回课程知识点。</p>
+          <div class="frontier-library__sync">
+            <span>最近同步：{{ generatedAtText || '等待同步' }}</span>
+            <span>下次更新：{{ nextRefreshText || '每 7 天' }}</span>
+          </div>
         </div>
         <div class="frontier-library__actions">
           <RouterLink class="secondary-btn" to="/">
@@ -147,18 +192,37 @@ onMounted(loadLibrary)
         </div>
       </section>
 
-      <p v-if="error" class="frontier-library__notice">{{ error }}</p>
-      <p v-else-if="library.status !== 'ready' && !library.items?.length" class="frontier-library__notice">
-        {{ library.message || '前沿资料尚未入库，当前显示演示数据。运行前沿同步链路后会自动展示真实资料。' }}
+      <p v-if="loading" class="frontier-library__notice">正在同步前沿资料...</p>
+      <p v-else-if="error" class="frontier-library__notice frontier-library__notice--error">{{ error }}</p>
+      <p v-else-if="library.message" class="frontier-library__notice">
+        {{ library.message }}
       </p>
+
+      <section v-if="!loading && !hasItems" class="frontier-empty-state">
+        <strong>{{ emptyTitle }}</strong>
+        <p>{{ emptyDescription }}</p>
+      </section>
+
+      <section v-else-if="hasItems && !hasFilteredItems" class="frontier-empty-state">
+        <strong>没有匹配结果</strong>
+        <p>换一个关键词或切回“全部”主题。</p>
+      </section>
 
       <section class="frontier-library__grid">
         <article v-for="item in items" :key="item.paperId || item.title" class="frontier-paper-card">
           <div class="frontier-paper-card__head">
-            <span>{{ item.venue || item.source || 'Frontier' }}</span>
+            <span :class="['frontier-source-pill', `frontier-source-pill--${sourceClass(item)}`]">
+              {{ sourceLabel(item) }}
+            </span>
             <strong>{{ item.year || '最新' }}</strong>
           </div>
           <h2>{{ item.title }}</h2>
+          <div class="frontier-paper-card__meta">
+            <span v-if="authorsText(item)">{{ authorsText(item) }}</span>
+            <span v-if="formatDateTime(item.publishedAt || item.updatedAt)">
+              {{ formatDateTime(item.publishedAt || item.updatedAt) }}
+            </span>
+          </div>
           <p>{{ item.abstract }}</p>
 
           <div v-if="item.topics?.length" class="frontier-chip-row">
@@ -184,7 +248,7 @@ onMounted(loadLibrary)
           </div>
 
           <a v-if="item.url" class="frontier-paper-card__source" :href="item.url" target="_blank" rel="noreferrer">
-            查看原文
+            {{ sourceActionLabel(item) }}
             <ExternalLink :size="14" aria-hidden="true" />
           </a>
         </article>

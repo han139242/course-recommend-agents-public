@@ -9,6 +9,7 @@ import { useUserStore } from '../../stores/userStore'
 import { getEntityLabel } from '../../utils/colorMap'
 import { DEFAULT_COURSE_TITLE, normalizeCourseTitle } from '../../utils/courseMeta'
 import { getQuizForNode } from '../../data/quizBank'
+import { request } from '../../api/request'
 
 const props = defineProps({
   collapsed: Boolean,
@@ -38,11 +39,13 @@ const graphStore = useGraphStore()
 const draftNote = ref('')
 
 // Quiz reactive state
-const quizState = ref('idle')
+const quizState = ref('idle')  // idle | active | submitting | reviewing | success | failed
 const quizCurrentIndex = ref(0)
 const quizSelectedOption = ref(null)
-const quizAnswers = ref([])
+const quizSelections = ref({})
+const quizResult = ref(null)
 const quizScore = ref(0)
+const quizSubmitting = ref(false)
 
 const quizQuestions = computed(() => {
   if (!props.detail) return []
@@ -57,48 +60,100 @@ function startQuiz() {
   quizState.value = 'active'
   quizCurrentIndex.value = 0
   quizSelectedOption.value = null
-  quizAnswers.value = []
+  quizSelections.value = {}
+  quizResult.value = null
   quizScore.value = 0
 }
 
 function selectOption(index) {
   quizSelectedOption.value = index
+  quizSelections.value[quizCurrentIndex.value] = index
+}
+
+function prevQuestion() {
+  if (quizCurrentIndex.value > 0) {
+    quizCurrentIndex.value--
+    quizSelectedOption.value = quizSelections.value[quizCurrentIndex.value] ?? null
+  }
 }
 
 function nextQuestion() {
   if (quizSelectedOption.value === null) return
-  const correct = quizSelectedOption.value === currentQuestion.value.answer
-  quizAnswers.value.push(correct)
-  if (correct) {
-    quizScore.value++
+  quizSelections.value[quizCurrentIndex.value] = quizSelectedOption.value
+  if (quizCurrentIndex.value < quizQuestions.value.length - 1) {
+    quizCurrentIndex.value++
+    quizSelectedOption.value = quizSelections.value[quizCurrentIndex.value] ?? null
   }
-  quizCurrentIndex.value++
-  quizSelectedOption.value = null
 }
 
-function submitQuiz() {
+async function submitQuiz() {
   if (quizSelectedOption.value === null) return
-  const correct = quizSelectedOption.value === currentQuestion.value.answer
-  quizAnswers.value.push(correct)
-  if (correct) {
-    quizScore.value++
-  }
+  quizSelections.value[quizCurrentIndex.value] = quizSelectedOption.value
 
+  quizSubmitting.value = true
+
+  // 构造请求：题目数据 + 学生答案发送到后端，后端评分并记录掌握度
+  const knowledgeId = props.detail?.routeKnowledgeId || ''
+  const questions = quizQuestions.value.map((q, i) => ({
+    questionId: `${knowledgeId}_q${i}`,
+    question: q.question,
+    options: q.options,
+    correctOption: q.answer,
+    explanation: q.explanation || '',
+  }))
+  const answers = quizQuestions.value.map((q, i) => ({
+    questionId: `${knowledgeId}_q${i}`,
+    selectedOption: quizSelections.value[i] ?? -1,
+  }))
+
+  try {
+    const res = await request('/learning/quiz-submit', {
+      method: 'POST',
+      body: JSON.stringify({
+        knowledgeId,
+        answers,
+        questions,
+        answeredAt: new Date().toISOString(),
+      }),
+    })
+
+    quizResult.value = res.results
+    quizScore.value = res.totalCorrect
+    quizState.value = 'reviewing'
+  } catch {
+    // 网络异常时降级为本地评分
+    const results = quizQuestions.value.map((q, i) => {
+      const selected = quizSelections.value[i]
+      const correct = selected === q.answer
+      return {
+        questionId: `${knowledgeId}_q${i}`,
+        correct,
+        correctIdx: q.answer,
+        correctText: q.options[q.answer],
+        explanation: q.explanation || null,
+      }
+    })
+    quizResult.value = results
+    quizScore.value = results.filter(r => r.correct).length
+    quizState.value = 'reviewing'
+  } finally {
+    quizSubmitting.value = false
+  }
+}
+
+function finishReview() {
   const passed = quizScore.value === quizQuestions.value.length
   if (passed) {
     quizState.value = 'success'
-    if (props.detail?.routeKnowledgeId) {
-      userStore.markMastered(props.detail.routeKnowledgeId)
-    }
     emit('quiz-mastered', {
-      nodeId: props.detail.routeKnowledgeId,
+      nodeId: props.detail?.routeKnowledgeId,
       name: props.detail.canonicalName || props.detail.name
     })
   } else {
     quizState.value = 'failed'
     emit('quiz-failed', {
-      nodeId: props.detail.routeKnowledgeId,
-      name: props.detail.canonicalName || props.detail.name,
+      nodeId: props.detail?.routeKnowledgeId,
+      name: props.detail?.canonicalName || props.detail?.name,
       score: quizScore.value,
       total: quizQuestions.value.length
     })
@@ -109,7 +164,8 @@ function resetQuiz() {
   quizState.value = 'idle'
   quizCurrentIndex.value = 0
   quizSelectedOption.value = null
-  quizAnswers.value = []
+  quizSelections.value = {}
+  quizResult.value = null
   quizScore.value = 0
 }
 
@@ -307,7 +363,7 @@ function saveNote() {
             <div class="quiz-progress-bar">
               <span>问题 {{ quizCurrentIndex + 1 }} / {{ quizQuestions.length }}</span>
               <div class="progress-track" style="height: 4px;">
-                <span class="progress-fill" :style="{ width: `${((quizCurrentIndex) / quizQuestions.length) * 100}%` }"></span>
+                <span class="progress-fill" :style="{ width: `${((quizCurrentIndex + 1) / quizQuestions.length) * 100}%` }"></span>
               </div>
             </div>
 
@@ -326,7 +382,15 @@ function saveNote() {
               </button>
             </div>
 
-            <div class="quiz-actions">
+            <div class="quiz-actions" style="justify-content: space-between;">
+              <button
+                type="button"
+                class="secondary-btn"
+                :disabled="quizCurrentIndex === 0"
+                @click="prevQuestion"
+              >
+                上一题
+              </button>
               <button
                 v-if="quizCurrentIndex < quizQuestions.length - 1"
                 type="button"
@@ -340,10 +404,55 @@ function saveNote() {
                 v-else
                 type="button"
                 class="primary-btn"
-                :disabled="quizSelectedOption === null"
+                :disabled="quizSelectedOption === null || quizSubmitting"
                 @click="submitQuiz"
               >
-                提交评估
+                {{ quizSubmitting ? '提交中...' : '提交评估' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Reviewing State: 全部答完后先展示答题报告 -->
+          <div v-else-if="quizState === 'reviewing' && quizResult" class="quiz-review-card">
+            <div class="quiz-review-header">
+              <strong>答题报告：{{ quizScore }} / {{ quizQuestions.length }} 正确</strong>
+            </div>
+
+            <div
+              v-for="(result, idx) in quizResult"
+              :key="idx"
+              class="quiz-review-item"
+              :class="{ 'quiz-review-item--correct': result.correct, 'quiz-review-item--wrong': !result.correct }"
+            >
+              <div class="quiz-review-q">
+                <span class="quiz-review-badge">{{ result.correct ? '✓' : '✗' }}</span>
+                <span>{{ idx + 1 }}. {{ quizQuestions[idx].question }}</span>
+              </div>
+              <div class="quiz-review-a">
+                <div v-if="result.selected != null">
+                  <span class="label-sm">你的回答：</span>
+                  <span :class="result.correct ? 'text-correct' : 'text-wrong'">
+                    {{ String.fromCharCode(65 + result.selected) }}. {{ quizQuestions[idx].options[result.selected] }}
+                  </span>
+                </div>
+                <div v-if="!result.correct">
+                  <span class="label-sm">正确答案：</span>
+                  <span class="text-correct">
+                    {{ String.fromCharCode(65 + result.correctIdx) }}. {{ result.correctText }}
+                  </span>
+                </div>
+                <div v-if="result.explanation" class="quiz-review-explain">
+                  <span class="label-sm">解析：</span>{{ result.explanation }}
+                </div>
+              </div>
+            </div>
+
+            <div class="quiz-actions" style="justify-content: center; gap: 12px;">
+              <button type="button" class="secondary-btn" style="justify-content: center;" @click="resetQuiz">
+                重新挑战
+              </button>
+              <button type="button" class="primary-btn" style="justify-content: center;" @click="finishReview">
+                {{ quizScore === quizQuestions.length ? '确认通关' : '知道了' }}
               </button>
             </div>
           </div>

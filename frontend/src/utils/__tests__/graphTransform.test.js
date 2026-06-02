@@ -161,6 +161,35 @@ describe('graphTransform', () => {
     expect(highNode.style.masteryRatio).toBe(1)
   })
 
+  it('uses light-theme node labels with white backgrounds and dark readable text', () => {
+    const result = transformGraphData(
+      [
+        {
+          id: 'llm',
+          routeKnowledgeId: 'llm',
+          name: '大语言模型',
+          canonicalName: '大语言模型',
+          chapterTitle: '大模型',
+          entityType: 'concept',
+          x: 0,
+          y: 0,
+          isRoot: true,
+        },
+      ],
+      [],
+      {
+        theme: 'light',
+        selectedNodeId: 'llm',
+      },
+    )
+
+    const node = result.nodes[0]
+    expect(node.style.labelColor).toBe('#0F172A')
+    expect(node.style.labelBackground).toContain('255, 255, 255')
+    expect(node.style.labelBorder).toContain('15, 23, 42')
+    expect(node.style.fill).not.toBe('rgba(252, 225, 235, 0.99)')
+  })
+
   it('labels modern AI node types for graph UI surfaces', () => {
     expect(getEntityLabel('model')).toBe('模型')
     expect(getEntityLabel('tool')).toBe('工具')

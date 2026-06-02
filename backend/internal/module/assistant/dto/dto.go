@@ -8,10 +8,11 @@ type ChatRequest struct {
 
 // ClientAction represents a UI action that should be executed by the frontend.
 type ClientAction struct {
-	Type        string `json:"type"`
-	Target      string `json:"target,omitempty"`
-	CourseTitle string `json:"courseTitle,omitempty"`
-	Flash       bool   `json:"flash,omitempty"`
+	Type        string         `json:"type"`
+	Target      string         `json:"target,omitempty"`
+	CourseTitle string         `json:"courseTitle,omitempty"`
+	Flash       bool           `json:"flash,omitempty"`
+	Payload     map[string]any `json:"payload,omitempty"`
 }
 
 // ChatResponse contains the final assistant content plus optional UI actions.

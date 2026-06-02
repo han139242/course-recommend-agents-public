@@ -959,7 +959,7 @@ function drawNodeLabels(ctx, nodes = [], zoomLevel = 1, stateMap = {}, transform
         ? 'rgba(103, 232, 249, 0.82)'
         : states.has('path')
           ? 'rgba(45, 212, 191, 0.72)'
-          : 'rgba(148, 163, 184, 0.62)'
+          : style.labelLeaderColor || 'rgba(148, 163, 184, 0.62)'
       ctx.lineWidth = node.view?.data?.isRoot ? 1.4 : 1.1
       ctx.stroke()
       ctx.restore()
@@ -968,13 +968,13 @@ function drawNodeLabels(ctx, nodes = [], zoomLevel = 1, stateMap = {}, transform
     if (drawBackground) {
       const backgroundWorldWidth = selectedPlacement.box.width / transform.k
       const backgroundWorldHeight = selectedPlacement.box.height / transform.k
-      ctx.fillStyle = states.has('selected')
-        ? 'rgba(8, 47, 73, 0.82)'
-        : states.has('path')
-          ? 'rgba(17, 94, 89, 0.8)'
+      ctx.fillStyle = states.has('path')
+        ? 'rgba(17, 94, 89, 0.8)'
+        : style.labelBackground || (states.has('selected')
+          ? 'rgba(8, 47, 73, 0.82)'
           : node.view?.data?.isRoot
             ? 'rgba(30, 41, 59, 0.74)'
-            : 'rgba(15, 23, 42, 0.62)'
+            : 'rgba(15, 23, 42, 0.62)')
       ctx.beginPath()
       ctx.roundRect(
         worldX - backgroundWorldWidth / 2,
@@ -984,6 +984,11 @@ function drawNodeLabels(ctx, nodes = [], zoomLevel = 1, stateMap = {}, transform
         8 / Math.max(transform.k, 0.001),
       )
       ctx.fill()
+      if (style.labelBorder) {
+        ctx.lineWidth = 1 / Math.max(transform.k, 0.001)
+        ctx.strokeStyle = style.labelBorder
+        ctx.stroke()
+      }
       ctx.fillStyle = style.labelColor || '#F8FAFC'
     }
 

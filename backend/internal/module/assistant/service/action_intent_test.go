@@ -166,6 +166,27 @@ func TestBuildActionFallbackReplySuppressesGenericModelContent(t *testing.T) {
 	}
 }
 
+func TestInferClientActionsProposesGoalProfile(t *testing.T) {
+	t.Parallel()
+
+	actions := inferClientActions([]map[string]any{
+		{"role": "user", "content": "\u6211\u662f\u5927\u4e8c\u5b66\u751f\uff0c\u60f3\u505a\u667a\u80fd\u4f53\u9879\u76ee\uff0c\u5b66\u8fc7 Python \u548c\u4e00\u70b9\u673a\u5668\u5b66\u4e60\uff0c\u6570\u5b66\u57fa\u7840\u4e00\u822c"},
+	})
+
+	if len(actions) != 1 {
+		t.Fatalf("expected one action, got %d", len(actions))
+	}
+	if actions[0].Type != "propose_goal_profile" {
+		t.Fatalf("expected propose_goal_profile, got %q", actions[0].Type)
+	}
+	if actions[0].Payload["gradeLevel"] != "sophomore" {
+		t.Fatalf("expected sophomore profile, got %#v", actions[0].Payload)
+	}
+	if actions[0].Payload["goalType"] != "project_building" {
+		t.Fatalf("expected project goal, got %#v", actions[0].Payload)
+	}
+}
+
 func TestShouldHandleActionsDirectly(t *testing.T) {
 	t.Parallel()
 
