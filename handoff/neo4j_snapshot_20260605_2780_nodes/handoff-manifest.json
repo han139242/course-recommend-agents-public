@@ -1,0 +1,15 @@
+﻿{
+    "snapshot":  "neo4j_snapshot_20260605_2780_nodes",
+    "created_at":  "2026-06-05T21:44:58",
+    "source":  "course-recommend-neo4j Docker container",
+    "database":  "neo4j",
+    "expected_nodes":  2780,
+    "expected_relationships":  5376,
+    "files":  [
+                  "data/neo4j/neo4j.dump",
+                  "data/neo4j/graph_summary.txt",
+                  "data/neo4j/label_summary.txt",
+                  "data/neo4j/relationship_summary.txt"
+              ],
+    "restore_note":  "Load with neo4j-admin database load neo4j --from-path=\u003csnapshot\u003e/data/neo4j --overwrite-destination=true while Neo4j is stopped."
+}
