@@ -52,11 +52,17 @@ function stageRouteIds(stage) {
 }
 
 function stageSummary(stage) {
-  const names = getStageItems(stage)
-    .map((item) => item.title)
-    .filter(Boolean)
-    .slice(0, 2)
-  return names.length ? names.join(' / ') : '待生成'
+  const items = getStageItems(stage)
+  if (!items.length) return '待生成'
+
+  const count = items.length
+  const total = (stage?.items || []).length
+
+  // 显示知识点数量
+  if (total > count) {
+    return `${count} 个知识点（共 ${total} 个）`
+  }
+  return `${count} 个知识点`
 }
 </script>
 

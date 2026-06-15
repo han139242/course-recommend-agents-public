@@ -18,6 +18,7 @@ import SearchBar from '../components/search/SearchBar.vue'
 import LeftPanel from '../components/sidebar/LeftPanel.vue'
 import StudyGoalWizard from '../components/study/StudyGoalWizard.vue'
 import StudyPlanCard from '../components/study/StudyPlanCard.vue'
+import PathLearningView from '../components/PathLearningView.vue'
 import { buildGraphStateMap } from '../composables/useNodeFocus'
 import { APP_NAME } from '../constants/appInfo'
 import { fetchCurrentStudyPlan, fetchGoalProfile, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
@@ -48,6 +49,9 @@ const pendingGoalDraft = ref(null)
 const studyProfile = ref(null)
 const studyPlan = ref(null)
 const studyPlanLoading = ref(false)
+const pathLearningActive = ref(false)
+const pathLearningNodes = ref([])
+const pathLearningName = ref('')
 const recommendationMeta = ref({
   path: [],
   insights: [],
@@ -346,7 +350,6 @@ async function handleNodeDoubleClick(nodeId) {
     queueExpandedClusterFocus(nodeId, changedNodeIds, { zoomLevel: 1.08, duration: 240, lockDuration: 920 })
   }
   await graphStore.selectNode(nodeId)
-  rightCollapsed.value = false
 }
 
 function handleClearSelection() {
@@ -452,11 +455,24 @@ async function handleShowPath(nodeIds) {
   const routeIds = [...new Set((nodeIds || []).filter(Boolean))]
   if (!routeIds.length) return
 
+  // 保存当前选中的节点，避免在展开路径时被改变
+  const currentSelection = graphStore.selectedRouteKnowledgeId
+
   for (const routeKnowledgeId of routeIds) {
     await graphStore.revealNodeByRouteKnowledgeId(routeKnowledgeId, getRevealOptions())
   }
 
+  // 高亮路径节点
   graphStore.highlightPathNodes(routeIds)
+
+  // 恢复原来选中的节点（如果有的话）
+  if (currentSelection) {
+    const node = graphStore.routeNodeMap.get(currentSelection)
+    if (node?.id) {
+      await graphStore.selectNode(node.id)
+    }
+  }
+
   rightCollapsed.value = false
   await nextTick()
   await graphCanvasRef.value?.fitView?.(240)
@@ -484,10 +500,31 @@ function handleStartPath(nodeIds) {
   const routeIds = (nodeIds || []).filter(Boolean)
   if (!routeIds.length) return
 
+  // 显示路径学习视图
+  pathLearningNodes.value = routeIds
+  pathLearningName.value = '学习路径'
+  pathLearningActive.value = true
+
+  // 高亮路径
   graphStore.highlightPathNodes(routeIds)
-  const targetRouteKnowledgeId =
-    routeIds.find((item) => Number(userStore.getProgressMeta(item).masteryScore || 0) < 80) || routeIds[0]
-  router.push(`/knowledge/${encodeURIComponent(targetRouteKnowledgeId)}`)
+}
+
+function handlePathLearningClose() {
+  pathLearningActive.value = false
+  pathLearningNodes.value = []
+  pathLearningName.value = ''
+}
+
+function handlePathNodeSelect(nodeId) {
+  // 保存当前路径信息，以便返回
+  const pathInfo = {
+    nodes: pathLearningNodes.value,
+    name: pathLearningName.value,
+  }
+  sessionStorage.setItem('activeLearningPath', JSON.stringify(pathInfo))
+
+  // 跳转到知识点详情页
+  router.push(`/knowledge/${encodeURIComponent(nodeId)}`)
 }
 
 function handleAskGoalAi() {
@@ -614,6 +651,23 @@ let onKeydown = null
 
 onMounted(() => {
   bootstrapPage()
+
+  // 恢复路径学习状态（如果从详情页返回）
+  const savedPath = sessionStorage.getItem('activeLearningPath')
+  if (savedPath) {
+    try {
+      const pathInfo = JSON.parse(savedPath)
+      if (pathInfo.nodes && pathInfo.nodes.length > 0) {
+        pathLearningNodes.value = pathInfo.nodes
+        pathLearningName.value = pathInfo.name || '学习路径'
+        pathLearningActive.value = true
+        // 清除保存的状态
+        sessionStorage.removeItem('activeLearningPath')
+      }
+    } catch (e) {
+      console.error('Failed to restore learning path:', e)
+    }
+  }
 
   const isMobile = window.innerWidth < 768
   leftCollapsed.value = isMobile
@@ -809,6 +863,7 @@ onBeforeUnmount(() => {
         @select-related="handleRelatedSelect"
         @open-ai="handleOpenAi"
         @show-recommend-path="handleShowPath"
+        @start-path="handleStartPath"
         @open-ai-with-prompt="handleOpenAiWithPrompt"
         @quiz-mastered="handleQuizMastered"
         @quiz-failed="handleQuizFailed"
@@ -837,6 +892,16 @@ onBeforeUnmount(() => {
       :draft-profile="pendingGoalDraft"
       @submit="handleSaveGoalProfile"
       @close="pendingGoalDraft = null"
+    />
+
+    <PathLearningView
+      v-if="pathLearningActive"
+      :path-nodes="pathLearningNodes"
+      :path-name="pathLearningName"
+      :nodes="graphStore.rawNodes"
+      :progress-map="userStore.progressMap"
+      @close="handlePathLearningClose"
+      @select-node="handlePathNodeSelect"
     />
 
     <div class="mobile-dock">

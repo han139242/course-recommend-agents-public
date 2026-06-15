@@ -240,6 +240,9 @@ export function useGraph(options = {}) {
         nodes: engine.getNodes(),
         viewport: renderer.getViewportSize(),
       }),
+    onZoom: () => {
+      zoom.value = renderer.getTransform().k
+    },
     onNodeClick: options.onNodeClick,
     onNodeDoubleClick: options.onNodeDoubleClick,
     onHubClick: options.onHubClick,

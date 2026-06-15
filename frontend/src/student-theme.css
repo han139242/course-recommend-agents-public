@@ -1059,8 +1059,8 @@ textarea:focus {
 
 .ai-proactive-bubble {
   position: absolute;
-  right: 58px;
-  bottom: 4px;
+  right: 0;
+  bottom: 58px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1664,6 +1664,13 @@ html[data-theme='light'] .ai-path-card,
 html[data-theme='light'] .ai-message {
   background: rgba(15, 23, 42, 0.035);
   border-color: rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme='light'] .ai-proactive-bubble {
+  color: #3730a3;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(79, 70, 229, 0.16);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1);
 }
 
 html[data-theme='light'] .search-bar__select,
@@ -2575,4 +2582,142 @@ html[data-theme='light'] .frontier-library__notice--error {
   .ai-panel__quick {
     grid-template-columns: 1fr;
   }
+}
+
+/* Path action buttons styling */
+.path-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.path-action-buttons .secondary-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Learning path card styling */
+.learning-path-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+}
+
+.learning-path-card__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8px;
+}
+
+.learning-path-card__title-wrapper {
+  min-width: 0;
+}
+
+.learning-path-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.learning-path-card__title--suffix {
+  margin-top: 2px;
+}
+
+.learning-path-card__header .link-button {
+  flex-shrink: 0;
+}
+
+.learning-path-card__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5eead4, #22c55e);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.learning-path-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.learning-path-card__actions .secondary-btn,
+.learning-path-card__actions .primary-btn {
+  width: 100%;
+  font-size: 0.85rem;
+  min-height: 32px;
+  justify-content: center;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 12px;
+  text-align: center;
+}
+
+/* Left panel scrolling fix */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.left-panel .panel-stack {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.left-panel .panel-stack::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-panel .panel-stack::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.left-panel .panel-stack::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.left-panel .panel-stack::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }

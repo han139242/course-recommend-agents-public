@@ -217,6 +217,7 @@ export function useGraphInteraction(options = {}) {
       })
       .on('zoom', (event) => {
         renderer.setTransform(applyConstraint(event.transform))
+        options.onZoom?.()
       })
 
     selection.call(zoomBehavior).on('dblclick.zoom', null)

@@ -34,6 +34,16 @@ const emit = defineEmits([
 
 const renaming = ref({ pathId: '', name: '' })
 
+function formatPathName(name) {
+  const colonIndex = name.indexOf('：')
+  if (colonIndex !== -1 && colonIndex < name.length - 1) {
+    const prefix = name.slice(0, colonIndex + 1)
+    const suffix = name.slice(colonIndex + 1)
+    return { prefix, suffix, hasSplit: true }
+  }
+  return { prefix: name, suffix: '', hasSplit: false }
+}
+
 const recommendedRouteIds = computed(() =>
   props.recommendedPath.map((item) => item.knowledgeId || item.title).filter(Boolean),
 )
@@ -104,81 +114,78 @@ function recommendedTitle(item) {
 <template>
   <section class="panel-card">
     <div class="panel-card__head">
-      <strong>学习路径</strong>
+      <strong>我的学习路径</strong>
       <button type="button" class="link-button" @click="emit('create-path')">新建</button>
     </div>
 
-    <div class="path-block">
-      <span class="panel-label">推荐下一步</span>
-
-      <template v-if="recommendedRouteIds.length">
-        <div class="path-score-list">
-          <article
-            v-for="(item, idx) in recommendedPath.slice(0, 4)"
-            :key="item.knowledgeId || idx"
-            class="path-score-item"
+    <div v-if="customPaths.length" class="panel-stack panel-stack--compact">
+      <article v-for="path in customPaths" :key="path.id" class="learning-path-card">
+        <div class="learning-path-card__header">
+          <input
+            v-if="renaming.pathId === path.id"
+            v-model="renaming.name"
+            class="path-rename-input"
+            @keydown.enter="commitRename"
+            @keydown.escape="renaming = { pathId: '', name: '' }"
+            @blur="commitRename"
+          />
+          <div v-else class="learning-path-card__title-wrapper">
+            <template v-if="formatPathName(path.name).hasSplit">
+              <div class="learning-path-card__title">
+                {{ formatPathName(path.name).prefix }}
+              </div>
+              <div class="learning-path-card__title learning-path-card__title--suffix">
+                {{ formatPathName(path.name).suffix }}
+              </div>
+            </template>
+            <div v-else class="learning-path-card__title">{{ path.name }}</div>
+          </div>
+          <button
+            v-if="renaming.pathId !== path.id"
+            type="button"
+            class="link-button link-button--compact"
+            @click="startRename(path)"
           >
-            <button type="button" class="path-score-item__header" @click="emit('focus-node', item.knowledgeId || item.title)">
-              <span class="path-score-item__rank">{{ idx + 1 }}</span>
-              <strong>{{ recommendedTitle(item) }}</strong>
-              <span class="path-score-item__scoresum">{{ Math.round((item.score || 0) * 100) }}分</span>
-            </button>
-            <ScoreBreakdown v-if="item.scoringBreakdown" :breakdown="item.scoringBreakdown" />
-          </article>
+            重命名
+          </button>
         </div>
 
-        <div class="path-block__actions">
-          <button type="button" class="secondary-btn" @click="emit('show-path', recommendedRouteIds)">高亮路径</button>
-          <button type="button" class="primary-btn" @click="handleStartPath(recommendedRouteIds)">开始学习</button>
+        <div class="learning-path-card__progress">
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar">
+              <div
+                class="progress-bar__fill"
+                :style="{ width: `${(getPathSummary(path).completed / Math.max(getPathSummary(path).total, 1)) * 100}%` }"
+              ></div>
+            </div>
+            <span class="progress-text">{{ getPathSummary(path).completed }}/{{ getPathSummary(path).total }} 已掌握</span>
+          </div>
         </div>
-      </template>
 
-      <p v-else class="muted-text">选中知识点后，系统会根据当前进度给出下一步建议。</p>
+        <div class="learning-path-card__actions">
+          <button
+            type="button"
+            class="secondary-btn"
+            :disabled="!path.nodes.length"
+            @click="emit('show-path', path.nodes)"
+          >
+            在图谱中高亮
+          </button>
+          <button
+            type="button"
+            class="primary-btn"
+            :disabled="!path.nodes.length"
+            @click="handleStartPath(path.nodes)"
+          >
+            开始学习
+          </button>
+        </div>
+      </article>
     </div>
 
-    <div class="path-block">
-      <span class="panel-label">我的路径</span>
-
-      <div v-if="customPaths.length" class="panel-stack panel-stack--compact">
-        <article v-for="path in customPaths" :key="path.id" class="custom-path-card">
-          <div class="custom-path-card__head">
-            <div class="path-card__meta">
-              <input
-                v-if="renaming.pathId === path.id"
-                v-model="renaming.name"
-                class="path-rename-input"
-                @keydown.enter="commitRename"
-                @keydown.escape="renaming = { pathId: '', name: '' }"
-                @blur="commitRename"
-              />
-              <template v-else>
-                <strong>{{ path.name }}</strong>
-                <button type="button" class="link-button link-button--compact" @click="startRename(path)">重命名</button>
-              </template>
-              <span class="path-progress">{{ getPathSummary(path).completed }}/{{ getPathSummary(path).total }} 已掌握</span>
-            </div>
-
-            <div class="path-card__actions">
-              <button type="button" class="link-button" :disabled="!path.nodes.length" @click="emit('show-path', path.nodes)">高亮</button>
-              <button type="button" class="secondary-btn" :disabled="!path.nodes.length" @click="handleStartPath(path.nodes)">继续</button>
-            </div>
-          </div>
-
-          <div v-if="path.nodes.length" class="path-stack">
-            <article v-for="nodeId in path.nodes" :key="`${path.id}-${nodeId}`" class="path-node">
-              <button type="button" class="path-node__main" @click="emit('focus-node', nodeId)">
-                <strong>{{ getNodeDisplayMeta(nodeId).label }}</strong>
-                <span>{{ getNodeDisplayMeta(nodeId).courseLabel || getNodeMeta(nodeId).label }}</span>
-              </button>
-              <span class="status-pill" :class="`status-pill--${getNodeMeta(nodeId).tone}`">{{ getNodeMeta(nodeId).label }}</span>
-              <button type="button" class="path-node__remove" @click="emit('remove-node', { pathId: path.id, knowledgeId: nodeId })">移除</button>
-            </article>
-          </div>
-          <p v-else class="muted-text">右键知识点可加入这条路径。</p>
-        </article>
-      </div>
-
-      <p v-else class="muted-text">还没有自定义路径。可以先用推荐路径开始学习。</p>
+    <div v-else class="empty-state">
+      <p class="muted-text">还没有学习路径</p>
+      <p class="muted-text" style="font-size: 0.8rem;">点击"新建"创建路径，或在右侧推荐区域保存路径</p>
     </div>
   </section>
 </template>

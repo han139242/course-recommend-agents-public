@@ -30,6 +30,7 @@ const emit = defineEmits([
   'select-related',
   'open-ai',
   'show-recommend-path',
+  'start-path',
   'open-ai-with-prompt',
   'quiz-mastered',
   'quiz-failed'
@@ -246,6 +247,39 @@ function saveNote() {
   if (!props.detail?.routeKnowledgeId) return
   userStore.saveNote(props.detail.routeKnowledgeId, draftNote.value)
 }
+
+function handleStartPath() {
+  const routeIds = pathRouteIds.value
+  if (!routeIds.length) return
+
+  // 触发开始学习路径事件（显示路径学习视图）
+  emit('start-path', routeIds)
+}
+
+function handleSavePath() {
+  const routeIds = pathRouteIds.value
+  if (!routeIds.length) return
+
+  // 生成路径名称
+  const pathName = `推荐路径：${props.detail?.canonicalName || props.detail?.name || '学习路径'}`
+
+  // 创建或获取路径
+  let path = userStore.customPaths.find((p) => p.name === pathName)
+  if (!path) {
+    path = userStore.createCustomPath(pathName)
+  }
+
+  // 添加所有知识点到路径（去重）
+  routeIds.forEach((routeKnowledgeId) => {
+    if (!path.nodes.includes(routeKnowledgeId)) {
+      userStore.addToPath(path.id, routeKnowledgeId)
+    }
+  })
+
+  // 提示用户
+  alert(`已保存 ${routeIds.length} 个知识点到"${pathName}"！\n你可以在左侧"学习路径"中查看和管理。`)
+}
+
 </script>
 
 <template>
@@ -334,14 +368,29 @@ function saveNote() {
               {{ item.detail || '这一步适合作为当前知识点之后的延伸学习。' }}
             </p>
           </article>
-          <button
-            v-if="pathRouteIds.length"
-            type="button"
-            class="inline-link inline-link--ai"
-            @click="emit('show-recommend-path', pathRouteIds)"
-          >
-            在图谱中查看完整路径
-          </button>
+          <div v-if="pathRouteIds.length" class="path-action-buttons">
+            <button
+              type="button"
+              class="secondary-btn"
+              @click="emit('show-recommend-path', pathRouteIds)"
+            >
+              在图谱中查看完整路径
+            </button>
+            <button
+              type="button"
+              class="secondary-btn"
+              @click="handleStartPath"
+            >
+              开始学习这条路径
+            </button>
+            <button
+              type="button"
+              class="secondary-btn"
+              @click="handleSavePath"
+            >
+              保存到我的路径
+            </button>
+          </div>
         </div>
 
         <!-- Quiz Section -->

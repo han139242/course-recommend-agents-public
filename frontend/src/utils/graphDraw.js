@@ -553,11 +553,7 @@ function buildEdgeLabelLayout(ctx, edge, geometry, zoomLevel, transform, states)
   const tangentOffset = clamp(10 + zoomLevel * 2, 10, 16)
   const fontSize = Math.round(clamp(10 / zoomLevel, 8, 10))
   const shaftLength = geometry.distance * (1 + Math.min(Math.abs(geometry.curvature || 0) * 1.35, 0.34))
-  const availableWorldWidth = clamp(
-    shaftLength * (states.has('path') || states.has('active') ? 0.46 : 0.38),
-    42,
-    states.has('path') || states.has('active') ? 132 : 104,
-  )
+  const availableWorldWidth = clamp(shaftLength * 0.42, 42, 118)
 
   ctx.save()
   ctx.font = `${fontSize}px "IBM Plex Sans SC", "Segoe UI", sans-serif`
@@ -614,13 +610,8 @@ function paintEdgeLabel(ctx, layout, placement, transform) {
   const worldWidth = placement.pillWidth / transform.k
   const worldHeight = placement.pillHeight / transform.k
   const integrated = placement.kind === 'center' && layout.prefersCenterPlacement
-  const fill = integrated
-    ? hexToRgba(layout.accentColor, layout.states.has('path') ? 0.3 : layout.states.has('active') ? 0.24 : 0.18)
-    : layout.states.has('path')
-      ? 'rgba(17, 94, 89, 0.82)'
-      : layout.states.has('active')
-        ? 'rgba(30, 41, 59, 0.82)'
-        : 'rgba(15, 23, 42, 0.76)'
+  const fill = hexToRgba(layout.accentColor, integrated ? 0.2 : 0.16)
+  const border = hexToRgba(layout.accentColor, layout.states.has('path') ? 0.82 : 0.64)
 
   ctx.save()
   ctx.globalAlpha = resolveOpacity(1, layout.states)
@@ -639,12 +630,10 @@ function paintEdgeLabel(ctx, layout, placement, transform) {
     8 / Math.max(transform.k, 0.001),
   )
   ctx.fill()
-  if (integrated) {
-    ctx.lineWidth = 1 / Math.max(transform.k, 0.001)
-    ctx.strokeStyle = hexToRgba(layout.accentColor, layout.states.has('path') ? 0.88 : 0.72)
-    ctx.stroke()
-  }
-  ctx.fillStyle = 'rgba(248, 250, 252, 0.96)'
+  ctx.lineWidth = 1 / Math.max(transform.k, 0.001)
+  ctx.strokeStyle = border
+  ctx.stroke()
+  ctx.fillStyle = 'rgba(30, 41, 59, 0.92)'
   ctx.fillText(layout.label, 0, 1 / Math.max(transform.k, 0.001))
   ctx.restore()
 }
