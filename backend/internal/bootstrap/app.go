@@ -11,6 +11,8 @@ import (
 	graphwritermodule "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter"
 	graphwriterrepo "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/repository"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
+	profilemodule "github.com/han139242/course-recommend-agents/backend/internal/module/profile"
+	resourcegenmodule "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/redis/go-redis/v9"
@@ -27,6 +29,8 @@ type App struct {
 	GraphWriter  *graphwritermodule.Module
 	Frontier     *frontiermodule.Module
 	Graph        *graphmodule.Module
+	Profile      *profilemodule.Module
+	ResourceGen  *resourcegenmodule.Module
 	Router       http.Handler
 	HTTPServer   *http.Server
 	shutdownJobs []func(context.Context) error
@@ -91,15 +95,17 @@ func New(ctx context.Context) (*App, error) {
 	go competencyModule.Matrix.Start(context.TODO())
 	recommendModule := NewRecommendModule(neo4jDriver, redisClient, mysqlDB)
 	studyPlanModule := NewStudyPlanModule(mysqlDB, recommendModule.Service)
+	profileModule := NewProfileModule(mysqlDB)
 	evaluationModule := NewEvaluationModule(recommendModule.Service.Scorer)
 	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
 	frontierModule := frontiermodule.New(graphModule.Repo)
 	assistantModule := NewAssistantModule(cfg, authModule.AuthService, learningModule.Service, competencyModule.Service, recommendModule.Service, dashboardModule.Service, graphModule.Service, frontierModule.Service, mysqlDB)
+	resourceGenModule := NewResourceGenModule(mysqlDB, profileModule.Service, recommendModule.Service, graphModule.Service)
 	graphWriterService.Start(context.TODO())
 	logStep("modules_ready")
 
 	logStep("router_initializing")
-	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, studyPlanModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
+	r := NewRouter(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriterService, competencyModule, recommendModule, studyPlanModule, profileModule, resourceGenModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
 	logStep("router_ready")
 
 	server := &http.Server{
@@ -119,6 +125,8 @@ func New(ctx context.Context) (*App, error) {
 		GraphWriter: graphWriterModule,
 		Frontier:    frontierModule,
 		Graph:       graphModule,
+		Profile:     profileModule,
+		ResourceGen: resourceGenModule,
 		Router:      r,
 		HTTPServer:  server,
 	}

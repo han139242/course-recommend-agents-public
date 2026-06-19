@@ -12,7 +12,9 @@ import (
 	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningmodule "github.com/han139242/course-recommend-agents/backend/internal/module/learning"
+	profilemodule "github.com/han139242/course-recommend-agents/backend/internal/module/profile"
 	recommendmodule "github.com/han139242/course-recommend-agents/backend/internal/module/recommend"
+	resourcegenmodule "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen"
 	studyplanmodule "github.com/han139242/course-recommend-agents/backend/internal/module/studyplan"
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
 	"github.com/han139242/course-recommend-agents/backend/internal/router"
@@ -24,6 +26,6 @@ import (
 
 // NewRouter 初始化路由。
 // bootstrap 层通过该函数屏蔽具体路由实现，保持入口装配代码只关注依赖拼装。
-func NewRouter(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, studyPlanModule *studyplanmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module, evaluationModule *evaluationmodule.Module) *gin.Engine {
-	return router.New(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriter, competencyModule, recommendModule, studyPlanModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
+func NewRouter(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, studyPlanModule *studyplanmodule.Module, profileModule *profilemodule.Module, resourceGenModule *resourcegenmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module, evaluationModule *evaluationmodule.Module) *gin.Engine {
+	return router.New(logger, cfg, mysqlDB, redisClient, neo4jDriver, authModule, teacherModule, learningModule, graphModule, graphWriter, competencyModule, recommendModule, studyPlanModule, profileModule, resourceGenModule, dashboardModule, frontierModule, assistantModule, evaluationModule)
 }

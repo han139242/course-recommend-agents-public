@@ -6,6 +6,7 @@ import { useUserStore } from './stores/userStore'
 const GraphHome = () => import('./views/GraphHome.vue')
 const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
 const DashboardView = () => import('./views/DashboardView.vue')
+const ResourceCenterView = () => import('./views/ResourceCenterView.vue')
 const CompetitionShowcaseView = () => import('./views/CompetitionShowcaseView.vue')
 const EvaluationView = () => import('./views/EvaluationView.vue')
 const FrontierLibraryView = () => import('./views/FrontierLibraryView.vue')
@@ -36,6 +37,15 @@ const routes = [
     component: DashboardView,
     meta: {
       title: '学习仪表盘',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/resources',
+    name: 'resource-center',
+    component: ResourceCenterView,
+    meta: {
+      title: '个性化资源智能体',
       requiresAuth: true,
     },
   },

@@ -1,0 +1,30 @@
+package resourcegen
+
+import (
+	"github.com/gin-gonic/gin"
+	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
+	profileservice "github.com/han139242/course-recommend-agents/backend/internal/module/profile/service"
+	recommendservice "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/service"
+	resourcegenhandler "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/handler"
+	resourcegenrepo "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/repository"
+	resourcegenservice "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/service"
+	"gorm.io/gorm"
+)
+
+type Module struct {
+	Handler *resourcegenhandler.Handler
+	Service *resourcegenservice.Service
+}
+
+func New(db *gorm.DB, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Module {
+	repo := resourcegenrepo.New(db)
+	service := resourcegenservice.New(repo, profileService, recommendService, graphService)
+	return &Module{Handler: resourcegenhandler.New(service), Service: service}
+}
+
+func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
+	group.POST("/generate", m.Handler.Generate)
+	group.GET("/jobs/:jobId", m.Handler.GetJob)
+	group.GET("", m.Handler.ListResources)
+	group.GET("/:resourceId", m.Handler.GetResource)
+}

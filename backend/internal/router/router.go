@@ -15,7 +15,9 @@ import (
 	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
 	graphwriterservice "github.com/han139242/course-recommend-agents/backend/internal/module/graphwriter/service"
 	learningmodule "github.com/han139242/course-recommend-agents/backend/internal/module/learning"
+	profilemodule "github.com/han139242/course-recommend-agents/backend/internal/module/profile"
 	recommendmodule "github.com/han139242/course-recommend-agents/backend/internal/module/recommend"
+	resourcegenmodule "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen"
 	studyplanmodule "github.com/han139242/course-recommend-agents/backend/internal/module/studyplan"
 	teachermodule "github.com/han139242/course-recommend-agents/backend/internal/module/teacher"
 	applogger "github.com/han139242/course-recommend-agents/backend/pkg/logger"
@@ -29,7 +31,7 @@ import (
 //
 // 路由层只负责统一挂载中间件、健康检查与模块路由，
 // 不在此处处理业务编排，避免入口层承担过多职责。
-func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, studyPlanModule *studyplanmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module, evaluationModule *evaluationmodule.Module) *gin.Engine {
+func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisClient *redis.Client, neo4jDriver neo4j.DriverWithContext, authModule *authmodule.Module, teacherModule *teachermodule.Module, learningModule *learningmodule.Module, graphModule *graphmodule.Module, graphWriter *graphwriterservice.Service, competencyModule *competencymodule.Module, recommendModule *recommendmodule.Module, studyPlanModule *studyplanmodule.Module, profileModule *profilemodule.Module, resourceGenModule *resourcegenmodule.Module, dashboardModule *dashboardmodule.Module, frontierModule *frontiermodule.Module, assistantModule *assistantmodule.Module, evaluationModule *evaluationmodule.Module) *gin.Engine {
 	engine := gin.New()
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.RealIP())
@@ -77,6 +79,10 @@ func New(logger *applogger.Logger, cfg config.Config, mysqlDB *gorm.DB, redisCli
 	recommendModule.RegisterRoutes(recommendGroup)
 	studyPlanGroup := authGroup.Group("/study-plan")
 	studyPlanModule.RegisterRoutes(studyPlanGroup)
+	profileGroup := authGroup.Group("/profile")
+	profileModule.RegisterRoutes(profileGroup)
+	resourceGroup := authGroup.Group("/resources")
+	resourceGenModule.RegisterRoutes(resourceGroup)
 	dashboardGroup := authGroup.Group("/dashboard")
 	dashboardModule.RegisterRoutes(dashboardGroup)
 	assistantGroup := authGroup.Group("/assistant")

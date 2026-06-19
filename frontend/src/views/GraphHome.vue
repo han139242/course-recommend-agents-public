@@ -10,6 +10,7 @@ import {
   LogIn,
   Maximize2,
   RefreshCcw,
+  Sparkles,
 } from '@lucide/vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
@@ -746,6 +747,10 @@ onBeforeUnmount(() => {
         <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/competency">
           <BrainCircuit :size="16" aria-hidden="true" />
           能力图谱
+        </RouterLink>
+        <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/resources">
+          <Sparkles :size="16" aria-hidden="true" />
+          资源生成
         </RouterLink>
         <RouterLink class="secondary-btn" to="/frontier">
           <Newspaper :size="16" aria-hidden="true" />

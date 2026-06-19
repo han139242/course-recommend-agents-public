@@ -1,0 +1,30 @@
+import { request } from './request'
+
+function toQueryString(params = {}) {
+  const query = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return
+    query.set(key, String(value))
+  })
+  const search = query.toString()
+  return search ? `?${search}` : ''
+}
+
+export function generateResources(payload) {
+  return request('/resources/generate', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function fetchResourceJob(jobId) {
+  return request(`/resources/jobs/${jobId}`)
+}
+
+export function fetchResources(params = {}) {
+  return request(`/resources${toQueryString(params)}`)
+}
+
+export function fetchResource(resourceId) {
+  return request(`/resources/${resourceId}`)
+}
