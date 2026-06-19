@@ -36,11 +36,22 @@ func (r *Repository) CreateStep(ctx context.Context, step *entity.AgentStep) err
 	return r.db.WithContext(ctx).Create(step).Error
 }
 
+// UpdateStep persists status, summary and timestamp changes for one agent step.
+func (r *Repository) UpdateStep(ctx context.Context, step *entity.AgentStep) error {
+	return r.db.WithContext(ctx).Save(step).Error
+}
+
 func (r *Repository) CreateResources(ctx context.Context, resources []entity.GeneratedResource) error {
 	if len(resources) == 0 {
 		return nil
 	}
 	return r.db.WithContext(ctx).Create(&resources).Error
+}
+
+// CreateResource inserts a single generated resource and populates its ID, used
+// by the background pipeline to persist resources incrementally.
+func (r *Repository) CreateResource(ctx context.Context, resource *entity.GeneratedResource) error {
+	return r.db.WithContext(ctx).Create(resource).Error
 }
 
 func (r *Repository) GetJob(ctx context.Context, studentID int64, jobID int64) (*entity.GenerationJob, []entity.AgentStep, []entity.GeneratedResource, error) {

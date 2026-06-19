@@ -8,6 +8,8 @@ const (
 	JobStatusCompleted = "completed"
 	JobStatusFailed    = "failed"
 
+	StepStatusPending   = "pending"
+	StepStatusRunning   = "running"
 	StepStatusCompleted = "completed"
 
 	ResourceStatusReady = "ready"

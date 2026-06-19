@@ -36,7 +36,9 @@ type repository interface {
 	CreateJob(ctx context.Context, job *resourcegenentity.GenerationJob) error
 	UpdateJob(ctx context.Context, job *resourcegenentity.GenerationJob) error
 	CreateStep(ctx context.Context, step *resourcegenentity.AgentStep) error
+	UpdateStep(ctx context.Context, step *resourcegenentity.AgentStep) error
 	CreateResources(ctx context.Context, resources []resourcegenentity.GeneratedResource) error
+	CreateResource(ctx context.Context, resource *resourcegenentity.GeneratedResource) error
 	GetJob(ctx context.Context, studentID int64, jobID int64) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error)
 	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]resourcegenentity.GeneratedResource, error)
 	GetResource(ctx context.Context, studentID int64, resourceID int64) (*resourcegenentity.GeneratedResource, error)
@@ -67,13 +69,13 @@ func (s *Service) Generate(ctx context.Context, request resourcegendto.GenerateR
 		return nil, err
 	}
 
-	genCtx := s.buildGenerationContext(ctx, studentID, request)
+	prelim := buildPreliminaryContext(studentID, request)
 	job := &resourcegenentity.GenerationJob{
 		StudentID:     studentID,
-		KnowledgeID:   genCtx.KnowledgeID,
-		KnowledgeName: genCtx.KnowledgeName,
-		CourseTitle:   genCtx.CourseTitle,
-		Target:        genCtx.Target,
+		KnowledgeID:   prelim.KnowledgeID,
+		KnowledgeName: prelim.KnowledgeName,
+		CourseTitle:   prelim.CourseTitle,
+		Target:        firstNonEmpty(prelim.Target, prelim.KnowledgeName),
 		Status:        resourcegenentity.JobStatusRunning,
 		Progress:      5,
 		CurrentAgent:  "Orchestrator",
@@ -82,42 +84,87 @@ func (s *Service) Generate(ctx context.Context, request resourcegendto.GenerateR
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 
-	steps := s.buildSteps(genCtx)
+	steps := s.buildSteps(prelim)
 	for index := range steps {
 		steps[index].JobID = job.ID
 		steps[index].StudentID = studentID
 		if err := s.repo.CreateStep(ctx, &steps[index]); err != nil {
-			job.Status = resourcegenentity.JobStatusFailed
-			job.ErrorMessage = err.Error()
-			_ = s.repo.UpdateJob(ctx, job)
+			s.failJob(ctx, job, err.Error())
 			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 		}
-		job.CurrentAgent = steps[index].AgentName
-		job.Progress = 15 + index*15
-		_ = s.repo.UpdateJob(ctx, job)
 	}
 
-	resources := s.buildResources(ctx, genCtx, job.ID)
-	if err := s.repo.CreateResources(ctx, resources); err != nil {
-		job.Status = resourcegenentity.JobStatusFailed
-		job.ErrorMessage = err.Error()
-		_ = s.repo.UpdateJob(ctx, job)
-		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	// Snapshot the response view before launching the background pipeline so the
+	// goroutine's concurrent step mutations cannot race with building the reply.
+	jobView := jobToView(job, steps, nil)
+
+	// Run the multi-agent pipeline in the background so the HTTP response returns
+	// immediately and the client can poll job progress instead of blocking on a
+	// long synchronous model call. The context is detached from the request
+	// (which is cancelled once we return) but still carries the student identity
+	// used by the profile and recommend services.
+	detached := ctxmeta.WithUserID(context.Background(), strconv.FormatInt(studentID, 10))
+	detached, cancel := context.WithTimeout(detached, 4*time.Minute)
+	go func() {
+		defer cancel()
+		s.runGeneration(detached, studentID, job.ID, request, steps)
+	}()
+
+	return &resourcegendto.GenerateResourcesResponse{Job: jobView, Resources: jobView.Resources}, nil
+}
+
+// runGeneration executes the multi-agent pipeline for one job in the background.
+// It advances each agent step through running/completed and bumps job progress so
+// the client can visualize the run, persisting every generated resource as soon
+// as it is ready. On panic it marks the job failed.
+func (s *Service) runGeneration(ctx context.Context, studentID int64, jobID int64, request resourcegendto.GenerateResourcesRequest, steps []resourcegenentity.AgentStep) {
+	var job *resourcegenentity.GenerationJob
+	defer func() {
+		if recovered := recover(); recovered != nil && job != nil {
+			s.failJob(ctx, job, fmt.Sprintf("资源生成任务异常：%v", recovered))
+		}
+	}()
+
+	stored, _, _, err := s.repo.GetJob(ctx, studentID, jobID)
+	if err != nil {
+		return
 	}
+	job = stored
+
+	stepByKey := make(map[string]*resourcegenentity.AgentStep, len(steps))
+	for index := range steps {
+		stepByKey[steps[index].AgentKey] = &steps[index]
+	}
+
+	genCtx := s.buildGenerationContext(ctx, studentID, request)
+	summaries := s.stepSummaries(genCtx)
+
+	job.KnowledgeID = genCtx.KnowledgeID
+	job.KnowledgeName = genCtx.KnowledgeName
+	job.CourseTitle = genCtx.CourseTitle
+	job.Target = genCtx.Target
+	s.bumpJob(ctx, job, 12, "ProfileAnalystAgent")
+
+	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusRunning)
+	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusCompleted)
+	s.bumpJob(ctx, job, 22, "CoursePlannerAgent")
+
+	s.advanceStep(ctx, stepByKey["course_planner"], summaries["course_planner"], resourcegenentity.StepStatusRunning)
+	s.advanceStep(ctx, stepByKey["course_planner"], summaries["course_planner"], resourcegenentity.StepStatusCompleted)
+	s.bumpJob(ctx, job, 32, "ResourceWriterAgents")
+
+	s.advanceStep(ctx, stepByKey["resource_writer"], summaries["resource_writer"], resourcegenentity.StepStatusRunning)
+	s.generateResourcesIncrementally(ctx, genCtx, jobID, job)
+	s.advanceStep(ctx, stepByKey["resource_writer"], summaries["resource_writer"], resourcegenentity.StepStatusCompleted)
+
+	s.bumpJob(ctx, job, 92, "SafetyReviewerAgent")
+	s.advanceStep(ctx, stepByKey["safety_reviewer"], summaries["safety_reviewer"], resourcegenentity.StepStatusRunning)
+	s.advanceStep(ctx, stepByKey["safety_reviewer"], summaries["safety_reviewer"], resourcegenentity.StepStatusCompleted)
 
 	job.Status = resourcegenentity.JobStatusCompleted
 	job.Progress = 100
 	job.CurrentAgent = "SafetyReviewerAgent"
-	if err := s.repo.UpdateJob(ctx, job); err != nil {
-		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
-	}
-
-	storedJob, storedSteps, storedResources, err := s.repo.GetJob(ctx, studentID, job.ID)
-	if err != nil {
-		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
-	}
-	jobView := jobToView(storedJob, storedSteps, storedResources)
-	return &resourcegendto.GenerateResourcesResponse{Job: jobView, Resources: jobView.Resources}, nil
+	_ = s.repo.UpdateJob(ctx, job)
 }
 
 func (s *Service) GetJob(ctx context.Context, rawJobID string) (*resourcegendto.JobView, error) {
@@ -366,76 +413,127 @@ func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, r
 	}
 }
 
-func (s *Service) buildSteps(ctx generationContext) []resourcegenentity.AgentStep {
-	now := time.Now()
-	steps := []resourcegenEntityStepSpec{
-		{
-			Key:     "profile_analyst",
-			Name:    "ProfileAnalystAgent",
-			Role:    "画像分析智能体",
-			Summary: "读取学生画像、学习目标和资源偏好，形成个性化资源生成需求：" + profileSummary(ctx),
-		},
-		{
-			Key:     "course_planner",
-			Name:    "CoursePlannerAgent",
-			Role:    "课程规划智能体",
-			Summary: "结合知识图谱和推荐路径，锁定“" + ctx.KnowledgeName + "”及其先修/后续学习顺序。",
-		},
-		{
-			Key:     "resource_writer",
-			Name:    "ResourceWriterAgents",
-			Role:    "资源生成智能体组",
-			Summary: s.resourceWriterSummary(ctx),
-		},
-		{
-			Key:     "safety_reviewer",
-			Name:    "SafetyReviewerAgent",
-			Role:    "安全校验智能体",
-			Summary: s.safetyReviewerSummary(),
-		},
+// buildPreliminaryContext builds a lightweight generation context from the raw
+// request alone (no external service calls) so the initial job and agent steps
+// can be created and returned to the client immediately.
+func buildPreliminaryContext(studentID int64, request resourcegendto.GenerateResourcesRequest) generationContext {
+	return generationContext{
+		StudentID:     studentID,
+		KnowledgeID:   strings.TrimSpace(request.KnowledgeID),
+		KnowledgeName: firstNonEmpty(strings.TrimSpace(request.KnowledgeName), strings.TrimSpace(request.KnowledgeID), "核心知识点"),
+		CourseTitle:   firstNonEmpty(strings.TrimSpace(request.CourseTitle), "人工智能专业课程"),
+		Target:        strings.TrimSpace(request.Target),
+		ProfileDims:   map[string]string{},
+		ResourceTypes: normalizeResourceTypes(request.ResourceTypes),
+	}
+}
+
+// stepSummaries returns the per-agent step summaries for a generation context.
+// It is reused both when steps are first created (preliminary context) and when
+// they are advanced with the fully resolved context.
+func (s *Service) stepSummaries(genCtx generationContext) map[string]string {
+	return map[string]string{
+		"profile_analyst": "读取学生画像、学习目标和资源偏好，形成个性化资源生成需求：" + profileSummary(genCtx),
+		"course_planner":  "结合知识图谱和推荐路径，锁定“" + genCtx.KnowledgeName + "”及其先修/后续学习顺序。",
+		"resource_writer": s.resourceWriterSummary(genCtx),
+		"safety_reviewer": s.safetyReviewerSummary(),
+	}
+}
+
+// buildSteps creates the ordered multi-agent steps for a job in the pending
+// state; runGeneration later advances them to running/completed as work proceeds.
+func (s *Service) buildSteps(genCtx generationContext) []resourcegenentity.AgentStep {
+	summaries := s.stepSummaries(genCtx)
+	specs := []struct {
+		Key  string
+		Name string
+		Role string
+	}{
+		{"profile_analyst", "ProfileAnalystAgent", "画像分析智能体"},
+		{"course_planner", "CoursePlannerAgent", "课程规划智能体"},
+		{"resource_writer", "ResourceWriterAgents", "资源生成智能体组"},
+		{"safety_reviewer", "SafetyReviewerAgent", "安全校验智能体"},
 	}
 
-	result := make([]resourcegenentity.AgentStep, 0, len(steps))
-	for index, step := range steps {
-		startedAt := now.Add(time.Duration(index*180) * time.Millisecond)
-		endedAt := startedAt.Add(120 * time.Millisecond)
+	now := time.Now()
+	result := make([]resourcegenentity.AgentStep, 0, len(specs))
+	for _, spec := range specs {
 		result = append(result, resourcegenentity.AgentStep{
-			AgentKey:  step.Key,
-			AgentName: step.Name,
-			Role:      step.Role,
-			Status:    resourcegenentity.StepStatusCompleted,
-			Summary:   step.Summary,
-			StartedAt: startedAt,
-			EndedAt:   &endedAt,
+			AgentKey:  spec.Key,
+			AgentName: spec.Name,
+			Role:      spec.Role,
+			Status:    resourcegenentity.StepStatusPending,
+			Summary:   summaries[spec.Key],
+			StartedAt: now,
 		})
 	}
 	return result
 }
 
-type resourcegenEntityStepSpec struct {
-	Key     string
-	Name    string
-	Role    string
-	Summary string
+// advanceStep updates one agent step's status and summary and stamps its
+// start/end time, persisting the change. It is a no-op when the step is missing.
+func (s *Service) advanceStep(ctx context.Context, step *resourcegenentity.AgentStep, summary string, status string) {
+	if step == nil {
+		return
+	}
+	now := time.Now()
+	if summary != "" {
+		step.Summary = summary
+	}
+	step.Status = status
+	switch status {
+	case resourcegenentity.StepStatusRunning:
+		step.StartedAt = now
+		step.EndedAt = nil
+	case resourcegenentity.StepStatusCompleted:
+		if step.StartedAt.IsZero() {
+			step.StartedAt = now
+		}
+		step.EndedAt = &now
+	}
+	_ = s.repo.UpdateStep(ctx, step)
 }
 
-// buildResources generates every requested resource for a job. Each resource
-// type is produced concurrently: when the AI client is available the body comes
-// from the large model, otherwise it falls back to the local template. Each
-// goroutine writes its own slice index, so no additional locking is needed.
-func (s *Service) buildResources(reqCtx context.Context, genCtx generationContext, jobID int64) []resourcegenentity.GeneratedResource {
-	resources := make([]resourcegenentity.GeneratedResource, len(genCtx.ResourceTypes))
+// bumpJob updates the job's progress percentage and currently-active agent.
+func (s *Service) bumpJob(ctx context.Context, job *resourcegenentity.GenerationJob, progress int, currentAgent string) {
+	job.Progress = progress
+	if currentAgent != "" {
+		job.CurrentAgent = currentAgent
+	}
+	_ = s.repo.UpdateJob(ctx, job)
+}
+
+// failJob marks a job as failed with a clamped error message.
+func (s *Service) failJob(ctx context.Context, job *resourcegenentity.GenerationJob, message string) {
+	job.Status = resourcegenentity.JobStatusFailed
+	job.ErrorMessage = clampRunes(message, 900)
+	_ = s.repo.UpdateJob(ctx, job)
+}
+
+// generateResourcesIncrementally produces every requested resource concurrently
+// (large model with template fallback) and persists each one as soon as it is
+// ready, bumping job progress so the client sees resources appear one by one.
+// Resource creation and progress updates are serialized by a mutex while the
+// slow model calls run in parallel outside the lock.
+func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx generationContext, jobID int64, job *resourcegenentity.GenerationJob) {
+	total := len(genCtx.ResourceTypes)
+	if total == 0 {
+		return
+	}
+
+	var mu sync.Mutex
+	completed := 0
 	var wg sync.WaitGroup
-	for index, resourceType := range genCtx.ResourceTypes {
+	for _, resourceType := range genCtx.ResourceTypes {
 		wg.Add(1)
-		go func(index int, resourceType string) {
+		go func(resourceType string) {
 			defer wg.Done()
 			label := resourceTypeLabel(resourceType)
-			content := s.aiResourceContent(reqCtx, resourceType, genCtx)
+			content := s.aiResourceContent(ctx, resourceType, genCtx)
 			if strings.TrimSpace(content) == "" {
 				content = buildResourceContent(resourceType, genCtx)
 			}
-			resources[index] = resourcegenentity.GeneratedResource{
+			resource := &resourcegenentity.GeneratedResource{
 				JobID:         jobID,
 				StudentID:     genCtx.StudentID,
 				ResourceType:  resourceType,
@@ -449,10 +547,36 @@ func (s *Service) buildResources(reqCtx context.Context, genCtx generationContex
 				Reason:        buildResourceReason(resourceType, genCtx),
 				Status:        resourcegenentity.ResourceStatusReady,
 			}
-		}(index, resourceType)
+
+			mu.Lock()
+			defer mu.Unlock()
+			if err := s.repo.CreateResource(ctx, resource); err != nil {
+				return
+			}
+			completed++
+			s.bumpJob(ctx, job, 35+int(float64(53)*float64(completed)/float64(total)), writerAgentName(resourceType))
+		}(resourceType)
 	}
 	wg.Wait()
-	return resources
+}
+
+// writerAgentName maps a resource type to the multi-agent writer responsible for
+// it, used to surface which agent is currently producing content.
+func writerAgentName(resourceType string) string {
+	switch resourceType {
+	case "mind_map":
+		return "MindMapAgent"
+	case "practice_questions":
+		return "QuestionAgent"
+	case "coding_case":
+		return "CaseAgent"
+	case "reading_material":
+		return "ReadingAgent"
+	case "video_script":
+		return "MultimodalAgent"
+	default:
+		return "ContentWriterAgent"
+	}
 }
 
 func buildResourceContent(resourceType string, ctx generationContext) string {

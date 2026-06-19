@@ -11,12 +11,13 @@ import {
   Sparkles,
   Wand2,
 } from '@lucide/vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } from '../api/profile'
 import {
   exportResourceJobMarkdown,
+  fetchResourceJob,
   fetchResourceRecommendations,
   fetchResourcePresentationOutline,
   fetchResourceSafetyReport,
@@ -24,6 +25,7 @@ import {
   generateResources,
   submitResourceFeedback,
 } from '../api/resources'
+import ResourceContent from '../components/ResourceContent.vue'
 import { APP_NAME } from '../constants/appInfo'
 
 const DEFAULT_PROMPT = '我是大二人工智能学生，想做智能体项目，机器学习基础不太稳，希望多一些导图、代码案例和练习题。'
@@ -235,6 +237,56 @@ function isResourceTypeSelected(type) {
   return resourceForm.value.resourceTypes.includes(type)
 }
 
+const pollToken = ref(0)
+let pollTimer = null
+
+const jobHeadline = computed(() => {
+  const job = activeJob.value
+  if (!job) return ''
+  if (job.status === 'completed') return job.summary || '资源包生成完成，可查看、导出与提交反馈'
+  if (job.status === 'failed') return job.errorMessage || '资源生成失败，请稍后重试'
+  return `正在执行：${job.currentAgent || '多智能体协同'}`
+})
+
+function stopPolling() {
+  pollToken.value += 1
+  if (pollTimer) {
+    clearTimeout(pollTimer)
+    pollTimer = null
+  }
+}
+
+function waitForNextPoll(ms, token) {
+  return new Promise((resolve) => {
+    pollTimer = setTimeout(() => {
+      pollTimer = null
+      resolve(token === pollToken.value)
+    }, ms)
+  })
+}
+
+// pollJobUntilDone polls the generation job so the progress bar, agent steps and
+// resource cards update live until the job completes, fails or times out.
+async function pollJobUntilDone(jobId) {
+  const token = ++pollToken.value
+  const deadline = Date.now() + 180000
+  while (Date.now() < deadline) {
+    const stillCurrent = await waitForNextPoll(1400, token)
+    if (!stillCurrent) return null
+    let job
+    try {
+      job = await fetchResourceJob(jobId)
+    } catch {
+      continue
+    }
+    if (token !== pollToken.value) return null
+    activeJob.value = job
+    if (job?.resources?.length) generatedResources.value = job.resources
+    if (job?.status === 'completed' || job?.status === 'failed') return job
+  }
+  return activeJob.value
+}
+
 async function handleGenerateResources() {
   if (!resourceForm.value.resourceTypes.length) {
     resourceError.value = '至少选择一种资源类型。'
@@ -247,8 +299,12 @@ async function handleGenerateResources() {
     return
   }
 
+  stopPolling()
   resourceLoading.value = true
   resourceError.value = ''
+  generatedResources.value = []
+  exportPayload.value = null
+  presentationOutline.value = null
   try {
     const payload = await generateResources({
       knowledgeId: resourceForm.value.knowledgeId.trim(),
@@ -259,8 +315,14 @@ async function handleGenerateResources() {
     })
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
-    exportPayload.value = null
-    presentationOutline.value = null
+
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      const finalJob = await pollJobUntilDone(activeJob.value.id)
+      if (finalJob?.status === 'failed') {
+        resourceError.value = finalJob.errorMessage || '资源生成失败，请稍后重试。'
+      }
+    }
+
     initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
     await loadRecommendations()
@@ -445,6 +507,8 @@ watch(
     await loadResourceLibrary()
   },
 )
+
+onBeforeUnmount(stopPolling)
 </script>
 
 <template>
@@ -589,7 +653,7 @@ watch(
           <div class="agent-progress__head">
             <div>
               <span>任务 #{{ activeJob.id }}</span>
-              <strong>{{ activeJob.summary || '资源包生成任务已完成' }}</strong>
+              <strong>{{ jobHeadline }}</strong>
             </div>
             <em>{{ activeJob.progress || stepProgress }}%</em>
           </div>
@@ -597,11 +661,11 @@ watch(
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
           <div class="button-row button-row--end">
-            <button type="button" class="secondary-action" :disabled="outlineLoading" @click="handleLoadPresentationOutline">
+            <button type="button" class="secondary-action" :disabled="outlineLoading || activeJob.status !== 'completed'" @click="handleLoadPresentationOutline">
               <Sparkles :size="16" aria-hidden="true" />
               {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
             </button>
-            <button type="button" class="secondary-action" :disabled="exportLoading" @click="handleExportJob">
+            <button type="button" class="secondary-action" :disabled="exportLoading || activeJob.status !== 'completed'" @click="handleExportJob">
               <FileText :size="16" aria-hidden="true" />
               {{ exportLoading ? '导出中' : '导出 Markdown' }}
             </button>
@@ -657,7 +721,7 @@ watch(
               <strong>{{ resource.title }}</strong>
               <small>{{ resource.reason }}</small>
             </div>
-            <pre>{{ resource.content }}</pre>
+            <ResourceContent :content="resource.content" :format="resource.format" />
             <div class="safety-actions">
               <button type="button" class="secondary-action" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="16" aria-hidden="true" />
