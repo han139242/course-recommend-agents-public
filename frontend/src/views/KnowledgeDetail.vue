@@ -1,10 +1,11 @@
 <script setup>
-import { Bot, CheckCircle2, ChevronRight, NotebookPen, Send, Star } from '@lucide/vue'
+import { Bot, CheckCircle2, ChevronRight, NotebookPen, RefreshCcw, Send, Sparkles, Star } from '@lucide/vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import 'katex/dist/katex.min.css'
 
 import { fetchStudentQuestions, submitStudentAnswer } from '../api/learning'
+import { fetchResources } from '../api/resources'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
 import { useAiChat } from '../composables/useAiChat'
 import { renderWithKatex } from '../composables/useKatex'
@@ -28,6 +29,8 @@ const aiInputText = ref('')
 const aiMessagesRef = ref(null)
 const frontier = ref(null)
 const frontierLoading = ref(false)
+const knowledgeResources = ref([])
+const knowledgeResourcesLoading = ref(false)
 
 const knowledgeId = computed(() => decodeURIComponent(route.params.knowledgeId || ''))
 const detail = computed(() => graphStore.detailCache[knowledgeId.value] || null)
@@ -99,6 +102,18 @@ const detailSummary = computed(() =>
 const prerequisiteItems = computed(() => buildPrerequisiteItems(detail.value))
 const scenarioItems = computed(() => buildScenarioItems(detail.value))
 const recommendReasonText = computed(() => buildRecommendReason(detail.value))
+
+const resourceCenterLink = computed(() => ({
+  name: 'resource-center',
+  query: {
+    knowledgeId: knowledgeId.value,
+    knowledgeName: detailTitle.value,
+    courseTitle: detailCourseLabel.value,
+    target: `围绕「${detailTitle.value}」补齐理解、练习与实操`,
+  },
+}))
+
+const loginRedirectLink = computed(() => ({ name: 'login', query: { redirect: route.fullPath } }))
 
 const regularPathItems = computed(() => recommendedPath.value.slice(0, 5))
 
@@ -326,6 +341,35 @@ async function loadFrontier() {
   frontierLoading.value = false
 }
 
+function resourceCardSummary(resource) {
+  const text = cleanText(resource?.reason || resource?.content)
+  if (!text) return '点击前往资源中心查看完整内容。'
+  return text.length > 80 ? `${text.slice(0, 80)}…` : text
+}
+
+function formatResourceDate(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+}
+
+async function loadKnowledgeResources() {
+  if (!isAuthenticated.value || !knowledgeId.value) {
+    knowledgeResources.value = []
+    return
+  }
+  knowledgeResourcesLoading.value = true
+  try {
+    const payload = await fetchResources({ knowledgeId: knowledgeId.value, limit: 6 })
+    knowledgeResources.value = payload?.list || []
+  } catch {
+    knowledgeResources.value = []
+  } finally {
+    knowledgeResourcesLoading.value = false
+  }
+}
+
 async function loadDetail() {
   await graphStore.ensureNodeDetail(knowledgeId.value)
   const current = graphStore.detailCache[knowledgeId.value]
@@ -357,9 +401,14 @@ watch(
     await loadDetail()
     await loadQuestions()
     await loadFrontier()
+    await loadKnowledgeResources()
   },
   { immediate: true },
 )
+
+watch(isAuthenticated, () => {
+  loadKnowledgeResources()
+})
 
 watch(
   detail,
@@ -432,6 +481,56 @@ watch(
               <p>{{ recommendReasonText }}</p>
             </div>
           </div>
+        </section>
+
+        <section class="detail-section-block resource-pack-block">
+          <div class="detail-section-block__head">
+            <h2>个性化资源包</h2>
+            <span class="detail-section-block__tag">多智能体生成</span>
+          </div>
+
+          <div v-if="!isAuthenticated" class="resource-pack-guest">
+            <p class="muted-text">登录后可生成并查看与「{{ detailTitle }}」关联的个性化学习资源包。</p>
+            <RouterLink class="primary-btn" :to="loginRedirectLink">去登录</RouterLink>
+          </div>
+
+          <template v-else>
+            <div class="resource-pack-actions">
+              <p class="muted-text">由画像分析、课程规划、资源生成与安全审查多智能体协同生成。</p>
+              <div class="resource-pack-actions__btns">
+                <button type="button" class="secondary-btn" :disabled="knowledgeResourcesLoading" @click="loadKnowledgeResources">
+                  <RefreshCcw :size="16" aria-hidden="true" />
+                  刷新资源
+                </button>
+                <RouterLink class="primary-btn" :to="resourceCenterLink">
+                  <Sparkles :size="16" aria-hidden="true" />
+                  生成资源包
+                </RouterLink>
+              </div>
+            </div>
+
+            <p v-if="knowledgeResourcesLoading" class="quiz-section__hint">正在读取资源...</p>
+
+            <div v-else-if="knowledgeResources.length" class="resource-pack-list">
+              <article v-for="resource in knowledgeResources" :key="resource.id" class="resource-pack-card">
+                <div class="resource-pack-card__head">
+                  <span class="resource-pack-card__type">{{ resource.typeLabel || resource.resourceType }}</span>
+                  <time v-if="resource.createdAt">{{ formatResourceDate(resource.createdAt) }}</time>
+                </div>
+                <strong>{{ resource.title }}</strong>
+                <p>{{ resourceCardSummary(resource) }}</p>
+              </article>
+            </div>
+
+            <div v-else class="resource-pack-empty">
+              <strong>当前知识点还没有生成资源</strong>
+              <p>点击「生成资源包」进入资源中心，多智能体会结合你的学习画像生成讲解、导图、练习、案例、阅读与脚本资源。</p>
+            </div>
+
+            <div v-if="knowledgeResources.length" class="resource-pack-foot">
+              <RouterLink class="inline-link" :to="resourceCenterLink">前往资源中心查看完整内容与提交反馈 →</RouterLink>
+            </div>
+          </template>
         </section>
 
         <section class="quiz-section">

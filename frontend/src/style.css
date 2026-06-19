@@ -2520,6 +2520,99 @@ html[data-theme='light'] .context-chip-btn {
   border-color: rgba(45, 212, 191, 0.14);
 }
 
+/* ─── Knowledge detail · personalized resource pack ─── */
+.resource-pack-actions,
+.resource-pack-guest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.resource-pack-guest {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.resource-pack-actions__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.resource-pack-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.resource-pack-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(129, 140, 248, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.resource-pack-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.resource-pack-card__type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(129, 140, 248, 0.1);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  color: var(--accent-light);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.resource-pack-card__head time {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.resource-pack-card strong {
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.resource-pack-card p {
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.resource-pack-empty {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px dashed rgba(148, 163, 184, 0.26);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.resource-pack-empty p {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.resource-pack-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .rich-text {
   line-height: 1.8;
   color: var(--text-secondary);

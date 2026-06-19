@@ -11,8 +11,8 @@ import {
   Sparkles,
   Wand2,
 } from '@lucide/vue'
-import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } from '../api/profile'
 import {
@@ -28,6 +28,8 @@ import { APP_NAME } from '../constants/appInfo'
 
 const DEFAULT_PROMPT = '我是大二人工智能学生，想做智能体项目，机器学习基础不太稳，希望多一些导图、代码案例和练习题。'
 
+const route = useRoute()
+
 const profilePrompt = ref(DEFAULT_PROMPT)
 const profilePayload = ref(null)
 const profileLoading = ref(false)
@@ -40,7 +42,7 @@ const resourceForm = ref({
   knowledgeName: '智能体与工具调用',
   courseTitle: '人工智能导论',
   target: '',
-  resourceTypes: ['explanation_doc', 'mind_map', 'practice_questions', 'coding_case', 'reading_material'],
+  resourceTypes: ['explanation_doc', 'mind_map', 'practice_questions', 'coding_case', 'reading_material', 'video_script'],
 })
 const resourceLoading = ref(false)
 const resourceError = ref('')
@@ -56,6 +58,7 @@ const feedbackDrafts = ref({})
 const feedbackSaving = ref({})
 const feedbackNotice = ref('')
 const feedbackError = ref('')
+const routeContextNotice = ref('')
 const safetyReports = ref({})
 const safetyLoading = ref({})
 const exportLoading = ref(false)
@@ -112,6 +115,21 @@ const stepProgress = computed(() => {
 
 const profileSummary = computed(() => activeProfile.value?.summary || '尚未生成画像')
 
+const resourceContextLabel = computed(() => {
+  const name = resourceForm.value.knowledgeName?.trim()
+  const course = resourceForm.value.courseTitle?.trim()
+  if (!name) return ''
+  return course ? `${course} · ${name}` : name
+})
+
+const resourceLibraryFilter = computed(() => resourceForm.value.knowledgeId.trim())
+
+const currentKnowledgeResources = computed(() => {
+  const knowledgeID = resourceForm.value.knowledgeId.trim()
+  if (!knowledgeID) return resourceLibrary.value
+  return resourceLibrary.value.filter((resource) => resource.knowledgeId === knowledgeID)
+})
+
 function dimensionValue(key) {
   return orderedDimensions.value.find((item) => item.key === key)?.value || ''
 }
@@ -121,6 +139,28 @@ function applyProfileTarget(profile) {
   if (!resourceForm.value.target && (goal || profile?.summary)) {
     resourceForm.value.target = goal || profile.summary
   }
+}
+
+function firstQueryValue(value) {
+  return Array.isArray(value) ? value[0] || '' : value || ''
+}
+
+function applyRouteContext() {
+  const knowledgeId = String(firstQueryValue(route.query.knowledgeId)).trim()
+  const knowledgeName = String(firstQueryValue(route.query.knowledgeName)).trim()
+  const courseTitle = String(firstQueryValue(route.query.courseTitle)).trim()
+  const target = String(firstQueryValue(route.query.target)).trim()
+
+  if (!knowledgeId && !knowledgeName && !courseTitle && !target) return
+
+  resourceForm.value = {
+    ...resourceForm.value,
+    knowledgeId: knowledgeId || resourceForm.value.knowledgeId,
+    knowledgeName: knowledgeName || resourceForm.value.knowledgeName,
+    courseTitle: courseTitle || resourceForm.value.courseTitle,
+    target: target || resourceForm.value.target,
+  }
+  routeContextNotice.value = '已从知识点页带入生成上下文，资源会自动关联当前知识点。'
 }
 
 async function loadCurrentProfile() {
@@ -262,7 +302,7 @@ async function handleExportJob() {
 async function loadResourceLibrary() {
   libraryLoading.value = true
   try {
-    const payload = await fetchResources({ limit: 30 })
+    const payload = await fetchResources({ limit: 30, knowledgeId: resourceLibraryFilter.value })
     resourceLibrary.value = payload?.list || []
   } catch {
     resourceLibrary.value = []
@@ -394,8 +434,17 @@ function safetyStatusLabel(status) {
 }
 
 onMounted(async () => {
+  applyRouteContext()
   await Promise.all([loadCurrentProfile(), loadResourceLibrary(), loadRecommendations()])
 })
+
+watch(
+  () => route.query,
+  async () => {
+    applyRouteContext()
+    await loadResourceLibrary()
+  },
+)
 </script>
 
 <template>
@@ -481,6 +530,11 @@ onMounted(async () => {
           <span class="panel-kicker">Feature 2</span>
           <h1>多智能体资源生成</h1>
         </div>
+
+        <p v-if="routeContextNotice" class="context-note">
+          {{ routeContextNotice }}
+          <strong v-if="resourceContextLabel">{{ resourceContextLabel }}</strong>
+        </p>
 
         <div class="generation-grid">
           <label class="field-block">
@@ -737,17 +791,20 @@ onMounted(async () => {
           <span class="panel-kicker">Library</span>
           <h2>资源库</h2>
         </div>
+        <p v-if="resourceLibraryFilter" class="recommend-summary">
+          仅显示「{{ resourceForm.knowledgeName || resourceForm.knowledgeId }}」的资源
+        </p>
 
         <div v-if="libraryLoading" class="empty-state empty-state--small">
           <RefreshCcw :size="18" aria-hidden="true" />
           <p>正在读取资源库</p>
         </div>
-        <div v-else-if="!resourceLibrary.length" class="empty-state empty-state--small">
+        <div v-else-if="!currentKnowledgeResources.length" class="empty-state empty-state--small">
           <FileText :size="18" aria-hidden="true" />
-          <p>生成资源后会沉淀在这里。</p>
+          <p>{{ resourceLibraryFilter ? '当前知识点还没有生成资源。' : '生成资源后会沉淀在这里。' }}</p>
         </div>
         <div v-else class="library-list">
-          <article v-for="resource in resourceLibrary" :key="resource.id" class="library-item">
+          <article v-for="resource in currentKnowledgeResources" :key="resource.id" class="library-item">
             <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
             <strong>{{ resource.title }}</strong>
             <small>{{ resource.knowledgeName }} · {{ formatDate(resource.createdAt) }}</small>

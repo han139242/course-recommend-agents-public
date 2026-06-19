@@ -4,6 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { fetchUnifiedPath } from '../api/recommend'
+import { fetchResourceRecommendations, fetchResources } from '../api/resources'
 import { useUserStore } from '../stores/userStore'
 
 const userStore = useUserStore()
@@ -12,6 +13,19 @@ const radarCanvas = ref(null)
 const ready = ref(false)
 const unifiedPath = ref([])
 const unifiedInsights = ref([])
+const resourceList = ref([])
+const resourceRecommendations = ref([])
+const resourceRecommendationSummary = ref('')
+const resourceFeedbackSummary = ref(null)
+
+const RESOURCE_TYPE_LABELS = {
+  explanation_doc: '讲解文档',
+  mind_map: '思维导图',
+  practice_questions: '练习题',
+  coding_case: '代码案例',
+  reading_material: '拓展阅读',
+  video_script: '视频/动画脚本',
+}
 
 const DEMO_PROGRESS_ITEMS = [
   { knowledgeId: 'gradient_descent', canonicalName: '梯度下降', chapterTitle: '机器学习', masteryScore: 88, answeredCount: 12, correctRate: 0.92 },
@@ -92,6 +106,8 @@ onMounted(async () => {
     unifiedInsights.value = data?.insights || []
   }).catch(() => {})
 
+  loadResourceLoop()
+
   window.addEventListener('resize', handleRadarResize)
   ready.value = true
   await nextTick()
@@ -101,6 +117,57 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleRadarResize)
 })
+
+async function loadResourceLoop() {
+  if (!userStore.isAuthenticated) return
+  try {
+    const [listPayload, recommendPayload] = await Promise.all([
+      fetchResources({ limit: 100 }),
+      fetchResourceRecommendations(),
+    ])
+    resourceList.value = listPayload?.list || []
+    resourceRecommendations.value = recommendPayload?.list || []
+    resourceRecommendationSummary.value = recommendPayload?.summary || ''
+    resourceFeedbackSummary.value = recommendPayload?.feedbackSummary || null
+  } catch {
+    resourceList.value = []
+    resourceRecommendations.value = []
+    resourceRecommendationSummary.value = ''
+    resourceFeedbackSummary.value = null
+  }
+}
+
+const resourceStats = computed(() => {
+  const summary = resourceFeedbackSummary.value || {}
+  const feedbackTotal = Number(summary.total || 0)
+  const helpfulCount = Number(summary.helpfulCount || 0)
+  const avg = Number(summary.averageRating || 0)
+  return {
+    total: resourceList.value.length,
+    completed: Number(summary.completedCount || 0),
+    averageRatingText: avg > 0 ? avg.toFixed(1) : '暂无',
+    hard: Number(summary.difficulty?.hard || 0),
+    helpfulRateText: feedbackTotal > 0 ? `${Math.round((helpfulCount / feedbackTotal) * 100)}%` : '暂无',
+  }
+})
+
+const resourceNextSteps = computed(() =>
+  (resourceRecommendations.value || []).slice(0, 3).map((item) => ({
+    id: item.id,
+    title: item.title,
+    reason: item.reason,
+    typesLabel: (item.resourceTypes || []).map((type) => RESOURCE_TYPE_LABELS[type] || type).join(' · '),
+    route: {
+      name: 'resource-center',
+      query: {
+        knowledgeId: item.knowledgeId || '',
+        knowledgeName: item.knowledgeName || '',
+        courseTitle: item.courseTitle || '',
+        target: item.target || '',
+      },
+    },
+  })),
+)
 
 const shouldUseDemoData = computed(() => {
   const list = Array.isArray(userStore.progressList) ? userStore.progressList : []
@@ -498,6 +565,67 @@ watch(radarAxes, handleRadarResize, { deep: true })
       </section>
 
       <section class="dashboard-grid">
+        <article v-if="!isCompetencyView" class="dashboard-panel dashboard-panel--resource">
+          <div class="dashboard-section-head">
+            <div>
+              <span class="eyebrow">Resource Loop</span>
+              <h2>资源学习效果</h2>
+            </div>
+            <span class="dashboard-section-badge">{{ resourceStats.total }} 份资源</span>
+          </div>
+          <div class="dashboard-competency-strip dashboard-resource-stats">
+            <article>
+              <span>已生成资源</span>
+              <strong>{{ resourceStats.total }}</strong>
+            </article>
+            <article>
+              <span>已完成学习</span>
+              <strong>{{ resourceStats.completed }}</strong>
+            </article>
+            <article>
+              <span>平均评分</span>
+              <strong>{{ resourceStats.averageRatingText }}</strong>
+            </article>
+            <article>
+              <span>偏难反馈</span>
+              <strong>{{ resourceStats.hard }}</strong>
+            </article>
+            <article>
+              <span>有帮助比例</span>
+              <strong>{{ resourceStats.helpfulRateText }}</strong>
+            </article>
+          </div>
+          <p v-if="resourceRecommendationSummary" class="dashboard-resource-summary">{{ resourceRecommendationSummary }}</p>
+          <div v-if="resourceNextSteps.length" class="dashboard-action-list">
+            <RouterLink
+              v-for="(item, index) in resourceNextSteps"
+              :key="item.id"
+              class="dashboard-action-card"
+              :to="item.route"
+            >
+              <span class="dashboard-action-card__step">{{ index + 1 }}</span>
+              <div>
+                <div class="dashboard-action-card__meta">
+                  <span>下一步资源包</span>
+                  <strong v-if="item.typesLabel">{{ item.typesLabel }}</strong>
+                </div>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.reason }}</p>
+              </div>
+            </RouterLink>
+          </div>
+          <div v-else class="dashboard-empty-state">
+            <strong>还没有资源学习记录</strong>
+            <p>到资源中心生成个性化资源包并提交反馈后，这里会展示学习效果与下一步推荐。</p>
+          </div>
+          <div class="dashboard-resource-foot">
+            <RouterLink class="secondary-btn" to="/resources">
+              打开资源中心
+              <ArrowRight :size="16" aria-hidden="true" />
+            </RouterLink>
+          </div>
+        </article>
+
         <article class="dashboard-panel dashboard-panel--radar">
           <div class="dashboard-section-head">
             <div>

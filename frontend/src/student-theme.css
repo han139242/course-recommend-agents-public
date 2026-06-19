@@ -1373,6 +1373,25 @@ textarea:focus {
   grid-column: span 6;
 }
 
+.dashboard-panel--resource {
+  grid-column: span 12;
+}
+
+.dashboard-resource-stats {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.dashboard-resource-summary {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.dashboard-resource-foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .dashboard-section-head {
   display: flex;
   align-items: flex-start;
