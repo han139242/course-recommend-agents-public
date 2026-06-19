@@ -57,6 +57,9 @@ type generationContext struct {
 	KnowledgeDetail *graphdto.KnowledgeDetailView
 	Path            []recommenddto.PathItemView
 	ResourceTypes   []string
+	Difficulty      string
+	Images          []string
+	ImageDigest     string
 }
 
 func New(repo repository, aiClient *ai.Client, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Service {
@@ -143,8 +146,21 @@ func (s *Service) runGeneration(ctx context.Context, studentID int64, jobID int6
 	job.KnowledgeName = genCtx.KnowledgeName
 	job.CourseTitle = genCtx.CourseTitle
 	job.Target = genCtx.Target
-	s.bumpJob(ctx, job, 12, "ProfileAnalystAgent")
 
+	// VisionReaderAgent runs first when images were uploaded, producing a text
+	// digest that grounds every downstream writer agent.
+	if visionStep := stepByKey["vision_reader"]; visionStep != nil {
+		s.bumpJob(ctx, job, 10, "VisionReaderAgent")
+		s.advanceStep(ctx, visionStep, summaries["vision_reader"], resourcegenentity.StepStatusRunning)
+		genCtx.ImageDigest = s.aiImageDigest(ctx, genCtx)
+		doneSummary := summaries["vision_reader"]
+		if strings.TrimSpace(genCtx.ImageDigest) == "" {
+			doneSummary = "未能从上传图片中提取到可用要点，本次按文字上下文生成。"
+		}
+		s.advanceStep(ctx, visionStep, doneSummary, resourcegenentity.StepStatusCompleted)
+	}
+
+	s.bumpJob(ctx, job, 14, "ProfileAnalystAgent")
 	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusRunning)
 	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusCompleted)
 	s.bumpJob(ctx, job, 22, "CoursePlannerAgent")
@@ -283,6 +299,17 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 
 	summary := buildFeedbackSummary(feedback)
 	recommendations := buildRecommendations(profile, resources, summary)
+
+	// Prefer model-driven recommendations that adapt to recent feedback; fall
+	// back to the heuristic list when the model is unavailable or unusable.
+	profileSummaryText := ""
+	if profile != nil {
+		profileSummaryText = profile.Summary
+	}
+	if aiRecs, ok := s.aiRecommendations(ctx, profileSummaryText, dimensionsMap(profile), resources, feedback, summary); ok {
+		recommendations = aiRecs
+	}
+
 	return &resourcegendto.ResourceRecommendationsResponse{
 		Summary:         buildRecommendationSummary(profile, resources, summary),
 		FeedbackSummary: summary,
@@ -410,6 +437,8 @@ func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, r
 		KnowledgeDetail: detail,
 		Path:            path,
 		ResourceTypes:   normalizeResourceTypes(request.ResourceTypes),
+		Difficulty:      normalizeDifficultyLevel(request.Difficulty),
+		Images:          sanitizeImages(request.Images),
 	}
 }
 
@@ -425,7 +454,39 @@ func buildPreliminaryContext(studentID int64, request resourcegendto.GenerateRes
 		Target:        strings.TrimSpace(request.Target),
 		ProfileDims:   map[string]string{},
 		ResourceTypes: normalizeResourceTypes(request.ResourceTypes),
+		Difficulty:    normalizeDifficultyLevel(request.Difficulty),
+		Images:        sanitizeImages(request.Images),
 	}
+}
+
+// normalizeDifficultyLevel keeps only the supported regeneration levels.
+func normalizeDifficultyLevel(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "easier":
+		return "easier"
+	case "harder":
+		return "harder"
+	default:
+		return ""
+	}
+}
+
+// sanitizeImages trims, drops empty entries and caps the number of images to a
+// safe maximum for a single vision request.
+func sanitizeImages(images []string) []string {
+	const maxImages = 3
+	result := make([]string, 0, len(images))
+	for _, image := range images {
+		trimmed := strings.TrimSpace(image)
+		if trimmed == "" {
+			continue
+		}
+		result = append(result, trimmed)
+		if len(result) >= maxImages {
+			break
+		}
+	}
+	return result
 }
 
 // stepSummaries returns the per-agent step summaries for a generation context.
@@ -433,6 +494,7 @@ func buildPreliminaryContext(studentID int64, request resourcegendto.GenerateRes
 // they are advanced with the fully resolved context.
 func (s *Service) stepSummaries(genCtx generationContext) map[string]string {
 	return map[string]string{
+		"vision_reader":   "读取学生上传的图片（教材页/题目/笔记），提取知识点与关键信息作为生成依据。",
 		"profile_analyst": "读取学生画像、学习目标和资源偏好，形成个性化资源生成需求：" + profileSummary(genCtx),
 		"course_planner":  "结合知识图谱和推荐路径，锁定“" + genCtx.KnowledgeName + "”及其先修/后续学习顺序。",
 		"resource_writer": s.resourceWriterSummary(genCtx),
@@ -440,20 +502,29 @@ func (s *Service) stepSummaries(genCtx generationContext) map[string]string {
 	}
 }
 
+// agentStepSpec is the static definition of one multi-agent step.
+type agentStepSpec struct {
+	Key  string
+	Name string
+	Role string
+}
+
 // buildSteps creates the ordered multi-agent steps for a job in the pending
 // state; runGeneration later advances them to running/completed as work proceeds.
+// A VisionReaderAgent step is prepended only when images are supplied and a
+// vision-capable model is configured.
 func (s *Service) buildSteps(genCtx generationContext) []resourcegenentity.AgentStep {
 	summaries := s.stepSummaries(genCtx)
-	specs := []struct {
-		Key  string
-		Name string
-		Role string
-	}{
-		{"profile_analyst", "ProfileAnalystAgent", "画像分析智能体"},
-		{"course_planner", "CoursePlannerAgent", "课程规划智能体"},
-		{"resource_writer", "ResourceWriterAgents", "资源生成智能体组"},
-		{"safety_reviewer", "SafetyReviewerAgent", "安全校验智能体"},
+	specs := make([]agentStepSpec, 0, 5)
+	if len(genCtx.Images) > 0 && s.aiClient != nil && s.aiClient.VisionEnabled() {
+		specs = append(specs, agentStepSpec{"vision_reader", "VisionReaderAgent", "多模态识别智能体"})
 	}
+	specs = append(specs,
+		agentStepSpec{"profile_analyst", "ProfileAnalystAgent", "画像分析智能体"},
+		agentStepSpec{"course_planner", "CoursePlannerAgent", "课程规划智能体"},
+		agentStepSpec{"resource_writer", "ResourceWriterAgents", "资源生成智能体组"},
+		agentStepSpec{"safety_reviewer", "SafetyReviewerAgent", "安全校验智能体"},
+	)
 
 	now := time.Now()
 	result := make([]resourcegenentity.AgentStep, 0, len(specs))

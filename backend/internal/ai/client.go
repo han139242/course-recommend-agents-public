@@ -39,6 +39,20 @@ func (c *Client) Enabled() bool {
 	return c != nil && c.cfg.Enabled()
 }
 
+// VisionEnabled reports whether at least one configured provider exposes a
+// vision-capable model, so callers can decide whether to send image inputs.
+func (c *Client) VisionEnabled() bool {
+	if !c.Enabled() {
+		return false
+	}
+	for _, provider := range c.cfg.Providers() {
+		if strings.TrimSpace(provider.VisionModel) != "" {
+			return true
+		}
+	}
+	return false
+}
+
 // Message is one chat message. Images carries optional vision inputs (data URLs
 // or remote URLs) that are appended to the textual content.
 type Message struct {

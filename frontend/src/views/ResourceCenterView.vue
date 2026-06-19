@@ -5,6 +5,7 @@ import {
   BrainCircuit,
   CheckCircle2,
   FileText,
+  ImagePlus,
   RefreshCcw,
   Save,
   Send,
@@ -48,6 +49,8 @@ const resourceForm = ref({
 })
 const resourceLoading = ref(false)
 const resourceError = ref('')
+const attachedImages = ref([])
+const regeneratingId = ref(null)
 const activeJob = ref(null)
 const generatedResources = ref([])
 const resourceLibrary = ref([])
@@ -312,6 +315,7 @@ async function handleGenerateResources() {
       courseTitle: resourceForm.value.courseTitle.trim(),
       target: resourceForm.value.target.trim() || profileSummary.value,
       resourceTypes: resourceForm.value.resourceTypes,
+      images: attachedImages.value.map((item) => item.dataUrl),
     })
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
@@ -330,6 +334,67 @@ async function handleGenerateResources() {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
     resourceLoading.value = false
+  }
+}
+
+function onSelectImages(event) {
+  const files = Array.from(event.target.files || [])
+  event.target.value = ''
+  for (const file of files) {
+    if (attachedImages.value.length >= 3) break
+    if (!file.type.startsWith('image/')) continue
+    if (file.size > 4 * 1024 * 1024) {
+      resourceError.value = '单张图片需小于 4MB。'
+      continue
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      attachedImages.value = [...attachedImages.value, { name: file.name, dataUrl: String(reader.result) }]
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+function removeImage(index) {
+  attachedImages.value = attachedImages.value.filter((_, position) => position !== index)
+}
+
+// handleRegenerate re-runs generation for a single resource type at an easier or
+// harder level, reusing the same async job + progress polling.
+async function handleRegenerate(resource, difficulty) {
+  if (!resource?.resourceType || regeneratingId.value !== null || resourceLoading.value) return
+
+  stopPolling()
+  regeneratingId.value = resource.id
+  resourceError.value = ''
+  exportPayload.value = null
+  presentationOutline.value = null
+  try {
+    const payload = await generateResources({
+      knowledgeId: resource.knowledgeId || resourceForm.value.knowledgeId.trim(),
+      knowledgeName: resource.knowledgeName || resourceForm.value.knowledgeName.trim(),
+      courseTitle: resource.courseTitle || resourceForm.value.courseTitle.trim(),
+      target: resourceForm.value.target.trim() || profileSummary.value,
+      resourceTypes: [resource.resourceType],
+      difficulty,
+    })
+    activeJob.value = payload?.job || null
+    generatedResources.value = payload?.resources || []
+
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      const finalJob = await pollJobUntilDone(activeJob.value.id)
+      if (finalJob?.status === 'failed') {
+        resourceError.value = finalJob.errorMessage || '重新生成失败，请稍后重试。'
+      }
+    }
+
+    initFeedbackDrafts(generatedResources.value)
+    await loadResourceLibrary()
+    await loadRecommendations()
+  } catch (err) {
+    resourceError.value = err?.message || '重新生成失败，请稍后重试。'
+  } finally {
+    regeneratingId.value = null
   }
 }
 
@@ -638,6 +703,24 @@ onBeforeUnmount(stopPolling)
           </button>
         </div>
 
+        <div class="image-upload">
+          <div class="image-upload__head">
+            <span>多模态图片（可选）</span>
+            <small>上传教材页 / 题目截图 / 手写笔记，VisionReaderAgent 会读图作为生成依据</small>
+          </div>
+          <div class="image-upload__list">
+            <div v-for="(image, index) in attachedImages" :key="index" class="image-thumb">
+              <img :src="image.dataUrl" :alt="image.name" />
+              <button type="button" class="image-thumb__remove" aria-label="移除图片" @click="removeImage(index)">×</button>
+            </div>
+            <label v-if="attachedImages.length < 3" class="image-add">
+              <input type="file" accept="image/*" multiple hidden @change="onSelectImages" />
+              <ImagePlus :size="18" aria-hidden="true" />
+              <span>添加图片</span>
+            </label>
+          </div>
+        </div>
+
         <div class="button-row button-row--end">
           <button type="button" class="primary-action" :disabled="resourceLoading" @click="handleGenerateResources">
             <Sparkles v-if="!resourceLoading" :size="16" aria-hidden="true" />
@@ -722,6 +805,25 @@ onBeforeUnmount(stopPolling)
               <small>{{ resource.reason }}</small>
             </div>
             <ResourceContent :content="resource.content" :format="resource.format" />
+            <div class="regen-actions">
+              <span>难度不合适？让智能体重写：</span>
+              <button
+                type="button"
+                class="ghost-mini"
+                :disabled="resourceLoading || regeneratingId !== null"
+                @click="handleRegenerate(resource, 'easier')"
+              >
+                {{ regeneratingId === resource.id ? '重新生成中…' : '更简单一版' }}
+              </button>
+              <button
+                type="button"
+                class="ghost-mini"
+                :disabled="resourceLoading || regeneratingId !== null"
+                @click="handleRegenerate(resource, 'harder')"
+              >
+                更难一版
+              </button>
+            </div>
             <div class="safety-actions">
               <button type="button" class="secondary-action" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="16" aria-hidden="true" />
@@ -1478,6 +1580,120 @@ onBeforeUnmount(stopPolling)
   justify-content: flex-end;
   border-top: 1px solid rgba(90, 112, 132, 0.12);
   padding: 0.75rem 0.9rem 0;
+}
+
+.image-upload {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0.9rem;
+}
+
+.image-upload__head {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.image-upload__head span {
+  color: #43536a;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.image-upload__head small {
+  color: #64748b;
+}
+
+.image-upload__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.image-thumb {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 1px solid rgba(90, 112, 132, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-thumb__remove {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(23, 32, 51, 0.72);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.image-add {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 1px dashed rgba(90, 112, 132, 0.4);
+  border-radius: 8px;
+  color: #43536a;
+  background: #f8fbfd;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.image-add:hover {
+  border-color: rgba(33, 95, 154, 0.55);
+  color: #215f9a;
+}
+
+.regen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem 0;
+}
+
+.regen-actions span {
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.ghost-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(90, 112, 132, 0.24);
+  border-radius: 8px;
+  color: #24415f;
+  background: #f8fbfd;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ghost-mini:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .safety-report {

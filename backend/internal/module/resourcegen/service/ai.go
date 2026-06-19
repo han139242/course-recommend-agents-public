@@ -64,11 +64,28 @@ func resourceSystemPrompt(resourceType string) string {
 }
 
 // resourceUserPrompt builds the user message carrying the personalized learning
-// context for a resource type.
+// context for a resource type, including an optional difficulty adjustment.
 func resourceUserPrompt(resourceType string, genCtx generationContext) string {
-	return "请基于以下学习上下文，为学生生成「" + resourceTypeLabel(resourceType) + "」。\n\n" +
+	prompt := "请基于以下学习上下文，为学生生成「" + resourceTypeLabel(resourceType) + "」。\n\n" +
 		resourceContextBlock(genCtx) +
 		"\n\n要求：内容个性化、结构清晰、可直接用于学习。"
+	if instruction := difficultyInstruction(genCtx.Difficulty); instruction != "" {
+		prompt += "\n" + instruction
+	}
+	return prompt
+}
+
+// difficultyInstruction returns an extra writer instruction when the learner
+// asked to regenerate a resource at an easier or harder level.
+func difficultyInstruction(difficulty string) string {
+	switch difficulty {
+	case "easier":
+		return "本次请降低难度：使用更基础直白的语言，增加分步骤解释、最小示例和先修铺垫，减少综合性挑战。"
+	case "harder":
+		return "本次请提高难度：在已掌握基础的前提下，增加综合应用、对比分析和挑战性问题，并适当延伸到真实场景。"
+	default:
+		return ""
+	}
 }
 
 // resourceContextBlock assembles the grounding context (knowledge point, course,
@@ -82,6 +99,9 @@ func resourceContextBlock(genCtx generationContext) string {
 	}
 	if genCtx.Target != "" {
 		fmt.Fprintf(&builder, "学习目标：%s\n", genCtx.Target)
+	}
+	if digest := strings.TrimSpace(genCtx.ImageDigest); digest != "" {
+		fmt.Fprintf(&builder, "图片识别内容（来自学生上传图片，由 VisionReaderAgent 提取）：%s\n", digest)
 	}
 
 	dims := []struct {
@@ -278,4 +298,163 @@ func (s *Service) safetyReviewerSummary() string {
 		return "由大模型 SafetyReviewerAgent 审查事实性、防幻觉、敏感合规和教学适配，并标记为可展示资源。"
 	}
 	return "检查资源格式、学习依据和内容安全，标记为可展示资源。"
+}
+
+// aiImageDigest runs the VisionReaderAgent: it reads the learner-uploaded images
+// with the vision model and returns a concise, grounded text digest used as
+// generation context. It returns an empty string when vision is unavailable,
+// there are no images, or the call fails.
+func (s *Service) aiImageDigest(reqCtx context.Context, genCtx generationContext) string {
+	if s.aiClient == nil || !s.aiClient.VisionEnabled() || len(genCtx.Images) == 0 {
+		return ""
+	}
+	system := "你是多智能体资源生成系统中的 VisionReaderAgent，负责阅读学生上传的图片（教材页、题目截图或手写笔记）。" +
+		antiHallucinationRules +
+		"请用简体中文输出结构化要点：1) 图片涉及的知识点或主题；2) 关键概念、公式或题目；3) 可用于生成个性化学习资源的要点。只描述图片中真实存在的内容，不要编造。"
+	content, err := s.aiClient.Complete(reqCtx, ai.Request{
+		System: system,
+		Messages: []ai.Message{
+			{
+				Role:    "user",
+				Content: "请阅读以下图片，并结合学习上下文提取要点。\n\n" + resourceContextBlock(genCtx),
+				Images:  genCtx.Images,
+			},
+		},
+		MaxTokens:   700,
+		Temperature: 0.3,
+		Timeout:     45 * time.Second,
+	})
+	if err != nil {
+		return ""
+	}
+	return clampRunes(strings.TrimSpace(content), 1500)
+}
+
+// aiRecommendations asks the planning agent to propose the next resource packages
+// based on the learner profile and accumulated feedback (ratings, difficulty,
+// completion and comments), so recommendations adapt dynamically. It returns
+// ok=false when the model is unavailable or its output cannot be used, letting
+// the caller fall back to the heuristic recommendations.
+func (s *Service) aiRecommendations(reqCtx context.Context, profileSummary string, dims map[string]string, resources []resourcegenentity.GeneratedResource, feedback []resourcegenentity.ResourceFeedback, summary resourcegendto.FeedbackSummaryView) ([]resourcegendto.ResourceRecommendationView, bool) {
+	if s.aiClient == nil || !s.aiClient.Enabled() {
+		return nil, false
+	}
+
+	knowledgeName, knowledgeID, courseTitle := latestResourceTarget(resources)
+	target := firstNonEmpty(dims["learning_goal"], profileSummary, "围绕当前知识点完成理解、练习和迁移")
+
+	promptContext := map[string]any{
+		"profileSummary":   profileSummary,
+		"learningGoal":     dims["learning_goal"],
+		"knowledgeFound":   dims["knowledge_foundation"],
+		"resourcePref":     dims["resource_preference"],
+		"errorPref":        dims["error_preference"],
+		"currentKnowledge": knowledgeName,
+		"feedbackSummary": map[string]any{
+			"total":          summary.Total,
+			"averageRating":  summary.AverageRating,
+			"helpfulCount":   summary.HelpfulCount,
+			"completedCount": summary.CompletedCount,
+			"difficulty":     summary.Difficulty,
+		},
+		"recentComments":  recentFeedbackComments(feedback, 5),
+		"recentResources": recentResourceLabels(resources, 6),
+		"allowedTypes":    []string{"explanation_doc", "mind_map", "practice_questions", "coding_case", "reading_material", "video_script"},
+	}
+	payload, err := json.Marshal(promptContext)
+	if err != nil {
+		return nil, false
+	}
+
+	system := "你是多智能体资源生成系统中的学习规划智能体，根据学生画像和最近的资源学习反馈，动态推荐下一步应生成的资源包。" +
+		"只输出 JSON，结构为 {\"recommendations\":[{\"title\":\"\",\"knowledgeName\":\"\",\"resourceTypes\":[\"explanation_doc\"],\"reason\":\"\",\"actionText\":\"\",\"priority\":0}]}。" +
+		"resourceTypes 只能取 allowedTypes 中的值；priority 为 1-100 的整数，越高越优先；最多 4 条；reason 要结合反馈数据说明为什么这样推荐；全部使用简体中文。"
+	raw, err := s.aiClient.Complete(reqCtx, ai.Request{
+		System:      system,
+		User:        "学习上下文与反馈数据如下：\n" + string(payload),
+		MaxTokens:   900,
+		Temperature: 0.5,
+		JSON:        true,
+		Timeout:     30 * time.Second,
+	})
+	if err != nil {
+		return nil, false
+	}
+
+	var parsed struct {
+		Recommendations []struct {
+			Title         string   `json:"title"`
+			KnowledgeName string   `json:"knowledgeName"`
+			ResourceTypes []string `json:"resourceTypes"`
+			Reason        string   `json:"reason"`
+			ActionText    string   `json:"actionText"`
+			Priority      float64  `json:"priority"`
+		} `json:"recommendations"`
+	}
+	if err := json.Unmarshal([]byte(stripCodeFence(raw)), &parsed); err != nil {
+		return nil, false
+	}
+	if len(parsed.Recommendations) == 0 {
+		return nil, false
+	}
+
+	result := make([]resourcegendto.ResourceRecommendationView, 0, len(parsed.Recommendations))
+	for index, item := range parsed.Recommendations {
+		types := normalizeResourceTypes(item.ResourceTypes)
+		priority := int(item.Priority + 0.5)
+		if priority < 1 {
+			priority = 60
+		}
+		if priority > 100 {
+			priority = 100
+		}
+		result = append(result, resourcegendto.ResourceRecommendationView{
+			ID:            fmt.Sprintf("ai-rec-%d", index+1),
+			Title:         firstNonEmpty(strings.TrimSpace(item.Title), "下一步资源包"),
+			KnowledgeID:   knowledgeID,
+			KnowledgeName: firstNonEmpty(strings.TrimSpace(item.KnowledgeName), knowledgeName),
+			CourseTitle:   courseTitle,
+			Target:        target,
+			ResourceTypes: types,
+			Reason:        firstNonEmpty(strings.TrimSpace(item.Reason), "根据最近反馈动态推荐。"),
+			ActionText:    firstNonEmpty(strings.TrimSpace(item.ActionText), "生成资源包"),
+			Priority:      priority,
+		})
+		if len(result) >= 4 {
+			break
+		}
+	}
+	if len(result) == 0 {
+		return nil, false
+	}
+	return result, true
+}
+
+// recentFeedbackComments returns up to limit non-empty learner comments.
+func recentFeedbackComments(feedback []resourcegenentity.ResourceFeedback, limit int) []string {
+	comments := make([]string, 0, limit)
+	for _, item := range feedback {
+		comment := strings.TrimSpace(item.Comment)
+		if comment == "" {
+			continue
+		}
+		comments = append(comments, comment)
+		if len(comments) >= limit {
+			break
+		}
+	}
+	return comments
+}
+
+// recentResourceLabels returns up to limit recent "knowledge·type" labels to give
+// the planner a view of what was already generated.
+func recentResourceLabels(resources []resourcegenentity.GeneratedResource, limit int) []string {
+	labels := make([]string, 0, limit)
+	for _, resource := range resources {
+		labels = append(labels, firstNonEmpty(resource.KnowledgeName, "知识点")+"·"+firstNonEmpty(resource.TypeLabel, resource.ResourceType))
+		if len(labels) >= limit {
+			break
+		}
+	}
+	return labels
 }

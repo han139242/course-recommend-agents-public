@@ -7,6 +7,11 @@ type GenerateResourcesRequest struct {
 	CourseTitle   string   `json:"courseTitle" binding:"omitempty,max=255"`
 	Target        string   `json:"target" binding:"omitempty,max=500"`
 	ResourceTypes []string `json:"resourceTypes" binding:"omitempty,max=10"`
+	// Difficulty optionally regenerates resources at an easier or harder level.
+	Difficulty string `json:"difficulty" binding:"omitempty,oneof=easier harder normal"`
+	// Images carries optional learner-uploaded images (data URLs or remote URLs)
+	// that the VisionReaderAgent reads to ground generation.
+	Images []string `json:"images" binding:"omitempty,max=4"`
 }
 
 // ResourceQuery filters generated resources.
