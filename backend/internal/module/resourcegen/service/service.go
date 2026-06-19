@@ -7,8 +7,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/ai"
 	graphdto "github.com/han139242/course-recommend-agents/backend/internal/module/graph/dto"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	profiledto "github.com/han139242/course-recommend-agents/backend/internal/module/profile/dto"
@@ -24,6 +26,7 @@ import (
 
 type Service struct {
 	repo             repository
+	aiClient         *ai.Client
 	profileService   *profileservice.Service
 	recommendService *recommendservice.Service
 	graphService     *graphservice.Service
@@ -54,8 +57,8 @@ type generationContext struct {
 	ResourceTypes   []string
 }
 
-func New(repo repository, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Service {
-	return &Service{repo: repo, profileService: profileService, recommendService: recommendService, graphService: graphService}
+func New(repo repository, aiClient *ai.Client, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Service {
+	return &Service{repo: repo, aiClient: aiClient, profileService: profileService, recommendService: recommendService, graphService: graphService}
 }
 
 func (s *Service) Generate(ctx context.Context, request resourcegendto.GenerateResourcesRequest) (*resourcegendto.GenerateResourcesResponse, error) {
@@ -94,7 +97,7 @@ func (s *Service) Generate(ctx context.Context, request resourcegendto.GenerateR
 		_ = s.repo.UpdateJob(ctx, job)
 	}
 
-	resources := s.buildResources(genCtx, job.ID)
+	resources := s.buildResources(ctx, genCtx, job.ID)
 	if err := s.repo.CreateResources(ctx, resources); err != nil {
 		job.Status = resourcegenentity.JobStatusFailed
 		job.ErrorMessage = err.Error()
@@ -256,6 +259,9 @@ func (s *Service) GetSafetyReport(ctx context.Context, rawResourceID string) (*r
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	if report, ok := s.aiSafetyReport(ctx, *resource); ok {
+		return &report, nil
+	}
 	report := buildSafetyReport(*resource)
 	return &report, nil
 }
@@ -379,13 +385,13 @@ func (s *Service) buildSteps(ctx generationContext) []resourcegenentity.AgentSte
 			Key:     "resource_writer",
 			Name:    "ResourceWriterAgents",
 			Role:    "资源生成智能体组",
-			Summary: "协同生成讲解文档、思维导图、练习题、拓展阅读和实操案例。",
+			Summary: s.resourceWriterSummary(ctx),
 		},
 		{
 			Key:     "safety_reviewer",
 			Name:    "SafetyReviewerAgent",
 			Role:    "安全校验智能体",
-			Summary: "检查资源格式、学习依据和内容安全，标记为可展示资源。",
+			Summary: s.safetyReviewerSummary(),
 		},
 	}
 
@@ -413,25 +419,39 @@ type resourcegenEntityStepSpec struct {
 	Summary string
 }
 
-func (s *Service) buildResources(ctx generationContext, jobID int64) []resourcegenentity.GeneratedResource {
-	resources := make([]resourcegenentity.GeneratedResource, 0, len(ctx.ResourceTypes))
-	for _, resourceType := range ctx.ResourceTypes {
-		label := resourceTypeLabel(resourceType)
-		resources = append(resources, resourcegenentity.GeneratedResource{
-			JobID:         jobID,
-			StudentID:     ctx.StudentID,
-			ResourceType:  resourceType,
-			TypeLabel:     label,
-			Title:         label + "：" + ctx.KnowledgeName,
-			Content:       buildResourceContent(resourceType, ctx),
-			Format:        resourceFormat(resourceType),
-			KnowledgeID:   ctx.KnowledgeID,
-			KnowledgeName: ctx.KnowledgeName,
-			CourseTitle:   ctx.CourseTitle,
-			Reason:        buildResourceReason(resourceType, ctx),
-			Status:        resourcegenentity.ResourceStatusReady,
-		})
+// buildResources generates every requested resource for a job. Each resource
+// type is produced concurrently: when the AI client is available the body comes
+// from the large model, otherwise it falls back to the local template. Each
+// goroutine writes its own slice index, so no additional locking is needed.
+func (s *Service) buildResources(reqCtx context.Context, genCtx generationContext, jobID int64) []resourcegenentity.GeneratedResource {
+	resources := make([]resourcegenentity.GeneratedResource, len(genCtx.ResourceTypes))
+	var wg sync.WaitGroup
+	for index, resourceType := range genCtx.ResourceTypes {
+		wg.Add(1)
+		go func(index int, resourceType string) {
+			defer wg.Done()
+			label := resourceTypeLabel(resourceType)
+			content := s.aiResourceContent(reqCtx, resourceType, genCtx)
+			if strings.TrimSpace(content) == "" {
+				content = buildResourceContent(resourceType, genCtx)
+			}
+			resources[index] = resourcegenentity.GeneratedResource{
+				JobID:         jobID,
+				StudentID:     genCtx.StudentID,
+				ResourceType:  resourceType,
+				TypeLabel:     label,
+				Title:         label + "：" + genCtx.KnowledgeName,
+				Content:       content,
+				Format:        resourceFormat(resourceType),
+				KnowledgeID:   genCtx.KnowledgeID,
+				KnowledgeName: genCtx.KnowledgeName,
+				CourseTitle:   genCtx.CourseTitle,
+				Reason:        buildResourceReason(resourceType, genCtx),
+				Status:        resourcegenentity.ResourceStatusReady,
+			}
+		}(index, resourceType)
 	}
+	wg.Wait()
 	return resources
 }
 

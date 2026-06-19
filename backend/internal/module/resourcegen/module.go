@@ -2,6 +2,7 @@ package resourcegen
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/han139242/course-recommend-agents/backend/internal/ai"
 	graphservice "github.com/han139242/course-recommend-agents/backend/internal/module/graph/service"
 	profileservice "github.com/han139242/course-recommend-agents/backend/internal/module/profile/service"
 	recommendservice "github.com/han139242/course-recommend-agents/backend/internal/module/recommend/service"
@@ -16,9 +17,9 @@ type Module struct {
 	Service *resourcegenservice.Service
 }
 
-func New(db *gorm.DB, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Module {
+func New(db *gorm.DB, aiClient *ai.Client, profileService *profileservice.Service, recommendService *recommendservice.Service, graphService *graphservice.Service) *Module {
 	repo := resourcegenrepo.New(db)
-	service := resourcegenservice.New(repo, profileService, recommendService, graphService)
+	service := resourcegenservice.New(repo, aiClient, profileService, recommendService, graphService)
 	return &Module{Handler: resourcegenhandler.New(service), Service: service}
 }
 

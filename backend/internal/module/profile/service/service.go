@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/ai"
 	profiledto "github.com/han139242/course-recommend-agents/backend/internal/module/profile/dto"
 	profileentity "github.com/han139242/course-recommend-agents/backend/internal/module/profile/entity"
 	profilerepo "github.com/han139242/course-recommend-agents/backend/internal/module/profile/repository"
@@ -16,7 +17,8 @@ import (
 )
 
 type Service struct {
-	repo repository
+	repo     repository
+	aiClient *ai.Client
 }
 
 type repository interface {
@@ -24,8 +26,8 @@ type repository interface {
 	UpsertProfile(ctx context.Context, profile *profileentity.LearningProfile, dimensions []profileentity.ProfileDimension, versionPayload string) (*profileentity.LearningProfile, []profileentity.ProfileDimension, error)
 }
 
-func New(repo repository) *Service {
-	return &Service{repo: repo}
+func New(repo repository, aiClient *ai.Client) *Service {
+	return &Service{repo: repo, aiClient: aiClient}
 }
 
 func (s *Service) ExtractProfile(ctx context.Context, request profiledto.ExtractProfileRequest) (*profiledto.ProfileResponse, error) {
@@ -38,8 +40,7 @@ func (s *Service) ExtractProfile(ctx context.Context, request profiledto.Extract
 		return nil, apperr.ErrBadRequest
 	}
 
-	dimensions := inferProfileDimensions(message)
-	summary := buildProfileSummary(dimensions)
+	dimensions, summary := s.inferProfile(ctx, message)
 	return s.persist(ctx, studentID, summary, message, dimensions)
 }
 

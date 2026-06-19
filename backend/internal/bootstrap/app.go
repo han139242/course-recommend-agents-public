@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/han139242/course-recommend-agents/backend/internal/ai"
 	"github.com/han139242/course-recommend-agents/backend/internal/config"
 	frontiermodule "github.com/han139242/course-recommend-agents/backend/internal/module/frontier"
 	graphmodule "github.com/han139242/course-recommend-agents/backend/internal/module/graph"
@@ -85,6 +86,7 @@ func New(ctx context.Context) (*App, error) {
 	logStep("neo4j_ready", applogger.Bool("enabled", neo4jDriver != nil))
 
 	logStep("modules_initializing")
+	aiClient := ai.New(cfg.AI)
 	teacherModule := NewTeacherModule(mysqlDB, redisClient)
 	graphModule := NewGraphModule(neo4jDriver)
 	graphWriterService := graphwriterservice.New(logger, graphwriterrepo.NewNeo4jWriterRepository(neo4jDriver), redisClient, cfg.GraphWriter)
@@ -95,12 +97,12 @@ func New(ctx context.Context) (*App, error) {
 	go competencyModule.Matrix.Start(context.TODO())
 	recommendModule := NewRecommendModule(neo4jDriver, redisClient, mysqlDB)
 	studyPlanModule := NewStudyPlanModule(mysqlDB, recommendModule.Service)
-	profileModule := NewProfileModule(mysqlDB)
+	profileModule := NewProfileModule(aiClient, mysqlDB)
 	evaluationModule := NewEvaluationModule(recommendModule.Service.Scorer)
 	dashboardModule := NewDashboardModule(competencyModule.Service, recommendModule.Service, authModule.AuthService)
 	frontierModule := frontiermodule.New(graphModule.Repo)
 	assistantModule := NewAssistantModule(cfg, authModule.AuthService, learningModule.Service, competencyModule.Service, recommendModule.Service, dashboardModule.Service, graphModule.Service, frontierModule.Service, mysqlDB)
-	resourceGenModule := NewResourceGenModule(mysqlDB, profileModule.Service, recommendModule.Service, graphModule.Service)
+	resourceGenModule := NewResourceGenModule(aiClient, mysqlDB, profileModule.Service, recommendModule.Service, graphModule.Service)
 	graphWriterService.Start(context.TODO())
 	logStep("modules_ready")
 

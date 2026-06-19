@@ -2,6 +2,7 @@ package profile
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/han139242/course-recommend-agents/backend/internal/ai"
 	profilehandler "github.com/han139242/course-recommend-agents/backend/internal/module/profile/handler"
 	profilerepo "github.com/han139242/course-recommend-agents/backend/internal/module/profile/repository"
 	profileservice "github.com/han139242/course-recommend-agents/backend/internal/module/profile/service"
@@ -13,9 +14,9 @@ type Module struct {
 	Service *profileservice.Service
 }
 
-func New(db *gorm.DB) *Module {
+func New(db *gorm.DB, aiClient *ai.Client) *Module {
 	repo := profilerepo.New(db)
-	service := profileservice.New(repo)
+	service := profileservice.New(repo, aiClient)
 	return &Module{Handler: profilehandler.New(service), Service: service}
 }
 
