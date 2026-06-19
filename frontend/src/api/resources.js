@@ -21,12 +21,20 @@ export function fetchResourceJob(jobId) {
   return request(`/resources/jobs/${jobId}`)
 }
 
+export function exportResourceJobMarkdown(jobId) {
+  return request(`/resources/jobs/${jobId}/export`)
+}
+
 export function fetchResources(params = {}) {
   return request(`/resources${toQueryString(params)}`)
 }
 
 export function fetchResource(resourceId) {
   return request(`/resources/${resourceId}`)
+}
+
+export function fetchResourceSafetyReport(resourceId) {
+  return request(`/resources/${resourceId}/safety-report`)
 }
 
 export function submitResourceFeedback(resourceId, payload) {

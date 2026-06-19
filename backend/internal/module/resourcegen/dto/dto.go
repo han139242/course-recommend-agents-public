@@ -117,6 +117,35 @@ type ResourceRecommendationsResponse struct {
 	List            []ResourceRecommendationView `json:"list"`
 }
 
+// SafetyCheckView describes one content-safety or hallucination check.
+type SafetyCheckView struct {
+	Key        string `json:"key"`
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	Conclusion string `json:"conclusion"`
+}
+
+// SafetyReportView returns a visible safety and anti-hallucination report.
+type SafetyReportView struct {
+	ResourceID   int64             `json:"resourceId"`
+	Title        string            `json:"title"`
+	Status       string            `json:"status"`
+	Score        int               `json:"score"`
+	Checks       []SafetyCheckView `json:"checks"`
+	Risks        []string          `json:"risks"`
+	Suggestions  []string          `json:"suggestions"`
+	ReviewedAt   string            `json:"reviewedAt"`
+	ReviewerName string            `json:"reviewerName"`
+}
+
+// ExportJobResponse returns an exportable Markdown package.
+type ExportJobResponse struct {
+	JobID       int64  `json:"jobId"`
+	FileName    string `json:"fileName"`
+	Content     string `json:"content"`
+	GeneratedAt string `json:"generatedAt"`
+}
+
 // GenerateResourcesResponse returns the job and generated resources.
 type GenerateResourcesResponse struct {
 	Job       JobView                 `json:"job"`

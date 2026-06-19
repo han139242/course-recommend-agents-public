@@ -39,6 +39,15 @@ func (h *Handler) GetJob(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) ExportJob(ctx *gin.Context) {
+	response, err := h.service.ExportJobMarkdown(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func (h *Handler) ListResources(ctx *gin.Context) {
 	var query resourcegendto.ResourceQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {
@@ -55,6 +64,15 @@ func (h *Handler) ListResources(ctx *gin.Context) {
 
 func (h *Handler) GetResource(ctx *gin.Context) {
 	response, err := h.service.GetResource(ctx.Request.Context(), ctx.Param("resourceId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetSafetyReport(ctx *gin.Context) {
+	response, err := h.service.GetSafetyReport(ctx.Request.Context(), ctx.Param("resourceId"))
 	if err != nil {
 		writeError(ctx, err)
 		return

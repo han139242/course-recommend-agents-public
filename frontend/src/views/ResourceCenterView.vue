@@ -16,7 +16,9 @@ import { RouterLink } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } from '../api/profile'
 import {
+  exportResourceJobMarkdown,
   fetchResourceRecommendations,
+  fetchResourceSafetyReport,
   fetchResources,
   generateResources,
   submitResourceFeedback,
@@ -53,6 +55,11 @@ const feedbackDrafts = ref({})
 const feedbackSaving = ref({})
 const feedbackNotice = ref('')
 const feedbackError = ref('')
+const safetyReports = ref({})
+const safetyLoading = ref({})
+const exportLoading = ref(false)
+const exportPayload = ref(null)
+const exportError = ref('')
 
 const dimensionOrder = [
   'knowledge_foundation',
@@ -208,6 +215,7 @@ async function handleGenerateResources() {
     })
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
+    exportPayload.value = null
     initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
     await loadRecommendations()
@@ -215,6 +223,20 @@ async function handleGenerateResources() {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
     resourceLoading.value = false
+  }
+}
+
+async function handleExportJob() {
+  if (!activeJob.value?.id) return
+
+  exportLoading.value = true
+  exportError.value = ''
+  try {
+    exportPayload.value = await exportResourceJobMarkdown(activeJob.value.id)
+  } catch (err) {
+    exportError.value = err?.message || '资源包导出失败，请稍后重试。'
+  } finally {
+    exportLoading.value = false
   }
 }
 
@@ -279,6 +301,33 @@ async function handleSubmitFeedback(resource) {
   }
 }
 
+async function handleLoadSafetyReport(resource) {
+  if (!resource?.id) return
+  if (safetyReports.value[resource.id]) {
+    safetyReports.value = { ...safetyReports.value, [resource.id]: null }
+    return
+  }
+
+  safetyLoading.value = { ...safetyLoading.value, [resource.id]: true }
+  try {
+    const payload = await fetchResourceSafetyReport(resource.id)
+    safetyReports.value = { ...safetyReports.value, [resource.id]: payload }
+  } catch (err) {
+    safetyReports.value = {
+      ...safetyReports.value,
+      [resource.id]: {
+        status: 'attention_required',
+        score: 0,
+        checks: [],
+        risks: [err?.message || '安全报告读取失败。'],
+        suggestions: ['请稍后重试或人工复核资源内容。'],
+      },
+    }
+  } finally {
+    safetyLoading.value = { ...safetyLoading.value, [resource.id]: false }
+  }
+}
+
 function applyRecommendation(recommendation) {
   resourceForm.value.knowledgeId = recommendation.knowledgeId || ''
   resourceForm.value.knowledgeName = recommendation.knowledgeName || resourceForm.value.knowledgeName
@@ -317,6 +366,12 @@ function difficultyLabel(value) {
 function formatAverageRating(value) {
   const rating = Number(value || 0)
   return rating > 0 ? rating.toFixed(1) : '暂无'
+}
+
+function safetyStatusLabel(status) {
+  if (status === 'passed') return '已通过'
+  if (status === 'blocked') return '需阻断'
+  return '需关注'
 }
 
 onMounted(async () => {
@@ -468,6 +523,20 @@ onMounted(async () => {
           <div class="progress-bar">
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
+          <div class="button-row button-row--end">
+            <button type="button" class="secondary-action" :disabled="exportLoading" @click="handleExportJob">
+              <FileText :size="16" aria-hidden="true" />
+              {{ exportLoading ? '导出中' : '导出 Markdown' }}
+            </button>
+          </div>
+          <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+          <div v-if="exportPayload" class="export-box">
+            <div class="export-box__head">
+              <strong>{{ exportPayload.fileName }}</strong>
+              <small>已生成可提交/可粘贴的资源包 Markdown</small>
+            </div>
+            <textarea readonly :value="exportPayload.content" rows="8" />
+          </div>
           <div class="agent-steps">
             <article v-for="step in activeJob.steps || []" :key="step.id || step.agentKey" class="agent-step">
               <span class="agent-step__status" :class="`agent-step__status--${step.status}`" />
@@ -491,6 +560,38 @@ onMounted(async () => {
               <small>{{ resource.reason }}</small>
             </div>
             <pre>{{ resource.content }}</pre>
+            <div class="safety-actions">
+              <button type="button" class="secondary-action" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
+                <CheckCircle2 :size="16" aria-hidden="true" />
+                {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
+              </button>
+            </div>
+            <div v-if="safetyReports[resource.id]" class="safety-report">
+              <div class="safety-report__head">
+                <div>
+                  <span>SafetyReviewerAgent</span>
+                  <strong>{{ safetyStatusLabel(safetyReports[resource.id].status) }}</strong>
+                </div>
+                <em>{{ safetyReports[resource.id].score }} 分</em>
+              </div>
+              <div v-if="safetyReports[resource.id].checks?.length" class="safety-checks">
+                <article v-for="check in safetyReports[resource.id].checks" :key="check.key" class="safety-check">
+                  <span :class="`safety-check__dot safety-check__dot--${check.status}`" />
+                  <div>
+                    <strong>{{ check.name }}</strong>
+                    <p>{{ check.conclusion }}</p>
+                  </div>
+                </article>
+              </div>
+              <div v-if="safetyReports[resource.id].risks?.length" class="safety-list">
+                <strong>风险提示</strong>
+                <p v-for="risk in safetyReports[resource.id].risks" :key="risk">{{ risk }}</p>
+              </div>
+              <div class="safety-list">
+                <strong>审查建议</strong>
+                <p v-for="suggestion in safetyReports[resource.id].suggestions || []" :key="suggestion">{{ suggestion }}</p>
+              </div>
+            </div>
             <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
               <div class="feedback-box__head">
                 <strong>学习反馈</strong>
@@ -1020,6 +1121,7 @@ onMounted(async () => {
 .agent-steps {
   display: grid;
   gap: 0.55rem;
+  margin-top: 0.75rem;
 }
 
 .agent-step {
@@ -1097,6 +1199,123 @@ onMounted(async () => {
   font: 0.9rem/1.65 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.export-box {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.8rem 0;
+  border: 1px solid rgba(90, 112, 132, 0.16);
+  border-radius: 8px;
+  padding: 0.8rem;
+  background: #ffffff;
+}
+
+.export-box__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.export-box__head small {
+  color: #64748b;
+}
+
+.export-box textarea {
+  width: 100%;
+  min-height: 12rem;
+  border: 1px solid rgba(90, 112, 132, 0.16);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #1f2937;
+  background: #fbfdff;
+  font: 0.86rem/1.6 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  resize: vertical;
+}
+
+.safety-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(90, 112, 132, 0.12);
+  padding: 0.75rem 0.9rem 0;
+}
+
+.safety-report {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0.9rem 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #f8fbfd;
+}
+
+.safety-report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.safety-report__head span,
+.safety-report__head strong {
+  display: block;
+}
+
+.safety-report__head span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.safety-report__head em {
+  color: #176b87;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.safety-checks {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.safety-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: #ffffff;
+}
+
+.safety-check p,
+.safety-list p {
+  margin: 0.18rem 0 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.safety-check__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: 0.28rem;
+  border-radius: 999px;
+  background: #d97706;
+}
+
+.safety-check__dot--passed {
+  background: #1f8a70;
+}
+
+.safety-check__dot--blocked {
+  background: #b91c1c;
+}
+
+.safety-list {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .feedback-box {

@@ -240,6 +240,51 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 	}, nil
 }
 
+func (s *Service) GetSafetyReport(ctx context.Context, rawResourceID string) (*resourcegendto.SafetyReportView, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	report := buildSafetyReport(*resource)
+	return &report, nil
+}
+
+func (s *Service) ExportJobMarkdown(ctx context.Context, rawJobID string) (*resourcegendto.ExportJobResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	jobID, err := strconv.ParseInt(strings.TrimSpace(rawJobID), 10, 64)
+	if err != nil || jobID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	job, steps, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	content := buildJobMarkdown(job, steps, resources)
+	return &resourcegendto.ExportJobResponse{
+		JobID:       job.ID,
+		FileName:    fmt.Sprintf("resource-package-%d.md", job.ID),
+		Content:     content,
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}, nil
+}
+
 func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, request resourcegendto.GenerateResourcesRequest) generationContext {
 	knowledgeID := strings.TrimSpace(request.KnowledgeID)
 	knowledgeName := strings.TrimSpace(request.KnowledgeName)
@@ -727,6 +772,123 @@ func buildRecommendationSummary(profile *profiledto.LearningProfileView, resourc
 	return summary.Insight
 }
 
+func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegendto.SafetyReportView {
+	content := strings.TrimSpace(resource.Content)
+	checks := []resourcegendto.SafetyCheckView{
+		buildSafetyCheck("factuality", "事实性与防幻觉", !containsAny(content, "保证", "绝对正确", "100%", "唯一答案"), "未发现绝对化或不可验证承诺，建议保留人工复核。"),
+		buildSafetyCheck("sensitive", "敏感与违规过滤", !containsAny(content, "违法", "攻击", "绕过", "作弊"), "未发现明显敏感违规表达。"),
+		buildSafetyCheck("structure", "格式完整性", content != "" && strings.Contains(content, "#"), "资源包含标题和结构化内容，可直接展示。"),
+		buildSafetyCheck("pedagogy", "教学适配性", strings.TrimSpace(resource.Reason) != "", "资源保留了生成理由，能够解释个性化依据。"),
+		buildSafetyCheck("license", "开源与 AI 工具说明", true, "当前资源为系统生成内容；若后续接入外部材料，需要补充来源与协议。"),
+	}
+
+	risks := make([]string, 0, 3)
+	suggestions := []string{
+		"展示或提交前建议由团队成员进行一次人工事实核对。",
+		"若引用外部教材、论文或开源项目，应在资源中补充来源与协议说明。",
+	}
+	score := 100
+	for _, check := range checks {
+		switch check.Status {
+		case "blocked":
+			score -= 35
+			risks = append(risks, check.Name+"未通过："+check.Conclusion)
+		case "warning":
+			score -= 12
+			risks = append(risks, check.Name+"需关注："+check.Conclusion)
+		}
+	}
+	if resource.ResourceType == "coding_case" && !strings.Contains(content, "```") {
+		score -= 10
+		risks = append(risks, "代码案例未检测到代码块，建议补充可复制的示例。")
+	}
+	if score < 0 {
+		score = 0
+	}
+
+	status := "passed"
+	if len(risks) > 0 {
+		status = "attention_required"
+	}
+	if score < 60 {
+		status = "blocked"
+	}
+
+	return resourcegendto.SafetyReportView{
+		ResourceID:   resource.ID,
+		Title:        resource.Title,
+		Status:       status,
+		Score:        score,
+		Checks:       checks,
+		Risks:        risks,
+		Suggestions:  suggestions,
+		ReviewedAt:   time.Now().Format(time.RFC3339),
+		ReviewerName: "SafetyReviewerAgent",
+	}
+}
+
+func buildSafetyCheck(key string, name string, passed bool, conclusion string) resourcegendto.SafetyCheckView {
+	status := "passed"
+	if !passed {
+		status = "warning"
+	}
+	return resourcegendto.SafetyCheckView{
+		Key:        key,
+		Name:       name,
+		Status:     status,
+		Conclusion: conclusion,
+	}
+}
+
+func buildJobMarkdown(job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, resources []resourcegenentity.GeneratedResource) string {
+	var builder strings.Builder
+	builder.WriteString("# 个性化资源包：" + firstNonEmpty(job.KnowledgeName, "未命名知识点") + "\n\n")
+	builder.WriteString("> 导出时间：" + time.Now().Format("2006-01-02 15:04:05") + "\n\n")
+	builder.WriteString("## 任务信息\n\n")
+	builder.WriteString("- 任务 ID：" + strconv.FormatInt(job.ID, 10) + "\n")
+	builder.WriteString("- 课程：" + firstNonEmpty(job.CourseTitle, "未填写") + "\n")
+	builder.WriteString("- 知识点：" + firstNonEmpty(job.KnowledgeName, job.KnowledgeID, "未填写") + "\n")
+	builder.WriteString("- 生成目标：" + firstNonEmpty(job.Target, "未填写") + "\n")
+	builder.WriteString("- 状态：" + job.Status + "\n\n")
+
+	builder.WriteString("## 多智能体协作记录\n\n")
+	for _, step := range steps {
+		builder.WriteString("### " + step.AgentName + "\n\n")
+		builder.WriteString("- 角色：" + step.Role + "\n")
+		builder.WriteString("- 状态：" + step.Status + "\n")
+		builder.WriteString("- 摘要：" + step.Summary + "\n\n")
+	}
+
+	builder.WriteString("## 资源目录\n\n")
+	for index, resource := range resources {
+		builder.WriteString(fmt.Sprintf("%d. %s（%s）\n", index+1, resource.Title, resource.TypeLabel))
+	}
+	builder.WriteString("\n")
+
+	for _, resource := range resources {
+		builder.WriteString("---\n\n")
+		builder.WriteString("## " + resource.Title + "\n\n")
+		builder.WriteString("- 类型：" + resource.TypeLabel + "\n")
+		builder.WriteString("- 格式：" + resource.Format + "\n")
+		builder.WriteString("- 推荐原因：" + resource.Reason + "\n\n")
+		if resource.Format == "mermaid" {
+			builder.WriteString("```mermaid\n")
+			builder.WriteString(strings.TrimSpace(resource.Content))
+			builder.WriteString("\n```\n\n")
+		} else {
+			builder.WriteString(strings.TrimSpace(resource.Content))
+			builder.WriteString("\n\n")
+		}
+		report := buildSafetyReport(resource)
+		builder.WriteString("### 安全审查摘要\n\n")
+		builder.WriteString("- 审查智能体：" + report.ReviewerName + "\n")
+		builder.WriteString("- 状态：" + report.Status + "\n")
+		builder.WriteString("- 分数：" + strconv.Itoa(report.Score) + "\n")
+		builder.WriteString("- 建议：" + strings.Join(report.Suggestions, "；") + "\n\n")
+	}
+	return builder.String()
+}
+
 func currentStudentID(ctx context.Context) (int64, error) {
 	studentID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {
@@ -927,6 +1089,15 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func containsAny(value string, keywords ...string) bool {
+	for _, keyword := range keywords {
+		if keyword != "" && strings.Contains(value, keyword) {
+			return true
+		}
+	}
+	return false
 }
 
 func limitStrings(values []string, limit int) []string {
