@@ -146,6 +146,24 @@ type ExportJobResponse struct {
 	GeneratedAt string `json:"generatedAt"`
 }
 
+// PresentationSlideView describes one generated presentation slide.
+type PresentationSlideView struct {
+	Index        int      `json:"index"`
+	Title        string   `json:"title"`
+	Bullets      []string `json:"bullets"`
+	SpeakerNotes string   `json:"speakerNotes"`
+	VisualHint   string   `json:"visualHint"`
+}
+
+// PresentationOutlineResponse returns a PPT-ready outline for a resource job.
+type PresentationOutlineResponse struct {
+	JobID       int64                   `json:"jobId"`
+	Title       string                  `json:"title"`
+	Subtitle    string                  `json:"subtitle"`
+	Slides      []PresentationSlideView `json:"slides"`
+	GeneratedAt string                  `json:"generatedAt"`
+}
+
 // GenerateResourcesResponse returns the job and generated resources.
 type GenerateResourcesResponse struct {
 	Job       JobView                 `json:"job"`

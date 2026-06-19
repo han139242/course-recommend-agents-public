@@ -18,6 +18,7 @@ import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } fro
 import {
   exportResourceJobMarkdown,
   fetchResourceRecommendations,
+  fetchResourcePresentationOutline,
   fetchResourceSafetyReport,
   fetchResources,
   generateResources,
@@ -60,6 +61,9 @@ const safetyLoading = ref({})
 const exportLoading = ref(false)
 const exportPayload = ref(null)
 const exportError = ref('')
+const outlineLoading = ref(false)
+const presentationOutline = ref(null)
+const outlineError = ref('')
 
 const dimensionOrder = [
   'knowledge_foundation',
@@ -216,6 +220,7 @@ async function handleGenerateResources() {
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
     exportPayload.value = null
+    presentationOutline.value = null
     initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
     await loadRecommendations()
@@ -223,6 +228,20 @@ async function handleGenerateResources() {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
     resourceLoading.value = false
+  }
+}
+
+async function handleLoadPresentationOutline() {
+  if (!activeJob.value?.id) return
+
+  outlineLoading.value = true
+  outlineError.value = ''
+  try {
+    presentationOutline.value = await fetchResourcePresentationOutline(activeJob.value.id)
+  } catch (err) {
+    outlineError.value = err?.message || 'PPT 大纲生成失败，请稍后重试。'
+  } finally {
+    outlineLoading.value = false
   }
 }
 
@@ -524,12 +543,37 @@ onMounted(async () => {
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
           <div class="button-row button-row--end">
+            <button type="button" class="secondary-action" :disabled="outlineLoading" @click="handleLoadPresentationOutline">
+              <Sparkles :size="16" aria-hidden="true" />
+              {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
+            </button>
             <button type="button" class="secondary-action" :disabled="exportLoading" @click="handleExportJob">
               <FileText :size="16" aria-hidden="true" />
               {{ exportLoading ? '导出中' : '导出 Markdown' }}
             </button>
           </div>
+          <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
           <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+          <div v-if="presentationOutline" class="outline-box">
+            <div class="outline-box__head">
+              <div>
+                <strong>{{ presentationOutline.title }}</strong>
+                <small>{{ presentationOutline.subtitle }}</small>
+              </div>
+              <span>{{ presentationOutline.slides?.length || 0 }} 页</span>
+            </div>
+            <div class="outline-slides">
+              <article v-for="slide in presentationOutline.slides || []" :key="slide.index" class="outline-slide">
+                <span>Slide {{ slide.index }}</span>
+                <strong>{{ slide.title }}</strong>
+                <ul>
+                  <li v-for="bullet in slide.bullets" :key="bullet">{{ bullet }}</li>
+                </ul>
+                <p>{{ slide.speakerNotes }}</p>
+                <small>{{ slide.visualHint }}</small>
+              </article>
+            </div>
+          </div>
           <div v-if="exportPayload" class="export-box">
             <div class="export-box__head">
               <strong>{{ exportPayload.fileName }}</strong>
@@ -1209,6 +1253,80 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 0.8rem;
   background: #ffffff;
+}
+
+.outline-box {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.8rem 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #f8fbfd;
+}
+
+.outline-box__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.outline-box__head strong,
+.outline-box__head small {
+  display: block;
+}
+
+.outline-box__head small {
+  margin-top: 0.2rem;
+  color: #64748b;
+}
+
+.outline-box__head span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  color: #176b87;
+  background: #e8f6fb;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.outline-slides {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.outline-slide {
+  display: grid;
+  gap: 0.4rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.outline-slide span {
+  color: #176b87;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.outline-slide ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.outline-slide li {
+  margin: 0.2rem 0;
+  line-height: 1.45;
+}
+
+.outline-slide p,
+.outline-slide small {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .export-box__head {

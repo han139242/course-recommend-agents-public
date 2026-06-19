@@ -25,6 +25,7 @@ func New(db *gorm.DB, profileService *profileservice.Service, recommendService *
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/generate", m.Handler.Generate)
 	group.GET("/jobs/:jobId/export", m.Handler.ExportJob)
+	group.GET("/jobs/:jobId/presentation-outline", m.Handler.GetPresentationOutline)
 	group.GET("/jobs/:jobId", m.Handler.GetJob)
 	group.GET("/recommendations", m.Handler.GetRecommendations)
 	group.GET("/:resourceId/safety-report", m.Handler.GetSafetyReport)

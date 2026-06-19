@@ -48,6 +48,15 @@ func (h *Handler) ExportJob(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) GetPresentationOutline(ctx *gin.Context) {
+	response, err := h.service.GetPresentationOutline(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func (h *Handler) ListResources(ctx *gin.Context) {
 	var query resourcegendto.ResourceQuery
 	if err := ctx.ShouldBindQuery(&query); err != nil {

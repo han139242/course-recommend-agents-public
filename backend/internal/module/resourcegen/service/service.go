@@ -285,6 +285,26 @@ func (s *Service) ExportJobMarkdown(ctx context.Context, rawJobID string) (*reso
 	}, nil
 }
 
+func (s *Service) GetPresentationOutline(ctx context.Context, rawJobID string) (*resourcegendto.PresentationOutlineResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	jobID, err := strconv.ParseInt(strings.TrimSpace(rawJobID), 10, 64)
+	if err != nil || jobID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	job, steps, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	outline := buildPresentationOutline(job, steps, resources)
+	return &outline, nil
+}
+
 func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, request resourcegendto.GenerateResourcesRequest) generationContext {
 	knowledgeID := strings.TrimSpace(request.KnowledgeID)
 	knowledgeName := strings.TrimSpace(request.KnowledgeName)
@@ -887,6 +907,119 @@ func buildJobMarkdown(job *resourcegenentity.GenerationJob, steps []resourcegene
 		builder.WriteString("- 建议：" + strings.Join(report.Suggestions, "；") + "\n\n")
 	}
 	return builder.String()
+}
+
+func buildPresentationOutline(job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, resources []resourcegenentity.GeneratedResource) resourcegendto.PresentationOutlineResponse {
+	knowledgeName := firstNonEmpty(job.KnowledgeName, job.KnowledgeID, "个性化学习资源")
+	title := "个性化资源智能体演示：" + knowledgeName
+	subtitle := firstNonEmpty(job.CourseTitle, "人工智能课程") + " · " + firstNonEmpty(job.Target, "面向学生个性化学习")
+	resourceLabels := resourceTypeNames(resources)
+	agentNames := agentStepNames(steps)
+
+	slides := []resourcegendto.PresentationSlideView{
+		{
+			Index: 1,
+			Title: "赛题背景与核心痛点",
+			Bullets: []string{
+				"高校课程资源丰富但组织方式偏静态，学生难以快速匹配个人基础和目标。",
+				"不同学生在知识基础、学习偏好、易错点上差异明显，统一资源包难以满足个性化学习。",
+				"本系统围绕“画像识别、资源生成、反馈闭环、安全审查”构建可演示流程。",
+			},
+			SpeakerNotes: "用 30 秒说明为什么需要个性化资源生成，把痛点落到学生真实学习过程。",
+			VisualHint:   "使用问题链或流程箭头：资源多 -> 不匹配 -> 需要智能体协同生成。",
+		},
+		{
+			Index: 2,
+			Title: "学生画像与生成目标",
+			Bullets: []string{
+				"当前生成任务围绕知识点：“" + knowledgeName + "”。",
+				"课程场景：" + firstNonEmpty(job.CourseTitle, "未指定课程") + "。",
+				"生成目标：" + firstNonEmpty(job.Target, "围绕当前知识点完成理解、练习和迁移") + "。",
+			},
+			SpeakerNotes: "展示系统如何把学生目标转化为资源生成上下文，突出个性化输入。",
+			VisualHint:   "左侧展示学生画像维度，右侧展示资源生成目标。",
+		},
+		{
+			Index: 3,
+			Title: "多智能体协同流程",
+			Bullets: []string{
+				"本次任务调用智能体：" + strings.Join(agentNames, "、") + "。",
+				"智能体按“画像分析 -> 课程规划 -> 资源生成 -> 安全审查”的顺序协作。",
+				"每一步均保留可解释摘要，便于答辩时展示系统透明度。",
+			},
+			SpeakerNotes: "把多智能体不是口号，而是有任务步骤、有角色分工、有结果记录讲清楚。",
+			VisualHint:   "使用横向流程图或泳道图展示 4 个智能体步骤。",
+		},
+		{
+			Index: 4,
+			Title: "生成资源成果",
+			Bullets: []string{
+				"本次共生成 " + strconv.Itoa(len(resources)) + " 类资源。",
+				"资源类型包括：" + strings.Join(resourceLabels, "、") + "。",
+				"资源内容覆盖讲解、结构化理解、练习巩固、拓展阅读和实操迁移。",
+			},
+			SpeakerNotes: "按资源卡片快速展示成果，重点讲不同资源如何服务不同学习环节。",
+			VisualHint:   "使用卡片网格展示资源标题，配合一页截图或目录。",
+		},
+		{
+			Index: 5,
+			Title: "安全审查与学习反馈闭环",
+			Bullets: []string{
+				"SafetyReviewerAgent 对资源进行事实性、防幻觉、敏感过滤和格式完整性检查。",
+				"学生可提交评分、难度、是否完成和备注，系统据此生成下一步推荐。",
+				"导出材料自动附带安全审查摘要，便于提交和人工复核。",
+			},
+			SpeakerNotes: "强调比赛要求里的内容安全和应用效果，不只生成资源，还能持续优化。",
+			VisualHint:   "用闭环图展示：生成 -> 学习 -> 反馈 -> 推荐 -> 再生成。",
+		},
+		{
+			Index: 6,
+			Title: "演示路径与创新价值",
+			Bullets: []string{
+				"演示路径：生成画像 -> 生成资源包 -> 查看智能体步骤 -> 安全审查 -> 提交反馈 -> 下一步推荐 -> 导出材料。",
+				"创新点：将多智能体协作、知识图谱上下文和反馈闭环集中到一个学习工作台。",
+				"实用价值：降低学生筛选学习资源成本，提升资源适配度和学习过程可追踪性。",
+			},
+			SpeakerNotes: "最后用一句话收束：系统不是单次生成工具，而是个性化学习资源闭环。",
+			VisualHint:   "使用最终演示截图或系统架构图作为收尾。",
+		},
+	}
+
+	return resourcegendto.PresentationOutlineResponse{
+		JobID:       job.ID,
+		Title:       title,
+		Subtitle:    subtitle,
+		Slides:      slides,
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}
+}
+
+func resourceTypeNames(resources []resourcegenentity.GeneratedResource) []string {
+	if len(resources) == 0 {
+		return []string{"讲解文档", "思维导图", "练习题", "实操案例"}
+	}
+	seen := map[string]struct{}{}
+	result := make([]string, 0, len(resources))
+	for _, resource := range resources {
+		name := firstNonEmpty(resource.TypeLabel, resourceTypeLabel(resource.ResourceType))
+		if _, exists := seen[name]; exists {
+			continue
+		}
+		seen[name] = struct{}{}
+		result = append(result, name)
+	}
+	return result
+}
+
+func agentStepNames(steps []resourcegenentity.AgentStep) []string {
+	if len(steps) == 0 {
+		return []string{"ProfileAnalystAgent", "CoursePlannerAgent", "ResourceWriterAgents", "SafetyReviewerAgent"}
+	}
+	result := make([]string, 0, len(steps))
+	for _, step := range steps {
+		result = append(result, firstNonEmpty(step.AgentName, step.AgentKey))
+	}
+	return result
 }
 
 func currentStudentID(ctx context.Context) (int64, error) {
