@@ -15,7 +15,12 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } from '../api/profile'
-import { fetchResources, generateResources } from '../api/resources'
+import {
+  fetchResourceRecommendations,
+  fetchResources,
+  generateResources,
+  submitResourceFeedback,
+} from '../api/resources'
 import { APP_NAME } from '../constants/appInfo'
 
 const DEFAULT_PROMPT = '我是大二人工智能学生，想做智能体项目，机器学习基础不太稳，希望多一些导图、代码案例和练习题。'
@@ -40,6 +45,14 @@ const activeJob = ref(null)
 const generatedResources = ref([])
 const resourceLibrary = ref([])
 const libraryLoading = ref(false)
+const recommendations = ref([])
+const recommendationSummary = ref('')
+const feedbackSummary = ref(null)
+const recommendationsLoading = ref(false)
+const feedbackDrafts = ref({})
+const feedbackSaving = ref({})
+const feedbackNotice = ref('')
+const feedbackError = ref('')
 
 const dimensionOrder = [
   'knowledge_foundation',
@@ -60,6 +73,12 @@ const resourceTypeOptions = [
 ]
 
 const resourceTypeLabels = Object.fromEntries(resourceTypeOptions.map((item) => [item.value, item.label]))
+
+const difficultyLabels = {
+  easy: '偏易',
+  fit: '适中',
+  hard: '偏难',
+}
 
 const activeProfile = computed(() => profilePayload.value?.profile || null)
 
@@ -189,7 +208,9 @@ async function handleGenerateResources() {
     })
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
+    initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
+    await loadRecommendations()
   } catch (err) {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
@@ -207,6 +228,65 @@ async function loadResourceLibrary() {
   } finally {
     libraryLoading.value = false
   }
+}
+
+async function loadRecommendations() {
+  recommendationsLoading.value = true
+  try {
+    const payload = await fetchResourceRecommendations()
+    recommendations.value = payload?.list || []
+    recommendationSummary.value = payload?.summary || ''
+    feedbackSummary.value = payload?.feedbackSummary || null
+  } catch {
+    recommendations.value = []
+    recommendationSummary.value = ''
+    feedbackSummary.value = null
+  } finally {
+    recommendationsLoading.value = false
+  }
+}
+
+function initFeedbackDrafts(resources = []) {
+  const nextDrafts = { ...feedbackDrafts.value }
+  resources.forEach((resource) => {
+    if (!resource?.id || nextDrafts[resource.id]) return
+    nextDrafts[resource.id] = {
+      rating: 4,
+      difficulty: 'fit',
+      helpful: true,
+      completed: false,
+      comment: '',
+    }
+  })
+  feedbackDrafts.value = nextDrafts
+}
+
+async function handleSubmitFeedback(resource) {
+  const draft = feedbackDrafts.value[resource.id]
+  if (!draft) return
+
+  feedbackSaving.value = { ...feedbackSaving.value, [resource.id]: true }
+  feedbackNotice.value = ''
+  feedbackError.value = ''
+  try {
+    const payload = await submitResourceFeedback(resource.id, draft)
+    feedbackNotice.value = payload?.nextAction || '反馈已记录，推荐策略已更新。'
+    await loadRecommendations()
+  } catch (err) {
+    feedbackError.value = err?.message || '反馈提交失败，请稍后重试。'
+  } finally {
+    feedbackSaving.value = { ...feedbackSaving.value, [resource.id]: false }
+  }
+}
+
+function applyRecommendation(recommendation) {
+  resourceForm.value.knowledgeId = recommendation.knowledgeId || ''
+  resourceForm.value.knowledgeName = recommendation.knowledgeName || resourceForm.value.knowledgeName
+  resourceForm.value.courseTitle = recommendation.courseTitle || resourceForm.value.courseTitle
+  resourceForm.value.target = recommendation.target || resourceForm.value.target
+  resourceForm.value.resourceTypes = recommendation.resourceTypes?.length
+    ? [...recommendation.resourceTypes]
+    : resourceForm.value.resourceTypes
 }
 
 function formatPercent(confidence) {
@@ -230,8 +310,17 @@ function typeLabel(type) {
   return resourceTypeLabels[type] || type
 }
 
+function difficultyLabel(value) {
+  return difficultyLabels[value] || '适中'
+}
+
+function formatAverageRating(value) {
+  const rating = Number(value || 0)
+  return rating > 0 ? rating.toFixed(1) : '暂无'
+}
+
 onMounted(async () => {
-  await Promise.all([loadCurrentProfile(), loadResourceLibrary()])
+  await Promise.all([loadCurrentProfile(), loadResourceLibrary(), loadRecommendations()])
 })
 </script>
 
@@ -365,6 +454,8 @@ onMounted(async () => {
           </button>
         </div>
         <p v-if="resourceError" class="inline-error">{{ resourceError }}</p>
+        <p v-if="feedbackError" class="inline-error">{{ feedbackError }}</p>
+        <p v-if="feedbackNotice" class="inline-success">{{ feedbackNotice }}</p>
 
         <section v-if="activeJob" class="agent-progress">
           <div class="agent-progress__head">
@@ -400,11 +491,103 @@ onMounted(async () => {
               <small>{{ resource.reason }}</small>
             </div>
             <pre>{{ resource.content }}</pre>
+            <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
+              <div class="feedback-box__head">
+                <strong>学习反馈</strong>
+                <small>用于更新学习效果评估和下一步推荐</small>
+              </div>
+              <div class="feedback-grid">
+                <label class="field-block">
+                  <span>评分</span>
+                  <select v-model.number="feedbackDrafts[resource.id].rating">
+                    <option v-for="score in [5, 4, 3, 2, 1]" :key="score" :value="score">
+                      {{ score }} 分
+                    </option>
+                  </select>
+                </label>
+                <label class="field-block">
+                  <span>难度</span>
+                  <select v-model="feedbackDrafts[resource.id].difficulty">
+                    <option value="easy">偏易</option>
+                    <option value="fit">适中</option>
+                    <option value="hard">偏难</option>
+                  </select>
+                </label>
+                <label class="check-row">
+                  <input v-model="feedbackDrafts[resource.id].helpful" type="checkbox" />
+                  有帮助
+                </label>
+                <label class="check-row">
+                  <input v-model="feedbackDrafts[resource.id].completed" type="checkbox" />
+                  已完成学习
+                </label>
+                <label class="field-block feedback-grid__comment">
+                  <span>备注</span>
+                  <textarea
+                    v-model="feedbackDrafts[resource.id].comment"
+                    rows="2"
+                    placeholder="记录仍然卡住的地方或希望下轮资源调整的方向"
+                  />
+                </label>
+              </div>
+              <div class="button-row button-row--end">
+                <button
+                  type="button"
+                  class="secondary-action"
+                  :disabled="feedbackSaving[resource.id]"
+                  @click="handleSubmitFeedback(resource)"
+                >
+                  <Send :size="16" aria-hidden="true" />
+                  {{ feedbackSaving[resource.id] ? '提交中' : '提交反馈' }}
+                </button>
+              </div>
+            </div>
           </article>
         </section>
       </section>
 
       <aside class="library-panel">
+        <section class="recommend-panel">
+          <div class="panel-heading panel-heading--compact">
+            <span class="panel-kicker">Feature 4</span>
+            <h2>下一步推荐</h2>
+          </div>
+
+          <div v-if="feedbackSummary" class="feedback-summary">
+            <span>学习效果</span>
+            <strong>{{ formatAverageRating(feedbackSummary.averageRating) }}</strong>
+            <small>
+              {{ feedbackSummary.total }} 条反馈 · {{ feedbackSummary.completedCount }} 次完成 ·
+              偏难 {{ feedbackSummary.difficulty?.hard || 0 }} 次
+            </small>
+          </div>
+
+          <p v-if="recommendationSummary" class="recommend-summary">{{ recommendationSummary }}</p>
+
+          <div v-if="recommendationsLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>正在生成下一步推荐</p>
+          </div>
+          <div v-else-if="recommendations.length" class="recommend-list">
+            <article v-for="item in recommendations" :key="item.id" class="recommend-item">
+              <span>优先级 {{ item.priority }}</span>
+              <strong>{{ item.title }}</strong>
+              <small>{{ item.reason }}</small>
+              <div class="recommend-item__types">
+                <em v-for="type in item.resourceTypes" :key="type">{{ typeLabel(type) }}</em>
+              </div>
+              <button type="button" class="secondary-action" @click="applyRecommendation(item)">
+                <Sparkles :size="15" aria-hidden="true" />
+                {{ item.actionText }}
+              </button>
+            </article>
+          </div>
+          <div v-else class="empty-state empty-state--small">
+            <Sparkles :size="18" aria-hidden="true" />
+            <p>生成画像或提交反馈后，这里会给出下一步资源建议。</p>
+          </div>
+        </section>
+
         <div class="panel-heading panel-heading--compact">
           <span class="panel-kicker">Library</span>
           <h2>资源库</h2>
@@ -583,6 +766,7 @@ onMounted(async () => {
 }
 
 .field-block input,
+.field-block select,
 .field-block textarea {
   width: 100%;
   min-width: 0;
@@ -598,6 +782,7 @@ onMounted(async () => {
 }
 
 .field-block input:focus,
+.field-block select:focus,
 .field-block textarea:focus {
   border-color: #2f80b7;
   box-shadow: 0 0 0 3px rgba(47, 128, 183, 0.14);
@@ -914,6 +1099,134 @@ onMounted(async () => {
   word-break: break-word;
 }
 
+.feedback-box {
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(90, 112, 132, 0.12);
+  padding: 0.9rem;
+  background: #ffffff;
+}
+
+.feedback-box__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.feedback-box__head small,
+.recommend-summary {
+  color: #64748b;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.feedback-grid__comment {
+  grid-column: 1 / -1;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.55rem;
+  border: 1px solid rgba(90, 112, 132, 0.16);
+  border-radius: 8px;
+  padding: 0 0.7rem;
+  color: #334155;
+  background: #f8fbfd;
+  font-weight: 700;
+}
+
+.check-row input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #215f9a;
+}
+
+.recommend-panel {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(90, 112, 132, 0.12);
+  padding-bottom: 1rem;
+}
+
+.feedback-summary {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f4f9fd;
+}
+
+.feedback-summary span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.feedback-summary strong {
+  color: #176b87;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.feedback-summary small {
+  color: #64748b;
+}
+
+.recommend-summary {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.recommend-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.recommend-item {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #ffffff;
+}
+
+.recommend-item span {
+  color: #176b87;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.recommend-item small {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.recommend-item__types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.recommend-item__types em {
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  color: #24415f;
+  background: #eef6fb;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .library-list {
   display: grid;
   gap: 0.65rem;
@@ -947,6 +1260,7 @@ onMounted(async () => {
 
   .resource-shell,
   .generation-grid,
+  .feedback-grid,
   .resource-types {
     grid-template-columns: 1fr;
   }

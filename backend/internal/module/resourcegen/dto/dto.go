@@ -63,6 +63,60 @@ type GeneratedResourceView struct {
 	CreatedAt     string `json:"createdAt"`
 }
 
+// SubmitFeedbackRequest records learner feedback for one generated resource.
+type SubmitFeedbackRequest struct {
+	Rating     int    `json:"rating" binding:"required,min=1,max=5"`
+	Difficulty string `json:"difficulty" binding:"omitempty,max=32"`
+	Helpful    bool   `json:"helpful"`
+	Completed  bool   `json:"completed"`
+	Comment    string `json:"comment" binding:"omitempty,max=500"`
+}
+
+// FeedbackView describes one resource feedback record.
+type FeedbackView struct {
+	ID         int64  `json:"id"`
+	ResourceID int64  `json:"resourceId"`
+	JobID      int64  `json:"jobId"`
+	Rating     int    `json:"rating"`
+	Difficulty string `json:"difficulty"`
+	Helpful    bool   `json:"helpful"`
+	Completed  bool   `json:"completed"`
+	Comment    string `json:"comment"`
+	NextAction string `json:"nextAction"`
+	UpdatedAt  string `json:"updatedAt"`
+}
+
+// FeedbackSummaryView aggregates recent feedback for learning-effect assessment.
+type FeedbackSummaryView struct {
+	Total          int            `json:"total"`
+	AverageRating  float64        `json:"averageRating"`
+	HelpfulCount   int            `json:"helpfulCount"`
+	CompletedCount int            `json:"completedCount"`
+	Difficulty     map[string]int `json:"difficulty"`
+	Insight        string         `json:"insight"`
+}
+
+// ResourceRecommendationView suggests the next resource package to generate.
+type ResourceRecommendationView struct {
+	ID            string   `json:"id"`
+	Title         string   `json:"title"`
+	KnowledgeID   string   `json:"knowledgeId"`
+	KnowledgeName string   `json:"knowledgeName"`
+	CourseTitle   string   `json:"courseTitle"`
+	Target        string   `json:"target"`
+	ResourceTypes []string `json:"resourceTypes"`
+	Reason        string   `json:"reason"`
+	ActionText    string   `json:"actionText"`
+	Priority      int      `json:"priority"`
+}
+
+// ResourceRecommendationsResponse returns feedback-aware recommendations.
+type ResourceRecommendationsResponse struct {
+	Summary         string                       `json:"summary"`
+	FeedbackSummary FeedbackSummaryView          `json:"feedbackSummary"`
+	List            []ResourceRecommendationView `json:"list"`
+}
+
 // GenerateResourcesResponse returns the job and generated resources.
 type GenerateResourcesResponse struct {
 	Job       JobView                 `json:"job"`

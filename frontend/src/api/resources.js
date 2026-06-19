@@ -28,3 +28,14 @@ export function fetchResources(params = {}) {
 export function fetchResource(resourceId) {
   return request(`/resources/${resourceId}`)
 }
+
+export function submitResourceFeedback(resourceId, payload) {
+  return request(`/resources/${resourceId}/feedback`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function fetchResourceRecommendations() {
+  return request('/resources/recommendations')
+}

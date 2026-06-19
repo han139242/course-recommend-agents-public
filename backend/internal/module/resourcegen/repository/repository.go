@@ -7,6 +7,7 @@ import (
 
 	"github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/entity"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var ErrNotFound = errors.New("generated resource not found")
@@ -92,4 +93,44 @@ func (r *Repository) GetResource(ctx context.Context, studentID int64, resourceI
 		return nil, err
 	}
 	return &resource, nil
+}
+
+func (r *Repository) UpsertFeedback(ctx context.Context, feedback *entity.ResourceFeedback) (*entity.ResourceFeedback, error) {
+	now := time.Now()
+	feedback.UpdatedAt = now
+	if feedback.CreatedAt.IsZero() {
+		feedback.CreatedAt = now
+	}
+	if err := r.db.WithContext(ctx).Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "resource_id"}, {Name: "student_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"job_id",
+			"rating",
+			"difficulty",
+			"helpful",
+			"completed",
+			"comment",
+			"next_action",
+			"updated_at",
+		}),
+	}).Create(feedback).Error; err != nil {
+		return nil, err
+	}
+
+	var stored entity.ResourceFeedback
+	if err := r.db.WithContext(ctx).Where("resource_id = ? AND student_id = ?", feedback.ResourceID, feedback.StudentID).First(&stored).Error; err != nil {
+		return nil, err
+	}
+	return &stored, nil
+}
+
+func (r *Repository) ListFeedback(ctx context.Context, studentID int64, limit int) ([]entity.ResourceFeedback, error) {
+	if limit <= 0 {
+		limit = 30
+	}
+	var feedback []entity.ResourceFeedback
+	if err := r.db.WithContext(ctx).Where("student_id = ?", studentID).Order("updated_at DESC, id DESC").Limit(limit).Find(&feedback).Error; err != nil {
+		return nil, err
+	}
+	return feedback, nil
 }

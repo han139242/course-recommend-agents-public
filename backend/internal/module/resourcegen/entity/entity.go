@@ -73,3 +73,23 @@ type GeneratedResource struct {
 func (GeneratedResource) TableName() string {
 	return "generated_resources"
 }
+
+// ResourceFeedback stores learner feedback and learning-effect signals.
+type ResourceFeedback struct {
+	ID         int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	ResourceID int64     `gorm:"column:resource_id;not null;uniqueIndex:uk_resource_feedback_student_resource"`
+	JobID      int64     `gorm:"column:job_id;not null;index:idx_resource_feedback_job_id"`
+	StudentID  int64     `gorm:"column:student_id;not null;uniqueIndex:uk_resource_feedback_student_resource;index:idx_resource_feedback_student_id"`
+	Rating     int       `gorm:"column:rating;not null;default:0"`
+	Difficulty string    `gorm:"column:difficulty;type:varchar(32);not null;default:''"`
+	Helpful    bool      `gorm:"column:helpful;not null;default:false"`
+	Completed  bool      `gorm:"column:completed;not null;default:false"`
+	Comment    string    `gorm:"column:comment;type:varchar(500);not null;default:''"`
+	NextAction string    `gorm:"column:next_action;type:varchar(500);not null;default:''"`
+	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt  time.Time `gorm:"column:updated_at;autoUpdateTime"`
+}
+
+func (ResourceFeedback) TableName() string {
+	return "resource_feedbacks"
+}

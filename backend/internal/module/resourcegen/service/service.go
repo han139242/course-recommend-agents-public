@@ -37,6 +37,8 @@ type repository interface {
 	GetJob(ctx context.Context, studentID int64, jobID int64) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error)
 	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]resourcegenentity.GeneratedResource, error)
 	GetResource(ctx context.Context, studentID int64, resourceID int64) (*resourcegenentity.GeneratedResource, error)
+	UpsertFeedback(ctx context.Context, feedback *resourcegenentity.ResourceFeedback) (*resourcegenentity.ResourceFeedback, error)
+	ListFeedback(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.ResourceFeedback, error)
 }
 
 type generationContext struct {
@@ -166,6 +168,76 @@ func (s *Service) GetResource(ctx context.Context, rawResourceID string) (*resou
 	}
 	view := resourceToView(*resource)
 	return &view, nil
+}
+
+func (s *Service) SubmitFeedback(ctx context.Context, rawResourceID string, request resourcegendto.SubmitFeedbackRequest) (*resourcegendto.FeedbackView, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	if request.Rating < 1 || request.Rating > 5 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	feedback := &resourcegenentity.ResourceFeedback{
+		ResourceID: resource.ID,
+		JobID:      resource.JobID,
+		StudentID:  studentID,
+		Rating:     request.Rating,
+		Difficulty: normalizeDifficulty(request.Difficulty),
+		Helpful:    request.Helpful,
+		Completed:  request.Completed,
+		Comment:    strings.TrimSpace(request.Comment),
+		NextAction: buildNextAction(resource, request),
+	}
+	stored, err := s.repo.UpsertFeedback(ctx, feedback)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	view := feedbackToView(*stored)
+	return &view, nil
+}
+
+func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.ResourceRecommendationsResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var profile *profiledto.LearningProfileView
+	if s.profileService != nil {
+		if response, err := s.profileService.GetCurrent(ctx); err == nil && response != nil {
+			profile = response.Profile
+		}
+	}
+
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", 12)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	feedback, err := s.repo.ListFeedback(ctx, studentID, 30)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	summary := buildFeedbackSummary(feedback)
+	recommendations := buildRecommendations(profile, resources, summary)
+	return &resourcegendto.ResourceRecommendationsResponse{
+		Summary:         buildRecommendationSummary(profile, resources, summary),
+		FeedbackSummary: summary,
+		List:            recommendations,
+	}, nil
 }
 
 func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, request resourcegendto.GenerateResourcesRequest) generationContext {
@@ -488,6 +560,173 @@ func normalizeResourceTypes(input []string) []string {
 	return result
 }
 
+func normalizeDifficulty(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "easy", "简单", "偏易":
+		return "easy"
+	case "hard", "困难", "偏难":
+		return "hard"
+	case "fit", "适中", "合适":
+		return "fit"
+	default:
+		return "fit"
+	}
+}
+
+func buildNextAction(resource *resourcegenentity.GeneratedResource, request resourcegendto.SubmitFeedbackRequest) string {
+	difficulty := normalizeDifficulty(request.Difficulty)
+	switch {
+	case request.Rating <= 2 || !request.Helpful:
+		return "建议重新生成更基础的讲解文档和知识导图，并补充关键概念例子。"
+	case difficulty == "hard":
+		return "建议追加先修知识导图与低门槛练习题，先降低理解难度。"
+	case request.Completed:
+		return "建议进入下一知识点，并生成代码案例或拓展阅读巩固迁移能力。"
+	default:
+		return "建议继续完成配套练习，并记录新的疑问用于下一轮资源推荐。"
+	}
+}
+
+func buildFeedbackSummary(feedback []resourcegenentity.ResourceFeedback) resourcegendto.FeedbackSummaryView {
+	summary := resourcegendto.FeedbackSummaryView{
+		Difficulty: map[string]int{"easy": 0, "fit": 0, "hard": 0},
+		Insight:    "暂无反馈记录，建议先完成一次资源学习并提交评分。",
+	}
+	if len(feedback) == 0 {
+		return summary
+	}
+
+	totalRating := 0
+	for _, item := range feedback {
+		summary.Total++
+		totalRating += item.Rating
+		if item.Helpful {
+			summary.HelpfulCount++
+		}
+		if item.Completed {
+			summary.CompletedCount++
+		}
+		difficulty := normalizeDifficulty(item.Difficulty)
+		summary.Difficulty[difficulty]++
+	}
+	avg := float64(totalRating) / float64(summary.Total)
+	summary.AverageRating = float64(int(avg*10+0.5)) / 10
+
+	switch {
+	case summary.AverageRating < 3:
+		summary.Insight = "近期资源评分偏低，下一轮应降低难度并增加解释型资源。"
+	case summary.Difficulty["hard"] > summary.Difficulty["fit"]:
+		summary.Insight = "近期反馈显示资源偏难，建议补充先修链和分步练习。"
+	case summary.CompletedCount >= summary.Total && summary.Total > 0:
+		summary.Insight = "近期资源完成度较好，可以推进到项目实操或下一知识点。"
+	default:
+		summary.Insight = "近期反馈整体稳定，建议保持讲解、练习和实操交替推进。"
+	}
+	return summary
+}
+
+func buildRecommendations(profile *profiledto.LearningProfileView, resources []resourcegenentity.GeneratedResource, summary resourcegendto.FeedbackSummaryView) []resourcegendto.ResourceRecommendationView {
+	dims := dimensionsMap(profile)
+	knowledgeName, knowledgeID, courseTitle := latestResourceTarget(resources)
+	target := firstNonEmpty(dims["learning_goal"], "围绕当前知识点完成理解、练习和项目迁移")
+
+	recommendations := []resourcegendto.ResourceRecommendationView{
+		{
+			ID:            "foundation-repair",
+			Title:         "先修补强资源包",
+			KnowledgeID:   knowledgeID,
+			KnowledgeName: knowledgeName,
+			CourseTitle:   courseTitle,
+			Target:        target,
+			ResourceTypes: []string{
+				"explanation_doc",
+				"mind_map",
+				"practice_questions",
+			},
+			Reason:     foundationRecommendationReason(dims, summary),
+			ActionText: "生成补强包",
+			Priority:   95,
+		},
+		{
+			ID:            "project-transfer",
+			Title:         "项目迁移实操包",
+			KnowledgeID:   knowledgeID,
+			KnowledgeName: knowledgeName,
+			CourseTitle:   courseTitle,
+			Target:        target,
+			ResourceTypes: []string{
+				"coding_case",
+				"reading_material",
+			},
+			Reason:     "结合学习目标与资源偏好，优先把知识点转化为可展示的实操案例。",
+			ActionText: "生成实操包",
+			Priority:   82,
+		},
+		{
+			ID:            "review-loop",
+			Title:         "多模态复盘资源包",
+			KnowledgeID:   knowledgeID,
+			KnowledgeName: knowledgeName,
+			CourseTitle:   courseTitle,
+			Target:        target,
+			ResourceTypes: []string{
+				"video_script",
+				"practice_questions",
+			},
+			Reason:     reviewRecommendationReason(dims, summary),
+			ActionText: "生成复盘包",
+			Priority:   76,
+		},
+	}
+
+	sort.SliceStable(recommendations, func(i, j int) bool {
+		return recommendations[i].Priority > recommendations[j].Priority
+	})
+	return recommendations
+}
+
+func latestResourceTarget(resources []resourcegenentity.GeneratedResource) (string, string, string) {
+	if len(resources) == 0 {
+		return "智能体与工具调用", "", "人工智能导论"
+	}
+	latest := resources[0]
+	return firstNonEmpty(latest.KnowledgeName, "智能体与工具调用"), latest.KnowledgeID, firstNonEmpty(latest.CourseTitle, "人工智能导论")
+}
+
+func foundationRecommendationReason(dims map[string]string, summary resourcegendto.FeedbackSummaryView) string {
+	foundation := dims["knowledge_foundation"]
+	switch {
+	case strings.Contains(foundation, "不稳") || strings.Contains(foundation, "偏弱"):
+		return "画像显示基础仍需补强，建议先用讲解文档、导图和练习题建立稳定先修链。"
+	case summary.Difficulty["hard"] > 0:
+		return "近期反馈存在偏难记录，建议追加低门槛讲解和分步练习降低理解成本。"
+	default:
+		return "用于在进入实操前快速校准概念、先修和易错点。"
+	}
+}
+
+func reviewRecommendationReason(dims map[string]string, summary resourcegendto.FeedbackSummaryView) string {
+	preference := dims["resource_preference"]
+	switch {
+	case strings.Contains(preference, "视频") || strings.Contains(preference, "导图"):
+		return "画像显示偏好多模态材料，适合用短视频脚本和练习题做复盘。"
+	case summary.AverageRating > 0 && summary.AverageRating < 3.5:
+		return "近期评分仍有提升空间，建议用更短、更聚焦的复盘材料重新巩固。"
+	default:
+		return "用于把本轮学习内容压缩成可讲解、可自测的复盘材料。"
+	}
+}
+
+func buildRecommendationSummary(profile *profiledto.LearningProfileView, resources []resourcegenentity.GeneratedResource, summary resourcegendto.FeedbackSummaryView) string {
+	if profile == nil && len(resources) == 0 {
+		return "建议先生成学习画像和第一批资源，系统会据此形成更精准的下一步推荐。"
+	}
+	if summary.Total == 0 {
+		return "已根据当前画像和资源库给出下一步建议；提交学习反馈后会进一步调整推荐顺序。"
+	}
+	return summary.Insight
+}
+
 func currentStudentID(ctx context.Context) (int64, error) {
 	studentID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {
@@ -663,6 +902,21 @@ func resourceToView(resource resourcegenentity.GeneratedResource) resourcegendto
 		Reason:        resource.Reason,
 		Status:        resource.Status,
 		CreatedAt:     resource.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func feedbackToView(feedback resourcegenentity.ResourceFeedback) resourcegendto.FeedbackView {
+	return resourcegendto.FeedbackView{
+		ID:         feedback.ID,
+		ResourceID: feedback.ResourceID,
+		JobID:      feedback.JobID,
+		Rating:     feedback.Rating,
+		Difficulty: feedback.Difficulty,
+		Helpful:    feedback.Helpful,
+		Completed:  feedback.Completed,
+		Comment:    feedback.Comment,
+		NextAction: feedback.NextAction,
+		UpdatedAt:  feedback.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

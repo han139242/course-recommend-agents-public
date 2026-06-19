@@ -62,6 +62,29 @@ func (h *Handler) GetResource(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) SubmitFeedback(ctx *gin.Context) {
+	var request resourcegendto.SubmitFeedbackRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.SubmitFeedback(ctx.Request.Context(), ctx.Param("resourceId"), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetRecommendations(ctx *gin.Context) {
+	response, err := h.service.GetRecommendations(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func writeError(ctx *gin.Context, err error) {
 	appErr := apperr.AsAppError(err)
 	result.Error(ctx, appErr.HTTPStatus, appErr.Code, appErr.Message)
