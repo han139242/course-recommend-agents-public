@@ -53,19 +53,26 @@ type AgentStepView struct {
 
 // GeneratedResourceView describes a generated learning resource.
 type GeneratedResourceView struct {
-	ID            int64  `json:"id"`
-	JobID         int64  `json:"jobId"`
-	ResourceType  string `json:"resourceType"`
-	TypeLabel     string `json:"typeLabel"`
-	Title         string `json:"title"`
-	Content       string `json:"content"`
-	Format        string `json:"format"`
-	KnowledgeID   string `json:"knowledgeId"`
-	KnowledgeName string `json:"knowledgeName"`
-	CourseTitle   string `json:"courseTitle"`
-	Reason        string `json:"reason"`
-	Status        string `json:"status"`
-	CreatedAt     string `json:"createdAt"`
+	ID            int64                  `json:"id"`
+	JobID         int64                  `json:"jobId"`
+	ResourceType  string                 `json:"resourceType"`
+	TypeLabel     string                 `json:"typeLabel"`
+	Title         string                 `json:"title"`
+	Content       string                 `json:"content"`
+	Format        string                 `json:"format"`
+	KnowledgeID   string                 `json:"knowledgeId"`
+	KnowledgeName string                 `json:"knowledgeName"`
+	CourseTitle   string                 `json:"courseTitle"`
+	Reason        string                 `json:"reason"`
+	Status        string                 `json:"status"`
+	CreatedAt     string                 `json:"createdAt"`
+	Evidence      []ResourceEvidenceView `json:"evidence,omitempty"`
+}
+
+// ResourceEvidenceView explains which context grounded a generated resource.
+type ResourceEvidenceView struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
 }
 
 // SubmitFeedbackRequest records learner feedback for one generated resource.
@@ -120,6 +127,50 @@ type ResourceRecommendationsResponse struct {
 	Summary         string                       `json:"summary"`
 	FeedbackSummary FeedbackSummaryView          `json:"feedbackSummary"`
 	List            []ResourceRecommendationView `json:"list"`
+}
+
+// RecordLearningEventRequest records one resource or learning behavior signal.
+type RecordLearningEventRequest struct {
+	EventType     string         `json:"eventType" binding:"required,max=64"`
+	KnowledgeID   string         `json:"knowledgeId" binding:"omitempty,max=128"`
+	KnowledgeName string         `json:"knowledgeName" binding:"omitempty,max=255"`
+	ResourceID    int64          `json:"resourceId" binding:"omitempty,min=0"`
+	ResourceType  string         `json:"resourceType" binding:"omitempty,max=64"`
+	Payload       map[string]any `json:"payload"`
+}
+
+// LearningEventView exposes behavior signals for profile timeline and demos.
+type LearningEventView struct {
+	ID            int64          `json:"id"`
+	EventType     string         `json:"eventType"`
+	KnowledgeID   string         `json:"knowledgeId"`
+	KnowledgeName string         `json:"knowledgeName"`
+	ResourceID    int64          `json:"resourceId,omitempty"`
+	ResourceType  string         `json:"resourceType,omitempty"`
+	Payload       map[string]any `json:"payload,omitempty"`
+	OccurredAt    string         `json:"occurredAt"`
+}
+
+// ResourcePushItemView is one personalized resource feed item.
+type ResourcePushItemView struct {
+	ID            int64                 `json:"id"`
+	KnowledgeID   string                `json:"knowledgeId"`
+	KnowledgeName string                `json:"knowledgeName"`
+	CourseTitle   string                `json:"courseTitle"`
+	Stage         string                `json:"stage"`
+	Reason        string                `json:"reason"`
+	Priority      int                   `json:"priority"`
+	Status        string                `json:"status"`
+	ActionText    string                `json:"actionText"`
+	CreatedAt     string                `json:"createdAt"`
+	Resource      GeneratedResourceView `json:"resource"`
+}
+
+// ResourceFeedResponse returns the personalized pushed-resource stream.
+type ResourceFeedResponse struct {
+	Summary      string                 `json:"summary"`
+	Items        []ResourcePushItemView `json:"items"`
+	RecentEvents []LearningEventView    `json:"recentEvents,omitempty"`
 }
 
 // SafetyCheckView describes one content-safety or hallucination check.

@@ -47,3 +47,22 @@ type ProfileVersion struct {
 func (ProfileVersion) TableName() string {
 	return "student_profile_versions"
 }
+
+// LearningEvent mirrors the shared learning_events table so the profile service
+// can refresh dimensions from recent behavior without depending on resourcegen.
+type LearningEvent struct {
+	ID            int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	StudentID     int64     `gorm:"column:student_id;not null"`
+	EventType     string    `gorm:"column:event_type;type:varchar(64);not null"`
+	KnowledgeID   string    `gorm:"column:knowledge_id;type:varchar(128);not null;default:''"`
+	KnowledgeName string    `gorm:"column:knowledge_name;type:varchar(255);not null;default:''"`
+	ResourceID    int64     `gorm:"column:resource_id;not null;default:0"`
+	ResourceType  string    `gorm:"column:resource_type;type:varchar(64);not null;default:''"`
+	PayloadJSON   string    `gorm:"column:payload_json;type:text;not null"`
+	OccurredAt    time.Time `gorm:"column:occurred_at;not null"`
+	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime"`
+}
+
+func (LearningEvent) TableName() string {
+	return "learning_events"
+}

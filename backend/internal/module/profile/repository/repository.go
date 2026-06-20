@@ -110,3 +110,33 @@ func (r *Repository) UpsertProfile(ctx context.Context, profile *entity.Learning
 	}
 	return r.GetCurrent(ctx, profile.StudentID)
 }
+
+func (r *Repository) ListVersions(ctx context.Context, studentID int64, limit int) ([]entity.ProfileVersion, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	var versions []entity.ProfileVersion
+	if err := r.db.WithContext(ctx).
+		Where("student_id = ?", studentID).
+		Order("created_at DESC, id DESC").
+		Limit(limit).
+		Find(&versions).Error; err != nil {
+		return nil, err
+	}
+	return versions, nil
+}
+
+func (r *Repository) ListLearningEvents(ctx context.Context, studentID int64, limit int) ([]entity.LearningEvent, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	var events []entity.LearningEvent
+	if err := r.db.WithContext(ctx).
+		Where("student_id = ?", studentID).
+		Order("occurred_at DESC, id DESC").
+		Limit(limit).
+		Find(&events).Error; err != nil {
+		return nil, err
+	}
+	return events, nil
+}

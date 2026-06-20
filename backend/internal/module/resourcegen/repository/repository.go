@@ -54,6 +54,22 @@ func (r *Repository) CreateResource(ctx context.Context, resource *entity.Genera
 	return r.db.WithContext(ctx).Create(resource).Error
 }
 
+func (r *Repository) CreatePushItem(ctx context.Context, item *entity.ResourcePushItem) error {
+	now := time.Now()
+	item.CreatedAt = now
+	item.UpdatedAt = now
+	return r.db.WithContext(ctx).Create(item).Error
+}
+
+func (r *Repository) CreateLearningEvent(ctx context.Context, event *entity.LearningEvent) error {
+	now := time.Now()
+	if event.OccurredAt.IsZero() {
+		event.OccurredAt = now
+	}
+	event.CreatedAt = now
+	return r.db.WithContext(ctx).Create(event).Error
+}
+
 func (r *Repository) GetJob(ctx context.Context, studentID int64, jobID int64) (*entity.GenerationJob, []entity.AgentStep, []entity.GeneratedResource, error) {
 	var job entity.GenerationJob
 	err := r.db.WithContext(ctx).Where("id = ? AND student_id = ?", jobID, studentID).First(&job).Error
@@ -92,6 +108,45 @@ func (r *Repository) ListResources(ctx context.Context, studentID int64, knowled
 		return nil, err
 	}
 	return resources, nil
+}
+
+func (r *Repository) ListPushItems(ctx context.Context, studentID int64, limit int) ([]entity.ResourcePushItem, []entity.GeneratedResource, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+	var items []entity.ResourcePushItem
+	if err := r.db.WithContext(ctx).
+		Where("student_id = ?", studentID).
+		Order("status ASC, priority DESC, updated_at DESC, id DESC").
+		Limit(limit).
+		Find(&items).Error; err != nil {
+		return nil, nil, err
+	}
+	if len(items) == 0 {
+		return items, nil, nil
+	}
+
+	resourceIDs := make([]int64, 0, len(items))
+	seen := map[int64]struct{}{}
+	for _, item := range items {
+		if item.ResourceID <= 0 {
+			continue
+		}
+		if _, ok := seen[item.ResourceID]; ok {
+			continue
+		}
+		seen[item.ResourceID] = struct{}{}
+		resourceIDs = append(resourceIDs, item.ResourceID)
+	}
+	var resources []entity.GeneratedResource
+	if len(resourceIDs) > 0 {
+		if err := r.db.WithContext(ctx).
+			Where("student_id = ? AND id IN ?", studentID, resourceIDs).
+			Find(&resources).Error; err != nil {
+			return nil, nil, err
+		}
+	}
+	return items, resources, nil
 }
 
 func (r *Repository) GetResource(ctx context.Context, studentID int64, resourceID int64) (*entity.GeneratedResource, error) {
@@ -144,4 +199,19 @@ func (r *Repository) ListFeedback(ctx context.Context, studentID int64, limit in
 		return nil, err
 	}
 	return feedback, nil
+}
+
+func (r *Repository) ListLearningEvents(ctx context.Context, studentID int64, limit int) ([]entity.LearningEvent, error) {
+	if limit <= 0 {
+		limit = 30
+	}
+	var events []entity.LearningEvent
+	if err := r.db.WithContext(ctx).
+		Where("student_id = ?", studentID).
+		Order("occurred_at DESC, id DESC").
+		Limit(limit).
+		Find(&events).Error; err != nil {
+		return nil, err
+	}
+	return events, nil
 }

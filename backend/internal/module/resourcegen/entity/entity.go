@@ -95,3 +95,44 @@ type ResourceFeedback struct {
 func (ResourceFeedback) TableName() string {
 	return "resource_feedbacks"
 }
+
+// LearningEvent stores learner behavior signals used by the profile refresh and
+// resource recommendation loop.
+type LearningEvent struct {
+	ID            int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	StudentID     int64     `gorm:"column:student_id;not null;index:idx_learning_events_student_id"`
+	EventType     string    `gorm:"column:event_type;type:varchar(64);not null;index:idx_learning_events_type"`
+	KnowledgeID   string    `gorm:"column:knowledge_id;type:varchar(128);not null;default:'';index:idx_learning_events_knowledge_id"`
+	KnowledgeName string    `gorm:"column:knowledge_name;type:varchar(255);not null;default:''"`
+	ResourceID    int64     `gorm:"column:resource_id;not null;default:0;index:idx_learning_events_resource_id"`
+	ResourceType  string    `gorm:"column:resource_type;type:varchar(64);not null;default:''"`
+	PayloadJSON   string    `gorm:"column:payload_json;type:text;not null"`
+	OccurredAt    time.Time `gorm:"column:occurred_at;not null;index:idx_learning_events_occurred_at"`
+	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime"`
+}
+
+func (LearningEvent) TableName() string {
+	return "learning_events"
+}
+
+// ResourcePushItem binds a generated resource to the student's personalized
+// feed and learning path.
+type ResourcePushItem struct {
+	ID            int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	StudentID     int64     `gorm:"column:student_id;not null;index:idx_resource_push_items_student_id"`
+	ResourceID    int64     `gorm:"column:resource_id;not null;index:idx_resource_push_items_resource_id"`
+	JobID         int64     `gorm:"column:job_id;not null;index:idx_resource_push_items_job_id"`
+	KnowledgeID   string    `gorm:"column:knowledge_id;type:varchar(128);not null;default:'';index:idx_resource_push_items_knowledge_id"`
+	KnowledgeName string    `gorm:"column:knowledge_name;type:varchar(255);not null;default:''"`
+	CourseTitle   string    `gorm:"column:course_title;type:varchar(255);not null;default:''"`
+	Stage         string    `gorm:"column:stage;type:varchar(64);not null;default:'today'"`
+	Reason        string    `gorm:"column:reason;type:varchar(500);not null;default:''"`
+	Priority      int       `gorm:"column:priority;not null;default:0;index:idx_resource_push_items_priority"`
+	Status        string    `gorm:"column:status;type:varchar(32);not null;default:'pending';index:idx_resource_push_items_status"`
+	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt     time.Time `gorm:"column:updated_at;autoUpdateTime"`
+}
+
+func (ResourcePushItem) TableName() string {
+	return "resource_push_items"
+}

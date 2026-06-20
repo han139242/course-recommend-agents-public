@@ -24,6 +24,8 @@ type Service struct {
 type repository interface {
 	GetCurrent(ctx context.Context, studentID int64) (*profileentity.LearningProfile, []profileentity.ProfileDimension, error)
 	UpsertProfile(ctx context.Context, profile *profileentity.LearningProfile, dimensions []profileentity.ProfileDimension, versionPayload string) (*profileentity.LearningProfile, []profileentity.ProfileDimension, error)
+	ListVersions(ctx context.Context, studentID int64, limit int) ([]profileentity.ProfileVersion, error)
+	ListLearningEvents(ctx context.Context, studentID int64, limit int) ([]profileentity.LearningEvent, error)
 }
 
 func New(repo repository, aiClient *ai.Client) *Service {
@@ -57,6 +59,64 @@ func (s *Service) GetCurrent(ctx context.Context) (*profiledto.ProfileResponse, 
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 	return &profiledto.ProfileResponse{Profile: profileToView(profile, dimensions), HasCompletedProfile: true}, nil
+}
+
+func (s *Service) RefreshProfile(ctx context.Context) (*profiledto.ProfileResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	profile, dimensions, err := s.repo.GetCurrent(ctx, studentID)
+	if errors.Is(err, profilerepo.ErrNotFound) {
+		return &profiledto.ProfileResponse{Profile: nil, HasCompletedProfile: false}, nil
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	events, err := s.repo.ListLearningEvents(ctx, studentID, 40)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	if len(events) == 0 {
+		return &profiledto.ProfileResponse{
+			Profile:             profileToView(profile, dimensions),
+			HasCompletedProfile: true,
+			RefreshInsights:     []string{"暂无新的学习行为，画像保持不变。"},
+		}, nil
+	}
+
+	nextDimensions, insights := refreshDimensionsFromEvents(dimensionsToViews(dimensions), events)
+	summary := buildProfileSummary(nextDimensions)
+	sourceText := strings.TrimSpace(profile.SourceText)
+	if sourceText == "" {
+		sourceText = "由学习行为刷新画像"
+	}
+	response, err := s.persist(ctx, studentID, summary, sourceText, nextDimensions)
+	if err != nil {
+		return nil, err
+	}
+	response.RefreshInsights = insights
+	response.RecentSignals = learningEventsToViews(events, 8)
+	return response, nil
+}
+
+func (s *Service) GetTimeline(ctx context.Context) (*profiledto.ProfileTimelineResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	versions, err := s.repo.ListVersions(ctx, studentID, 12)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	events, err := s.repo.ListLearningEvents(ctx, studentID, 12)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	return &profiledto.ProfileTimelineResponse{
+		Items:        profileVersionsToTimeline(versions),
+		RecentEvents: learningEventsToViews(events, 12),
+	}, nil
 }
 
 func (s *Service) UpsertProfile(ctx context.Context, request profiledto.UpsertProfileRequest) (*profiledto.ProfileResponse, error) {
@@ -329,6 +389,143 @@ func compactEvidence(message string, candidates []string) string {
 	return "来自描述：“" + string(runes) + "”"
 }
 
+func refreshDimensionsFromEvents(current []profiledto.ProfileDimensionView, events []profileentity.LearningEvent) ([]profiledto.ProfileDimensionView, []string) {
+	next := make([]profiledto.ProfileDimensionView, len(current))
+	copy(next, current)
+	byKey := map[string]int{}
+	for index, dimension := range next {
+		byKey[dimension.Key] = index
+	}
+
+	completed := 0
+	hard := 0
+	lowRating := 0
+	practiceWrong := 0
+	resourceTypeCounts := map[string]int{}
+	knowledgeNames := make([]string, 0, 4)
+	comments := make([]string, 0, 3)
+
+	for _, event := range events {
+		payload := parseEventPayload(event.PayloadJSON)
+		if event.KnowledgeName != "" && len(knowledgeNames) < 4 && !containsString(knowledgeNames, event.KnowledgeName) {
+			knowledgeNames = append(knowledgeNames, event.KnowledgeName)
+		}
+		if event.ResourceType != "" {
+			resourceTypeCounts[event.ResourceType]++
+		}
+		switch event.EventType {
+		case "resource_feedback_submitted":
+			if boolPayload(payload, "completed") {
+				completed++
+			}
+			if strings.EqualFold(stringPayload(payload, "difficulty"), "hard") {
+				hard++
+			}
+			if rating := floatPayload(payload, "rating"); rating > 0 && rating <= 2 {
+				lowRating++
+			}
+			if comment := stringPayload(payload, "comment"); comment != "" && len(comments) < 3 {
+				comments = append(comments, comment)
+			}
+		case "resource_completed":
+			completed++
+		case "practice_answered":
+			if correct, ok := payload["correct"].(bool); ok && !correct {
+				practiceWrong++
+			}
+		}
+	}
+
+	insights := make([]string, 0, 4)
+	if completed > 0 {
+		value := fmt.Sprintf("最近完成 %d 份个性化资源，学习重点集中在：%s。", completed, firstNonEmpty(strings.Join(knowledgeNames, "、"), "当前路径知识点"))
+		updateDimension(next, byKey, "learning_progress", value, 0.86, "来自资源完成和反馈记录")
+		insights = append(insights, "学习进度已根据资源完成记录更新。")
+	}
+	if hard > 0 || lowRating > 0 || practiceWrong > 0 {
+		value := "近期反馈显示仍需要先修拆解、易错提醒和分步练习。"
+		if len(comments) > 0 {
+			value = "近期反馈集中在：" + strings.Join(comments, "；")
+		}
+		updateDimension(next, byKey, "error_preference", value, 0.82, "来自偏难反馈、低评分或答题错误")
+		insights = append(insights, "易错点偏好已根据偏难反馈和答题结果更新。")
+	}
+	if preference := preferredResourceTypes(resourceTypeCounts); preference != "" {
+		updateDimension(next, byKey, "resource_preference", preference, 0.84, "来自最近浏览、生成和完成的资源类型")
+		insights = append(insights, "资源偏好已根据近期使用频次更新。")
+		if strings.Contains(preference, "代码") {
+			updateDimension(next, byKey, "cognitive_style", "项目驱动型：更适合通过案例、代码和可运行任务进入概念。", 0.78, "来自代码案例资源使用记录")
+		} else if strings.Contains(preference, "导图") || strings.Contains(preference, "视频") {
+			updateDimension(next, byKey, "cognitive_style", "视觉结构型：更适合通过导图、分镜和图解理解。", 0.76, "来自导图或视频脚本资源使用记录")
+		}
+	}
+	if len(insights) == 0 {
+		insights = append(insights, "已读取近期学习行为，暂未发现需要显著调整的画像维度。")
+	}
+	return next, insights
+}
+
+func updateDimension(dimensions []profiledto.ProfileDimensionView, byKey map[string]int, key string, value string, confidence float64, evidence string) {
+	index, ok := byKey[key]
+	if !ok || strings.TrimSpace(value) == "" {
+		return
+	}
+	dimensions[index].Value = strings.TrimSpace(value)
+	dimensions[index].Confidence = clampConfidence(confidence)
+	dimensions[index].Evidence = strings.TrimSpace(evidence)
+}
+
+func preferredResourceTypes(counts map[string]int) string {
+	if len(counts) == 0 {
+		return ""
+	}
+	type pair struct {
+		key   string
+		count int
+	}
+	pairs := make([]pair, 0, len(counts))
+	for key, count := range counts {
+		if count > 0 {
+			pairs = append(pairs, pair{key: key, count: count})
+		}
+	}
+	if len(pairs) == 0 {
+		return ""
+	}
+	for i := 0; i < len(pairs)-1; i++ {
+		for j := i + 1; j < len(pairs); j++ {
+			if pairs[j].count > pairs[i].count {
+				pairs[i], pairs[j] = pairs[j], pairs[i]
+			}
+		}
+	}
+	labels := make([]string, 0, minInt(len(pairs), 4))
+	for _, item := range pairs {
+		labels = append(labels, resourceTypeLabel(item.key))
+		if len(labels) >= 4 {
+			break
+		}
+	}
+	return "近期更偏好：" + strings.Join(labels, "、")
+}
+
+func resourceTypeLabel(resourceType string) string {
+	switch resourceType {
+	case "mind_map":
+		return "知识导图"
+	case "practice_questions":
+		return "练习题"
+	case "reading_material":
+		return "拓展阅读"
+	case "coding_case":
+		return "代码实操案例"
+	case "video_script":
+		return "视频/动画脚本"
+	default:
+		return "讲解文档"
+	}
+}
+
 func containsAny(input string, keywords ...string) bool {
 	for _, keyword := range keywords {
 		if strings.Contains(input, keyword) {
@@ -336,6 +533,110 @@ func containsAny(input string, keywords ...string) bool {
 		}
 	}
 	return false
+}
+
+func containsString(values []string, value string) bool {
+	for _, item := range values {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
+func dimensionsToViews(dimensions []profileentity.ProfileDimension) []profiledto.ProfileDimensionView {
+	result := make([]profiledto.ProfileDimensionView, 0, len(dimensions))
+	for _, dimension := range dimensions {
+		result = append(result, profiledto.ProfileDimensionView{
+			Key:        dimension.Key,
+			Name:       dimension.Name,
+			Value:      dimension.Value,
+			Confidence: clampConfidence(dimension.Confidence),
+			Evidence:   dimension.Evidence,
+		})
+	}
+	return result
+}
+
+func profileVersionsToTimeline(versions []profileentity.ProfileVersion) []profiledto.ProfileTimelineItemView {
+	result := make([]profiledto.ProfileTimelineItemView, 0, len(versions))
+	for index, version := range versions {
+		var payload profiledto.LearningProfileView
+		_ = json.Unmarshal([]byte(version.PayloadJSON), &payload)
+		title := "画像版本"
+		if index == 0 {
+			title = "当前画像"
+		}
+		result = append(result, profiledto.ProfileTimelineItemView{
+			ID:         version.ID,
+			Title:      title,
+			Summary:    firstNonEmpty(version.Summary, payload.Summary),
+			Source:     firstNonEmpty(payload.SourceText, "学习行为刷新"),
+			Dimensions: payload.Dimensions,
+			CreatedAt:  version.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	return result
+}
+
+func learningEventsToViews(events []profileentity.LearningEvent, limit int) []profiledto.LearningEventView {
+	if limit <= 0 || limit > len(events) {
+		limit = len(events)
+	}
+	result := make([]profiledto.LearningEventView, 0, limit)
+	for _, event := range events[:limit] {
+		result = append(result, profiledto.LearningEventView{
+			ID:            event.ID,
+			EventType:     event.EventType,
+			KnowledgeID:   event.KnowledgeID,
+			KnowledgeName: event.KnowledgeName,
+			ResourceID:    event.ResourceID,
+			ResourceType:  event.ResourceType,
+			Payload:       parseEventPayload(event.PayloadJSON),
+			OccurredAt:    event.OccurredAt.Format(time.RFC3339),
+		})
+	}
+	return result
+}
+
+func parseEventPayload(payload string) map[string]any {
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(strings.TrimSpace(payload)), &parsed); err != nil {
+		return nil
+	}
+	return parsed
+}
+
+func stringPayload(payload map[string]any, key string) string {
+	if payload == nil {
+		return ""
+	}
+	if value, ok := payload[key].(string); ok {
+		return strings.TrimSpace(value)
+	}
+	return ""
+}
+
+func boolPayload(payload map[string]any, key string) bool {
+	if payload == nil {
+		return false
+	}
+	value, ok := payload[key].(bool)
+	return ok && value
+}
+
+func floatPayload(payload map[string]any, key string) float64 {
+	if payload == nil {
+		return 0
+	}
+	switch value := payload[key].(type) {
+	case float64:
+		return value
+	case int:
+		return float64(value)
+	default:
+		return 0
+	}
 }
 
 func profileToView(profile *profileentity.LearningProfile, dimensions []profileentity.ProfileDimension) *profiledto.LearningProfileView {
@@ -370,4 +671,20 @@ func clampConfidence(value float64) float64 {
 		return 1
 	}
 	return value
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
+}
+
+func minInt(a int, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

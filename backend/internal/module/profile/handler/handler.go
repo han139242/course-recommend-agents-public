@@ -54,7 +54,16 @@ func (h *Handler) UpsertProfile(ctx *gin.Context) {
 }
 
 func (h *Handler) RefreshProfile(ctx *gin.Context) {
-	response, err := h.service.GetCurrent(ctx.Request.Context())
+	response, err := h.service.RefreshProfile(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetTimeline(ctx *gin.Context) {
+	response, err := h.service.GetTimeline(ctx.Request.Context())
 	if err != nil {
 		writeError(ctx, err)
 		return

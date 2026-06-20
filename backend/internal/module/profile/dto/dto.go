@@ -35,4 +35,34 @@ type LearningProfileView struct {
 type ProfileResponse struct {
 	Profile             *LearningProfileView `json:"profile"`
 	HasCompletedProfile bool                 `json:"hasCompletedProfile"`
+	RefreshInsights     []string             `json:"refreshInsights,omitempty"`
+	RecentSignals       []LearningEventView  `json:"recentSignals,omitempty"`
+}
+
+// LearningEventView describes recent behavior signals used to refresh profiles.
+type LearningEventView struct {
+	ID            int64          `json:"id"`
+	EventType     string         `json:"eventType"`
+	KnowledgeID   string         `json:"knowledgeId"`
+	KnowledgeName string         `json:"knowledgeName"`
+	ResourceID    int64          `json:"resourceId,omitempty"`
+	ResourceType  string         `json:"resourceType,omitempty"`
+	Payload       map[string]any `json:"payload,omitempty"`
+	OccurredAt    string         `json:"occurredAt"`
+}
+
+// ProfileTimelineItemView describes one profile version in the timeline.
+type ProfileTimelineItemView struct {
+	ID         int64                  `json:"id"`
+	Title      string                 `json:"title"`
+	Summary    string                 `json:"summary"`
+	Source     string                 `json:"source"`
+	Dimensions []ProfileDimensionView `json:"dimensions,omitempty"`
+	CreatedAt  string                 `json:"createdAt"`
+}
+
+// ProfileTimelineResponse returns profile versions and recent learning signals.
+type ProfileTimelineResponse struct {
+	Items        []ProfileTimelineItemView `json:"items"`
+	RecentEvents []LearningEventView       `json:"recentEvents"`
 }

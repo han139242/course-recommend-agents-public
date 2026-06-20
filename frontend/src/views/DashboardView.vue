@@ -4,7 +4,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 import { fetchUnifiedPath } from '../api/recommend'
-import { fetchResourceRecommendations, fetchResources } from '../api/resources'
+import { fetchResourceFeed, fetchResourceRecommendations, fetchResources } from '../api/resources'
 import { useUserStore } from '../stores/userStore'
 
 const userStore = useUserStore()
@@ -17,6 +17,8 @@ const resourceList = ref([])
 const resourceRecommendations = ref([])
 const resourceRecommendationSummary = ref('')
 const resourceFeedbackSummary = ref(null)
+const resourceFeedItems = ref([])
+const resourceFeedSummary = ref('')
 
 const RESOURCE_TYPE_LABELS = {
   explanation_doc: '讲解文档',
@@ -121,19 +123,24 @@ onBeforeUnmount(() => {
 async function loadResourceLoop() {
   if (!userStore.isAuthenticated) return
   try {
-    const [listPayload, recommendPayload] = await Promise.all([
+    const [listPayload, recommendPayload, feedPayload] = await Promise.all([
       fetchResources({ limit: 100 }),
       fetchResourceRecommendations(),
+      fetchResourceFeed(),
     ])
     resourceList.value = listPayload?.list || []
     resourceRecommendations.value = recommendPayload?.list || []
     resourceRecommendationSummary.value = recommendPayload?.summary || ''
     resourceFeedbackSummary.value = recommendPayload?.feedbackSummary || null
+    resourceFeedItems.value = feedPayload?.items || []
+    resourceFeedSummary.value = feedPayload?.summary || ''
   } catch {
     resourceList.value = []
     resourceRecommendations.value = []
     resourceRecommendationSummary.value = ''
     resourceFeedbackSummary.value = null
+    resourceFeedItems.value = []
+    resourceFeedSummary.value = ''
   }
 }
 
@@ -151,8 +158,21 @@ const resourceStats = computed(() => {
   }
 })
 
-const resourceNextSteps = computed(() =>
-  (resourceRecommendations.value || []).slice(0, 3).map((item) => ({
+const resourceNextSteps = computed(() => {
+  if (resourceFeedItems.value.length) {
+    return resourceFeedItems.value.slice(0, 3).map((item) => ({
+      id: item.id,
+      title: item.resource?.title || item.knowledgeName || '路径资源',
+      reason: item.reason,
+      typesLabel: item.resource?.typeLabel || RESOURCE_TYPE_LABELS[item.resource?.resourceType] || '',
+      route: {
+        name: 'resource-detail',
+        params: { resourceId: item.resource?.id },
+      },
+    }))
+  }
+
+  return (resourceRecommendations.value || []).slice(0, 3).map((item) => ({
     id: item.id,
     title: item.title,
     reason: item.reason,
@@ -166,8 +186,8 @@ const resourceNextSteps = computed(() =>
         target: item.target || '',
       },
     },
-  })),
-)
+  }))
+})
 
 const shouldUseDemoData = computed(() => {
   const list = Array.isArray(userStore.progressList) ? userStore.progressList : []
@@ -595,7 +615,9 @@ watch(radarAxes, handleRadarResize, { deep: true })
               <strong>{{ resourceStats.helpfulRateText }}</strong>
             </article>
           </div>
-          <p v-if="resourceRecommendationSummary" class="dashboard-resource-summary">{{ resourceRecommendationSummary }}</p>
+          <p v-if="resourceFeedSummary || resourceRecommendationSummary" class="dashboard-resource-summary">
+            {{ resourceFeedSummary || resourceRecommendationSummary }}
+          </p>
           <div v-if="resourceNextSteps.length" class="dashboard-action-list">
             <RouterLink
               v-for="(item, index) in resourceNextSteps"

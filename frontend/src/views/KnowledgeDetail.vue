@@ -5,7 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import 'katex/dist/katex.min.css'
 
 import { fetchStudentQuestions, submitStudentAnswer } from '../api/learning'
-import { fetchResources } from '../api/resources'
+import { fetchResources, recordLearningEvent } from '../api/resources'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
 import { useAiChat } from '../composables/useAiChat'
 import { renderWithKatex } from '../composables/useKatex'
@@ -263,6 +263,7 @@ async function submitAnswer(question) {
     const correct = selected === question.correctOption
     submittedQuestions.value = new Set([...submittedQuestions.value, question.questionId])
     submitResults.value = { ...submitResults.value, [question.questionId]: { accepted: true, correct, explanation: question.explanation } }
+    recordPracticeEvent(question, correct, selected)
     return
   }
 
@@ -270,10 +271,28 @@ async function submitAnswer(question) {
     const result = await submitStudentAnswer({ questionId: question.questionId, knowledgeId: question.knowledgeId || knowledgeId.value, selectedOption: selected, answeredAt: new Date().toISOString() })
     submittedQuestions.value = new Set([...submittedQuestions.value, question.questionId])
     submitResults.value = { ...submitResults.value, [question.questionId]: result }
+    recordPracticeEvent(question, result?.correct === true, selected)
   } catch {
     submittedQuestions.value = new Set([...submittedQuestions.value, question.questionId])
     submitResults.value = { ...submitResults.value, [question.questionId]: { accepted: true } }
+    recordPracticeEvent(question, false, selected)
   }
+}
+
+function recordPracticeEvent(question, correct, selectedOption) {
+  if (!isAuthenticated.value) return
+  recordLearningEvent({
+    eventType: 'practice_answered',
+    knowledgeId: question.knowledgeId || knowledgeId.value,
+    knowledgeName: detailTitle.value,
+    payload: {
+      questionId: question.questionId,
+      selectedOption,
+      correct,
+      mode: question.mode,
+      focusLabel: question.focusLabel,
+    },
+  }).catch(() => null)
 }
 
 function isShowcaseRevealVisible(question) {
@@ -512,14 +531,19 @@ watch(
             <p v-if="knowledgeResourcesLoading" class="quiz-section__hint">正在读取资源...</p>
 
             <div v-else-if="knowledgeResources.length" class="resource-pack-list">
-              <article v-for="resource in knowledgeResources" :key="resource.id" class="resource-pack-card">
+              <RouterLink
+                v-for="resource in knowledgeResources"
+                :key="resource.id"
+                class="resource-pack-card resource-pack-card--link"
+                :to="{ name: 'resource-detail', params: { resourceId: resource.id } }"
+              >
                 <div class="resource-pack-card__head">
                   <span class="resource-pack-card__type">{{ resource.typeLabel || resource.resourceType }}</span>
                   <time v-if="resource.createdAt">{{ formatResourceDate(resource.createdAt) }}</time>
                 </div>
                 <strong>{{ resource.title }}</strong>
                 <p>{{ resourceCardSummary(resource) }}</p>
-              </article>
+              </RouterLink>
             </div>
 
             <div v-else class="resource-pack-empty">

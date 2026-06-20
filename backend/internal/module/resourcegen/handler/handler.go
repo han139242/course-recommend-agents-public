@@ -112,6 +112,29 @@ func (h *Handler) GetRecommendations(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) GetFeed(ctx *gin.Context) {
+	response, err := h.service.GetFeed(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) RecordLearningEvent(ctx *gin.Context) {
+	var request resourcegendto.RecordLearningEventRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.RecordLearningEvent(ctx.Request.Context(), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func writeError(ctx *gin.Context, err error) {
 	appErr := apperr.AsAppError(err)
 	result.Error(ctx, appErr.HTTPStatus, appErr.Code, appErr.Message)

@@ -15,9 +15,10 @@ import {
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { extractLearningProfile, fetchLearningProfile, saveLearningProfile } from '../api/profile'
+import { extractLearningProfile, fetchLearningProfile, fetchProfileTimeline, refreshLearningProfile, saveLearningProfile } from '../api/profile'
 import {
   exportResourceJobMarkdown,
+  fetchResourceFeed,
   fetchResourceJob,
   fetchResourceRecommendations,
   fetchResourcePresentationOutline,
@@ -39,6 +40,10 @@ const profileLoading = ref(false)
 const profileSaving = ref(false)
 const profileError = ref('')
 const profileSavedNotice = ref('')
+const profileTimeline = ref([])
+const profileRecentSignals = ref([])
+const profileRefreshInsights = ref([])
+const profileTimelineLoading = ref(false)
 
 const resourceForm = ref({
   knowledgeId: '',
@@ -58,6 +63,9 @@ const libraryLoading = ref(false)
 const recommendations = ref([])
 const recommendationSummary = ref('')
 const feedbackSummary = ref(null)
+const resourceFeed = ref([])
+const resourceFeedSummary = ref('')
+const resourceFeedLoading = ref(false)
 const recommendationsLoading = ref(false)
 const feedbackDrafts = ref({})
 const feedbackSaving = ref({})
@@ -173,10 +181,43 @@ async function loadCurrentProfile() {
   try {
     const payload = await fetchLearningProfile()
     profilePayload.value = payload
+    profileRefreshInsights.value = payload?.refreshInsights || []
+    profileRecentSignals.value = payload?.recentSignals || []
     applyProfileTarget(payload?.profile)
   } catch (err) {
     profilePayload.value = { profile: null, hasCompletedProfile: false }
     profileError.value = err?.message || '学习画像读取失败。'
+  }
+}
+
+async function loadProfileTimeline() {
+  profileTimelineLoading.value = true
+  try {
+    const payload = await fetchProfileTimeline()
+    profileTimeline.value = payload?.items || []
+    profileRecentSignals.value = payload?.recentEvents || profileRecentSignals.value
+  } catch {
+    profileTimeline.value = []
+  } finally {
+    profileTimelineLoading.value = false
+  }
+}
+
+async function handleRefreshProfile() {
+  profileLoading.value = true
+  profileError.value = ''
+  profileSavedNotice.value = ''
+  try {
+    const payload = await refreshLearningProfile()
+    profilePayload.value = payload
+    profileRefreshInsights.value = payload?.refreshInsights || []
+    profileRecentSignals.value = payload?.recentSignals || []
+    profileSavedNotice.value = '已根据最近学习行为刷新画像。'
+    await loadProfileTimeline()
+  } catch (err) {
+    profileError.value = err?.message || '画像刷新失败，请稍后重试。'
+  } finally {
+    profileLoading.value = false
   }
 }
 
@@ -193,8 +234,10 @@ async function handleExtractProfile() {
   try {
     const payload = await extractLearningProfile(message)
     profilePayload.value = payload
+    profileRefreshInsights.value = payload?.refreshInsights || []
     resourceForm.value.target = ''
     applyProfileTarget(payload?.profile)
+    await loadProfileTimeline()
   } catch (err) {
     profileError.value = err?.message || '画像生成失败，请稍后重试。'
   } finally {
@@ -219,6 +262,7 @@ async function handleSaveProfile() {
     })
     profilePayload.value = payload
     profileSavedNotice.value = '学习画像已确认，资源生成会优先使用这些维度。'
+    await loadProfileTimeline()
   } catch (err) {
     profileError.value = err?.message || '画像保存失败，请稍后重试。'
   } finally {
@@ -330,6 +374,7 @@ async function handleGenerateResources() {
     initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
     await loadRecommendations()
+    await loadResourceFeed()
   } catch (err) {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
@@ -391,6 +436,7 @@ async function handleRegenerate(resource, difficulty) {
     initFeedbackDrafts(generatedResources.value)
     await loadResourceLibrary()
     await loadRecommendations()
+    await loadResourceFeed()
   } catch (err) {
     resourceError.value = err?.message || '重新生成失败，请稍后重试。'
   } finally {
@@ -454,6 +500,20 @@ async function loadRecommendations() {
   }
 }
 
+async function loadResourceFeed() {
+  resourceFeedLoading.value = true
+  try {
+    const payload = await fetchResourceFeed()
+    resourceFeed.value = payload?.items || []
+    resourceFeedSummary.value = payload?.summary || ''
+  } catch {
+    resourceFeed.value = []
+    resourceFeedSummary.value = ''
+  } finally {
+    resourceFeedLoading.value = false
+  }
+}
+
 function initFeedbackDrafts(resources = []) {
   const nextDrafts = { ...feedbackDrafts.value }
   resources.forEach((resource) => {
@@ -479,7 +539,7 @@ async function handleSubmitFeedback(resource) {
   try {
     const payload = await submitResourceFeedback(resource.id, draft)
     feedbackNotice.value = payload?.nextAction || '反馈已记录，推荐策略已更新。'
-    await loadRecommendations()
+    await Promise.all([loadRecommendations(), loadResourceFeed(), handleRefreshProfile()])
   } catch (err) {
     feedbackError.value = err?.message || '反馈提交失败，请稍后重试。'
   } finally {
@@ -562,7 +622,7 @@ function safetyStatusLabel(status) {
 
 onMounted(async () => {
   applyRouteContext()
-  await Promise.all([loadCurrentProfile(), loadResourceLibrary(), loadRecommendations()])
+  await Promise.all([loadCurrentProfile(), loadProfileTimeline(), loadResourceLibrary(), loadRecommendations(), loadResourceFeed()])
 })
 
 watch(
@@ -627,6 +687,10 @@ onBeforeUnmount(stopPolling)
             <Save :size="16" aria-hidden="true" />
             确认画像
           </button>
+          <button type="button" class="secondary-action" :disabled="profileLoading || !hasProfile" @click="handleRefreshProfile">
+            <RefreshCcw :size="16" aria-hidden="true" />
+            随学刷新
+          </button>
         </div>
 
         <p v-if="profileError" class="inline-error">{{ profileError }}</p>
@@ -652,6 +716,31 @@ onBeforeUnmount(stopPolling)
           <Bot :size="22" aria-hidden="true" />
           <p>生成画像后，这里会展示知识基础、目标、进度、认知风格、易错偏好和资源偏好。</p>
         </div>
+
+        <section class="profile-timeline">
+          <div class="panel-heading panel-heading--compact">
+            <span class="panel-kicker">Timeline</span>
+            <h2>画像更新时间线</h2>
+          </div>
+          <div v-if="profileRefreshInsights.length" class="insight-list">
+            <p v-for="item in profileRefreshInsights" :key="item">{{ item }}</p>
+          </div>
+          <div v-if="profileTimelineLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>正在读取画像历史</p>
+          </div>
+          <div v-else-if="profileTimeline.length" class="timeline-list">
+            <article v-for="item in profileTimeline.slice(0, 4)" :key="item.id" class="timeline-item">
+              <span>{{ item.title }} · {{ formatDate(item.createdAt) }}</span>
+              <strong>{{ item.summary }}</strong>
+              <small>{{ item.source }}</small>
+            </article>
+          </div>
+          <div v-else class="empty-state empty-state--small">
+            <Bot :size="18" aria-hidden="true" />
+            <p>确认或刷新画像后，这里会记录每一次变化。</p>
+          </div>
+        </section>
       </section>
 
       <section class="generation-panel">
@@ -825,6 +914,10 @@ onBeforeUnmount(stopPolling)
               </button>
             </div>
             <div class="safety-actions">
+              <RouterLink class="secondary-action" :to="{ name: 'resource-detail', params: { resourceId: resource.id } }">
+                <FileText :size="16" aria-hidden="true" />
+                详情页
+              </RouterLink>
               <button type="button" class="secondary-action" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="16" aria-hidden="true" />
                 {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
@@ -914,6 +1007,40 @@ onBeforeUnmount(stopPolling)
       <aside class="library-panel">
         <section class="recommend-panel">
           <div class="panel-heading panel-heading--compact">
+            <span class="panel-kicker">Feature 3</span>
+            <h2>路径资源推送</h2>
+          </div>
+
+          <p v-if="resourceFeedSummary" class="recommend-summary">{{ resourceFeedSummary }}</p>
+
+          <div v-if="resourceFeedLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>正在整理资源推送流</p>
+          </div>
+          <div v-else-if="resourceFeed.length" class="recommend-list">
+            <RouterLink
+              v-for="item in resourceFeed.slice(0, 5)"
+              :key="item.id"
+              class="recommend-item recommend-item--link"
+              :to="{ name: 'resource-detail', params: { resourceId: item.resource.id } }"
+            >
+              <span>{{ item.stage }} · 优先级 {{ item.priority }}</span>
+              <strong>{{ item.resource.title }}</strong>
+              <small>{{ item.reason }}</small>
+              <div class="recommend-item__types">
+                <em>{{ item.resource.typeLabel || typeLabel(item.resource.resourceType) }}</em>
+                <em>{{ item.actionText }}</em>
+              </div>
+            </RouterLink>
+          </div>
+          <div v-else class="empty-state empty-state--small">
+            <Sparkles :size="18" aria-hidden="true" />
+            <p>生成资源包后，系统会按学习路径推送今日资源。</p>
+          </div>
+        </section>
+
+        <section class="recommend-panel">
+          <div class="panel-heading panel-heading--compact">
             <span class="panel-kicker">Feature 4</span>
             <h2>下一步推荐</h2>
           </div>
@@ -970,11 +1097,16 @@ onBeforeUnmount(stopPolling)
           <p>{{ resourceLibraryFilter ? '当前知识点还没有生成资源。' : '生成资源后会沉淀在这里。' }}</p>
         </div>
         <div v-else class="library-list">
-          <article v-for="resource in currentKnowledgeResources" :key="resource.id" class="library-item">
+          <RouterLink
+            v-for="resource in currentKnowledgeResources"
+            :key="resource.id"
+            class="library-item library-item--link"
+            :to="{ name: 'resource-detail', params: { resourceId: resource.id } }"
+          >
             <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
             <strong>{{ resource.title }}</strong>
             <small>{{ resource.knowledgeName }} · {{ formatDate(resource.createdAt) }}</small>
-          </article>
+          </RouterLink>
         </div>
       </aside>
     </main>
@@ -1256,6 +1388,50 @@ onBeforeUnmount(stopPolling)
 .dimension-card p {
   margin: 0;
   line-height: 1.55;
+}
+
+.profile-timeline {
+  margin-top: 1rem;
+}
+
+.insight-list {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+
+.insight-list p {
+  margin: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  color: #176b87;
+  background: #e8f6fb;
+  line-height: 1.45;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.timeline-item {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #ffffff;
+}
+
+.timeline-item span,
+.timeline-item small {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.timeline-item strong {
+  color: #172033;
+  line-height: 1.45;
 }
 
 .empty-state {
@@ -1874,6 +2050,16 @@ onBeforeUnmount(stopPolling)
   background: #ffffff;
 }
 
+.recommend-item--link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.recommend-item--link:hover {
+  border-color: rgba(33, 95, 154, 0.42);
+  box-shadow: 0 10px 24px rgba(31, 46, 67, 0.08);
+}
+
 .recommend-item span {
   color: #176b87;
   font-size: 0.76rem;
@@ -1913,6 +2099,15 @@ onBeforeUnmount(stopPolling)
   border-radius: 8px;
   padding: 0.75rem;
   background: #ffffff;
+}
+
+.library-item--link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.library-item--link:hover {
+  border-color: rgba(33, 95, 154, 0.42);
 }
 
 @media (max-width: 1180px) {

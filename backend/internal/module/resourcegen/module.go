@@ -29,6 +29,8 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/jobs/:jobId/presentation-outline", m.Handler.GetPresentationOutline)
 	group.GET("/jobs/:jobId", m.Handler.GetJob)
 	group.GET("/recommendations", m.Handler.GetRecommendations)
+	group.GET("/feed", m.Handler.GetFeed)
+	group.POST("/events", m.Handler.RecordLearningEvent)
 	group.GET("/:resourceId/safety-report", m.Handler.GetSafetyReport)
 	group.POST("/:resourceId/feedback", m.Handler.SubmitFeedback)
 	group.GET("", m.Handler.ListResources)

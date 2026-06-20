@@ -7,6 +7,7 @@ const GraphHome = () => import('./views/GraphHome.vue')
 const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
 const DashboardView = () => import('./views/DashboardView.vue')
 const ResourceCenterView = () => import('./views/ResourceCenterView.vue')
+const ResourceDetailView = () => import('./views/ResourceDetailView.vue')
 const CompetitionShowcaseView = () => import('./views/CompetitionShowcaseView.vue')
 const EvaluationView = () => import('./views/EvaluationView.vue')
 const FrontierLibraryView = () => import('./views/FrontierLibraryView.vue')
@@ -46,6 +47,15 @@ const routes = [
     component: ResourceCenterView,
     meta: {
       title: '个性化资源智能体',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/resources/:resourceId',
+    name: 'resource-detail',
+    component: ResourceDetailView,
+    meta: {
+      title: '资源详情',
       requiresAuth: true,
     },
   },

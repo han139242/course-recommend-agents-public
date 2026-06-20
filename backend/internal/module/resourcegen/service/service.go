@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -39,11 +40,15 @@ type repository interface {
 	UpdateStep(ctx context.Context, step *resourcegenentity.AgentStep) error
 	CreateResources(ctx context.Context, resources []resourcegenentity.GeneratedResource) error
 	CreateResource(ctx context.Context, resource *resourcegenentity.GeneratedResource) error
+	CreatePushItem(ctx context.Context, item *resourcegenentity.ResourcePushItem) error
+	CreateLearningEvent(ctx context.Context, event *resourcegenentity.LearningEvent) error
 	GetJob(ctx context.Context, studentID int64, jobID int64) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error)
 	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]resourcegenentity.GeneratedResource, error)
+	ListPushItems(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.ResourcePushItem, []resourcegenentity.GeneratedResource, error)
 	GetResource(ctx context.Context, studentID int64, resourceID int64) (*resourcegenentity.GeneratedResource, error)
 	UpsertFeedback(ctx context.Context, feedback *resourcegenentity.ResourceFeedback) (*resourcegenentity.ResourceFeedback, error)
 	ListFeedback(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.ResourceFeedback, error)
+	ListLearningEvents(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.LearningEvent, error)
 }
 
 type generationContext struct {
@@ -86,6 +91,14 @@ func (s *Service) Generate(ctx context.Context, request resourcegendto.GenerateR
 	if err := s.repo.CreateJob(ctx, job); err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "resource_generation_started",
+		KnowledgeID:   prelim.KnowledgeID,
+		KnowledgeName: prelim.KnowledgeName,
+		ResourceType:  strings.Join(prelim.ResourceTypes, ","),
+		PayloadJSON:   mustEventPayload(map[string]any{"target": job.Target, "courseTitle": job.CourseTitle}),
+	})
 
 	steps := s.buildSteps(prelim)
 	for index := range steps {
@@ -271,6 +284,22 @@ func (s *Service) SubmitFeedback(ctx context.Context, rawResourceID string, requ
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "resource_feedback_submitted",
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"rating":     request.Rating,
+			"difficulty": normalizeDifficulty(request.Difficulty),
+			"helpful":    request.Helpful,
+			"completed":  request.Completed,
+			"comment":    strings.TrimSpace(request.Comment),
+			"nextAction": stored.NextAction,
+		}),
+	})
 	view := feedbackToView(*stored)
 	return &view, nil
 }
@@ -315,6 +344,104 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 		FeedbackSummary: summary,
 		List:            recommendations,
 	}, nil
+}
+
+func (s *Service) GetFeed(ctx context.Context) (*resourcegendto.ResourceFeedResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items, resources, err := s.repo.ListPushItems(ctx, studentID, 24)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	recentEvents, err := s.repo.ListLearningEvents(ctx, studentID, 12)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	resourceByID := make(map[int64]resourcegenentity.GeneratedResource, len(resources))
+	for _, resource := range resources {
+		resourceByID[resource.ID] = resource
+	}
+
+	views := make([]resourcegendto.ResourcePushItemView, 0, len(items))
+	for _, item := range items {
+		resource, ok := resourceByID[item.ResourceID]
+		if !ok {
+			continue
+		}
+		views = append(views, pushItemToView(item, resource))
+	}
+
+	if len(views) == 0 {
+		fallback, err := s.repo.ListResources(ctx, studentID, "", "", 8)
+		if err != nil {
+			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+		}
+		for index, resource := range fallback {
+			item := resourcegenentity.ResourcePushItem{
+				ID:            int64(-index - 1),
+				StudentID:     studentID,
+				ResourceID:    resource.ID,
+				JobID:         resource.JobID,
+				KnowledgeID:   resource.KnowledgeID,
+				KnowledgeName: resource.KnowledgeName,
+				CourseTitle:   resource.CourseTitle,
+				Stage:         resourceStage(resource.ResourceType),
+				Reason:        buildPushReason(resource.ResourceType, resource.Reason),
+				Priority:      resourcePriority(resource.ResourceType),
+				Status:        "pending",
+				CreatedAt:     resource.CreatedAt,
+			}
+			views = append(views, pushItemToView(item, resource))
+		}
+	}
+
+	return &resourcegendto.ResourceFeedResponse{
+		Summary:      buildFeedSummary(views, recentEvents),
+		Items:        views,
+		RecentEvents: learningEventsToViews(recentEvents),
+	}, nil
+}
+
+func (s *Service) RecordLearningEvent(ctx context.Context, request resourcegendto.RecordLearningEventRequest) (*resourcegendto.LearningEventView, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	eventType := normalizeEventType(request.EventType)
+	if eventType == "" {
+		return nil, apperr.ErrBadRequest
+	}
+
+	knowledgeID := strings.TrimSpace(request.KnowledgeID)
+	knowledgeName := strings.TrimSpace(request.KnowledgeName)
+	resourceType := strings.TrimSpace(request.ResourceType)
+	resourceID := request.ResourceID
+	if resourceID > 0 {
+		if resource, err := s.repo.GetResource(ctx, studentID, resourceID); err == nil && resource != nil {
+			knowledgeID = firstNonEmpty(knowledgeID, resource.KnowledgeID)
+			knowledgeName = firstNonEmpty(knowledgeName, resource.KnowledgeName)
+			resourceType = firstNonEmpty(resourceType, resource.ResourceType)
+		}
+	}
+
+	event := resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     eventType,
+		KnowledgeID:   knowledgeID,
+		KnowledgeName: knowledgeName,
+		ResourceID:    resourceID,
+		ResourceType:  resourceType,
+		PayloadJSON:   mustEventPayload(request.Payload),
+		OccurredAt:    time.Now(),
+	}
+	if err := s.repo.CreateLearningEvent(ctx, &event); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	view := learningEventToView(event)
+	return &view, nil
 }
 
 func (s *Service) GetSafetyReport(ctx context.Context, rawResourceID string) (*resourcegendto.SafetyReportView, error) {
@@ -624,6 +751,21 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 			if err := s.repo.CreateResource(ctx, resource); err != nil {
 				return
 			}
+			_ = s.repo.CreatePushItem(ctx, buildPushItem(resource, genCtx))
+			s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+				StudentID:     genCtx.StudentID,
+				EventType:     "resource_generated",
+				KnowledgeID:   resource.KnowledgeID,
+				KnowledgeName: resource.KnowledgeName,
+				ResourceID:    resource.ID,
+				ResourceType:  resource.ResourceType,
+				PayloadJSON: mustEventPayload(map[string]any{
+					"title":       resource.Title,
+					"typeLabel":   resource.TypeLabel,
+					"reason":      resource.Reason,
+					"courseTitle": resource.CourseTitle,
+				}),
+			})
 			completed++
 			s.bumpJob(ctx, job, 35+int(float64(53)*float64(completed)/float64(total)), writerAgentName(resourceType))
 		}(resourceType)
@@ -1322,6 +1464,115 @@ func buildResourceReason(resourceType string, ctx generationContext) string {
 	}
 }
 
+func buildPushItem(resource *resourcegenentity.GeneratedResource, ctx generationContext) *resourcegenentity.ResourcePushItem {
+	return &resourcegenentity.ResourcePushItem{
+		StudentID:     resource.StudentID,
+		ResourceID:    resource.ID,
+		JobID:         resource.JobID,
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		CourseTitle:   resource.CourseTitle,
+		Stage:         resourceStage(resource.ResourceType),
+		Reason:        buildPushReason(resource.ResourceType, firstNonEmpty(resource.Reason, buildResourceReason(resource.ResourceType, ctx))),
+		Priority:      resourcePriority(resource.ResourceType),
+		Status:        "pending",
+	}
+}
+
+func resourceStage(resourceType string) string {
+	switch resourceType {
+	case "explanation_doc", "mind_map":
+		return "understand"
+	case "practice_questions":
+		return "practice"
+	case "coding_case":
+		return "transfer"
+	case "video_script":
+		return "review"
+	default:
+		return "extend"
+	}
+}
+
+func resourcePriority(resourceType string) int {
+	switch resourceType {
+	case "explanation_doc":
+		return 96
+	case "mind_map":
+		return 92
+	case "practice_questions":
+		return 88
+	case "coding_case":
+		return 82
+	case "video_script":
+		return 76
+	default:
+		return 72
+	}
+}
+
+func buildPushReason(resourceType string, reason string) string {
+	switch resourceType {
+	case "explanation_doc":
+		return firstNonEmpty(reason, "先用讲解文档建立概念和先修基础。")
+	case "mind_map":
+		return firstNonEmpty(reason, "用导图把知识点、先修链和应用场景串起来。")
+	case "practice_questions":
+		return firstNonEmpty(reason, "通过练习题校准掌握度，并暴露易错点。")
+	case "coding_case":
+		return firstNonEmpty(reason, "把知识点迁移到可运行的项目实操。")
+	case "video_script":
+		return firstNonEmpty(reason, "用分镜和旁白形成多模态复盘材料。")
+	default:
+		return firstNonEmpty(reason, "作为当前学习路径上的个性化补充资源。")
+	}
+}
+
+func buildFeedSummary(items []resourcegendto.ResourcePushItemView, events []resourcegenentity.LearningEvent) string {
+	if len(items) == 0 {
+		return "还没有可推送资源。先生成一次资源包，系统会把讲解、导图、练习和案例绑定到学习路径。"
+	}
+	pending := 0
+	for _, item := range items {
+		if item.Status == "pending" {
+			pending++
+		}
+	}
+	if len(events) > 0 {
+		return fmt.Sprintf("已根据最近 %d 条学习行为整理 %d 份路径资源，其中 %d 份建议优先学习。", len(events), len(items), pending)
+	}
+	return fmt.Sprintf("已整理 %d 份路径资源，其中 %d 份建议优先学习。提交反馈后推送顺序会继续调整。", len(items), pending)
+}
+
+func pushItemToView(item resourcegenentity.ResourcePushItem, resource resourcegenentity.GeneratedResource) resourcegendto.ResourcePushItemView {
+	return resourcegendto.ResourcePushItemView{
+		ID:            item.ID,
+		KnowledgeID:   firstNonEmpty(item.KnowledgeID, resource.KnowledgeID),
+		KnowledgeName: firstNonEmpty(item.KnowledgeName, resource.KnowledgeName),
+		CourseTitle:   firstNonEmpty(item.CourseTitle, resource.CourseTitle),
+		Stage:         firstNonEmpty(item.Stage, resourceStage(resource.ResourceType)),
+		Reason:        firstNonEmpty(item.Reason, buildPushReason(resource.ResourceType, resource.Reason)),
+		Priority:      item.Priority,
+		Status:        firstNonEmpty(item.Status, "pending"),
+		ActionText:    pushActionText(resource.ResourceType),
+		CreatedAt:     item.CreatedAt.Format(time.RFC3339),
+		Resource:      resourceToView(resource),
+	}
+}
+
+func pushActionText(resourceType string) string {
+	switch resourceType {
+	case "practice_questions":
+		return "开始练习"
+	case "coding_case":
+		return "进入实操"
+	case "video_script":
+		return "查看分镜"
+	default:
+		return "开始学习"
+	}
+}
+
 func resourceTypeLabel(resourceType string) string {
 	switch resourceType {
 	case "mind_map":
@@ -1412,7 +1663,96 @@ func resourceToView(resource resourcegenentity.GeneratedResource) resourcegendto
 		Reason:        resource.Reason,
 		Status:        resource.Status,
 		CreatedAt:     resource.CreatedAt.Format(time.RFC3339),
+		Evidence:      resourceEvidence(resource),
 	}
+}
+
+func resourceEvidence(resource resourcegenentity.GeneratedResource) []resourcegendto.ResourceEvidenceView {
+	evidence := []resourcegendto.ResourceEvidenceView{
+		{Label: "知识点", Value: firstNonEmpty(resource.KnowledgeName, resource.KnowledgeID, "未指定")},
+		{Label: "课程", Value: firstNonEmpty(resource.CourseTitle, "人工智能专业课程")},
+		{Label: "生成智能体", Value: writerAgentName(resource.ResourceType)},
+	}
+	if resource.Reason != "" {
+		evidence = append(evidence, resourcegendto.ResourceEvidenceView{Label: "个性化依据", Value: resource.Reason})
+	}
+	if resource.JobID > 0 {
+		evidence = append(evidence, resourcegendto.ResourceEvidenceView{Label: "任务编号", Value: strconv.FormatInt(resource.JobID, 10)})
+	}
+	evidence = append(evidence, resourcegendto.ResourceEvidenceView{Label: "安全机制", Value: "生成后由 SafetyReviewerAgent 进行事实性、格式和敏感内容检查。"})
+	return evidence
+}
+
+func (s *Service) recordLearningEvent(ctx context.Context, event resourcegenentity.LearningEvent) {
+	if event.StudentID <= 0 || strings.TrimSpace(event.EventType) == "" {
+		return
+	}
+	event.EventType = normalizeEventType(event.EventType)
+	if event.EventType == "" {
+		return
+	}
+	if strings.TrimSpace(event.PayloadJSON) == "" {
+		event.PayloadJSON = "{}"
+	}
+	_ = s.repo.CreateLearningEvent(ctx, &event)
+}
+
+func normalizeEventType(eventType string) string {
+	allowed := map[string]bool{
+		"resource_generation_started": true,
+		"resource_generated":          true,
+		"resource_viewed":             true,
+		"resource_feedback_submitted": true,
+		"resource_completed":          true,
+		"practice_answered":           true,
+		"note_saved":                  true,
+		"profile_refreshed":           true,
+	}
+	key := strings.ToLower(strings.TrimSpace(eventType))
+	if allowed[key] {
+		return key
+	}
+	return ""
+}
+
+func mustEventPayload(payload map[string]any) string {
+	if len(payload) == 0 {
+		return "{}"
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return "{}"
+	}
+	return string(data)
+}
+
+func learningEventsToViews(events []resourcegenentity.LearningEvent) []resourcegendto.LearningEventView {
+	result := make([]resourcegendto.LearningEventView, 0, len(events))
+	for _, event := range events {
+		result = append(result, learningEventToView(event))
+	}
+	return result
+}
+
+func learningEventToView(event resourcegenentity.LearningEvent) resourcegendto.LearningEventView {
+	return resourcegendto.LearningEventView{
+		ID:            event.ID,
+		EventType:     event.EventType,
+		KnowledgeID:   event.KnowledgeID,
+		KnowledgeName: event.KnowledgeName,
+		ResourceID:    event.ResourceID,
+		ResourceType:  event.ResourceType,
+		Payload:       parseEventPayload(event.PayloadJSON),
+		OccurredAt:    event.OccurredAt.Format(time.RFC3339),
+	}
+}
+
+func parseEventPayload(payload string) map[string]any {
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(strings.TrimSpace(payload)), &parsed); err != nil {
+		return nil
+	}
+	return parsed
 }
 
 func feedbackToView(feedback resourcegenentity.ResourceFeedback) resourcegendto.FeedbackView {

@@ -24,3 +24,7 @@ export function refreshLearningProfile() {
     body: {},
   })
 }
+
+export function fetchProfileTimeline() {
+  return request('/profile/timeline')
+}

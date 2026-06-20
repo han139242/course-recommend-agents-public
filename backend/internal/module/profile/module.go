@@ -25,4 +25,5 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/current", m.Handler.GetCurrent)
 	group.PUT("/current", m.Handler.UpsertProfile)
 	group.POST("/refresh", m.Handler.RefreshProfile)
+	group.GET("/timeline", m.Handler.GetTimeline)
 }
