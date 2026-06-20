@@ -160,6 +160,32 @@ func (s *Service) SubmitAnswer(ctx context.Context, request learningdto.SubmitAn
 	return response, nil
 }
 
+// RecordPractice 记录一次知识点级练习作答并更新真实掌握度。它复用与正式
+// 答题相同的掌握度快照链路（RecordAnswer + 能力画像同步），但不依赖题库题目，
+// 使 AI 生成的随堂练习也能驱动掌握度、能力雷达与推荐路径更新。
+func (s *Service) RecordPractice(ctx context.Context, request learningdto.RecordPracticeRequest) (*learningdto.RecordPracticeResponse, error) {
+	studentID, err := s.requireStudent(ctx)
+	if err != nil {
+		return nil, err
+	}
+	knowledgeID := strings.TrimSpace(request.KnowledgeID)
+	if knowledgeID == "" {
+		return nil, apperr.ErrBadRequest
+	}
+	answeredAt := time.Now()
+	state, degraded, stateErr := s.stateService.SnapshotMastery(ctx, studentID, knowledgeID, 0, answeredAt, request.Correct)
+	if stateErr != nil {
+		return nil, stateErr
+	}
+	s.triggerCompetencySync(ctx, studentID)
+	return &learningdto.RecordPracticeResponse{
+		Accepted:     true,
+		KnowledgeID:  knowledgeID,
+		MasteryScore: state.MasteryScore,
+		Degraded:     degraded || s.redis == nil,
+	}, nil
+}
+
 // SubmitQuiz 批量提交掌握度挑战的所有答案。
 // 后端统一评分并记录掌握度，前端不可篡改对错判断。
 func (s *Service) SubmitQuiz(ctx context.Context, request learningdto.SubmitQuizRequest) (*learningdto.SubmitQuizResponse, error) {

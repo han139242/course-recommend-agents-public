@@ -26,4 +26,5 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.PUT("/profile", m.Handler.UpsertProfile)
 	group.GET("/current", m.Handler.GetCurrentPlan)
 	group.POST("/generate", m.Handler.GeneratePlan)
+	group.POST("/adjust", m.Handler.AdjustPlan)
 }

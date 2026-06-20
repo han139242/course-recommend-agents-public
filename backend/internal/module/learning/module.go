@@ -51,6 +51,7 @@ func (m *Module) RegisterTeacherRoutes(group *gin.RouterGroup) {
 func (m *Module) RegisterStudentRoutes(group *gin.RouterGroup) {
 	group.GET("/questions", m.Handler.ListStudentQuestions)
 	group.POST("/answers", m.Handler.SubmitAnswer)
+	group.POST("/practice", m.Handler.RecordPractice)
 	group.POST("/quiz-submit", m.Handler.SubmitQuiz)
 	group.GET("/progress", m.Handler.GetLearningProgress)
 }

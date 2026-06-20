@@ -27,3 +27,11 @@ export function submitStudentAnswer(payload) {
     body: payload,
   })
 }
+
+// recordKnowledgePractice 记录知识点级练习作答，更新真实掌握度（用于 AI 随堂练习）。
+export function recordKnowledgePractice(payload) {
+  return request('/learning/practice', {
+    method: 'POST',
+    body: payload,
+  })
+}

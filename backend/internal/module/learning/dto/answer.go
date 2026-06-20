@@ -17,6 +17,21 @@ type SubmitAnswerResponse struct {
 	Degraded    bool   `json:"degraded"`
 }
 
+// RecordPracticeRequest 记录一次知识点级练习作答（不依赖题库题目），
+// 供 AI 生成的随堂练习把答题结果接入真实掌握度链路。
+type RecordPracticeRequest struct {
+	KnowledgeID string `json:"knowledgeId" binding:"required,max=64"`
+	Correct     bool   `json:"correct"`
+}
+
+// RecordPracticeResponse 返回练习作答后的掌握度更新结果。
+type RecordPracticeResponse struct {
+	Accepted     bool    `json:"accepted"`
+	KnowledgeID  string  `json:"knowledgeId"`
+	MasteryScore float64 `json:"masteryScore"`
+	Degraded     bool    `json:"degraded"`
+}
+
 // SubmitQuizRequest 掌握度挑战批量提交。
 // 包含完整题目数据，后端统一评分并记录掌握度，前端不可篡改对错。
 type SubmitQuizRequest struct {

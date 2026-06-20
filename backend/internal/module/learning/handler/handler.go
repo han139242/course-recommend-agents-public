@@ -89,6 +89,21 @@ func (h *Handler) SubmitAnswer(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// RecordPractice 处理知识点级练习作答（AI 随堂练习接入真实掌握度）。
+func (h *Handler) RecordPractice(ctx *gin.Context) {
+	var request learningdto.RecordPracticeRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.RecordPractice(ctx.Request.Context(), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 // GetLearningProgress 处理学生学习进度查询请求。
 func (h *Handler) GetLearningProgress(ctx *gin.Context) {
 	response, degraded, err := h.service.GetLearningProgress(ctx.Request.Context())

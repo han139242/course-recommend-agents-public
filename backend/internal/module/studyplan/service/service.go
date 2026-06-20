@@ -154,6 +154,20 @@ func (s *Service) GeneratePlan(ctx context.Context) (*studyplandto.CurrentPlanRe
 	return &studyplandto.CurrentPlanResponse{Profile: profileToView(profile), Plan: planToView(plan)}, nil
 }
 
+// AdjustPlan 根据最新掌握度（含随堂练习作答）重新规划学习计划，形成
+// “学习 → 测评 → 重新规划”的自适应闭环。它复用计划生成逻辑，因此会自动
+// 反映练习后更新的薄弱知识点与掌握度。
+func (s *Service) AdjustPlan(ctx context.Context) (*studyplandto.CurrentPlanResponse, error) {
+	response, err := s.GeneratePlan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if response != nil && response.Plan != nil {
+		response.Plan.Summary = "已根据最新掌握度与练习表现重新规划：" + response.Plan.Summary
+	}
+	return response, nil
+}
+
 func currentStudentID(ctx context.Context) (int64, error) {
 	studentID, ok := ctxmeta.CurrentUserID(ctx)
 	if !ok {

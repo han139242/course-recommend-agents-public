@@ -3,6 +3,7 @@ import { CheckCircle2, RefreshCcw, Send, Sparkles } from '@lucide/vue'
 import { computed, ref } from 'vue'
 
 import { generateQuiz, recordLearningEvent } from '../api/resources'
+import { recordKnowledgePractice } from '../api/learning'
 
 const props = defineProps({
   knowledgeId: { type: String, default: '' },
@@ -74,9 +75,9 @@ async function handleSubmit() {
   submitted.value = true
   result.value = { total: questions.value.length, correct }
 
-  // 逐题回写学习行为事件，错误项用于强化易错点偏好。
-  await Promise.allSettled(
-    questions.value.map((question, index) =>
+  // 逐题回写学习行为事件（驱动画像易错点）与知识点掌握度（驱动能力雷达/推荐）。
+  await Promise.allSettled([
+    ...questions.value.map((question, index) =>
       recordLearningEvent({
         eventType: 'practice_answered',
         knowledgeId: props.knowledgeId,
@@ -85,7 +86,15 @@ async function handleSubmit() {
         payload: { correct: answers.value[index] === question.answer },
       }),
     ),
-  )
+    ...(props.knowledgeId
+      ? questions.value.map((question, index) =>
+          recordKnowledgePractice({
+            knowledgeId: props.knowledgeId,
+            correct: answers.value[index] === question.answer,
+          }),
+        )
+      : []),
+  ])
   emit('completed', result.value)
 }
 

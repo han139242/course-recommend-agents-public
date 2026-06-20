@@ -34,7 +34,7 @@ import {
   streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
-import { fetchCurrentStudyPlan, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
+import { adjustStudyPlan, fetchCurrentStudyPlan, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
 import QuizPanel from '../components/QuizPanel.vue'
 import ResourceContent from '../components/ResourceContent.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
@@ -301,6 +301,22 @@ async function handleGeneratePlan() {
     planNotice.value = '已生成基础、核心、应用三阶段学习计划与下一步推荐。'
   } catch (err) {
     planError.value = err?.message || '学习计划生成失败，请先确认画像后再试。'
+  } finally {
+    planLoading.value = false
+  }
+}
+
+// handleAdjustPlan 根据最新掌握度与练习表现重新规划学习计划（自适应闭环）。
+async function handleAdjustPlan() {
+  planLoading.value = true
+  planError.value = ''
+  planNotice.value = ''
+  try {
+    const payload = await adjustStudyPlan()
+    studyPlan.value = payload?.plan || studyPlan.value
+    planNotice.value = '已根据最新掌握度与练习表现重新规划学习计划。'
+  } catch (err) {
+    planError.value = err?.message || '重新规划失败，请稍后重试。'
   } finally {
     planLoading.value = false
   }
@@ -726,6 +742,10 @@ onBeforeUnmount(() => {
             <Compass v-if="!planLoading" :size="16" aria-hidden="true" />
             <RefreshCcw v-else :size="16" aria-hidden="true" />
             {{ planLoading ? '生成中' : '生成学习计划' }}
+          </button>
+          <button v-if="hasPlan" type="button" class="secondary-action" :disabled="planLoading" @click="handleAdjustPlan">
+            <RefreshCcw :size="16" aria-hidden="true" />
+            按最新掌握度重新规划
           </button>
           <small v-if="!hasProfile" class="hint-text">先确认画像后再生成计划。</small>
         </div>

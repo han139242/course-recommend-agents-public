@@ -57,6 +57,15 @@ func (h *Handler) GeneratePlan(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) AdjustPlan(ctx *gin.Context) {
+	response, err := h.service.AdjustPlan(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func writeError(ctx *gin.Context, err error) {
 	appErr := apperr.AsAppError(err)
 	result.Error(ctx, appErr.HTTPStatus, appErr.Code, appErr.Message)

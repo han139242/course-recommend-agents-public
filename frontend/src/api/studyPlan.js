@@ -21,3 +21,11 @@ export function generateStudyPlan() {
     body: {},
   })
 }
+
+// adjustStudyPlan 根据最新掌握度与练习表现重新规划学习计划（自适应闭环）。
+export function adjustStudyPlan() {
+  return request('/study-plan/adjust', {
+    method: 'POST',
+    body: {},
+  })
+}
