@@ -6,6 +6,7 @@ import 'katex/dist/katex.min.css'
 
 import { fetchStudentQuestions, submitStudentAnswer } from '../api/learning'
 import { fetchResources, recordLearningEvent } from '../api/resources'
+import QuizPanel from '../components/QuizPanel.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
 import { useAiChat } from '../composables/useAiChat'
 import { renderWithKatex } from '../composables/useKatex'
@@ -554,6 +555,13 @@ watch(
             <div v-if="knowledgeResources.length" class="resource-pack-foot">
               <RouterLink class="inline-link" :to="resourceCenterLink">前往资源中心查看完整内容与提交反馈 →</RouterLink>
             </div>
+
+            <QuizPanel
+              class="kd-quiz"
+              :knowledge-id="knowledgeId"
+              :knowledge-name="detailTitle"
+              :course-title="detailCourseLabel"
+            />
           </template>
         </section>
 

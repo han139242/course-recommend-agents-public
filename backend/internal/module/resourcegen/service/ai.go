@@ -274,6 +274,44 @@ func clampRunes(value string, limit int) string {
 	return string(runes[:limit]) + "…"
 }
 
+// aiQuiz generates a structured single-choice quiz with the large model. It
+// returns false when the model is unavailable or the output cannot be parsed so
+// the caller can fall back to a local template quiz.
+func (s *Service) aiQuiz(reqCtx context.Context, knowledgeName string, courseTitle string, count int) ([]resourcegendto.QuizQuestionView, bool) {
+	if s.aiClient == nil || !s.aiClient.Enabled() {
+		return nil, false
+	}
+
+	system := "你是多智能体资源生成系统中的 QuestionAgent，负责为知识点出结构化单选练习题。" +
+		"只输出 JSON，结构为 {\"questions\":[{\"stem\":\"\",\"options\":[\"\",\"\",\"\",\"\"],\"answer\":0,\"explanation\":\"\"}]}。" +
+		"每题恰好 4 个选项，answer 为正确选项下标（从 0 开始），explanation 说明为什么正确并提示易错点。" + antiHallucinationRules
+	user := fmt.Sprintf("请基于课程《%s》的知识点「%s」出 %d 道单选练习题，难度循序渐进。", firstNonEmpty(courseTitle, "相关课程"), knowledgeName, count)
+
+	raw, err := s.aiClient.Complete(reqCtx, ai.Request{
+		System:      system,
+		User:        user,
+		MaxTokens:   1400,
+		Temperature: 0.5,
+		JSON:        true,
+		Timeout:     40 * time.Second,
+	})
+	if err != nil {
+		return nil, false
+	}
+
+	var parsed struct {
+		Questions []resourcegendto.QuizQuestionView `json:"questions"`
+	}
+	if err := json.Unmarshal([]byte(stripCodeFence(raw)), &parsed); err != nil {
+		return nil, false
+	}
+	questions := sanitizeQuizQuestions(parsed.Questions)
+	if len(questions) == 0 {
+		return nil, false
+	}
+	return questions, true
+}
+
 // resourceWriterSummary describes the writer-agent step, reflecting whether the
 // large model or the local templates produced the resources.
 func (s *Service) resourceWriterSummary(genCtx generationContext) string {

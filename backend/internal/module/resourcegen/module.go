@@ -25,6 +25,7 @@ func New(db *gorm.DB, aiClient *ai.Client, profileService *profileservice.Servic
 
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/generate", m.Handler.Generate)
+	group.POST("/quiz", m.Handler.GenerateQuiz)
 	group.GET("/jobs/:jobId/export", m.Handler.ExportJob)
 	group.GET("/jobs/:jobId/presentation-outline", m.Handler.GetPresentationOutline)
 	group.GET("/jobs/:jobId/demo-script", m.Handler.GetDemoScript)

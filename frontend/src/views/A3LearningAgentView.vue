@@ -24,15 +24,21 @@ import {
   saveLearningProfile,
 } from '../api/profile'
 import {
+  exportResourceJobMarkdown,
+  fetchResourceDemoScript,
   fetchResourceEffectSummary,
   fetchResourceJob,
+  fetchResourcePresentationOutline,
+  fetchResourceSafetyReport,
   generateResources,
   streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
 import { fetchCurrentStudyPlan, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
+import QuizPanel from '../components/QuizPanel.vue'
 import ResourceContent from '../components/ResourceContent.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
+import { useSpeech } from '../composables/useSpeech'
 import { APP_NAME } from '../constants/appInfo'
 
 // 演示主线默认输入，方便评委一键体验完整闭环。
@@ -94,6 +100,24 @@ const feedbackError = ref('')
 // 学习效果评估看板
 const effectSummary = ref(null)
 const effectLoading = ref(false)
+
+// 安全审查（防幻觉可信展示）
+const safetyReports = ref({})
+const safetyLoading = ref({})
+
+// 答辩物料导出
+const outlineLoading = ref(false)
+const presentationOutline = ref(null)
+const outlineError = ref('')
+const demoScriptLoading = ref(false)
+const demoScript = ref(null)
+const demoScriptError = ref('')
+const exportLoading = ref(false)
+const exportPayload = ref(null)
+const exportError = ref('')
+
+// 语音朗读（多模态输出，可对接科大讯飞 TTS）
+const { supported: speechSupported, speakingId, speak } = useSpeech()
 
 const activeProfile = computed(() => profilePayload.value?.profile || null)
 
@@ -497,6 +521,88 @@ async function handleSubmitFeedback(resource) {
   }
 }
 
+// onQuizCompleted 答题后刷新画像与学习效果评估，体现测评闭环。
+async function onQuizCompleted() {
+  await Promise.all([handleRefreshProfile(), loadEffectSummary()])
+}
+
+// handleLoadSafetyReport 拉取/收起单个资源的安全与防幻觉审查报告。
+async function handleLoadSafetyReport(resource) {
+  if (!resource?.id) return
+  if (safetyReports.value[resource.id]) {
+    safetyReports.value = { ...safetyReports.value, [resource.id]: null }
+    return
+  }
+  safetyLoading.value = { ...safetyLoading.value, [resource.id]: true }
+  try {
+    const payload = await fetchResourceSafetyReport(resource.id)
+    safetyReports.value = { ...safetyReports.value, [resource.id]: payload }
+  } catch (err) {
+    safetyReports.value = {
+      ...safetyReports.value,
+      [resource.id]: {
+        status: 'attention_required',
+        score: 0,
+        checks: [],
+        risks: [err?.message || '安全报告读取失败。'],
+        suggestions: ['请稍后重试或人工复核资源内容。'],
+      },
+    }
+  } finally {
+    safetyLoading.value = { ...safetyLoading.value, [resource.id]: false }
+  }
+}
+
+function safetyStatusLabel(status) {
+  if (status === 'passed') return '已通过'
+  if (status === 'blocked') return '需阻断'
+  return '需关注'
+}
+
+// speakResource 朗读资源正文；再次点击同一资源会停止朗读。
+function speakResource(resource) {
+  speak(resource.content, `resource-${resource.id}`)
+}
+
+async function handleLoadPresentationOutline() {
+  if (!activeJob.value?.id) return
+  outlineLoading.value = true
+  outlineError.value = ''
+  try {
+    presentationOutline.value = await fetchResourcePresentationOutline(activeJob.value.id)
+  } catch (err) {
+    outlineError.value = err?.message || 'PPT 大纲生成失败，请稍后重试。'
+  } finally {
+    outlineLoading.value = false
+  }
+}
+
+async function handleLoadDemoScript() {
+  if (!activeJob.value?.id) return
+  demoScriptLoading.value = true
+  demoScriptError.value = ''
+  try {
+    demoScript.value = await fetchResourceDemoScript(activeJob.value.id)
+  } catch (err) {
+    demoScriptError.value = err?.message || '演示脚本生成失败，请稍后重试。'
+  } finally {
+    demoScriptLoading.value = false
+  }
+}
+
+async function handleExportJob() {
+  if (!activeJob.value?.id) return
+  exportLoading.value = true
+  exportError.value = ''
+  try {
+    exportPayload.value = await exportResourceJobMarkdown(activeJob.value.id)
+  } catch (err) {
+    exportError.value = err?.message || '资源包导出失败，请稍后重试。'
+  } finally {
+    exportLoading.value = false
+  }
+}
+
 onMounted(async () => {
   await Promise.all([loadCurrentProfile(), loadCurrentPlan(), loadEffectSummary()])
 })
@@ -756,6 +862,74 @@ onBeforeUnmount(() => {
               </div>
             </article>
           </div>
+
+          <div class="button-row button-row--end export-actions">
+            <button type="button" class="secondary-action" :disabled="outlineLoading || activeJob.status !== 'completed'" @click="handleLoadPresentationOutline">
+              <Sparkles :size="16" aria-hidden="true" />
+              {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
+            </button>
+            <button type="button" class="secondary-action" :disabled="demoScriptLoading || activeJob.status !== 'completed'" @click="handleLoadDemoScript">
+              <Send :size="16" aria-hidden="true" />
+              {{ demoScriptLoading ? '生成中' : '生成演示脚本' }}
+            </button>
+            <button type="button" class="secondary-action" :disabled="exportLoading || activeJob.status !== 'completed'" @click="handleExportJob">
+              <FileText :size="16" aria-hidden="true" />
+              {{ exportLoading ? '导出中' : '导出 Markdown' }}
+            </button>
+          </div>
+          <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
+          <p v-if="demoScriptError" class="inline-error">{{ demoScriptError }}</p>
+          <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+
+          <div v-if="presentationOutline" class="outline-box">
+            <div class="outline-box__head">
+              <div>
+                <strong>{{ presentationOutline.title }}</strong>
+                <small>{{ presentationOutline.subtitle }}</small>
+              </div>
+              <span>{{ presentationOutline.slides?.length || 0 }} 页</span>
+            </div>
+            <div class="outline-slides">
+              <article v-for="slide in presentationOutline.slides || []" :key="slide.index" class="outline-slide">
+                <span>Slide {{ slide.index }}</span>
+                <strong>{{ slide.title }}</strong>
+                <ul>
+                  <li v-for="bullet in slide.bullets" :key="bullet">{{ bullet }}</li>
+                </ul>
+                <p>{{ slide.speakerNotes }}</p>
+                <small>{{ slide.visualHint }}</small>
+              </article>
+            </div>
+          </div>
+
+          <div v-if="demoScript" class="outline-box">
+            <div class="outline-box__head">
+              <div>
+                <strong>{{ demoScript.title }}</strong>
+                <small>{{ demoScript.duration }} · 可直接用于比赛演示视频</small>
+              </div>
+              <span>{{ demoScript.scenes?.length || 0 }} 段</span>
+            </div>
+            <div class="outline-slides">
+              <article v-for="scene in demoScript.scenes || []" :key="scene.index" class="outline-slide">
+                <span>{{ scene.timeRange }}</span>
+                <strong>{{ scene.title }}</strong>
+                <ul>
+                  <li v-for="action in scene.actions" :key="action">{{ action }}</li>
+                </ul>
+                <p>{{ scene.narration }}</p>
+                <small>{{ (scene.proofPoints || []).join('；') }}</small>
+              </article>
+            </div>
+          </div>
+
+          <div v-if="exportPayload" class="export-box">
+            <div class="export-box__head">
+              <strong>{{ exportPayload.fileName }}</strong>
+              <small>可提交/可粘贴的资源包 Markdown</small>
+            </div>
+            <textarea readonly :value="exportPayload.content" rows="8" />
+          </div>
         </section>
 
         <section v-if="hasResources" class="resource-output">
@@ -770,6 +944,50 @@ onBeforeUnmount(() => {
               <small>{{ resource.reason }}</small>
             </div>
             <ResourceContent :content="resource.content" :format="resource.format" />
+
+            <div v-if="resource.evidence?.length" class="evidence-row">
+              <span class="evidence-row__label">依据来源</span>
+              <em v-for="item in resource.evidence" :key="item.label">{{ item.label }}：{{ item.value }}</em>
+            </div>
+
+            <div class="resource-card__actions">
+              <button v-if="speechSupported" type="button" class="ghost-mini" @click="speakResource(resource)">
+                <PlayCircle :size="15" aria-hidden="true" />
+                {{ speakingId === `resource-${resource.id}` ? '停止朗读' : '语音朗读' }}
+              </button>
+              <button type="button" class="ghost-mini" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
+                <CheckCircle2 :size="15" aria-hidden="true" />
+                {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
+              </button>
+            </div>
+
+            <div v-if="safetyReports[resource.id]" class="safety-report">
+              <div class="safety-report__head">
+                <div>
+                  <span>SafetyReviewerAgent</span>
+                  <strong>{{ safetyStatusLabel(safetyReports[resource.id].status) }}</strong>
+                </div>
+                <em>{{ safetyReports[resource.id].score }} 分</em>
+              </div>
+              <div v-if="safetyReports[resource.id].checks?.length" class="safety-checks">
+                <article v-for="check in safetyReports[resource.id].checks" :key="check.key" class="safety-check">
+                  <span :class="`safety-check__dot safety-check__dot--${check.status}`" />
+                  <div>
+                    <strong>{{ check.name }}</strong>
+                    <p>{{ check.conclusion }}</p>
+                  </div>
+                </article>
+              </div>
+              <div v-if="safetyReports[resource.id].risks?.length" class="safety-list">
+                <strong>风险提示</strong>
+                <p v-for="risk in safetyReports[resource.id].risks" :key="risk">{{ risk }}</p>
+              </div>
+              <div class="safety-list">
+                <strong>审查建议</strong>
+                <p v-for="suggestion in safetyReports[resource.id].suggestions || []" :key="suggestion">{{ suggestion }}</p>
+              </div>
+            </div>
+
             <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
               <div class="feedback-box__head">
                 <strong>学习反馈</strong>
@@ -816,6 +1034,14 @@ onBeforeUnmount(() => {
           <FileText :size="22" aria-hidden="true" />
           <p>选择知识点并生成资源包后，这里会展示多智能体协作步骤、资源正文与学习反馈入口。</p>
         </div>
+
+        <QuizPanel
+          class="a3-quiz"
+          :knowledge-id="resourceForm.knowledgeId"
+          :knowledge-name="resourceForm.knowledgeName"
+          :course-title="resourceForm.courseTitle"
+          @completed="onQuizCompleted"
+        />
       </section>
 
       <!-- 步骤 6：学习效果评估看板 -->
@@ -1506,6 +1732,251 @@ onBeforeUnmount(() => {
 
 .effect-event small {
   color: #64748b;
+}
+
+.a3-quiz {
+  margin-top: 1rem;
+}
+
+.export-actions {
+  margin-top: 0.8rem;
+}
+
+.outline-box {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.8rem 0 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #ffffff;
+}
+
+.outline-box__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.outline-box__head strong,
+.outline-box__head small {
+  display: block;
+}
+
+.outline-box__head small {
+  margin-top: 0.2rem;
+  color: #64748b;
+}
+
+.outline-box__head span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  color: #176b87;
+  background: #e8f6fb;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.outline-slides {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.outline-slide {
+  display: grid;
+  gap: 0.4rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f8fbfd;
+}
+
+.outline-slide span {
+  color: #176b87;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.outline-slide ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.outline-slide li {
+  margin: 0.2rem 0;
+  line-height: 1.45;
+}
+
+.outline-slide p,
+.outline-slide small {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.export-box {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.8rem 0 0;
+  border: 1px solid rgba(90, 112, 132, 0.16);
+  border-radius: 8px;
+  padding: 0.8rem;
+  background: #ffffff;
+}
+
+.export-box__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.export-box__head small {
+  color: #64748b;
+}
+
+.export-box textarea {
+  width: 100%;
+  min-height: 11rem;
+  border: 1px solid rgba(90, 112, 132, 0.16);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #1f2937;
+  background: #fbfdff;
+  font: 0.84rem/1.6 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  resize: vertical;
+}
+
+.evidence-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem 0;
+}
+
+.evidence-row__label {
+  color: #43536a;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.evidence-row em {
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  color: #24415f;
+  background: #eef6fb;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.resource-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 0.9rem 0;
+}
+
+.ghost-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0 0.7rem;
+  border: 1px solid rgba(90, 112, 132, 0.24);
+  border-radius: 8px;
+  color: #24415f;
+  background: #f8fbfd;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ghost-mini:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.safety-report {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0.9rem 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #f8fbfd;
+}
+
+.safety-report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.safety-report__head span {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.safety-report__head strong {
+  display: block;
+}
+
+.safety-report__head em {
+  color: #176b87;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.safety-checks {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.safety-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: #ffffff;
+}
+
+.safety-check p,
+.safety-list p {
+  margin: 0.18rem 0 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.safety-check__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: 0.28rem;
+  border-radius: 999px;
+  background: #d97706;
+}
+
+.safety-check__dot--passed {
+  background: #1f8a70;
+}
+
+.safety-check__dot--blocked {
+  background: #b91c1c;
+}
+
+.safety-list {
+  display: grid;
+  gap: 0.35rem;
 }
 
 .agent-progress {

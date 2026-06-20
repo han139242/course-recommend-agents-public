@@ -17,6 +17,14 @@ export function generateResources(payload) {
   })
 }
 
+// generateQuiz 生成知识点结构化互动练习题。
+export function generateQuiz(payload) {
+  return request('/resources/quiz', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function fetchResourceJob(jobId) {
   return request(`/resources/jobs/${jobId}`)
 }

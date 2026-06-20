@@ -264,6 +264,33 @@ type EffectSummaryResponse struct {
 	GeneratedAt  string              `json:"generatedAt"`
 }
 
+// GenerateQuizRequest asks for an interactive single-choice quiz on a knowledge
+// point so the learner can self-test and feed the mastery loop.
+type GenerateQuizRequest struct {
+	KnowledgeID   string `json:"knowledgeId" binding:"omitempty,max=128"`
+	KnowledgeName string `json:"knowledgeName" binding:"required,max=255"`
+	CourseTitle   string `json:"courseTitle" binding:"omitempty,max=255"`
+	Count         int    `json:"count" binding:"omitempty,min=1,max=10"`
+}
+
+// QuizQuestionView is one structured single-choice question.
+type QuizQuestionView struct {
+	Stem        string   `json:"stem"`
+	Options     []string `json:"options"`
+	Answer      int      `json:"answer"`
+	Explanation string   `json:"explanation"`
+}
+
+// GenerateQuizResponse returns the generated quiz and whether it came from the
+// large model or the local template fallback.
+type GenerateQuizResponse struct {
+	KnowledgeID   string             `json:"knowledgeId"`
+	KnowledgeName string             `json:"knowledgeName"`
+	CourseTitle   string             `json:"courseTitle"`
+	Questions     []QuizQuestionView `json:"questions"`
+	Source        string             `json:"source"`
+}
+
 // ListResourcesResponse returns current student's resource library.
 type ListResourcesResponse struct {
 	List  []GeneratedResourceView `json:"list"`

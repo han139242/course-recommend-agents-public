@@ -415,6 +415,118 @@ func (s *Service) GetEffectSummary(ctx context.Context) (*resourcegendto.EffectS
 	}, nil
 }
 
+// GenerateQuiz 生成知识点结构化互动练习。优先用大模型出题，模型不可用时
+// 回退到本地模板题，保证离线演示也能完成“答题→效果回写”闭环。
+func (s *Service) GenerateQuiz(ctx context.Context, request resourcegendto.GenerateQuizRequest) (*resourcegendto.GenerateQuizResponse, error) {
+	if _, err := currentStudentID(ctx); err != nil {
+		return nil, err
+	}
+	knowledgeName := strings.TrimSpace(request.KnowledgeName)
+	if knowledgeName == "" {
+		return nil, apperr.ErrBadRequest
+	}
+	courseTitle := strings.TrimSpace(request.CourseTitle)
+	count := request.Count
+	if count <= 0 || count > 10 {
+		count = 3
+	}
+
+	source := "template"
+	questions, ok := s.aiQuiz(ctx, knowledgeName, courseTitle, count)
+	if ok {
+		source = "ai"
+	} else {
+		questions = buildTemplateQuiz(knowledgeName, count)
+	}
+	if len(questions) > count {
+		questions = questions[:count]
+	}
+
+	return &resourcegendto.GenerateQuizResponse{
+		KnowledgeID:   strings.TrimSpace(request.KnowledgeID),
+		KnowledgeName: knowledgeName,
+		CourseTitle:   courseTitle,
+		Questions:     questions,
+		Source:        source,
+	}, nil
+}
+
+// sanitizeQuizQuestions 清洗模型输出，保证每题至少 2 个选项且答案下标合法。
+func sanitizeQuizQuestions(input []resourcegendto.QuizQuestionView) []resourcegendto.QuizQuestionView {
+	cleaned := make([]resourcegendto.QuizQuestionView, 0, len(input))
+	for _, question := range input {
+		stem := strings.TrimSpace(question.Stem)
+		options := make([]string, 0, len(question.Options))
+		for _, option := range question.Options {
+			if trimmed := strings.TrimSpace(option); trimmed != "" {
+				options = append(options, trimmed)
+			}
+		}
+		if stem == "" || len(options) < 2 {
+			continue
+		}
+		answer := question.Answer
+		if answer < 0 || answer >= len(options) {
+			answer = 0
+		}
+		cleaned = append(cleaned, resourcegendto.QuizQuestionView{
+			Stem:        stem,
+			Options:     options,
+			Answer:      answer,
+			Explanation: strings.TrimSpace(question.Explanation),
+		})
+	}
+	return cleaned
+}
+
+// buildTemplateQuiz 在模型不可用时生成可演示的本地模板题。
+func buildTemplateQuiz(knowledgeName string, count int) []resourcegendto.QuizQuestionView {
+	base := []resourcegendto.QuizQuestionView{
+		{
+			Stem: "关于「" + knowledgeName + "」，下列说法最准确的是？",
+			Options: []string{
+				knowledgeName + " 是该课程的核心概念之一，需要结合实例理解。",
+				knowledgeName + " 与课程内容无关，可以直接跳过。",
+				knowledgeName + " 只需死记硬背，无需理解原理。",
+				knowledgeName + " 在实际应用中没有价值。",
+			},
+			Answer:      0,
+			Explanation: "正确选项强调结合实例理解核心概念，其余选项是常见学习误区。",
+		},
+		{
+			Stem: "学习「" + knowledgeName + "」时，较合理的学习顺序是？",
+			Options: []string{
+				"先理解概念与前置知识，再通过案例与练习巩固。",
+				"直接背诵结论，不看任何例子。",
+				"只做题，不看讲解与原理。",
+				"跳跃式学习，不关注前置知识。",
+			},
+			Answer:      0,
+			Explanation: "概念→案例→练习是更稳健的学习路径，能减少易错点。",
+		},
+		{
+			Stem: "检验自己是否掌握「" + knowledgeName + "」的较好方式是？",
+			Options: []string{
+				"能用自己的话讲清概念，并独立完成相关练习或小项目。",
+				"只要看过一遍讲解就算掌握。",
+				"能背出定义即可，不需要应用。",
+				"做对一道题就说明完全掌握。",
+			},
+			Answer:      0,
+			Explanation: "能复述并迁移应用，才是掌握知识点的可靠标志。",
+		},
+	}
+
+	if count <= 0 {
+		count = len(base)
+	}
+	questions := make([]resourcegendto.QuizQuestionView, 0, count)
+	for i := 0; i < count; i++ {
+		questions = append(questions, base[i%len(base)])
+	}
+	return questions
+}
+
 // completionHint 描述资源完成比例。
 func completionHint(rate int, total int) string {
 	if total == 0 {
