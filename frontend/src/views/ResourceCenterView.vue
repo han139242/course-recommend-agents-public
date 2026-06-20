@@ -19,6 +19,7 @@ import { extractLearningProfile, fetchLearningProfile, fetchProfileTimeline, ref
 import {
   exportResourceJobMarkdown,
   fetchResourceFeed,
+  fetchResourceDemoScript,
   fetchResourceJob,
   fetchResourceRecommendations,
   fetchResourcePresentationOutline,
@@ -80,6 +81,9 @@ const exportError = ref('')
 const outlineLoading = ref(false)
 const presentationOutline = ref(null)
 const outlineError = ref('')
+const demoScriptLoading = ref(false)
+const demoScript = ref(null)
+const demoScriptError = ref('')
 
 const dimensionOrder = [
   'knowledge_foundation',
@@ -352,6 +356,7 @@ async function handleGenerateResources() {
   generatedResources.value = []
   exportPayload.value = null
   presentationOutline.value = null
+  demoScript.value = null
   try {
     const payload = await generateResources({
       knowledgeId: resourceForm.value.knowledgeId.trim(),
@@ -414,6 +419,7 @@ async function handleRegenerate(resource, difficulty) {
   resourceError.value = ''
   exportPayload.value = null
   presentationOutline.value = null
+  demoScript.value = null
   try {
     const payload = await generateResources({
       knowledgeId: resource.knowledgeId || resourceForm.value.knowledgeId.trim(),
@@ -455,6 +461,20 @@ async function handleLoadPresentationOutline() {
     outlineError.value = err?.message || 'PPT 大纲生成失败，请稍后重试。'
   } finally {
     outlineLoading.value = false
+  }
+}
+
+async function handleLoadDemoScript() {
+  if (!activeJob.value?.id) return
+
+  demoScriptLoading.value = true
+  demoScriptError.value = ''
+  try {
+    demoScript.value = await fetchResourceDemoScript(activeJob.value.id)
+  } catch (err) {
+    demoScriptError.value = err?.message || '演示脚本生成失败，请稍后重试。'
+  } finally {
+    demoScriptLoading.value = false
   }
 }
 
@@ -837,12 +857,17 @@ onBeforeUnmount(stopPolling)
               <Sparkles :size="16" aria-hidden="true" />
               {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
             </button>
+            <button type="button" class="secondary-action" :disabled="demoScriptLoading || activeJob.status !== 'completed'" @click="handleLoadDemoScript">
+              <Send :size="16" aria-hidden="true" />
+              {{ demoScriptLoading ? '生成中' : '生成演示脚本' }}
+            </button>
             <button type="button" class="secondary-action" :disabled="exportLoading || activeJob.status !== 'completed'" @click="handleExportJob">
               <FileText :size="16" aria-hidden="true" />
               {{ exportLoading ? '导出中' : '导出 Markdown' }}
             </button>
           </div>
           <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
+          <p v-if="demoScriptError" class="inline-error">{{ demoScriptError }}</p>
           <p v-if="exportError" class="inline-error">{{ exportError }}</p>
           <div v-if="presentationOutline" class="outline-box">
             <div class="outline-box__head">
@@ -861,6 +886,26 @@ onBeforeUnmount(stopPolling)
                 </ul>
                 <p>{{ slide.speakerNotes }}</p>
                 <small>{{ slide.visualHint }}</small>
+              </article>
+            </div>
+          </div>
+          <div v-if="demoScript" class="outline-box">
+            <div class="outline-box__head">
+              <div>
+                <strong>{{ demoScript.title }}</strong>
+                <small>{{ demoScript.duration }} · 可直接用于比赛演示视频</small>
+              </div>
+              <span>{{ demoScript.scenes?.length || 0 }} 段</span>
+            </div>
+            <div class="outline-slides">
+              <article v-for="scene in demoScript.scenes || []" :key="scene.index" class="outline-slide">
+                <span>{{ scene.timeRange }}</span>
+                <strong>{{ scene.title }}</strong>
+                <ul>
+                  <li v-for="action in scene.actions" :key="action">{{ action }}</li>
+                </ul>
+                <p>{{ scene.narration }}</p>
+                <small>{{ (scene.proofPoints || []).join('；') }}</small>
               </article>
             </div>
           </div>

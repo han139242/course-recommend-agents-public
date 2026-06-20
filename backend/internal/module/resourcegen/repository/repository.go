@@ -70,6 +70,19 @@ func (r *Repository) CreateLearningEvent(ctx context.Context, event *entity.Lear
 	return r.db.WithContext(ctx).Create(event).Error
 }
 
+func (r *Repository) UpdatePushStatusForResource(ctx context.Context, studentID int64, resourceID int64, status string) error {
+	if resourceID <= 0 || status == "" {
+		return nil
+	}
+	return r.db.WithContext(ctx).
+		Model(&entity.ResourcePushItem{}).
+		Where("student_id = ? AND resource_id = ?", studentID, resourceID).
+		Updates(map[string]any{
+			"status":     status,
+			"updated_at": time.Now(),
+		}).Error
+}
+
 func (r *Repository) GetJob(ctx context.Context, studentID int64, jobID int64) (*entity.GenerationJob, []entity.AgentStep, []entity.GeneratedResource, error) {
 	var job entity.GenerationJob
 	err := r.db.WithContext(ctx).Where("id = ? AND student_id = ?", jobID, studentID).First(&job).Error

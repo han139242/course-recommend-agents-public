@@ -29,6 +29,10 @@ export function fetchResourcePresentationOutline(jobId) {
   return request(`/resources/jobs/${jobId}/presentation-outline`)
 }
 
+export function fetchResourceDemoScript(jobId) {
+  return request(`/resources/jobs/${jobId}/demo-script`)
+}
+
 export function fetchResources(params = {}) {
   return request(`/resources${toQueryString(params)}`)
 }

@@ -42,6 +42,7 @@ type repository interface {
 	CreateResource(ctx context.Context, resource *resourcegenentity.GeneratedResource) error
 	CreatePushItem(ctx context.Context, item *resourcegenentity.ResourcePushItem) error
 	CreateLearningEvent(ctx context.Context, event *resourcegenentity.LearningEvent) error
+	UpdatePushStatusForResource(ctx context.Context, studentID int64, resourceID int64, status string) error
 	GetJob(ctx context.Context, studentID int64, jobID int64) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error)
 	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]resourcegenentity.GeneratedResource, error)
 	ListPushItems(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.ResourcePushItem, []resourcegenentity.GeneratedResource, error)
@@ -284,6 +285,7 @@ func (s *Service) SubmitFeedback(ctx context.Context, rawResourceID string, requ
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	_ = s.repo.UpdatePushStatusForResource(ctx, studentID, resource.ID, pushStatusFromFeedback(request))
 	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
 		StudentID:     studentID,
 		EventType:     "resource_feedback_submitted",
@@ -510,6 +512,26 @@ func (s *Service) GetPresentationOutline(ctx context.Context, rawJobID string) (
 	}
 	outline := buildPresentationOutline(job, steps, resources)
 	return &outline, nil
+}
+
+func (s *Service) GetDemoScript(ctx context.Context, rawJobID string) (*resourcegendto.DemoScriptResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	jobID, err := strconv.ParseInt(strings.TrimSpace(rawJobID), 10, 64)
+	if err != nil || jobID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	job, steps, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	script := buildDemoScript(job, steps, resources)
+	return &script, nil
 }
 
 func (s *Service) buildGenerationContext(ctx context.Context, studentID int64, request resourcegendto.GenerateResourcesRequest) generationContext {
@@ -1009,6 +1031,18 @@ func buildNextAction(resource *resourcegenentity.GeneratedResource, request reso
 	}
 }
 
+func pushStatusFromFeedback(request resourcegendto.SubmitFeedbackRequest) string {
+	difficulty := normalizeDifficulty(request.Difficulty)
+	switch {
+	case request.Completed:
+		return "completed"
+	case request.Rating <= 2 || !request.Helpful || difficulty == "hard":
+		return "needs_review"
+	default:
+		return "in_progress"
+	}
+}
+
 func buildFeedbackSummary(feedback []resourcegenentity.ResourceFeedback) resourcegendto.FeedbackSummaryView {
 	summary := resourcegendto.FeedbackSummaryView{
 		Difficulty: map[string]int{"easy": 0, "fit": 0, "hard": 0},
@@ -1351,6 +1385,125 @@ func buildPresentationOutline(job *resourcegenentity.GenerationJob, steps []reso
 	}
 }
 
+func buildDemoScript(job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, resources []resourcegenentity.GeneratedResource) resourcegendto.DemoScriptResponse {
+	knowledgeName := firstNonEmpty(job.KnowledgeName, job.KnowledgeID, "个性化学习资源")
+	resourceLabels := resourceTypeNames(resources)
+	agentNames := agentStepNames(steps)
+	title := "7 分钟演示脚本：" + knowledgeName
+
+	scenes := []resourcegendto.DemoScriptSceneView{
+		{
+			Index:     1,
+			TimeRange: "00:00-00:45",
+			Title:     "赛题痛点与系统定位",
+			Actions: []string{
+				"打开资源中心或作品展示页。",
+				"说明系统面向高等教育个性化资源生成场景。",
+			},
+			Narration: "传统课程资源多但不一定适合每个学生，本系统把学习画像、知识图谱、多智能体资源生成和反馈评估连成闭环。",
+			ProofPoints: []string{
+				"A3 要求的对话式画像、多资源生成和路径推送均有可操作入口。",
+			},
+		},
+		{
+			Index:     2,
+			TimeRange: "00:45-01:40",
+			Title:     "对话式画像与随学刷新",
+			Actions: []string{
+				"输入学习情况描述并生成画像。",
+				"展示 6 个画像维度和画像更新时间线。",
+			},
+			Narration: "系统不是让学生填写长表单，而是从自然语言和后续学习行为中持续抽取画像维度。",
+			ProofPoints: []string{
+				"画像维度包含知识基础、目标、进度、认知风格、易错点和资源偏好。",
+				"学习事件会推动画像刷新。",
+			},
+		},
+		{
+			Index:     3,
+			TimeRange: "01:40-03:00",
+			Title:     "多智能体协同生成资源",
+			Actions: []string{
+				"点击生成资源包。",
+				"展示智能体步骤进度条和步骤摘要。",
+			},
+			Narration: "本次任务调用 " + strings.Join(agentNames, "、") + "，按照画像分析、课程规划、资源生成、安全审查的顺序协作。",
+			ProofPoints: []string{
+				"资源类型包括：" + strings.Join(resourceLabels, "、") + "。",
+				"任务编号：" + strconv.FormatInt(job.ID, 10),
+			},
+		},
+		{
+			Index:     4,
+			TimeRange: "03:00-04:10",
+			Title:     "多模态资源与可信依据",
+			Actions: []string{
+				"打开一份资源详情页。",
+				"展示正文、分镜预览、依据来源和安全审查。",
+			},
+			Narration: "资源详情页展示生成依据和 SafetyReviewerAgent 审查结果，避免资源看起来像无来源的纯模型输出。",
+			ProofPoints: []string{
+				"资源详情页包含知识点、课程、智能体、个性化依据和任务编号。",
+			},
+		},
+		{
+			Index:     5,
+			TimeRange: "04:10-05:25",
+			Title:     "资源推送与学习路径联动",
+			Actions: []string{
+				"展示资源中心右侧的路径资源推送。",
+				"切换到仪表盘查看资源学习效果。",
+			},
+			Narration: "生成结果会进入资源推送流，系统按理解、练习、迁移和复盘阶段给学生安排下一步资源。",
+			ProofPoints: []string{
+				"资源推送项会随完成反馈变成已完成或需调整。",
+			},
+		},
+		{
+			Index:     6,
+			TimeRange: "05:25-06:30",
+			Title:     "反馈评估与闭环优化",
+			Actions: []string{
+				"提交资源评分、难度和完成状态。",
+				"点击随学刷新，展示画像和推荐变化。",
+			},
+			Narration: "反馈不是只做记录，而是会影响资源推送状态、下一步推荐和画像维度。",
+			ProofPoints: []string{
+				"resource_feedbacks、learning_events、resource_push_items 三张表共同支撑闭环。",
+			},
+		},
+		{
+			Index:     7,
+			TimeRange: "06:30-07:00",
+			Title:     "工程可靠性与提交材料",
+			Actions: []string{
+				"展示 Markdown 导出、PPT 大纲和本演示脚本。",
+				"说明测试和构建结果。",
+			},
+			Narration: "系统保留可运行源码、数据库迁移、构建产物和比赛材料，便于复现和答辩。",
+			ProofPoints: []string{
+				"go test ./... 通过。",
+				"npm run build 与 npm run test:run 通过。",
+			},
+		},
+	}
+
+	return resourcegendto.DemoScriptResponse{
+		JobID:    job.ID,
+		Title:    title,
+		Duration: "7 分钟以内",
+		Scenes:   scenes,
+		Checklist: []string{
+			"提前登录学生账号并准备一条画像描述。",
+			"确保已有一个生成完成的资源任务，避免现场等待。",
+			"准备展示资源详情页中的依据来源和安全审查。",
+			"提交一次反馈后展示资源推送状态和画像刷新。",
+			"保留健康检查、测试和构建结果作为工程可靠性证据。",
+		},
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}
+}
+
 func resourceTypeNames(resources []resourcegenentity.GeneratedResource) []string {
 	if len(resources) == 0 {
 		return []string{"讲解文档", "思维导图", "练习题", "实操案例"}
@@ -1545,6 +1698,7 @@ func buildFeedSummary(items []resourcegendto.ResourcePushItemView, events []reso
 }
 
 func pushItemToView(item resourcegenentity.ResourcePushItem, resource resourcegenentity.GeneratedResource) resourcegendto.ResourcePushItemView {
+	status := firstNonEmpty(item.Status, "pending")
 	return resourcegendto.ResourcePushItemView{
 		ID:            item.ID,
 		KnowledgeID:   firstNonEmpty(item.KnowledgeID, resource.KnowledgeID),
@@ -1553,14 +1707,22 @@ func pushItemToView(item resourcegenentity.ResourcePushItem, resource resourcege
 		Stage:         firstNonEmpty(item.Stage, resourceStage(resource.ResourceType)),
 		Reason:        firstNonEmpty(item.Reason, buildPushReason(resource.ResourceType, resource.Reason)),
 		Priority:      item.Priority,
-		Status:        firstNonEmpty(item.Status, "pending"),
-		ActionText:    pushActionText(resource.ResourceType),
+		Status:        status,
+		ActionText:    pushActionText(resource.ResourceType, status),
 		CreatedAt:     item.CreatedAt.Format(time.RFC3339),
 		Resource:      resourceToView(resource),
 	}
 }
 
-func pushActionText(resourceType string) string {
+func pushActionText(resourceType string, status string) string {
+	switch status {
+	case "completed":
+		return "已完成"
+	case "needs_review":
+		return "需调整"
+	case "in_progress":
+		return "继续学习"
+	}
 	switch resourceType {
 	case "practice_questions":
 		return "开始练习"

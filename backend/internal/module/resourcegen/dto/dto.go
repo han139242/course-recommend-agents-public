@@ -220,6 +220,26 @@ type PresentationOutlineResponse struct {
 	GeneratedAt string                  `json:"generatedAt"`
 }
 
+// DemoScriptSceneView describes one timed scene for the competition demo video.
+type DemoScriptSceneView struct {
+	Index       int      `json:"index"`
+	TimeRange   string   `json:"timeRange"`
+	Title       string   `json:"title"`
+	Actions     []string `json:"actions"`
+	Narration   string   `json:"narration"`
+	ProofPoints []string `json:"proofPoints"`
+}
+
+// DemoScriptResponse returns a video-ready 7-minute demo script.
+type DemoScriptResponse struct {
+	JobID       int64                 `json:"jobId"`
+	Title       string                `json:"title"`
+	Duration    string                `json:"duration"`
+	Scenes      []DemoScriptSceneView `json:"scenes"`
+	Checklist   []string              `json:"checklist"`
+	GeneratedAt string                `json:"generatedAt"`
+}
+
 // GenerateResourcesResponse returns the job and generated resources.
 type GenerateResourcesResponse struct {
 	Job       JobView                 `json:"job"`
