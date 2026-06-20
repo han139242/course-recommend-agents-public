@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Compass,
   FileText,
+  ImagePlus,
   PlayCircle,
   RefreshCcw,
   Save,
@@ -23,8 +24,10 @@ import {
   saveLearningProfile,
 } from '../api/profile'
 import {
+  fetchResourceEffectSummary,
   fetchResourceJob,
   generateResources,
+  streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
 import { fetchCurrentStudyPlan, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
@@ -82,10 +85,15 @@ const resourceLoading = ref(false)
 const resourceError = ref('')
 const activeJob = ref(null)
 const generatedResources = ref([])
+const attachedImages = ref([])
 const feedbackDrafts = ref({})
 const feedbackSaving = ref({})
 const feedbackNotice = ref('')
 const feedbackError = ref('')
+
+// 学习效果评估看板
+const effectSummary = ref(null)
+const effectLoading = ref(false)
 
 const activeProfile = computed(() => profilePayload.value?.profile || null)
 
@@ -351,6 +359,40 @@ async function pollJobUntilDone(jobId) {
   return activeJob.value
 }
 
+// SSE 订阅控制器，便于在重新生成或离开页面时中断旧的流。
+let streamController = null
+
+function stopStreaming() {
+  if (streamController) {
+    streamController.abort()
+    streamController = null
+  }
+}
+
+// streamJobUntilDone 优先用 SSE 订阅任务进度；若 SSE 不可用则回退到轮询。
+async function streamJobUntilDone(jobId) {
+  stopStreaming()
+  streamController = new AbortController()
+  let finalJob = activeJob.value
+  try {
+    await streamResourceJob(jobId, {
+      signal: streamController.signal,
+      onEvent: (payload) => {
+        if (!payload || payload.error || !payload.id) return
+        activeJob.value = payload
+        finalJob = payload
+        if (payload.resources?.length) generatedResources.value = payload.resources
+      },
+    })
+    return finalJob
+  } catch {
+    // SSE 中断或不被支持时回退到轮询，保证进度仍能刷新。
+    return pollJobUntilDone(jobId)
+  } finally {
+    streamController = null
+  }
+}
+
 function initFeedbackDrafts(resources = []) {
   const nextDrafts = { ...feedbackDrafts.value }
   resources.forEach((resource) => {
@@ -358,6 +400,40 @@ function initFeedbackDrafts(resources = []) {
     nextDrafts[resource.id] = { rating: 4, difficulty: 'fit', helpful: true, completed: false, comment: '' }
   })
   feedbackDrafts.value = nextDrafts
+}
+
+// onSelectImages 读取学生上传的图片为 data URL，作为多模态生成依据。
+function onSelectImages(event) {
+  const files = Array.from(event.target.files || [])
+  event.target.value = ''
+  for (const file of files) {
+    if (attachedImages.value.length >= 3) break
+    if (!file.type.startsWith('image/')) continue
+    if (file.size > 4 * 1024 * 1024) {
+      resourceError.value = '单张图片需小于 4MB。'
+      continue
+    }
+    const reader = new FileReader()
+    reader.onload = () => {
+      attachedImages.value = [...attachedImages.value, { name: file.name, dataUrl: String(reader.result) }]
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+function removeImage(index) {
+  attachedImages.value = attachedImages.value.filter((_, position) => position !== index)
+}
+
+async function loadEffectSummary() {
+  effectLoading.value = true
+  try {
+    effectSummary.value = await fetchResourceEffectSummary()
+  } catch {
+    effectSummary.value = null
+  } finally {
+    effectLoading.value = false
+  }
 }
 
 async function handleGenerateResources() {
@@ -372,6 +448,7 @@ async function handleGenerateResources() {
   }
 
   stopPolling()
+  stopStreaming()
   resourceLoading.value = true
   resourceError.value = ''
   generatedResources.value = []
@@ -382,17 +459,19 @@ async function handleGenerateResources() {
       courseTitle: resourceForm.value.courseTitle.trim(),
       target: resourceForm.value.target.trim() || profileSummary.value,
       resourceTypes: resourceForm.value.resourceTypes,
+      images: attachedImages.value.map((item) => item.dataUrl),
     })
     activeJob.value = payload?.job || null
     generatedResources.value = payload?.resources || []
 
     if (activeJob.value?.id && activeJob.value.status !== 'completed') {
-      const finalJob = await pollJobUntilDone(activeJob.value.id)
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
       if (finalJob?.status === 'failed') {
         resourceError.value = finalJob.errorMessage || '资源生成失败，请稍后重试。'
       }
     }
     initFeedbackDrafts(generatedResources.value)
+    await loadEffectSummary()
   } catch (err) {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
@@ -409,8 +488,8 @@ async function handleSubmitFeedback(resource) {
   try {
     const payload = await submitResourceFeedback(resource.id, draft)
     feedbackNotice.value = payload?.nextAction || '反馈已记录，画像与推荐策略已更新。'
-    // 反馈后刷新画像，体现“随学随新”闭环。
-    await handleRefreshProfile()
+    // 反馈后刷新画像与学习效果评估，体现“随学随新”闭环。
+    await Promise.all([handleRefreshProfile(), loadEffectSummary()])
   } catch (err) {
     feedbackError.value = err?.message || '反馈提交失败，请稍后重试。'
   } finally {
@@ -419,10 +498,13 @@ async function handleSubmitFeedback(resource) {
 }
 
 onMounted(async () => {
-  await Promise.all([loadCurrentProfile(), loadCurrentPlan()])
+  await Promise.all([loadCurrentProfile(), loadCurrentPlan(), loadEffectSummary()])
 })
 
-onBeforeUnmount(stopPolling)
+onBeforeUnmount(() => {
+  stopPolling()
+  stopStreaming()
+})
 </script>
 
 <template>
@@ -625,6 +707,24 @@ onBeforeUnmount(stopPolling)
           </button>
         </div>
 
+        <div class="image-upload">
+          <div class="image-upload__head">
+            <span>多模态图片（可选）</span>
+            <small>上传教材页 / 题目截图 / 手写笔记，VisionReaderAgent 会读图作为生成依据</small>
+          </div>
+          <div class="image-upload__list">
+            <div v-for="(image, index) in attachedImages" :key="index" class="image-thumb">
+              <img :src="image.dataUrl" :alt="image.name" />
+              <button type="button" class="image-thumb__remove" aria-label="移除图片" @click="removeImage(index)">×</button>
+            </div>
+            <label v-if="attachedImages.length < 3" class="image-add">
+              <input type="file" accept="image/*" multiple hidden @change="onSelectImages" />
+              <ImagePlus :size="18" aria-hidden="true" />
+              <span>添加图片</span>
+            </label>
+          </div>
+        </div>
+
         <div class="button-row button-row--end">
           <button type="button" class="primary-action" :disabled="resourceLoading" @click="handleGenerateResources">
             <Sparkles v-if="!resourceLoading" :size="16" aria-hidden="true" />
@@ -639,7 +739,7 @@ onBeforeUnmount(stopPolling)
         <section v-if="activeJob" class="agent-progress">
           <div class="agent-progress__head">
             <div>
-              <span>任务 #{{ activeJob.id }}</span>
+              <span>任务 #{{ activeJob.id }} · 实时流式进度</span>
               <strong>{{ jobHeadline }}</strong>
             </div>
             <em>{{ activeJob.progress || stepProgress }}%</em>
@@ -715,6 +815,58 @@ onBeforeUnmount(stopPolling)
         <div v-else class="empty-state">
           <FileText :size="22" aria-hidden="true" />
           <p>选择知识点并生成资源包后，这里会展示多智能体协作步骤、资源正文与学习反馈入口。</p>
+        </div>
+      </section>
+
+      <!-- 步骤 6：学习效果评估看板 -->
+      <section class="a3-card">
+        <div class="card-heading">
+          <span class="card-badge">4</span>
+          <div>
+            <span class="card-kicker">Effect</span>
+            <h1>学习效果评估</h1>
+          </div>
+        </div>
+
+        <div v-if="effectLoading" class="empty-state">
+          <RefreshCcw :size="22" aria-hidden="true" />
+          <p>正在统计学习效果…</p>
+        </div>
+        <template v-else-if="effectSummary">
+          <div class="effect-metrics">
+            <article v-for="metric in effectSummary.metrics" :key="metric.key" class="effect-metric">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.hint }}</small>
+            </article>
+          </div>
+
+          <div v-if="effectSummary.difficulty" class="effect-difficulty">
+            <span>难度分布</span>
+            <em>偏易 {{ effectSummary.difficulty.easy || 0 }}</em>
+            <em>适中 {{ effectSummary.difficulty.fit || 0 }}</em>
+            <em>偏难 {{ effectSummary.difficulty.hard || 0 }}</em>
+          </div>
+
+          <div v-if="effectSummary.highlights?.length" class="effect-highlights">
+            <p v-for="line in effectSummary.highlights" :key="line">{{ line }}</p>
+          </div>
+
+          <div v-if="effectSummary.recentEvents?.length" class="effect-events">
+            <div class="section-title">
+              <Bot :size="18" aria-hidden="true" />
+              <strong>近期学习行为</strong>
+            </div>
+            <article v-for="event in effectSummary.recentEvents.slice(0, 5)" :key="event.id" class="effect-event">
+              <span>{{ formatDate(event.occurredAt) }}</span>
+              <strong>{{ event.eventType }}</strong>
+              <small>{{ event.knowledgeName || event.resourceType }}</small>
+            </article>
+          </div>
+        </template>
+        <div v-else class="empty-state">
+          <Sparkles :size="22" aria-hidden="true" />
+          <p>生成资源并提交学习反馈后，这里会展示学习效果评估与随学随新的行为信号。</p>
         </div>
       </section>
     </main>
@@ -1177,6 +1329,183 @@ onBeforeUnmount(stopPolling)
 
 .type-chip--active svg {
   color: #215f9a;
+}
+
+.image-upload {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0.9rem;
+}
+
+.image-upload__head {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.image-upload__head span {
+  color: #43536a;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.image-upload__head small {
+  color: #64748b;
+}
+
+.image-upload__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.image-thumb {
+  position: relative;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 1px solid rgba(90, 112, 132, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-thumb__remove {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(23, 32, 51, 0.72);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.image-add {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 1px dashed rgba(90, 112, 132, 0.4);
+  border-radius: 8px;
+  color: #43536a;
+  background: #f8fbfd;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.image-add:hover {
+  border-color: rgba(33, 95, 154, 0.55);
+  color: #215f9a;
+}
+
+.effect-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.7rem;
+}
+
+.effect-metric {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.8rem;
+  background: #f4f9fd;
+}
+
+.effect-metric span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.effect-metric strong {
+  color: #176b87;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.effect-metric small {
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.effect-difficulty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.effect-difficulty span {
+  color: #43536a;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.effect-difficulty em {
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  color: #24415f;
+  background: #eef6fb;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.effect-highlights {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.effect-highlights p {
+  margin: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  color: #176b87;
+  background: #e8f6fb;
+  line-height: 1.45;
+}
+
+.effect-events {
+  margin-top: 1rem;
+}
+
+.effect-event {
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  background: #ffffff;
+}
+
+.effect-event + .effect-event {
+  margin-top: 0.5rem;
+}
+
+.effect-event span {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.effect-event small {
+  color: #64748b;
 }
 
 .agent-progress {

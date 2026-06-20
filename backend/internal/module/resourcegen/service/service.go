@@ -348,6 +348,97 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 	}, nil
 }
 
+// GetEffectSummary aggregates generated resources, learner feedback and recent
+// learning behaviour into a learning effect-assessment dashboard, evidencing the
+// "学习效果评估 + 随学随新" closed loop required by the A3 problem.
+func (s *Service) GetEffectSummary(ctx context.Context) (*resourcegendto.EffectSummaryResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", 100)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	feedback, err := s.repo.ListFeedback(ctx, studentID, 60)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	events, err := s.repo.ListLearningEvents(ctx, studentID, 12)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	summary := buildFeedbackSummary(feedback)
+
+	// 统计覆盖的知识点数量，用于体现学习广度。
+	knowledgeSet := make(map[string]struct{})
+	for _, resource := range resources {
+		key := strings.TrimSpace(resource.KnowledgeID)
+		if key == "" {
+			key = strings.TrimSpace(resource.KnowledgeName)
+		}
+		if key != "" {
+			knowledgeSet[key] = struct{}{}
+		}
+	}
+
+	helpfulRate := 0
+	completionRate := 0
+	if summary.Total > 0 {
+		helpfulRate = int(float64(summary.HelpfulCount)/float64(summary.Total)*100 + 0.5)
+		completionRate = int(float64(summary.CompletedCount)/float64(summary.Total)*100 + 0.5)
+	}
+
+	averageRatingText := "暂无"
+	if summary.AverageRating > 0 {
+		averageRatingText = strconv.FormatFloat(summary.AverageRating, 'f', 1, 64)
+	}
+
+	metrics := []resourcegendto.EffectMetricView{
+		{Key: "resources", Label: "生成资源", Value: strconv.Itoa(len(resources)), Hint: "多智能体已生成的资源总数"},
+		{Key: "knowledge", Label: "覆盖知识点", Value: strconv.Itoa(len(knowledgeSet)), Hint: "资源关联的不同知识点"},
+		{Key: "completed", Label: "完成学习", Value: strconv.Itoa(summary.CompletedCount), Hint: completionHint(completionRate, summary.Total)},
+		{Key: "rating", Label: "平均评分", Value: averageRatingText, Hint: "满分 5 分"},
+		{Key: "helpful", Label: "有帮助率", Value: strconv.Itoa(helpfulRate) + "%", Hint: strconv.Itoa(summary.HelpfulCount) + " 条反馈认为有帮助"},
+	}
+
+	highlights := buildEffectHighlights(summary, len(resources), len(knowledgeSet), events)
+
+	return &resourcegendto.EffectSummaryResponse{
+		Metrics:      metrics,
+		Difficulty:   summary.Difficulty,
+		Highlights:   highlights,
+		RecentEvents: learningEventsToViews(events),
+		GeneratedAt:  time.Now().Format(time.RFC3339),
+	}, nil
+}
+
+// completionHint 描述资源完成比例。
+func completionHint(rate int, total int) string {
+	if total == 0 {
+		return "完成学习后提交反馈即可统计"
+	}
+	return "占已反馈资源的 " + strconv.Itoa(rate) + "%"
+}
+
+// buildEffectHighlights 生成学习效果评估的文字洞察。
+func buildEffectHighlights(summary resourcegendto.FeedbackSummaryView, resourceCount int, knowledgeCount int, events []resourcegenentity.LearningEvent) []string {
+	highlights := make([]string, 0, 3)
+	if resourceCount == 0 {
+		return []string{"还没有生成资源，先完成一次资源生成即可看到学习效果评估。"}
+	}
+	highlights = append(highlights, "已生成 "+strconv.Itoa(resourceCount)+" 份个性化资源，覆盖 "+strconv.Itoa(knowledgeCount)+" 个知识点。")
+	if summary.Total > 0 {
+		highlights = append(highlights, summary.Insight)
+	}
+	if len(events) > 0 {
+		highlights = append(highlights, "近期记录到 "+strconv.Itoa(len(events))+" 条学习行为信号，画像会据此随学随新。")
+	}
+	return highlights
+}
+
 func (s *Service) GetFeed(ctx context.Context) (*resourcegendto.ResourceFeedResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {

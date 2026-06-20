@@ -1,4 +1,4 @@
-import { request } from './request'
+import { request, streamRequest } from './request'
 
 function toQueryString(params = {}) {
   const query = new URLSearchParams()
@@ -19,6 +19,15 @@ export function generateResources(payload) {
 
 export function fetchResourceJob(jobId) {
   return request(`/resources/jobs/${jobId}`)
+}
+
+// streamResourceJob 以 SSE 订阅资源生成任务进度，onEvent 会收到每次的任务快照。
+export function streamResourceJob(jobId, { onEvent, signal } = {}) {
+  return streamRequest(`/resources/jobs/${jobId}/stream`, {
+    method: 'GET',
+    onEvent,
+    signal,
+  })
 }
 
 export function exportResourceJobMarkdown(jobId) {
@@ -58,6 +67,10 @@ export function submitResourceFeedback(resourceId, payload) {
 
 export function fetchResourceRecommendations() {
   return request('/resources/recommendations')
+}
+
+export function fetchResourceEffectSummary() {
+  return request('/resources/effect-summary')
 }
 
 export function recordLearningEvent(payload) {

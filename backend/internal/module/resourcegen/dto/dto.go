@@ -246,6 +246,24 @@ type GenerateResourcesResponse struct {
 	Resources []GeneratedResourceView `json:"resources"`
 }
 
+// EffectMetricView is one headline metric on the learning-effect dashboard.
+type EffectMetricView struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
+	Value string `json:"value"`
+	Hint  string `json:"hint,omitempty"`
+}
+
+// EffectSummaryResponse aggregates resource usage and feedback into a learning
+// effect-assessment dashboard for the A3 workbench.
+type EffectSummaryResponse struct {
+	Metrics      []EffectMetricView  `json:"metrics"`
+	Difficulty   map[string]int      `json:"difficulty"`
+	Highlights   []string            `json:"highlights"`
+	RecentEvents []LearningEventView `json:"recentEvents,omitempty"`
+	GeneratedAt  string              `json:"generatedAt"`
+}
+
 // ListResourcesResponse returns current student's resource library.
 type ListResourcesResponse struct {
 	List  []GeneratedResourceView `json:"list"`

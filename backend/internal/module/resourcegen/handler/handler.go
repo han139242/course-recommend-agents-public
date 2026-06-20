@@ -1,6 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	resourcegendto "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/dto"
 	resourcegenservice "github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/service"
@@ -37,6 +41,71 @@ func (h *Handler) GetJob(ctx *gin.Context) {
 		return
 	}
 	result.Success(ctx, response)
+}
+
+// StreamJob streams generation job progress over SSE so the frontend gets live
+// agent-step and progress updates without polling. Each event is the JSON job
+// view; the stream ends with a [DONE] sentinel once the job completes or fails.
+func (h *Handler) StreamJob(ctx *gin.Context) {
+	ctx.Status(http.StatusOK)
+	ctx.Header("Content-Type", "text/event-stream")
+	ctx.Header("Cache-Control", "no-cache")
+	ctx.Header("Connection", "keep-alive")
+	ctx.Header("X-Accel-Buffering", "no")
+
+	flusher, canFlush := ctx.Writer.(http.Flusher)
+	reqCtx := ctx.Request.Context()
+	jobID := ctx.Param("jobId")
+
+	writeEvent := func(payload any) {
+		data, _ := json.Marshal(payload)
+		_, _ = ctx.Writer.Write([]byte("data: "))
+		_, _ = ctx.Writer.Write(data)
+		_, _ = ctx.Writer.Write([]byte("\n\n"))
+		if canFlush {
+			flusher.Flush()
+		}
+	}
+
+	finish := func() {
+		_, _ = ctx.Writer.Write([]byte("data: [DONE]\n\n"))
+		if canFlush {
+			flusher.Flush()
+		}
+	}
+
+	// emit 推送一次任务快照，返回任务是否已结束。
+	emit := func() bool {
+		view, err := h.service.GetJob(reqCtx, jobID)
+		if err != nil {
+			appErr := apperr.AsAppError(err)
+			writeEvent(map[string]any{"error": appErr.Message})
+			return true
+		}
+		writeEvent(view)
+		return view.Status == "completed" || view.Status == "failed"
+	}
+
+	if emit() {
+		finish()
+		return
+	}
+
+	ticker := time.NewTicker(700 * time.Millisecond)
+	defer ticker.Stop()
+	deadline := time.Now().Add(3 * time.Minute)
+
+	for {
+		select {
+		case <-reqCtx.Done():
+			return
+		case <-ticker.C:
+			if emit() || time.Now().After(deadline) {
+				finish()
+				return
+			}
+		}
+	}
 }
 
 func (h *Handler) ExportJob(ctx *gin.Context) {
@@ -114,6 +183,15 @@ func (h *Handler) SubmitFeedback(ctx *gin.Context) {
 
 func (h *Handler) GetRecommendations(ctx *gin.Context) {
 	response, err := h.service.GetRecommendations(ctx.Request.Context())
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetEffectSummary(ctx *gin.Context) {
+	response, err := h.service.GetEffectSummary(ctx.Request.Context())
 	if err != nil {
 		writeError(ctx, err)
 		return
