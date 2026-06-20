@@ -8,6 +8,7 @@ const KnowledgeDetail = () => import('./views/KnowledgeDetail.vue')
 const DashboardView = () => import('./views/DashboardView.vue')
 const ResourceCenterView = () => import('./views/ResourceCenterView.vue')
 const ResourceDetailView = () => import('./views/ResourceDetailView.vue')
+const A3LearningAgentView = () => import('./views/A3LearningAgentView.vue')
 const CompetitionShowcaseView = () => import('./views/CompetitionShowcaseView.vue')
 const EvaluationView = () => import('./views/EvaluationView.vue')
 const FrontierLibraryView = () => import('./views/FrontierLibraryView.vue')
@@ -56,6 +57,15 @@ const routes = [
     component: ResourceDetailView,
     meta: {
       title: '资源详情',
+      requiresAuth: true,
+    },
+  },
+  {
+    path: '/a3-agent',
+    name: 'a3-learning-agent',
+    component: A3LearningAgentView,
+    meta: {
+      title: 'A3 学习智能体工作台',
       requiresAuth: true,
     },
   },

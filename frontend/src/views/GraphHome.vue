@@ -748,6 +748,10 @@ onBeforeUnmount(() => {
           <BrainCircuit :size="16" aria-hidden="true" />
           能力图谱
         </RouterLink>
+        <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/a3-agent">
+          <GraduationCap :size="16" aria-hidden="true" />
+          学习智能体
+        </RouterLink>
         <RouterLink v-if="userStore.isAuthenticated" class="secondary-btn" to="/resources">
           <Sparkles :size="16" aria-hidden="true" />
           资源生成
