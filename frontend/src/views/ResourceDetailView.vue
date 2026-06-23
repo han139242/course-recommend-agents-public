@@ -6,6 +6,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import {
   fetchResource,
   fetchResourceMediaStatus,
+  fetchResourceProvenance,
   fetchResourceQualityReport,
   fetchResourceSafetyReport,
   recordLearningEvent,
@@ -24,6 +25,8 @@ const qualityReport = ref(null)
 const qualityLoading = ref(false)
 const mediaStatus = ref(null)
 const mediaStatusLoading = ref(false)
+const provenance = ref(null)
+const provenanceLoading = ref(false)
 const feedbackSaving = ref(false)
 const feedbackNotice = ref('')
 const feedbackError = ref('')
@@ -144,6 +147,22 @@ async function loadMediaStatus() {
   }
 }
 
+async function loadProvenance() {
+  if (!resourceId.value) return
+  provenanceLoading.value = true
+  try {
+    provenance.value = await fetchResourceProvenance(resourceId.value)
+  } catch (err) {
+    provenance.value = {
+      summary: err?.message || '生成追溯读取失败。',
+      steps: [],
+      events: [],
+    }
+  } finally {
+    provenanceLoading.value = false
+  }
+}
+
 async function handleSubmitFeedback() {
   if (!resourceId.value) return
   feedbackSaving.value = true
@@ -161,7 +180,7 @@ async function handleSubmitFeedback() {
 
 onMounted(async () => {
   await loadResource()
-  await Promise.all([loadSafetyReport(), loadQualityReport(), loadMediaStatus()])
+  await Promise.all([loadSafetyReport(), loadQualityReport(), loadMediaStatus(), loadProvenance()])
 })
 </script>
 
@@ -226,6 +245,28 @@ onMounted(async () => {
             <article v-for="item in evidenceList" :key="`${item.label}-${item.value}`">
               <span>{{ item.label }}</span>
               <p>{{ item.value }}</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="side-panel">
+          <div class="section-heading">
+            <Sparkles :size="18" aria-hidden="true" />
+            <strong>生成追溯</strong>
+          </div>
+          <div v-if="provenanceLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>读取追溯链</p>
+          </div>
+          <div v-else-if="provenance" class="provenance-box">
+            <p>{{ provenance.summary }}</p>
+            <article v-for="step in provenance.steps || []" :key="step.id || step.agentKey">
+              <strong>{{ step.agentName }}</strong>
+              <small>{{ step.summary }}</small>
+            </article>
+            <article v-for="event in provenance.events || []" :key="event.id">
+              <strong>{{ event.eventType }}</strong>
+              <small>{{ event.knowledgeName || event.resourceType || '学习行为信号' }}</small>
             </article>
           </div>
         </section>
@@ -458,10 +499,31 @@ onMounted(async () => {
 .safety-box,
 .quality-box,
 .media-status-box,
+.provenance-box,
 .feedback-form {
   display: grid;
   gap: 0.7rem;
   padding: 0.9rem;
+}
+
+.provenance-box p {
+  margin: 0;
+  color: #43536a;
+  line-height: 1.5;
+}
+
+.provenance-box article {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #f8fbfd;
+}
+
+.provenance-box small {
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .quality-metric {

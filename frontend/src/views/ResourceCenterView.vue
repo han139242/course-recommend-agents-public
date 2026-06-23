@@ -20,6 +20,8 @@ import { extractLearningProfile, fetchLearningProfile, fetchProfileTimeline, ref
 import {
   compareResources,
   exportResourceJobMarkdown,
+  fetchJobEvidencePackage,
+  fetchJobReviewSummary,
   fetchResourceFeed,
   fetchResourceDemoScript,
   fetchResourceJob,
@@ -31,9 +33,11 @@ import {
   fetchResources,
   generateResourceImage,
   generateResourceVideo,
+  generateResourceVariant,
   generateResources,
   retryResourceJob,
   streamResourceJob,
+  fetchStudyChecklist,
   submitResourceFeedback,
 } from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
@@ -95,6 +99,16 @@ const compareSelected = ref([])
 const compareLoading = ref(false)
 const compareResult = ref(null)
 const retryingJob = ref(false)
+const variantGeneratingId = ref(null)
+const reviewSummaryLoading = ref(false)
+const reviewSummary = ref(null)
+const reviewSummaryError = ref('')
+const evidenceLoading = ref(false)
+const evidencePackage = ref(null)
+const evidenceError = ref('')
+const checklistLoading = ref(false)
+const studyChecklist = ref(null)
+const checklistError = ref('')
 const exportLoading = ref(false)
 const exportPayload = ref(null)
 const exportError = ref('')
@@ -342,6 +356,18 @@ function stopStreaming() {
   }
 }
 
+function clearJobArtifacts() {
+  exportPayload.value = null
+  presentationOutline.value = null
+  demoScript.value = null
+  reviewSummary.value = null
+  reviewSummaryError.value = ''
+  evidencePackage.value = null
+  evidenceError.value = ''
+  studyChecklist.value = null
+  checklistError.value = ''
+}
+
 function waitForNextPoll(ms, token) {
   return new Promise((resolve) => {
     pollTimer = setTimeout(() => {
@@ -413,9 +439,7 @@ async function handleGenerateResources() {
   resourceLoading.value = true
   resourceError.value = ''
   generatedResources.value = []
-  exportPayload.value = null
-  presentationOutline.value = null
-  demoScript.value = null
+  clearJobArtifacts()
   try {
     const payload = await generateResources({
       knowledgeId: resourceForm.value.knowledgeId.trim(),
@@ -516,9 +540,7 @@ async function handleRegenerate(resource, difficulty) {
   stopPolling()
   regeneratingId.value = resource.id
   resourceError.value = ''
-  exportPayload.value = null
-  presentationOutline.value = null
-  demoScript.value = null
+  clearJobArtifacts()
   try {
     const payload = await generateResources({
       knowledgeId: resource.knowledgeId || resourceForm.value.knowledgeId.trim(),
@@ -549,6 +571,38 @@ async function handleRegenerate(resource, difficulty) {
   }
 }
 
+async function handleGenerateVariant(resource, mode) {
+  if (!resource?.id || variantGeneratingId.value !== null || resourceLoading.value) return
+
+  stopPolling()
+  variantGeneratingId.value = resource.id
+  resourceError.value = ''
+  clearJobArtifacts()
+  try {
+    const payload = await generateResourceVariant(resource.id, {
+      mode,
+      difficulty: mode === 'deepen' ? 'harder' : mode === 'simplify' ? 'easier' : 'normal',
+      target: resourceForm.value.target.trim() || profileSummary.value,
+    })
+    activeJob.value = payload?.job || null
+    generatedResources.value = payload?.resources || []
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
+      if (finalJob?.status === 'failed') {
+        resourceError.value = finalJob.errorMessage || '变体生成失败，请稍后重试。'
+      }
+    }
+    initFeedbackDrafts(generatedResources.value)
+    await loadResourceLibrary()
+    await loadRecommendations()
+    await loadResourceFeed()
+  } catch (err) {
+    resourceError.value = err?.message || '变体生成失败，请稍后重试。'
+  } finally {
+    variantGeneratingId.value = null
+  }
+}
+
 async function handleRetryJob() {
   if (!activeJob.value?.id || retryingJob.value || resourceLoading.value) return
 
@@ -556,9 +610,7 @@ async function handleRetryJob() {
   retryingJob.value = true
   resourceError.value = ''
   generatedResources.value = []
-  exportPayload.value = null
-  presentationOutline.value = null
-  demoScript.value = null
+  clearJobArtifacts()
   try {
     const payload = await retryResourceJob(activeJob.value.id, {
       target: resourceForm.value.target.trim() || activeJob.value.target || profileSummary.value,
@@ -623,6 +675,48 @@ async function handleExportJob() {
     exportError.value = err?.message || '资源包导出失败，请稍后重试。'
   } finally {
     exportLoading.value = false
+  }
+}
+
+async function handleLoadReviewSummary() {
+  if (!activeJob.value?.id) return
+
+  reviewSummaryLoading.value = true
+  reviewSummaryError.value = ''
+  try {
+    reviewSummary.value = await fetchJobReviewSummary(activeJob.value.id)
+  } catch (err) {
+    reviewSummaryError.value = err?.message || '任务评审摘要生成失败，请稍后重试。'
+  } finally {
+    reviewSummaryLoading.value = false
+  }
+}
+
+async function handleLoadEvidencePackage() {
+  if (!activeJob.value?.id) return
+
+  evidenceLoading.value = true
+  evidenceError.value = ''
+  try {
+    evidencePackage.value = await fetchJobEvidencePackage(activeJob.value.id)
+  } catch (err) {
+    evidenceError.value = err?.message || '证据包生成失败，请稍后重试。'
+  } finally {
+    evidenceLoading.value = false
+  }
+}
+
+async function handleLoadStudyChecklist() {
+  if (!activeJob.value?.id) return
+
+  checklistLoading.value = true
+  checklistError.value = ''
+  try {
+    studyChecklist.value = await fetchStudyChecklist(activeJob.value.id)
+  } catch (err) {
+    checklistError.value = err?.message || '学习清单生成失败，请稍后重试。'
+  } finally {
+    checklistLoading.value = false
   }
 }
 
@@ -1093,6 +1187,18 @@ onBeforeUnmount(stopPolling)
               <RefreshCcw :size="16" aria-hidden="true" />
               {{ retryingJob ? '重试中' : '重试任务' }}
             </button>
+            <button type="button" class="secondary-action" :disabled="reviewSummaryLoading || activeJob.status !== 'completed'" @click="handleLoadReviewSummary">
+              <CheckCircle2 :size="16" aria-hidden="true" />
+              {{ reviewSummaryLoading ? '评审中' : '任务评审摘要' }}
+            </button>
+            <button type="button" class="secondary-action" :disabled="checklistLoading || activeJob.status !== 'completed'" @click="handleLoadStudyChecklist">
+              <FileText :size="16" aria-hidden="true" />
+              {{ checklistLoading ? '生成中' : '学习清单' }}
+            </button>
+            <button type="button" class="secondary-action" :disabled="evidenceLoading || activeJob.status !== 'completed'" @click="handleLoadEvidencePackage">
+              <Sparkles :size="16" aria-hidden="true" />
+              {{ evidenceLoading ? '打包中' : '证据包 JSON' }}
+            </button>
             <button type="button" class="secondary-action" :disabled="outlineLoading || activeJob.status !== 'completed'" @click="handleLoadPresentationOutline">
               <Sparkles :size="16" aria-hidden="true" />
               {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
@@ -1109,6 +1215,53 @@ onBeforeUnmount(stopPolling)
           <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
           <p v-if="demoScriptError" class="inline-error">{{ demoScriptError }}</p>
           <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+          <p v-if="reviewSummaryError" class="inline-error">{{ reviewSummaryError }}</p>
+          <p v-if="evidenceError" class="inline-error">{{ evidenceError }}</p>
+          <p v-if="checklistError" class="inline-error">{{ checklistError }}</p>
+          <div v-if="reviewSummary" class="review-box">
+            <div class="review-box__head">
+              <div>
+                <strong>任务评审摘要</strong>
+                <small>{{ reviewSummary.summary }}</small>
+              </div>
+              <span>{{ reviewSummary.averageQuality }} / {{ reviewSummary.averageSafety }}</span>
+            </div>
+            <div class="review-metrics">
+              <article>
+                <span>资源数</span>
+                <strong>{{ reviewSummary.resourceCount }}</strong>
+              </article>
+              <article>
+                <span>媒体就绪</span>
+                <strong>{{ reviewSummary.mediaReadyCount }}</strong>
+              </article>
+              <article>
+                <span>待跟踪</span>
+                <strong>{{ reviewSummary.mediaPendingCount }}</strong>
+              </article>
+            </div>
+            <div v-if="reviewSummary.suggestions?.length" class="safety-list">
+              <strong>改进建议</strong>
+              <p v-for="item in reviewSummary.suggestions" :key="item">{{ item }}</p>
+            </div>
+          </div>
+          <div v-if="studyChecklist" class="checklist-box">
+            <div class="review-box__head">
+              <div>
+                <strong>学习清单</strong>
+                <small>{{ studyChecklist.summary }}</small>
+              </div>
+              <span>{{ studyChecklist.items?.length || 0 }} 项</span>
+            </div>
+            <article v-for="item in studyChecklist.items || []" :key="`${item.index}-${item.title}`">
+              <span>{{ item.index }}</span>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.action }}</p>
+                <small>{{ item.expected }}</small>
+              </div>
+            </article>
+          </div>
           <div v-if="presentationOutline" class="outline-box">
             <div class="outline-box__head">
               <div>
@@ -1156,6 +1309,13 @@ onBeforeUnmount(stopPolling)
             </div>
             <textarea readonly :value="exportPayload.content" rows="8" />
           </div>
+          <div v-if="evidencePackage" class="export-box">
+            <div class="export-box__head">
+              <strong>{{ evidencePackage.fileName }}</strong>
+              <small>已生成可提交的 JSON 证据包</small>
+            </div>
+            <textarea readonly :value="JSON.stringify(evidencePackage, null, 2)" rows="8" />
+          </div>
           <div class="agent-steps">
             <article v-for="step in activeJob.steps || []" :key="step.id || step.agentKey" class="agent-step">
               <span class="agent-step__status" :class="`agent-step__status--${step.status}`" />
@@ -1197,7 +1357,7 @@ onBeforeUnmount(stopPolling)
             </div>
             <ResourceContent :content="resource.content" :format="resource.format" />
             <div class="regen-actions">
-              <span>难度不合适？让智能体重写：</span>
+              <span>难度不合适？让智能体重写或生成变体：</span>
               <button
                 type="button"
                 class="ghost-mini"
@@ -1213,6 +1373,22 @@ onBeforeUnmount(stopPolling)
                 @click="handleRegenerate(resource, 'harder')"
               >
                 更难一版
+              </button>
+              <button
+                type="button"
+                class="ghost-mini"
+                :disabled="variantGeneratingId !== null || resourceLoading"
+                @click="handleGenerateVariant(resource, 'example')"
+              >
+                {{ variantGeneratingId === resource.id ? '变体生成中…' : '补充例子' }}
+              </button>
+              <button
+                type="button"
+                class="ghost-mini"
+                :disabled="variantGeneratingId !== null || resourceLoading"
+                @click="handleGenerateVariant(resource, 'visual')"
+              >
+                可视化变体
               </button>
             </div>
             <div class="safety-actions">
@@ -2231,7 +2407,9 @@ onBeforeUnmount(stopPolling)
 .compare-toolbar,
 .media-status-box,
 .quality-report,
-.compare-result {
+.compare-result,
+.review-box,
+.checklist-box {
   display: grid;
   gap: 0.75rem;
   margin: 0.75rem 0.9rem 0;
@@ -2258,6 +2436,79 @@ onBeforeUnmount(stopPolling)
 
 .compare-result {
   margin: 0 0 0.75rem;
+}
+
+.review-box,
+.checklist-box {
+  margin: 0.8rem 0 0;
+  background: #ffffff;
+}
+
+.review-box__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.review-box__head strong,
+.review-box__head small {
+  display: block;
+}
+
+.review-box__head small {
+  margin-top: 0.2rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.review-box__head span {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  color: #176b87;
+  background: rgba(23, 107, 135, 0.1);
+  font-weight: 900;
+}
+
+.review-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.review-metrics article,
+.checklist-box article {
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #f8fbfd;
+}
+
+.review-metrics span,
+.checklist-box span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.review-metrics strong {
+  display: block;
+  margin-top: 0.15rem;
+  color: #172033;
+  font-size: 1.1rem;
+}
+
+.checklist-box article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.checklist-box p,
+.checklist-box small {
+  margin: 0.2rem 0 0;
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .compare-result article {

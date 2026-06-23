@@ -264,6 +264,87 @@ type CompareResourcesResponse struct {
 	GeneratedAt string                       `json:"generatedAt"`
 }
 
+// JobReviewResourceView is one resource row in the task-level review summary.
+type JobReviewResourceView struct {
+	Resource GeneratedResourceView     `json:"resource"`
+	Safety   SafetyReportView          `json:"safety"`
+	Quality  ResourceQualityReportView `json:"quality"`
+	Media    *MediaStatusResponse      `json:"media,omitempty"`
+}
+
+// JobReviewSummaryResponse aggregates safety, quality and media readiness for
+// an entire generation job.
+type JobReviewSummaryResponse struct {
+	JobID             int64                   `json:"jobId"`
+	Summary           string                  `json:"summary"`
+	ResourceCount     int                     `json:"resourceCount"`
+	AverageQuality    int                     `json:"averageQuality"`
+	AverageSafety     int                     `json:"averageSafety"`
+	MediaReadyCount   int                     `json:"mediaReadyCount"`
+	MediaPendingCount int                     `json:"mediaPendingCount"`
+	Risks             []string                `json:"risks"`
+	Suggestions       []string                `json:"suggestions"`
+	Resources         []JobReviewResourceView `json:"resources"`
+	GeneratedAt       string                  `json:"generatedAt"`
+}
+
+// EvidencePackageResourceView packages one resource with its review evidence.
+type EvidencePackageResourceView struct {
+	Resource GeneratedResourceView     `json:"resource"`
+	Safety   SafetyReportView          `json:"safety"`
+	Quality  ResourceQualityReportView `json:"quality"`
+	Media    *MediaStatusResponse      `json:"media,omitempty"`
+}
+
+// JobEvidencePackageResponse returns a JSON submission/evidence bundle for
+// competition materials.
+type JobEvidencePackageResponse struct {
+	JobID       int64                         `json:"jobId"`
+	FileName    string                        `json:"fileName"`
+	Job         JobView                       `json:"job"`
+	Steps       []AgentStepView               `json:"steps"`
+	Resources   []EvidencePackageResourceView `json:"resources"`
+	Checklist   []string                      `json:"checklist"`
+	GeneratedAt string                        `json:"generatedAt"`
+}
+
+// StudyChecklistItemView is one actionable learner step derived from a
+// generated resource package.
+type StudyChecklistItemView struct {
+	Index      int    `json:"index"`
+	ResourceID int64  `json:"resourceId,omitempty"`
+	Title      string `json:"title"`
+	Action     string `json:"action"`
+	Expected   string `json:"expected"`
+	Status     string `json:"status"`
+}
+
+// StudyChecklistResponse gives students an ordered resource-use plan.
+type StudyChecklistResponse struct {
+	JobID       int64                    `json:"jobId"`
+	Summary     string                   `json:"summary"`
+	Items       []StudyChecklistItemView `json:"items"`
+	GeneratedAt string                   `json:"generatedAt"`
+}
+
+// ResourceVariantRequest asks the system to generate one improved variant from
+// a specific resource.
+type ResourceVariantRequest struct {
+	Mode       string `json:"mode" binding:"omitempty,oneof=simplify deepen example quiz visual"`
+	Target     string `json:"target" binding:"omitempty,max=500"`
+	Difficulty string `json:"difficulty" binding:"omitempty,oneof=easier harder normal"`
+}
+
+// ResourceProvenanceResponse exposes the generation trace for one resource.
+type ResourceProvenanceResponse struct {
+	Resource    GeneratedResourceView `json:"resource"`
+	Job         JobView               `json:"job"`
+	Steps       []AgentStepView       `json:"steps"`
+	Events      []LearningEventView   `json:"events"`
+	Summary     string                `json:"summary"`
+	GeneratedAt string                `json:"generatedAt"`
+}
+
 // ExportJobResponse returns an exportable Markdown package.
 type ExportJobResponse struct {
 	JobID       int64  `json:"jobId"`

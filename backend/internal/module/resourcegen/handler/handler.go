@@ -131,6 +131,33 @@ func (h *Handler) ExportJob(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) GetJobReviewSummary(ctx *gin.Context) {
+	response, err := h.service.GetJobReviewSummary(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetJobEvidencePackage(ctx *gin.Context) {
+	response, err := h.service.GetJobEvidencePackage(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetStudyChecklist(ctx *gin.Context) {
+	response, err := h.service.GetStudyChecklist(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 func (h *Handler) GetPresentationOutline(ctx *gin.Context) {
 	response, err := h.service.GetPresentationOutline(ctx.Request.Context(), ctx.Param("jobId"))
 	if err != nil {
@@ -192,6 +219,29 @@ func (h *Handler) GetMediaStatus(ctx *gin.Context) {
 
 func (h *Handler) GetQualityReport(ctx *gin.Context) {
 	response, err := h.service.GetQualityReport(ctx.Request.Context(), ctx.Param("resourceId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GenerateVariant(ctx *gin.Context) {
+	var request resourcegendto.ResourceVariantRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.GenerateVariant(ctx.Request.Context(), ctx.Param("resourceId"), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetProvenance(ctx *gin.Context) {
+	response, err := h.service.GetProvenance(ctx.Request.Context(), ctx.Param("resourceId"))
 	if err != nil {
 		writeError(ctx, err)
 		return

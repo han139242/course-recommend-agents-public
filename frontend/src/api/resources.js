@@ -63,6 +63,18 @@ export function exportResourceJobMarkdown(jobId) {
   return request(`/resources/jobs/${jobId}/export`)
 }
 
+export function fetchJobReviewSummary(jobId) {
+  return request(`/resources/jobs/${jobId}/review-summary`)
+}
+
+export function fetchJobEvidencePackage(jobId) {
+  return request(`/resources/jobs/${jobId}/evidence-package`)
+}
+
+export function fetchStudyChecklist(jobId) {
+  return request(`/resources/jobs/${jobId}/study-checklist`)
+}
+
 export function fetchResourcePresentationOutline(jobId) {
   return request(`/resources/jobs/${jobId}/presentation-outline`)
 }
@@ -93,6 +105,17 @@ export function fetchResourceMediaStatus(resourceId) {
 
 export function fetchResourceQualityReport(resourceId) {
   return request(`/resources/${resourceId}/quality-report`)
+}
+
+export function fetchResourceProvenance(resourceId) {
+  return request(`/resources/${resourceId}/provenance`)
+}
+
+export function generateResourceVariant(resourceId, payload = {}) {
+  return request(`/resources/${resourceId}/variant`, {
+    method: 'POST',
+    body: payload,
+  })
 }
 
 export function compareResources(resourceIds) {

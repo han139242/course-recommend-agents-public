@@ -1074,6 +1074,187 @@ func (s *Service) CompareResources(ctx context.Context, request resourcegendto.C
 	}, nil
 }
 
+func (s *Service) GetJobReviewSummary(ctx context.Context, rawJobID string) (*resourcegendto.JobReviewSummaryResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	job, _, resources, err := s.getJobParts(ctx, studentID, rawJobID)
+	if err != nil {
+		return nil, err
+	}
+	feedback, _ := s.repo.ListFeedback(ctx, studentID, 100)
+	review := buildJobReviewSummary(job, resources, feedback)
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "job_review_generated",
+		KnowledgeID:   job.KnowledgeID,
+		KnowledgeName: job.KnowledgeName,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"jobId":          job.ID,
+			"averageQuality": review.AverageQuality,
+			"averageSafety":  review.AverageSafety,
+		}),
+	})
+	return &review, nil
+}
+
+func (s *Service) GetJobEvidencePackage(ctx context.Context, rawJobID string) (*resourcegendto.JobEvidencePackageResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	job, steps, resources, err := s.getJobParts(ctx, studentID, rawJobID)
+	if err != nil {
+		return nil, err
+	}
+	feedback, _ := s.repo.ListFeedback(ctx, studentID, 100)
+	packageView := buildEvidencePackage(job, steps, resources, feedback)
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "evidence_package_exported",
+		KnowledgeID:   job.KnowledgeID,
+		KnowledgeName: job.KnowledgeName,
+		PayloadJSON:   mustEventPayload(map[string]any{"jobId": job.ID, "resourceCount": len(resources)}),
+	})
+	return &packageView, nil
+}
+
+func (s *Service) GetStudyChecklist(ctx context.Context, rawJobID string) (*resourcegendto.StudyChecklistResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	job, _, resources, err := s.getJobParts(ctx, studentID, rawJobID)
+	if err != nil {
+		return nil, err
+	}
+	checklist := buildStudyChecklist(job, resources)
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "study_checklist_generated",
+		KnowledgeID:   job.KnowledgeID,
+		KnowledgeName: job.KnowledgeName,
+		PayloadJSON:   mustEventPayload(map[string]any{"jobId": job.ID, "items": len(checklist.Items)}),
+	})
+	return &checklist, nil
+}
+
+func (s *Service) GenerateVariant(ctx context.Context, rawResourceID string, request resourcegendto.ResourceVariantRequest) (*resourcegendto.GenerateResourcesResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	target := variantTarget(*resource, request)
+	modeType := variantResourceType(resource.ResourceType, request.Mode)
+
+	if resource.ResourceType == "generated_image" {
+		media, err := s.GenerateImage(ctx, resourcegendto.GenerateMediaRequest{
+			KnowledgeID:   resource.KnowledgeID,
+			KnowledgeName: firstNonEmpty(resource.KnowledgeName, resource.KnowledgeID),
+			CourseTitle:   resource.CourseTitle,
+			Target:        target,
+			Prompt:        target,
+			Size:          "1024x1024",
+		})
+		if err != nil {
+			return nil, err
+		}
+		return s.responseForGeneratedResource(ctx, studentID, media.Resource.JobID)
+	}
+	if resource.ResourceType == "generated_video" {
+		media, err := s.GenerateVideo(ctx, resourcegendto.GenerateMediaRequest{
+			KnowledgeID:   resource.KnowledgeID,
+			KnowledgeName: firstNonEmpty(resource.KnowledgeName, resource.KnowledgeID),
+			CourseTitle:   resource.CourseTitle,
+			Target:        target,
+			Prompt:        target,
+			Size:          "1280x720",
+			DurationSec:   6,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return s.responseForGeneratedResource(ctx, studentID, media.Resource.JobID)
+	}
+
+	response, err := s.Generate(ctx, resourcegendto.GenerateResourcesRequest{
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: firstNonEmpty(resource.KnowledgeName, resource.KnowledgeID),
+		CourseTitle:   resource.CourseTitle,
+		Target:        target,
+		ResourceTypes: []string{modeType},
+		Difficulty:    request.Difficulty,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if response != nil {
+		s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+			StudentID:     studentID,
+			EventType:     "resource_variant_started",
+			KnowledgeID:   resource.KnowledgeID,
+			KnowledgeName: resource.KnowledgeName,
+			ResourceID:    resource.ID,
+			ResourceType:  resource.ResourceType,
+			PayloadJSON: mustEventPayload(map[string]any{
+				"mode":     request.Mode,
+				"target":   target,
+				"newJobId": response.Job.ID,
+			}),
+		})
+	}
+	return response, nil
+}
+
+func (s *Service) GetProvenance(ctx context.Context, rawResourceID string) (*resourcegendto.ResourceProvenanceResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	job, steps, _, err := s.repo.GetJob(ctx, studentID, resource.JobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	events, _ := s.repo.ListLearningEvents(ctx, studentID, 80)
+	view := buildProvenance(resource, job, steps, events)
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "resource_provenance_viewed",
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON:   mustEventPayload(map[string]any{"jobId": job.ID}),
+	})
+	return &view, nil
+}
+
 func (s *Service) ExportJobMarkdown(ctx context.Context, rawJobID string) (*resourcegendto.ExportJobResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {
@@ -2166,6 +2347,318 @@ func buildComparisonSummary(items []resourcegendto.ResourceComparisonItemView) s
 	return fmt.Sprintf("建议优先使用《%s》，综合质量分 %d，比第二名高 %d 分。", winner.Resource.Title, winner.Quality.Score, gap)
 }
 
+func (s *Service) getJobParts(ctx context.Context, studentID int64, rawJobID string) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error) {
+	jobID, err := strconv.ParseInt(strings.TrimSpace(rawJobID), 10, 64)
+	if err != nil || jobID <= 0 {
+		return nil, nil, nil, apperr.ErrBadRequest
+	}
+	job, steps, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, nil, nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, nil, nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	return job, steps, resources, nil
+}
+
+func (s *Service) responseForGeneratedResource(ctx context.Context, studentID int64, jobID int64) (*resourcegendto.GenerateResourcesResponse, error) {
+	job, steps, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	view := jobToView(job, steps, resources)
+	return &resourcegendto.GenerateResourcesResponse{Job: view, Resources: view.Resources}, nil
+}
+
+func buildJobReviewSummary(job *resourcegenentity.GenerationJob, resources []resourcegenentity.GeneratedResource, feedback []resourcegenentity.ResourceFeedback) resourcegendto.JobReviewSummaryResponse {
+	items := make([]resourcegendto.JobReviewResourceView, 0, len(resources))
+	risks := make([]string, 0)
+	suggestions := make([]string, 0)
+	totalQuality := 0
+	totalSafety := 0
+	mediaReady := 0
+	mediaPending := 0
+	for _, resource := range resources {
+		safety := buildSafetyReport(resource)
+		quality := buildQualityReport(resource, latestFeedbackForResource(feedback, resource.ID))
+		var media *resourcegendto.MediaStatusResponse
+		if isMediaResourceEntity(resource) {
+			status := buildMediaStatus(resource)
+			media = &status
+			if status.Ready {
+				mediaReady++
+			} else {
+				mediaPending++
+			}
+		}
+		totalQuality += quality.Score
+		totalSafety += safety.Score
+		risks = append(risks, prefixStrings(resource.Title, safety.Risks)...)
+		suggestions = append(suggestions, prefixStrings(resource.Title, quality.Improvements)...)
+		items = append(items, resourcegendto.JobReviewResourceView{
+			Resource: resourceToView(resource),
+			Safety:   safety,
+			Quality:  quality,
+			Media:    media,
+		})
+	}
+	avgQuality := 0
+	avgSafety := 0
+	if len(resources) > 0 {
+		avgQuality = totalQuality / len(resources)
+		avgSafety = totalSafety / len(resources)
+	}
+	return resourcegendto.JobReviewSummaryResponse{
+		JobID:             job.ID,
+		Summary:           buildJobReviewSummaryText(job, len(resources), avgQuality, avgSafety, mediaReady, mediaPending),
+		ResourceCount:     len(resources),
+		AverageQuality:    avgQuality,
+		AverageSafety:     avgSafety,
+		MediaReadyCount:   mediaReady,
+		MediaPendingCount: mediaPending,
+		Risks:             limitReviewStrings(risks, 6),
+		Suggestions:       limitReviewStrings(suggestions, 6),
+		Resources:         items,
+		GeneratedAt:       time.Now().Format(time.RFC3339),
+	}
+}
+
+func buildJobReviewSummaryText(job *resourcegenentity.GenerationJob, count int, quality int, safety int, mediaReady int, mediaPending int) string {
+	if count == 0 {
+		return "当前任务尚未产出资源，建议先完成生成后再进行评审。"
+	}
+	base := fmt.Sprintf("任务 #%d 已产出 %d 份资源，平均质量 %d 分，平均安全 %d 分。", job.ID, count, quality, safety)
+	if mediaReady+mediaPending > 0 {
+		base += fmt.Sprintf(" 多模态资源中 %d 项已就绪、%d 项仍需跟踪。", mediaReady, mediaPending)
+	}
+	return base
+}
+
+func buildEvidencePackage(job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, resources []resourcegenentity.GeneratedResource, feedback []resourcegenentity.ResourceFeedback) resourcegendto.JobEvidencePackageResponse {
+	items := make([]resourcegendto.EvidencePackageResourceView, 0, len(resources))
+	for _, resource := range resources {
+		safety := buildSafetyReport(resource)
+		quality := buildQualityReport(resource, latestFeedbackForResource(feedback, resource.ID))
+		var media *resourcegendto.MediaStatusResponse
+		if isMediaResourceEntity(resource) {
+			status := buildMediaStatus(resource)
+			media = &status
+		}
+		items = append(items, resourcegendto.EvidencePackageResourceView{
+			Resource: resourceToView(resource),
+			Safety:   safety,
+			Quality:  quality,
+			Media:    media,
+		})
+	}
+	return resourcegendto.JobEvidencePackageResponse{
+		JobID:       job.ID,
+		FileName:    fmt.Sprintf("resource-evidence-package-%d.json", job.ID),
+		Job:         jobToView(job, steps, resources),
+		Steps:       stepsToViews(steps),
+		Resources:   items,
+		Checklist:   evidenceChecklist(resources),
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}
+}
+
+func buildStudyChecklist(job *resourcegenentity.GenerationJob, resources []resourcegenentity.GeneratedResource) resourcegendto.StudyChecklistResponse {
+	items := make([]resourcegendto.StudyChecklistItemView, 0, len(resources)+2)
+	ordered := append([]resourcegenentity.GeneratedResource(nil), resources...)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		return checklistPriority(ordered[i].ResourceType) > checklistPriority(ordered[j].ResourceType)
+	})
+	index := 1
+	for _, resource := range ordered {
+		items = append(items, resourcegendto.StudyChecklistItemView{
+			Index:      index,
+			ResourceID: resource.ID,
+			Title:      resource.Title,
+			Action:     checklistAction(resource.ResourceType),
+			Expected:   checklistExpected(resource.ResourceType),
+			Status:     "pending",
+		})
+		index++
+	}
+	items = append(items, resourcegendto.StudyChecklistItemView{
+		Index:    index,
+		Title:    "提交学习反馈",
+		Action:   "完成本轮资源学习后，为每个资源提交评分、难度和备注。",
+		Expected: "系统据此刷新画像、调整推送流和下一步推荐。",
+		Status:   "pending",
+	})
+	return resourcegendto.StudyChecklistResponse{
+		JobID:       job.ID,
+		Summary:     fmt.Sprintf("围绕“%s”整理了 %d 个学习动作，按理解、练习、迁移、复盘顺序推进。", firstNonEmpty(job.KnowledgeName, job.KnowledgeID, "当前知识点"), len(items)),
+		Items:       items,
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}
+}
+
+func buildProvenance(resource *resourcegenentity.GeneratedResource, job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, events []resourcegenentity.LearningEvent) resourcegendto.ResourceProvenanceResponse {
+	filtered := make([]resourcegenentity.LearningEvent, 0)
+	for _, event := range events {
+		if event.ResourceID == resource.ID || (event.ResourceID == 0 && event.KnowledgeID != "" && event.KnowledgeID == resource.KnowledgeID) {
+			filtered = append(filtered, event)
+		}
+		if len(filtered) >= 12 {
+			break
+		}
+	}
+	return resourcegendto.ResourceProvenanceResponse{
+		Resource:    resourceToView(*resource),
+		Job:         jobToView(job, steps, []resourcegenentity.GeneratedResource{*resource}),
+		Steps:       stepsToViews(steps),
+		Events:      learningEventsToViews(filtered),
+		Summary:     fmt.Sprintf("资源由任务 #%d 生成，经过 %d 个智能体步骤，并关联 %d 条近期学习行为信号。", job.ID, len(steps), len(filtered)),
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}
+}
+
+func isMediaResourceEntity(resource resourcegenentity.GeneratedResource) bool {
+	return resource.Format == "image" || resource.Format == "video" || resource.ResourceType == "generated_image" || resource.ResourceType == "generated_video"
+}
+
+func prefixStrings(prefix string, values []string) []string {
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		if strings.TrimSpace(value) == "" {
+			continue
+		}
+		result = append(result, "《"+firstNonEmpty(prefix, "未命名资源")+"》"+value)
+	}
+	return result
+}
+
+func limitReviewStrings(values []string, limit int) []string {
+	if len(values) <= limit {
+		return values
+	}
+	return values[:limit]
+}
+
+func evidenceChecklist(resources []resourcegenentity.GeneratedResource) []string {
+	checklist := []string{
+		"确认资源正文、生成理由、质量评分和安全审查均已随包导出。",
+		"展示或提交前由团队成员人工复核关键事实和引用来源。",
+		"若包含外部材料、开源项目或第三方模型输出，应补充来源、协议和 AI 工具说明。",
+	}
+	if hasMediaResource(resources) {
+		checklist = append(checklist, "对图片/视频资源核验媒体 URL、任务号和可预览状态。")
+	}
+	return checklist
+}
+
+func hasMediaResource(resources []resourcegenentity.GeneratedResource) bool {
+	for _, resource := range resources {
+		if isMediaResourceEntity(resource) {
+			return true
+		}
+	}
+	return false
+}
+
+func checklistPriority(resourceType string) int {
+	switch resourceType {
+	case "explanation_doc":
+		return 90
+	case "mind_map":
+		return 85
+	case "practice_questions":
+		return 75
+	case "coding_case":
+		return 68
+	case "reading_material":
+		return 60
+	case "video_script", "generated_image", "generated_video":
+		return 55
+	default:
+		return 50
+	}
+}
+
+func checklistAction(resourceType string) string {
+	switch resourceType {
+	case "explanation_doc":
+		return "先阅读讲解文档，标记不理解的概念和公式。"
+	case "mind_map":
+		return "对照导图复述知识点、先修链和应用场景。"
+	case "practice_questions":
+		return "完成练习题并核对解析，把错题写入备注。"
+	case "coding_case":
+		return "运行或改写代码案例，记录可迁移到项目中的部分。"
+	case "reading_material":
+		return "阅读拓展材料，挑选 1 个方向继续深入。"
+	case "video_script":
+		return "按分镜脚本进行口头复述，检查是否能讲清核心流程。"
+	case "generated_image":
+		return "查看配图并用自己的话解释图中的概念关系。"
+	case "generated_video":
+		return "播放短视频并记录仍未理解的镜头或概念。"
+	default:
+		return "学习资源内容并记录关键收获。"
+	}
+}
+
+func checklistExpected(resourceType string) string {
+	switch resourceType {
+	case "practice_questions":
+		return "暴露易错点，形成下一轮难度调整依据。"
+	case "coding_case":
+		return "把知识迁移到项目实操，沉淀可展示代码片段。"
+	case "generated_image", "generated_video", "video_script":
+		return "形成多模态复盘材料，提升演示表达效果。"
+	default:
+		return "完成理解建模，为练习和项目迁移打基础。"
+	}
+}
+
+func variantTarget(resource resourcegenentity.GeneratedResource, request resourcegendto.ResourceVariantRequest) string {
+	target := strings.TrimSpace(request.Target)
+	if target != "" {
+		return target
+	}
+	mode := strings.TrimSpace(request.Mode)
+	if mode == "" {
+		mode = "simplify"
+	}
+	switch mode {
+	case "deepen":
+		return "在原资源基础上生成更深入的进阶版本，补充原理、边界条件和项目应用。"
+	case "example":
+		return "在原资源基础上生成更多贴近学生专业方向的例子和类比。"
+	case "quiz":
+		return "在原资源基础上生成可自测的练习题和解析，帮助发现易错点。"
+	case "visual":
+		return "在原资源基础上生成可视化图示，突出概念关系、流程和关键步骤。"
+	default:
+		return "在原资源基础上生成更容易理解的版本，降低术语密度并增加分步解释。"
+	}
+}
+
+func variantResourceType(resourceType string, mode string) string {
+	switch mode {
+	case "quiz":
+		return "practice_questions"
+	case "visual":
+		return "mind_map"
+	case "example":
+		if resourceType == "practice_questions" {
+			return "explanation_doc"
+		}
+		return resourceType
+	default:
+		if resourceType == "generated_image" || resourceType == "generated_video" {
+			return "explanation_doc"
+		}
+		return resourceType
+	}
+}
+
 func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegendto.SafetyReportView {
 	content := strings.TrimSpace(resource.Content)
 	structured := content != ""
@@ -2888,6 +3381,11 @@ func normalizeEventType(eventType string) string {
 		"resource_quality_checked":    true,
 		"resource_compared":           true,
 		"media_status_checked":        true,
+		"job_review_generated":        true,
+		"evidence_package_exported":   true,
+		"study_checklist_generated":   true,
+		"resource_variant_started":    true,
+		"resource_provenance_viewed":  true,
 	}
 	key := strings.ToLower(strings.TrimSpace(eventType))
 	if allowed[key] {
