@@ -27,6 +27,8 @@ const RESOURCE_TYPE_LABELS = {
   coding_case: '代码案例',
   reading_material: '拓展阅读',
   video_script: '视频/动画脚本',
+  generated_image: 'AI 生成配图',
+  generated_video: 'AI 生成短视频',
 }
 
 const DEMO_PROGRESS_ITEMS = [
@@ -641,6 +643,10 @@ watch(radarAxes, handleRadarResize, { deep: true })
             <p>到资源中心生成个性化资源包并提交反馈后，这里会展示学习效果与下一步推荐。</p>
           </div>
           <div class="dashboard-resource-foot">
+            <RouterLink class="primary-btn" to="/a3-agent">
+              学习智能体工作台
+              <ArrowRight :size="16" aria-hidden="true" />
+            </RouterLink>
             <RouterLink class="secondary-btn" to="/resources">
               打开资源中心
               <ArrowRight :size="16" aria-hidden="true" />

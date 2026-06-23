@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   FileText,
   ImagePlus,
+  PlayCircle,
   RefreshCcw,
   Save,
   Send,
@@ -25,6 +26,8 @@ import {
   fetchResourcePresentationOutline,
   fetchResourceSafetyReport,
   fetchResources,
+  generateResourceImage,
+  generateResourceVideo,
   generateResources,
   submitResourceFeedback,
 } from '../api/resources'
@@ -55,6 +58,10 @@ const resourceForm = ref({
 })
 const resourceLoading = ref(false)
 const resourceError = ref('')
+const mediaPrompt = ref('')
+const mediaLoading = ref('')
+const mediaError = ref('')
+const mediaNotice = ref('')
 const attachedImages = ref([])
 const regeneratingId = ref(null)
 const activeJob = ref(null)
@@ -103,7 +110,11 @@ const resourceTypeOptions = [
   { value: 'video_script', label: '短视频讲解脚本', hint: '可选加分项' },
 ]
 
-const resourceTypeLabels = Object.fromEntries(resourceTypeOptions.map((item) => [item.value, item.label]))
+const resourceTypeLabels = {
+  ...Object.fromEntries(resourceTypeOptions.map((item) => [item.value, item.label])),
+  generated_image: 'AI 生成配图',
+  generated_video: 'AI 生成短视频',
+}
 
 const difficultyLabels = {
   easy: '偏易',
@@ -384,6 +395,46 @@ async function handleGenerateResources() {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
   } finally {
     resourceLoading.value = false
+  }
+}
+
+function buildMediaPayload() {
+  return {
+    knowledgeId: resourceForm.value.knowledgeId.trim(),
+    knowledgeName: resourceForm.value.knowledgeName.trim(),
+    courseTitle: resourceForm.value.courseTitle.trim(),
+    target: resourceForm.value.target.trim() || profileSummary.value,
+    prompt: mediaPrompt.value.trim(),
+  }
+}
+
+async function handleGenerateMedia(kind) {
+  const knowledgeName = resourceForm.value.knowledgeName.trim()
+  if (!knowledgeName) {
+    mediaError.value = '请先填写知识点名称。'
+    return
+  }
+  mediaLoading.value = kind
+  mediaError.value = ''
+  mediaNotice.value = ''
+  try {
+    const payload = kind === 'video'
+      ? await generateResourceVideo({ ...buildMediaPayload(), size: '1280x720', durationSec: 6 })
+      : await generateResourceImage({ ...buildMediaPayload(), size: '1024x1024' })
+    if (payload?.resource?.id) {
+      generatedResources.value = [payload.resource, ...generatedResources.value]
+      initFeedbackDrafts(generatedResources.value)
+    }
+    mediaNotice.value = kind === 'video'
+      ? '真实文生视频任务已完成或已提交，结果已进入资源库。'
+      : '真实文生图已生成，结果已进入资源库。'
+    await loadResourceLibrary()
+    await loadRecommendations()
+    await loadResourceFeed()
+  } catch (err) {
+    mediaError.value = err?.message || (kind === 'video' ? '视频生成失败，请检查媒体模型配置。' : '图片生成失败，请检查媒体模型配置。')
+  } finally {
+    mediaLoading.value = ''
   }
 }
 
@@ -831,6 +882,18 @@ onBeforeUnmount(stopPolling)
         </div>
 
         <div class="button-row button-row--end">
+          <label class="field-block field-block--wide media-prompt-field">
+            <span>图片/视频创意提示（可选）</span>
+            <textarea v-model="mediaPrompt" rows="2" placeholder="例如：生成一张展示智能体协作流程的课程插图" />
+          </label>
+          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('image')">
+            <ImagePlus :size="16" aria-hidden="true" />
+            {{ mediaLoading === 'image' ? '生成配图中' : '生成教学配图' }}
+          </button>
+          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('video')">
+            <PlayCircle :size="16" aria-hidden="true" />
+            {{ mediaLoading === 'video' ? '生成视频中' : '生成短视频' }}
+          </button>
           <button type="button" class="primary-action" :disabled="resourceLoading" @click="handleGenerateResources">
             <Sparkles v-if="!resourceLoading" :size="16" aria-hidden="true" />
             <RefreshCcw v-else :size="16" aria-hidden="true" />
@@ -838,6 +901,8 @@ onBeforeUnmount(stopPolling)
           </button>
         </div>
         <p v-if="resourceError" class="inline-error">{{ resourceError }}</p>
+        <p v-if="mediaError" class="inline-error">{{ mediaError }}</p>
+        <p v-if="mediaNotice" class="inline-success">{{ mediaNotice }}</p>
         <p v-if="feedbackError" class="inline-error">{{ feedbackError }}</p>
         <p v-if="feedbackNotice" class="inline-success">{{ feedbackNotice }}</p>
 
@@ -1335,6 +1400,10 @@ onBeforeUnmount(stopPolling)
 
 .field-block--wide {
   grid-column: 1 / -1;
+}
+
+.media-prompt-field {
+  flex: 1 1 100%;
 }
 
 .primary-action,

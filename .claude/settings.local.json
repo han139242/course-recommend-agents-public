@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(echo \"TEST_EXIT=$?\")"
+    ]
+  }
+}

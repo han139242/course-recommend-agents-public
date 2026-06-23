@@ -264,6 +264,14 @@ type EffectSummaryResponse struct {
 	GeneratedAt  string              `json:"generatedAt"`
 }
 
+// LearningReportResponse returns a shareable Markdown 学情/学习报告 aggregating
+// the learner profile, mastery-relevant resources, feedback and effect metrics.
+type LearningReportResponse struct {
+	FileName    string `json:"fileName"`
+	Content     string `json:"content"`
+	GeneratedAt string `json:"generatedAt"`
+}
+
 // GenerateQuizRequest asks for an interactive single-choice quiz on a knowledge
 // point so the learner can self-test and feed the mastery loop.
 type GenerateQuizRequest struct {
@@ -289,6 +297,35 @@ type GenerateQuizResponse struct {
 	CourseTitle   string             `json:"courseTitle"`
 	Questions     []QuizQuestionView `json:"questions"`
 	Source        string             `json:"source"`
+}
+
+// GenerateMediaRequest asks a real media-generation model to create an image or
+// video grounded in the current learning context.
+type GenerateMediaRequest struct {
+	KnowledgeID   string `json:"knowledgeId" binding:"omitempty,max=128"`
+	KnowledgeName string `json:"knowledgeName" binding:"required,max=255"`
+	CourseTitle   string `json:"courseTitle" binding:"omitempty,max=255"`
+	Target        string `json:"target" binding:"omitempty,max=500"`
+	Prompt        string `json:"prompt" binding:"omitempty,max=1000"`
+	Size          string `json:"size" binding:"omitempty,max=32"`
+	DurationSec   int    `json:"durationSec" binding:"omitempty,min=0,max=30"`
+}
+
+// MediaGenerationResponse returns the persisted resource plus normalized media
+// fields. URL and B64JSON are both optional because some providers return an
+// async task id first.
+type MediaGenerationResponse struct {
+	Kind           string                `json:"kind"`
+	Resource       GeneratedResourceView `json:"resource"`
+	URL            string                `json:"url,omitempty"`
+	B64JSON        string                `json:"b64Json,omitempty"`
+	MimeType       string                `json:"mimeType,omitempty"`
+	Prompt         string                `json:"prompt"`
+	Provider       string                `json:"provider"`
+	Model          string                `json:"model"`
+	Status         string                `json:"status"`
+	ProviderTaskID string                `json:"providerTaskId,omitempty"`
+	GeneratedAt    string                `json:"generatedAt"`
 }
 
 // ListResourcesResponse returns current student's resource library.

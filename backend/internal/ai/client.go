@@ -73,6 +73,30 @@ type Request struct {
 	Timeout     time.Duration
 }
 
+// MediaRequest configures one text-to-image or text-to-video generation call.
+type MediaRequest struct {
+	Prompt      string
+	Size        string
+	DurationSec int
+	Quality     string
+	Timeout     time.Duration
+}
+
+// MediaResponse is a normalized media generation result. Providers differ in
+// whether they return a direct URL, base64 payload, or async task id, so all
+// fields are optional except Provider/Model/Prompt when a request succeeds.
+type MediaResponse struct {
+	Kind           string
+	URL            string
+	B64JSON        string
+	MimeType       string
+	Provider       string
+	Model          string
+	Prompt         string
+	Status         string
+	ProviderTaskID string
+}
+
 type chatResponse struct {
 	Choices []struct {
 		Message struct {
@@ -104,6 +128,158 @@ func (c *Client) Complete(ctx context.Context, req Request) (string, error) {
 		lastErr = errors.New("ai providers returned empty content")
 	}
 	return "", lastErr
+}
+
+// GenerateImage calls a configured real text-to-image model. It intentionally
+// has no local template fallback so the UI can distinguish real media output
+// from ordinary markdown resources.
+func (c *Client) GenerateImage(ctx context.Context, req MediaRequest) (MediaResponse, error) {
+	if c == nil {
+		return MediaResponse{}, errors.New("ai client is not configured")
+	}
+	prompt := strings.TrimSpace(req.Prompt)
+	if prompt == "" {
+		return MediaResponse{}, errors.New("image prompt is empty")
+	}
+
+	var lastErr error
+	for _, provider := range c.cfg.MediaProviders() {
+		if !provider.ImageEnabled() {
+			continue
+		}
+		response, err := c.generateMediaWithProvider(ctx, provider, "image", req)
+		if err == nil && (response.URL != "" || response.B64JSON != "" || response.ProviderTaskID != "") {
+			return response, nil
+		}
+		if err != nil {
+			lastErr = err
+		}
+	}
+	if lastErr == nil {
+		lastErr = errors.New("image generation model is not configured")
+	}
+	return MediaResponse{}, lastErr
+}
+
+// GenerateVideo calls a configured real text-to-video model endpoint. Providers
+// often return async task ids; the normalized response preserves that id when a
+// direct video URL is not immediately available.
+func (c *Client) GenerateVideo(ctx context.Context, req MediaRequest) (MediaResponse, error) {
+	if c == nil {
+		return MediaResponse{}, errors.New("ai client is not configured")
+	}
+	prompt := strings.TrimSpace(req.Prompt)
+	if prompt == "" {
+		return MediaResponse{}, errors.New("video prompt is empty")
+	}
+
+	var lastErr error
+	for _, provider := range c.cfg.MediaProviders() {
+		if !provider.VideoEnabled() {
+			continue
+		}
+		response, err := c.generateMediaWithProvider(ctx, provider, "video", req)
+		if err == nil && (response.URL != "" || response.B64JSON != "" || response.ProviderTaskID != "") {
+			return response, nil
+		}
+		if err != nil {
+			lastErr = err
+		}
+	}
+	if lastErr == nil {
+		lastErr = errors.New("video generation model is not configured")
+	}
+	return MediaResponse{}, lastErr
+}
+
+func (c *Client) generateMediaWithProvider(ctx context.Context, provider config.AIProviderConfig, kind string, req MediaRequest) (MediaResponse, error) {
+	model := strings.TrimSpace(provider.ImageModel)
+	endpoint := strings.TrimSpace(provider.ImageEndpoint)
+	if kind == "video" {
+		model = strings.TrimSpace(provider.VideoModel)
+		endpoint = strings.TrimSpace(provider.VideoEndpoint)
+	}
+	if endpoint == "" {
+		endpoint = defaultMediaEndpoint(provider.BaseURL, kind)
+	}
+	if model == "" || endpoint == "" {
+		return MediaResponse{}, fmt.Errorf("%s generation provider is incomplete", kind)
+	}
+
+	payload := map[string]any{
+		"model":  model,
+		"prompt": strings.TrimSpace(req.Prompt),
+	}
+	if size := strings.TrimSpace(req.Size); size != "" {
+		payload["size"] = size
+	}
+	if quality := strings.TrimSpace(req.Quality); quality != "" {
+		payload["quality"] = quality
+	}
+	if req.DurationSec > 0 {
+		payload["duration"] = req.DurationSec
+		payload["duration_seconds"] = req.DurationSec
+	}
+	if kind == "image" {
+		payload["n"] = 1
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+
+	timeout := req.Timeout
+	if timeout <= 0 {
+		timeout = 90 * time.Second
+	}
+	requestCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	httpReq, err := http.NewRequestWithContext(requestCtx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+provider.APIKey)
+
+	response, err := c.doWithRetry(httpReq, 1)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	defer response.Body.Close()
+
+	raw, err := io.ReadAll(response.Body)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	if response.StatusCode >= http.StatusBadRequest {
+		message := strings.TrimSpace(string(raw))
+		if message == "" {
+			message = fmt.Sprintf("upstream %s model returned HTTP %d", kind, response.StatusCode)
+		}
+		return MediaResponse{}, errors.New(message)
+	}
+
+	parsed := map[string]any{}
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return MediaResponse{}, err
+	}
+	normalized := normalizeMediaResponse(kind, parsed)
+	normalized.Provider = providerName(provider.BaseURL)
+	normalized.Model = model
+	normalized.Prompt = strings.TrimSpace(req.Prompt)
+	if normalized.MimeType == "" {
+		if kind == "video" {
+			normalized.MimeType = "video/mp4"
+		} else {
+			normalized.MimeType = "image/png"
+		}
+	}
+	if normalized.Status == "" {
+		normalized.Status = "ready"
+	}
+	return normalized, nil
 }
 
 // completeWithProvider issues one request to a single upstream provider.
@@ -254,6 +430,95 @@ func selectModel(provider config.AIProviderConfig, hasImage bool) string {
 		return provider.VisionModel
 	}
 	return provider.ChatModel
+}
+
+func defaultMediaEndpoint(baseURL string, kind string) string {
+	base := strings.TrimRight(strings.TrimSpace(baseURL), "/")
+	if base == "" {
+		return ""
+	}
+	if kind == "video" {
+		return base + "/v1/videos/generations"
+	}
+	return base + "/v1/images/generations"
+}
+
+func normalizeMediaResponse(kind string, payload map[string]any) MediaResponse {
+	response := MediaResponse{Kind: kind}
+	response.URL = firstStringField(payload, "url", "image_url", "video_url", "download_url", "output_url")
+	response.B64JSON = firstStringField(payload, "b64_json", "base64", "base64_json", "image_base64", "video_base64")
+	response.Status = firstStringField(payload, "status", "state")
+	response.ProviderTaskID = firstStringField(payload, "task_id", "taskId", "job_id", "jobId", "id")
+	response.MimeType = firstStringField(payload, "mime_type", "mimeType", "content_type", "contentType")
+
+	if data, ok := payload["data"].([]any); ok && len(data) > 0 {
+		if first, ok := data[0].(map[string]any); ok {
+			nested := normalizeMediaResponse(kind, first)
+			response = mergeMediaResponse(response, nested)
+		}
+	}
+	if output, ok := payload["output"].([]any); ok && len(output) > 0 {
+		if first, ok := output[0].(map[string]any); ok {
+			nested := normalizeMediaResponse(kind, first)
+			response = mergeMediaResponse(response, nested)
+		}
+	}
+	if result, ok := payload["result"].(map[string]any); ok {
+		nested := normalizeMediaResponse(kind, result)
+		response = mergeMediaResponse(response, nested)
+	}
+	return response
+}
+
+func mergeMediaResponse(base MediaResponse, nested MediaResponse) MediaResponse {
+	if base.URL == "" {
+		base.URL = nested.URL
+	}
+	if base.B64JSON == "" {
+		base.B64JSON = nested.B64JSON
+	}
+	if base.Status == "" {
+		base.Status = nested.Status
+	}
+	if base.ProviderTaskID == "" {
+		base.ProviderTaskID = nested.ProviderTaskID
+	}
+	if base.MimeType == "" {
+		base.MimeType = nested.MimeType
+	}
+	return base
+}
+
+func firstStringField(payload map[string]any, keys ...string) string {
+	for _, key := range keys {
+		if value := stringValue(payload[key]); value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+func stringValue(value any) string {
+	switch typed := value.(type) {
+	case string:
+		return strings.TrimSpace(typed)
+	case map[string]any:
+		return firstStringField(typed, "url", "b64_json", "id", "status")
+	default:
+		return ""
+	}
+}
+
+func providerName(baseURL string) string {
+	lower := strings.ToLower(baseURL)
+	switch {
+	case strings.Contains(lower, "openai"):
+		return "OpenAI"
+	case strings.Contains(lower, "deepseek"):
+		return "DeepSeek"
+	default:
+		return "OpenAI-compatible"
+	}
 }
 
 // extractText flattens a model message content (string or content-part array)

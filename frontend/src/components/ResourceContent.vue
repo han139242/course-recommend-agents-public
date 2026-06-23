@@ -8,6 +8,27 @@ const props = defineProps({
   format: { type: String, default: 'markdown' },
 })
 
+const mediaPayload = computed(() => {
+  if (!['image', 'video'].includes(props.format)) return null
+  const raw = String(props.content || '').trim()
+  if (!raw) return {}
+  if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return { url: raw }
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return { prompt: raw }
+  }
+})
+
+const mediaSrc = computed(() => {
+  const payload = mediaPayload.value || {}
+  const direct = payload.url || payload.videoUrl || payload.imageUrl
+  if (direct) return direct
+  const b64 = payload.b64Json || payload.b64_json || payload.base64
+  if (!b64) return ''
+  return `data:${payload.mimeType || payload.mime_type || (props.format === 'video' ? 'video/mp4' : 'image/png')};base64,${b64}`
+})
+
 const isMindMap = computed(
   () => props.format === 'mermaid' || /^\s*mindmap\b/i.test(props.content || ''),
 )
@@ -18,8 +39,29 @@ const html = computed(() =>
 </script>
 
 <template>
+  <div v-if="format === 'image'" class="resource-media resource-media--image">
+    <img v-if="mediaSrc" :src="mediaSrc" :alt="mediaPayload?.prompt || 'AI 生成配图'" />
+    <p v-else class="resource-media__pending">
+      媒体生成任务已提交：{{ mediaPayload?.providerTaskId || mediaPayload?.status || '等待提供商返回结果' }}
+    </p>
+    <details v-if="mediaPayload?.prompt" class="resource-media__prompt">
+      <summary>生成提示词</summary>
+      <p>{{ mediaPayload.prompt }}</p>
+    </details>
+  </div>
+  <div v-else-if="format === 'video'" class="resource-media resource-media--video">
+    <video v-if="mediaSrc" :src="mediaSrc" controls playsinline />
+    <p v-else class="resource-media__pending">
+      视频生成任务已提交：{{ mediaPayload?.providerTaskId || mediaPayload?.status || '等待提供商返回结果' }}
+    </p>
+    <details v-if="mediaPayload?.prompt" class="resource-media__prompt">
+      <summary>生成提示词</summary>
+      <p>{{ mediaPayload.prompt }}</p>
+    </details>
+  </div>
   <!-- Output is built from escaped text with a fixed tag set (see useMarkdown), so v-html is safe. -->
   <div
+    v-else
     class="resource-content"
     :class="{ 'resource-content--mindmap': isMindMap }"
     v-html="html"
@@ -199,5 +241,48 @@ const html = computed(() =>
   color: #ffffff;
   background: #215f9a;
   border-color: #215f9a;
+}
+
+.resource-media {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #fbfdff;
+}
+
+.resource-media img,
+.resource-media video {
+  width: 100%;
+  max-height: 34rem;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #0f1c2e;
+}
+
+.resource-media__pending {
+  margin: 0;
+  border: 1px dashed rgba(47, 128, 183, 0.36);
+  border-radius: 8px;
+  padding: 0.85rem;
+  color: #21405f;
+  background: #eef6fb;
+}
+
+.resource-media__prompt {
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+  background: #f2f6fa;
+  color: #3b4a60;
+}
+
+.resource-media__prompt summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: #21405f;
+}
+
+.resource-media__prompt p {
+  margin: 0.55rem 0 0;
+  line-height: 1.6;
 }
 </style>

@@ -348,6 +348,97 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 	}, nil
 }
 
+// GetLearningReport 汇总学习画像、资源、反馈与学习效果，生成可分享/可提交的
+// Markdown 学情报告，串起“画像 → 资源 → 测评 → 效果”的完整证据链。
+func (s *Service) GetLearningReport(ctx context.Context) (*resourcegendto.LearningReportResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var profile *profiledto.LearningProfileView
+	if s.profileService != nil {
+		if response, profErr := s.profileService.GetCurrent(ctx); profErr == nil && response != nil {
+			profile = response.Profile
+		}
+	}
+
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", 100)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	feedback, err := s.repo.ListFeedback(ctx, studentID, 60)
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	summary := buildFeedbackSummary(feedback)
+
+	knowledgeSet := make(map[string]struct{})
+	for _, resource := range resources {
+		key := firstNonEmpty(strings.TrimSpace(resource.KnowledgeID), strings.TrimSpace(resource.KnowledgeName))
+		if key != "" {
+			knowledgeSet[key] = struct{}{}
+		}
+	}
+
+	var builder strings.Builder
+	builder.WriteString("# 个人学情学习报告\n\n")
+	builder.WriteString(fmt.Sprintf("生成时间：%s\n\n", time.Now().Format("2006-01-02 15:04")))
+
+	builder.WriteString("## 一、学习画像\n\n")
+	if profile != nil {
+		builder.WriteString(fmt.Sprintf("画像摘要：%s\n\n", firstNonEmpty(profile.Summary, "暂无摘要")))
+		if len(profile.Dimensions) > 0 {
+			builder.WriteString("| 维度 | 画像值 | 置信度 |\n| --- | --- | --- |\n")
+			for _, dim := range profile.Dimensions {
+				builder.WriteString(fmt.Sprintf("| %s | %s | %d%% |\n", dim.Name, oneLine(dim.Value), int(dim.Confidence*100+0.5)))
+			}
+			builder.WriteString("\n")
+		}
+	} else {
+		builder.WriteString("尚未生成学习画像。\n\n")
+	}
+
+	builder.WriteString("## 二、学习效果概览\n\n")
+	builder.WriteString(fmt.Sprintf("- 已生成资源：%d 份，覆盖知识点：%d 个\n", len(resources), len(knowledgeSet)))
+	builder.WriteString(fmt.Sprintf("- 反馈记录：%d 条，完成学习：%d 次\n", summary.Total, summary.CompletedCount))
+	if summary.AverageRating > 0 {
+		builder.WriteString(fmt.Sprintf("- 平均评分：%.1f / 5\n", summary.AverageRating))
+	}
+	builder.WriteString(fmt.Sprintf("- 难度分布：偏易 %d / 适中 %d / 偏难 %d\n", summary.Difficulty["easy"], summary.Difficulty["fit"], summary.Difficulty["hard"]))
+	builder.WriteString(fmt.Sprintf("- 学习建议：%s\n\n", summary.Insight))
+
+	builder.WriteString("## 三、近期个性化资源\n\n")
+	if len(resources) == 0 {
+		builder.WriteString("暂无生成资源。\n\n")
+	} else {
+		limit := len(resources)
+		if limit > 10 {
+			limit = 10
+		}
+		for _, resource := range resources[:limit] {
+			builder.WriteString(fmt.Sprintf("- [%s] %s（%s）\n", resource.TypeLabel, oneLine(resource.Title), firstNonEmpty(resource.KnowledgeName, "通用")))
+		}
+		builder.WriteString("\n")
+	}
+
+	builder.WriteString("## 四、下一步建议\n\n")
+	builder.WriteString("- 优先攻克偏难与低评分对应的知识点，配合分步练习与代码案例。\n")
+	builder.WriteString("- 完成随堂练习以更新掌握度，并据此重新规划学习计划。\n")
+
+	content := builder.String()
+	return &resourcegendto.LearningReportResponse{
+		FileName:    fmt.Sprintf("learning-report-%d.md", studentID),
+		Content:     content,
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}, nil
+}
+
+// oneLine 去除换行，便于写入 Markdown 表格单元格。
+func oneLine(value string) string {
+	return strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(value, "\n", " "), "|", "/"))
+}
+
 // GetEffectSummary aggregates generated resources, learner feedback and recent
 // learning behaviour into a learning effect-assessment dashboard, evidencing the
 // "学习效果评估 + 随学随新" closed loop required by the A3 problem.
@@ -525,6 +616,137 @@ func buildTemplateQuiz(knowledgeName string, count int) []resourcegendto.QuizQue
 		questions = append(questions, base[i%len(base)])
 	}
 	return questions
+}
+
+// GenerateImage calls a configured real text-to-image model and stores the
+// output as a generated learning resource.
+func (s *Service) GenerateImage(ctx context.Context, request resourcegendto.GenerateMediaRequest) (*resourcegendto.MediaGenerationResponse, error) {
+	return s.generateMedia(ctx, "image", request)
+}
+
+// GenerateVideo calls a configured real text-to-video model and stores the
+// output as a generated learning resource.
+func (s *Service) GenerateVideo(ctx context.Context, request resourcegendto.GenerateMediaRequest) (*resourcegendto.MediaGenerationResponse, error) {
+	return s.generateMedia(ctx, "video", request)
+}
+
+func (s *Service) generateMedia(ctx context.Context, kind string, request resourcegendto.GenerateMediaRequest) (*resourcegendto.MediaGenerationResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if s.aiClient == nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(errors.New("media generation model is not configured"))
+	}
+
+	genCtx := s.buildGenerationContext(ctx, studentID, resourcegendto.GenerateResourcesRequest{
+		KnowledgeID:   request.KnowledgeID,
+		KnowledgeName: request.KnowledgeName,
+		CourseTitle:   request.CourseTitle,
+		Target:        request.Target,
+	})
+	prompt := buildMediaPrompt(kind, genCtx, request.Prompt)
+	mediaReq := ai.MediaRequest{
+		Prompt:      prompt,
+		Size:        firstNonEmpty(strings.TrimSpace(request.Size), defaultMediaSize(kind)),
+		DurationSec: request.DurationSec,
+		Timeout:     2 * time.Minute,
+	}
+	if kind == "video" && mediaReq.DurationSec <= 0 {
+		mediaReq.DurationSec = 6
+	}
+
+	var media ai.MediaResponse
+	switch kind {
+	case "video":
+		media, err = s.aiClient.GenerateVideo(ctx, mediaReq)
+	default:
+		media, err = s.aiClient.GenerateImage(ctx, mediaReq)
+		kind = "image"
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	job := &resourcegenentity.GenerationJob{
+		StudentID:     studentID,
+		KnowledgeID:   genCtx.KnowledgeID,
+		KnowledgeName: genCtx.KnowledgeName,
+		CourseTitle:   genCtx.CourseTitle,
+		Target:        genCtx.Target,
+		Status:        resourcegenentity.JobStatusCompleted,
+		Progress:      100,
+		CurrentAgent:  mediaAgentName(kind),
+	}
+	if err := s.repo.CreateJob(ctx, job); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	now := time.Now()
+	step := &resourcegenentity.AgentStep{
+		JobID:     job.ID,
+		StudentID: studentID,
+		AgentKey:  mediaAgentKey(kind),
+		AgentName: mediaAgentName(kind),
+		Role:      mediaAgentRole(kind),
+		Status:    resourcegenentity.StepStatusCompleted,
+		Summary:   mediaStepSummary(kind, media),
+		StartedAt: now,
+		EndedAt:   &now,
+	}
+	if err := s.repo.CreateStep(ctx, step); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	content := marshalMediaContent(kind, media, prompt)
+	resource := &resourcegenentity.GeneratedResource{
+		JobID:         job.ID,
+		StudentID:     studentID,
+		ResourceType:  mediaResourceType(kind),
+		TypeLabel:     mediaTypeLabel(kind),
+		Title:         mediaTypeLabel(kind) + "：" + genCtx.KnowledgeName,
+		Content:       content,
+		Format:        kind,
+		KnowledgeID:   genCtx.KnowledgeID,
+		KnowledgeName: genCtx.KnowledgeName,
+		CourseTitle:   genCtx.CourseTitle,
+		Reason:        mediaResourceReason(kind, media),
+		Status:        resourcegenentity.ResourceStatusReady,
+	}
+	if err := s.repo.CreateResource(ctx, resource); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	_ = s.repo.CreatePushItem(ctx, buildPushItem(resource, genCtx))
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     mediaEventType(kind),
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"title":          resource.Title,
+			"provider":       media.Provider,
+			"model":          media.Model,
+			"status":         media.Status,
+			"providerTaskId": media.ProviderTaskID,
+		}),
+	})
+
+	view := resourceToView(*resource)
+	return &resourcegendto.MediaGenerationResponse{
+		Kind:           kind,
+		Resource:       view,
+		URL:            media.URL,
+		B64JSON:        media.B64JSON,
+		MimeType:       media.MimeType,
+		Prompt:         prompt,
+		Provider:       media.Provider,
+		Model:          media.Model,
+		Status:         firstNonEmpty(media.Status, "ready"),
+		ProviderTaskID: media.ProviderTaskID,
+		GeneratedAt:    time.Now().Format(time.RFC3339),
+	}, nil
 }
 
 // completionHint 描述资源完成比例。
@@ -1012,6 +1234,10 @@ func writerAgentName(resourceType string) string {
 		return "ReadingAgent"
 	case "video_script":
 		return "MultimodalAgent"
+	case "generated_image":
+		return "ImageGenerationAgent"
+	case "generated_video":
+		return "VideoGenerationAgent"
 	default:
 		return "ContentWriterAgent"
 	}
@@ -1172,6 +1398,116 @@ func buildVideoScript(ctx generationContext) string {
 
 完成一题练习，并打开知识图谱查看下一步：%s。
 `, ctx.KnowledgeName, ctx.KnowledgeName, dim(ctx, "error_preference", "先通过练习定位易错点"), pathSummary(ctx.Path))
+}
+
+func buildMediaPrompt(kind string, ctx generationContext, customPrompt string) string {
+	var builder strings.Builder
+	if kind == "video" {
+		builder.WriteString("请调用真实文生视频模型生成一段高校课程学习短视频。")
+		builder.WriteString("画面应突出知识点关系、学习步骤和可视化类比，节奏适合 6-8 秒课堂微课预览；避免水印、品牌标识和密集小字。")
+	} else {
+		builder.WriteString("请调用真实文生图模型生成一张高校课程学习配图。")
+		builder.WriteString("画面应清晰表达核心概念、先修关系和学习路径，适合放入个性化学习资源卡片；避免密集文字和不可读标签。")
+	}
+	builder.WriteString("\n\n学习上下文：\n")
+	builder.WriteString(resourceContextBlock(ctx))
+	if trimmed := strings.TrimSpace(customPrompt); trimmed != "" {
+		builder.WriteString("\n\n学生补充创意要求：")
+		builder.WriteString(trimmed)
+	}
+	builder.WriteString("\n\n风格：现代高校 AI 课程教学视觉，干净、可信、信息层级清楚。")
+	return builder.String()
+}
+
+func defaultMediaSize(kind string) string {
+	if kind == "video" {
+		return "1280x720"
+	}
+	return "1024x1024"
+}
+
+func mediaResourceType(kind string) string {
+	if kind == "video" {
+		return "generated_video"
+	}
+	return "generated_image"
+}
+
+func mediaTypeLabel(kind string) string {
+	if kind == "video" {
+		return "AI 生成短视频"
+	}
+	return "AI 生成配图"
+}
+
+func mediaAgentKey(kind string) string {
+	if kind == "video" {
+		return "video_generation_agent"
+	}
+	return "image_generation_agent"
+}
+
+func mediaAgentName(kind string) string {
+	if kind == "video" {
+		return "VideoGenerationAgent"
+	}
+	return "ImageGenerationAgent"
+}
+
+func mediaAgentRole(kind string) string {
+	if kind == "video" {
+		return "真实文生视频模型调用智能体"
+	}
+	return "真实文生图模型调用智能体"
+}
+
+func mediaStepSummary(kind string, media ai.MediaResponse) string {
+	target := "媒体"
+	if kind == "video" {
+		target = "短视频"
+	} else {
+		target = "教学配图"
+	}
+	status := firstNonEmpty(media.Status, "ready")
+	if media.URL != "" || media.B64JSON != "" {
+		return fmt.Sprintf("已通过 %s / %s 生成%s，状态：%s。", firstNonEmpty(media.Provider, "媒体模型"), firstNonEmpty(media.Model, "未命名模型"), target, status)
+	}
+	return fmt.Sprintf("已向 %s / %s 提交%s生成任务，状态：%s，任务号：%s。", firstNonEmpty(media.Provider, "媒体模型"), firstNonEmpty(media.Model, "未命名模型"), target, status, firstNonEmpty(media.ProviderTaskID, "未返回"))
+}
+
+func mediaResourceReason(kind string, media ai.MediaResponse) string {
+	return fmt.Sprintf("由 %s 调用真实%s模型 %s 生成，作为个性化多模态学习资源。",
+		mediaAgentName(kind),
+		map[bool]string{true: "文生视频", false: "文生图"}[kind == "video"],
+		firstNonEmpty(media.Model, "未命名模型"),
+	)
+}
+
+func mediaEventType(kind string) string {
+	if kind == "video" {
+		return "video_generated"
+	}
+	return "image_generated"
+}
+
+func marshalMediaContent(kind string, media ai.MediaResponse, prompt string) string {
+	payload := map[string]any{
+		"kind":           kind,
+		"url":            media.URL,
+		"b64Json":        media.B64JSON,
+		"mimeType":       media.MimeType,
+		"prompt":         prompt,
+		"provider":       media.Provider,
+		"model":          media.Model,
+		"status":         firstNonEmpty(media.Status, "ready"),
+		"providerTaskId": media.ProviderTaskID,
+		"generatedAt":    time.Now().Format(time.RFC3339),
+	}
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return "{}"
+	}
+	return string(raw)
 }
 
 func normalizeResourceTypes(input []string) []string {
@@ -1388,10 +1724,14 @@ func buildRecommendationSummary(profile *profiledto.LearningProfileView, resourc
 
 func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegendto.SafetyReportView {
 	content := strings.TrimSpace(resource.Content)
+	structured := content != ""
+	if resource.Format == "markdown" || resource.Format == "mermaid" {
+		structured = strings.Contains(content, "#") || strings.Contains(content, "mindmap")
+	}
 	checks := []resourcegendto.SafetyCheckView{
 		buildSafetyCheck("factuality", "事实性与防幻觉", !containsAny(content, "保证", "绝对正确", "100%", "唯一答案"), "未发现绝对化或不可验证承诺，建议保留人工复核。"),
 		buildSafetyCheck("sensitive", "敏感与违规过滤", !containsAny(content, "违法", "攻击", "绕过", "作弊"), "未发现明显敏感违规表达。"),
-		buildSafetyCheck("structure", "格式完整性", content != "" && strings.Contains(content, "#"), "资源包含标题和结构化内容，可直接展示。"),
+		buildSafetyCheck("structure", "格式完整性", structured, "资源包含可展示内容，可直接在资源详情页预览。"),
 		buildSafetyCheck("pedagogy", "教学适配性", strings.TrimSpace(resource.Reason) != "", "资源保留了生成理由，能够解释个性化依据。"),
 		buildSafetyCheck("license", "开源与 AI 工具说明", true, "当前资源为系统生成内容；若后续接入外部材料，需要补充来源与协议。"),
 	}
@@ -1815,6 +2155,10 @@ func buildResourceReason(resourceType string, ctx generationContext) string {
 		return "根据资源偏好和项目目标，提供可动手的实操入口。"
 	case "video_script":
 		return "根据多模态学习需求，生成可用于演示或讲解的短视频脚本。"
+	case "generated_image":
+		return "根据当前知识点和学习画像调用真实文生图模型，生成教学配图。"
+	case "generated_video":
+		return "根据当前知识点和学习画像调用真实文生视频模型，生成微课短视频。"
 	default:
 		return "根据当前画像、知识图谱和推荐路径生成个性化讲解。"
 	}
@@ -1843,7 +2187,7 @@ func resourceStage(resourceType string) string {
 		return "practice"
 	case "coding_case":
 		return "transfer"
-	case "video_script":
+	case "video_script", "generated_image", "generated_video":
 		return "review"
 	default:
 		return "extend"
@@ -1862,6 +2206,10 @@ func resourcePriority(resourceType string) int {
 		return 82
 	case "video_script":
 		return 76
+	case "generated_image":
+		return 74
+	case "generated_video":
+		return 73
 	default:
 		return 72
 	}
@@ -1879,6 +2227,10 @@ func buildPushReason(resourceType string, reason string) string {
 		return firstNonEmpty(reason, "把知识点迁移到可运行的项目实操。")
 	case "video_script":
 		return firstNonEmpty(reason, "用分镜和旁白形成多模态复盘材料。")
+	case "generated_image":
+		return firstNonEmpty(reason, "用真实生成配图辅助理解抽象概念。")
+	case "generated_video":
+		return firstNonEmpty(reason, "用真实生成短视频形成多模态复盘材料。")
 	default:
 		return firstNonEmpty(reason, "作为当前学习路径上的个性化补充资源。")
 	}
@@ -1933,6 +2285,10 @@ func pushActionText(resourceType string, status string) string {
 		return "进入实操"
 	case "video_script":
 		return "查看分镜"
+	case "generated_image":
+		return "查看配图"
+	case "generated_video":
+		return "播放视频"
 	default:
 		return "开始学习"
 	}
@@ -1950,16 +2306,26 @@ func resourceTypeLabel(resourceType string) string {
 		return "代码类实操案例"
 	case "video_script":
 		return "多模态视频脚本"
+	case "generated_image":
+		return "AI 生成配图"
+	case "generated_video":
+		return "AI 生成短视频"
 	default:
 		return "专业课程讲解文档"
 	}
 }
 
 func resourceFormat(resourceType string) string {
-	if resourceType == "mind_map" {
+	switch resourceType {
+	case "mind_map":
 		return "mermaid"
+	case "generated_image":
+		return "image"
+	case "generated_video":
+		return "video"
+	default:
+		return "markdown"
 	}
-	return "markdown"
 }
 
 func jobToView(job *resourcegenentity.GenerationJob, steps []resourcegenentity.AgentStep, resources []resourcegenentity.GeneratedResource) resourcegendto.JobView {
@@ -2072,6 +2438,8 @@ func normalizeEventType(eventType string) string {
 		"practice_answered":           true,
 		"note_saved":                  true,
 		"profile_refreshed":           true,
+		"image_generated":             true,
+		"video_generated":             true,
 	}
 	key := strings.ToLower(strings.TrimSpace(eventType))
 	if allowed[key] {

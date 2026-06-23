@@ -25,6 +25,20 @@ export function generateQuiz(payload) {
   })
 }
 
+export function generateResourceImage(payload) {
+  return request('/resources/media/image', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function generateResourceVideo(payload) {
+  return request('/resources/media/video', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function fetchResourceJob(jobId) {
   return request(`/resources/jobs/${jobId}`)
 }
@@ -79,6 +93,11 @@ export function fetchResourceRecommendations() {
 
 export function fetchResourceEffectSummary() {
   return request('/resources/effect-summary')
+}
+
+// fetchLearningReport 获取可分享/可提交的 Markdown 学情学习报告。
+export function fetchLearningReport() {
+  return request('/resources/learning-report')
 }
 
 export function recordLearningEvent(payload) {

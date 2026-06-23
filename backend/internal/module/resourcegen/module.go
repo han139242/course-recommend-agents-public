@@ -26,6 +26,8 @@ func New(db *gorm.DB, aiClient *ai.Client, profileService *profileservice.Servic
 func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.POST("/generate", m.Handler.Generate)
 	group.POST("/quiz", m.Handler.GenerateQuiz)
+	group.POST("/media/image", m.Handler.GenerateImage)
+	group.POST("/media/video", m.Handler.GenerateVideo)
 	group.GET("/jobs/:jobId/export", m.Handler.ExportJob)
 	group.GET("/jobs/:jobId/presentation-outline", m.Handler.GetPresentationOutline)
 	group.GET("/jobs/:jobId/demo-script", m.Handler.GetDemoScript)
@@ -33,6 +35,7 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/jobs/:jobId", m.Handler.GetJob)
 	group.GET("/recommendations", m.Handler.GetRecommendations)
 	group.GET("/effect-summary", m.Handler.GetEffectSummary)
+	group.GET("/learning-report", m.Handler.GetLearningReport)
 	group.GET("/feed", m.Handler.GetFeed)
 	group.POST("/events", m.Handler.RecordLearningEvent)
 	group.GET("/:resourceId/safety-report", m.Handler.GetSafetyReport)

@@ -177,10 +177,14 @@ func buildAIConfig() AIConfig {
 	deepseekKey := strings.TrimSpace(os.Getenv("DEEPSEEK_API_KEY"))
 
 	openAIProvider := AIProviderConfig{
-		APIKey:      openAIKey,
-		BaseURL:     strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")),
-		ChatModel:   strings.TrimSpace(os.Getenv("OPENAI_MODEL")),
-		VisionModel: strings.TrimSpace(os.Getenv("OPENAI_VISION_MODEL")),
+		APIKey:        openAIKey,
+		BaseURL:       strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")),
+		ChatModel:     strings.TrimSpace(os.Getenv("OPENAI_MODEL")),
+		VisionModel:   strings.TrimSpace(os.Getenv("OPENAI_VISION_MODEL")),
+		ImageModel:    strings.TrimSpace(os.Getenv("OPENAI_IMAGE_MODEL")),
+		ImageEndpoint: strings.TrimSpace(os.Getenv("OPENAI_IMAGE_ENDPOINT")),
+		VideoModel:    strings.TrimSpace(os.Getenv("OPENAI_VIDEO_MODEL")),
+		VideoEndpoint: strings.TrimSpace(os.Getenv("OPENAI_VIDEO_ENDPOINT")),
 	}
 	if openAIProvider.BaseURL == "" && openAIProvider.APIKey != "" {
 		openAIProvider.BaseURL = "https://api.openai.com"
@@ -188,12 +192,19 @@ func buildAIConfig() AIConfig {
 	if openAIProvider.ChatModel == "" && openAIProvider.APIKey != "" {
 		openAIProvider.ChatModel = "gpt-4.1-mini"
 	}
+	if openAIProvider.ImageModel == "" && openAIProvider.APIKey != "" {
+		openAIProvider.ImageModel = "gpt-image-1"
+	}
 
 	deepseekProvider := AIProviderConfig{
-		APIKey:      deepseekKey,
-		BaseURL:     strings.TrimSpace(os.Getenv("DEEPSEEK_BASE_URL")),
-		ChatModel:   strings.TrimSpace(os.Getenv("DEEPSEEK_MODEL")),
-		VisionModel: strings.TrimSpace(os.Getenv("DEEPSEEK_VISION_MODEL")),
+		APIKey:        deepseekKey,
+		BaseURL:       strings.TrimSpace(os.Getenv("DEEPSEEK_BASE_URL")),
+		ChatModel:     strings.TrimSpace(os.Getenv("DEEPSEEK_MODEL")),
+		VisionModel:   strings.TrimSpace(os.Getenv("DEEPSEEK_VISION_MODEL")),
+		ImageModel:    strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_MODEL")),
+		ImageEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_ENDPOINT")),
+		VideoModel:    strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_MODEL")),
+		VideoEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_ENDPOINT")),
 	}
 	if deepseekProvider.BaseURL == "" && deepseekProvider.APIKey != "" {
 		deepseekProvider.BaseURL = "https://api.deepseek.com"
@@ -209,14 +220,22 @@ func buildAIConfig() AIConfig {
 	)
 
 	return AIConfig{
-		APIKey:              primary.APIKey,
-		BaseURL:             primary.BaseURL,
-		ChatModel:           primary.ChatModel,
-		VisionModel:         primary.VisionModel,
-		FallbackAPIKey:      fallback.APIKey,
-		FallbackBaseURL:     fallback.BaseURL,
-		FallbackChatModel:   fallback.ChatModel,
-		FallbackVisionModel: fallback.VisionModel,
+		APIKey:                primary.APIKey,
+		BaseURL:               primary.BaseURL,
+		ChatModel:             primary.ChatModel,
+		VisionModel:           primary.VisionModel,
+		ImageModel:            primary.ImageModel,
+		ImageEndpoint:         primary.ImageEndpoint,
+		VideoModel:            primary.VideoModel,
+		VideoEndpoint:         primary.VideoEndpoint,
+		FallbackAPIKey:        fallback.APIKey,
+		FallbackBaseURL:       fallback.BaseURL,
+		FallbackChatModel:     fallback.ChatModel,
+		FallbackVisionModel:   fallback.VisionModel,
+		FallbackImageModel:    fallback.ImageModel,
+		FallbackImageEndpoint: fallback.ImageEndpoint,
+		FallbackVideoModel:    fallback.VideoModel,
+		FallbackVideoEndpoint: fallback.VideoEndpoint,
 	}
 }
 

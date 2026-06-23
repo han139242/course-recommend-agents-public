@@ -25,16 +25,22 @@ import {
 } from '../api/profile'
 import {
   exportResourceJobMarkdown,
+  fetchLearningReport,
   fetchResourceDemoScript,
   fetchResourceEffectSummary,
   fetchResourceJob,
   fetchResourcePresentationOutline,
   fetchResourceSafetyReport,
+  generateResourceImage,
+  generateResourceVideo,
   generateResources,
+  recordLearningEvent,
   streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
+import { fetchLearningProgress } from '../api/learning'
 import { adjustStudyPlan, fetchCurrentStudyPlan, generateStudyPlan, saveGoalProfile } from '../api/studyPlan'
+import AiAssistant from '../components/ai/AiAssistant.vue'
 import QuizPanel from '../components/QuizPanel.vue'
 import ResourceContent from '../components/ResourceContent.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
@@ -63,7 +69,11 @@ const resourceTypeOptions = [
   { value: 'coding_case', label: '代码实操案例', hint: '可落地项目片段' },
   { value: 'reading_material', label: '拓展阅读材料', hint: '补充资料与阅读路径' },
 ]
-const resourceTypeLabels = Object.fromEntries(resourceTypeOptions.map((item) => [item.value, item.label]))
+const resourceTypeLabels = {
+  ...Object.fromEntries(resourceTypeOptions.map((item) => [item.value, item.label])),
+  generated_image: 'AI 生成配图',
+  generated_video: 'AI 生成短视频',
+}
 
 // 画像状态
 const profilePrompt = ref(DEFAULT_PROMPT)
@@ -89,6 +99,10 @@ const resourceForm = ref({
 })
 const resourceLoading = ref(false)
 const resourceError = ref('')
+const mediaPrompt = ref('')
+const mediaLoading = ref('')
+const mediaError = ref('')
+const mediaNotice = ref('')
 const activeJob = ref(null)
 const generatedResources = ref([])
 const attachedImages = ref([])
@@ -119,6 +133,26 @@ const exportError = ref('')
 // 语音朗读（多模态输出，可对接科大讯飞 TTS）
 const { supported: speechSupported, speakingId, speak } = useSpeech()
 
+// AI 学习助教（智能辅导）
+const assistantOpen = ref(false)
+
+// 多轮追问式画像补全
+const profileFollowUp = ref('')
+const profileTurns = ref([])
+
+// 学情学习报告
+const reportLoading = ref(false)
+const learningReport = ref(null)
+const reportError = ref('')
+
+// 知识点掌握度（学习效果可见）
+const masteryMap = ref({})
+
+// 资源收藏与学习笔记
+const noteDrafts = ref({})
+const noteSaving = ref({})
+const noteNotice = ref('')
+
 const activeProfile = computed(() => profilePayload.value?.profile || null)
 
 const orderedDimensions = computed(() => {
@@ -132,6 +166,29 @@ const orderedDimensions = computed(() => {
 
 const hasProfile = computed(() => Boolean(activeProfile.value?.dimensions?.length))
 const profileSummary = computed(() => activeProfile.value?.summary || '尚未生成画像')
+
+// assistantDetail 把当前知识点与画像打包给 AI 学习助教，使辅导聚焦本次学习上下文。
+const assistantDetail = computed(() => {
+  const name = resourceForm.value.knowledgeName?.trim()
+  if (!name) return null
+  return {
+    routeKnowledgeId: resourceForm.value.knowledgeId || name,
+    canonicalName: name,
+    name,
+    courseTitle: resourceForm.value.courseTitle,
+    summary: dimensionValue('learning_goal') || profileSummary.value,
+    description: profileSummary.value,
+    prerequisites: [],
+    masteryScore: currentMastery.value,
+  }
+})
+
+// currentMastery 当前知识点的掌握度（0-100），答题后会更新。
+const currentMastery = computed(() => {
+  const id = resourceForm.value.knowledgeId?.trim()
+  if (id && masteryMap.value[id] !== undefined) return Math.round(masteryMap.value[id])
+  return null
+})
 
 const planStages = computed(() => studyPlan.value?.stages || [])
 const nextSteps = computed(() => studyPlan.value?.nextSteps || [])
@@ -164,6 +221,24 @@ function formatDate(value) {
 
 function typeLabel(type) {
   return resourceTypeLabels[type] || type
+}
+
+// 学习行为事件的中文标签，让效果评估看板更易读。
+const eventTypeLabels = {
+  resource_generation_started: '发起资源生成',
+  resource_generated: '生成资源',
+  resource_viewed: '查看资源',
+  resource_feedback_submitted: '提交反馈',
+  resource_completed: '完成学习',
+  image_generated: '生成配图',
+  video_generated: '生成视频',
+  practice_answered: '随堂练习作答',
+  note_saved: '保存笔记',
+  profile_refreshed: '画像刷新',
+}
+
+function eventTypeLabel(type) {
+  return eventTypeLabels[type] || type
 }
 
 // applyProfileTarget 把学习目标维度回填到资源生成目标，减少重复输入。
@@ -476,6 +551,82 @@ async function loadEffectSummary() {
   }
 }
 
+// loadMastery 读取学习进度，构建知识点掌握度映射，用于展示答题后的掌握度变化。
+async function loadMastery() {
+  try {
+    const payload = await fetchLearningProgress()
+    const map = {}
+    for (const item of payload?.items || []) {
+      if (item.knowledgeId) map[item.knowledgeId] = item.masteryScore
+    }
+    masteryMap.value = map
+  } catch {
+    // 未登录或暂无进度时忽略。
+  }
+}
+
+// handleFollowUpProfile 多轮追问式补全画像：把补充说明并入已有描述后重新抽取，
+// 体现“对话式、摒弃繁琐表单”的画像构建方式。
+async function handleFollowUpProfile() {
+  const extra = profileFollowUp.value.trim()
+  if (!extra) return
+  profileTurns.value = [...profileTurns.value, extra]
+  const combined = [profilePrompt.value.trim(), ...profileTurns.value.map((t) => `补充：${t}`)]
+    .filter(Boolean)
+    .join('\n')
+  profileLoading.value = true
+  profileError.value = ''
+  profileNotice.value = ''
+  try {
+    const payload = await extractLearningProfile(combined)
+    profilePayload.value = payload
+    applyProfileTarget(payload?.profile)
+    profileFollowUp.value = ''
+    profileNotice.value = '已结合补充说明更新画像。'
+  } catch (err) {
+    profileError.value = err?.message || '补充更新失败，请稍后重试。'
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+// handleLoadReport 生成可分享/可提交的 Markdown 学情学习报告。
+async function handleLoadReport() {
+  reportLoading.value = true
+  reportError.value = ''
+  try {
+    learningReport.value = await fetchLearningReport()
+  } catch (err) {
+    reportError.value = err?.message || '学习报告生成失败，请稍后重试。'
+  } finally {
+    reportLoading.value = false
+  }
+}
+
+// handleSaveNote 保存资源学习笔记/收藏，写入 note_saved 行为事件并刷新效果。
+async function handleSaveNote(resource) {
+  const note = (noteDrafts.value[resource.id] || '').trim()
+  if (!note) return
+  noteSaving.value = { ...noteSaving.value, [resource.id]: true }
+  noteNotice.value = ''
+  try {
+    await recordLearningEvent({
+      eventType: 'note_saved',
+      knowledgeId: resource.knowledgeId || resourceForm.value.knowledgeId,
+      knowledgeName: resource.knowledgeName || resourceForm.value.knowledgeName,
+      resourceId: resource.id,
+      resourceType: resource.resourceType,
+      payload: { note },
+    })
+    noteNotice.value = '笔记已保存，将纳入学习行为与效果评估。'
+    await loadEffectSummary()
+  } catch (err) {
+    noteNotice.value = err?.message || '笔记保存失败，请稍后重试。'
+  } finally {
+    noteSaving.value = { ...noteSaving.value, [resource.id]: false }
+  }
+}
+
 async function handleGenerateResources() {
   if (!resourceForm.value.resourceTypes.length) {
     resourceError.value = '至少选择一种资源类型。'
@@ -519,6 +670,44 @@ async function handleGenerateResources() {
   }
 }
 
+function buildMediaPayload() {
+  return {
+    knowledgeId: resourceForm.value.knowledgeId.trim(),
+    knowledgeName: resourceForm.value.knowledgeName.trim(),
+    courseTitle: resourceForm.value.courseTitle.trim(),
+    target: resourceForm.value.target.trim() || profileSummary.value,
+    prompt: mediaPrompt.value.trim(),
+  }
+}
+
+async function handleGenerateMedia(kind) {
+  const knowledgeName = resourceForm.value.knowledgeName.trim()
+  if (!knowledgeName) {
+    mediaError.value = '请先填写或选择知识点。'
+    return
+  }
+  mediaLoading.value = kind
+  mediaError.value = ''
+  mediaNotice.value = ''
+  try {
+    const payload = kind === 'video'
+      ? await generateResourceVideo({ ...buildMediaPayload(), size: '1280x720', durationSec: 6 })
+      : await generateResourceImage({ ...buildMediaPayload(), size: '1024x1024' })
+    if (payload?.resource?.id) {
+      generatedResources.value = [payload.resource, ...generatedResources.value]
+      initFeedbackDrafts(generatedResources.value)
+    }
+    mediaNotice.value = kind === 'video'
+      ? '真实文生视频任务已完成或已提交，结果已进入资源库。'
+      : '真实文生图已生成，结果已进入资源库。'
+    await loadEffectSummary()
+  } catch (err) {
+    mediaError.value = err?.message || (kind === 'video' ? '视频生成失败，请检查媒体模型配置。' : '图片生成失败，请检查媒体模型配置。')
+  } finally {
+    mediaLoading.value = ''
+  }
+}
+
 async function handleSubmitFeedback(resource) {
   const draft = feedbackDrafts.value[resource.id]
   if (!draft) return
@@ -537,9 +726,9 @@ async function handleSubmitFeedback(resource) {
   }
 }
 
-// onQuizCompleted 答题后刷新画像与学习效果评估，体现测评闭环。
+// onQuizCompleted 答题后刷新画像、学习效果评估与掌握度，体现测评闭环。
 async function onQuizCompleted() {
-  await Promise.all([handleRefreshProfile(), loadEffectSummary()])
+  await Promise.all([handleRefreshProfile(), loadEffectSummary(), loadMastery()])
 }
 
 // handleLoadSafetyReport 拉取/收起单个资源的安全与防幻觉审查报告。
@@ -620,7 +809,7 @@ async function handleExportJob() {
 }
 
 onMounted(async () => {
-  await Promise.all([loadCurrentProfile(), loadCurrentPlan(), loadEffectSummary()])
+  await Promise.all([loadCurrentProfile(), loadCurrentPlan(), loadEffectSummary(), loadMastery()])
 })
 
 onBeforeUnmount(() => {
@@ -659,6 +848,10 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="a3-topbar__actions">
+        <button type="button" class="ghost-link" @click="assistantOpen = true">
+          <Bot :size="16" aria-hidden="true" />
+          AI 学习助教
+        </button>
         <RouterLink class="ghost-link" to="/">
           <BookOpen :size="16" aria-hidden="true" />
           知识图谱
@@ -724,6 +917,21 @@ onBeforeUnmount(() => {
         <div v-else class="empty-state">
           <Bot :size="22" aria-hidden="true" />
           <p>生成画像后，这里会展示知识基础、学习目标、学习进度、认知风格、易错偏好和资源偏好。</p>
+        </div>
+
+        <div v-if="hasProfile" class="followup-row">
+          <label class="field-block">
+            <span>多轮追问补充（对话式补全画像）</span>
+            <textarea
+              v-model="profileFollowUp"
+              rows="2"
+              placeholder="例如：我其实更想先补线性代数；平时每周只有 3 小时；偏好看视频讲解"
+            />
+          </label>
+          <button type="button" class="secondary-action" :disabled="profileLoading || !profileFollowUp.trim()" @click="handleFollowUpProfile">
+            <Send :size="16" aria-hidden="true" />
+            追加并更新画像
+          </button>
         </div>
       </section>
 
@@ -818,6 +1026,11 @@ onBeforeUnmount(() => {
           </label>
         </div>
 
+        <p v-if="currentMastery !== null" class="mastery-badge">
+          当前知识点掌握度：<strong>{{ currentMastery }}%</strong>
+          <span>完成随堂练习后会实时更新</span>
+        </p>
+
         <div class="resource-types">
           <button
             v-for="option in resourceTypeOptions"
@@ -852,6 +1065,18 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="button-row button-row--end">
+          <label class="field-block field-block--wide media-prompt-field">
+            <span>图片/视频创意提示（可选）</span>
+            <textarea v-model="mediaPrompt" rows="2" placeholder="例如：用可视化流程展示智能体如何调用工具完成任务" />
+          </label>
+          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('image')">
+            <ImagePlus :size="16" aria-hidden="true" />
+            {{ mediaLoading === 'image' ? '生成配图中' : '生成教学配图' }}
+          </button>
+          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('video')">
+            <PlayCircle :size="16" aria-hidden="true" />
+            {{ mediaLoading === 'video' ? '生成视频中' : '生成短视频' }}
+          </button>
           <button type="button" class="primary-action" :disabled="resourceLoading" @click="handleGenerateResources">
             <Sparkles v-if="!resourceLoading" :size="16" aria-hidden="true" />
             <RefreshCcw v-else :size="16" aria-hidden="true" />
@@ -859,6 +1084,8 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <p v-if="resourceError" class="inline-error">{{ resourceError }}</p>
+        <p v-if="mediaError" class="inline-error">{{ mediaError }}</p>
+        <p v-if="mediaNotice" class="inline-success">{{ mediaNotice }}</p>
         <p v-if="feedbackError" class="inline-error">{{ feedbackError }}</p>
         <p v-if="feedbackNotice" class="inline-success">{{ feedbackNotice }}</p>
 
@@ -1008,6 +1235,23 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
+            <div class="note-box">
+              <label class="field-block">
+                <span>学习笔记 / 收藏</span>
+                <textarea
+                  v-model="noteDrafts[resource.id]"
+                  rows="2"
+                  placeholder="记录这份资源的重点或你的理解，保存后会纳入学习行为与效果评估"
+                />
+              </label>
+              <div class="button-row button-row--end">
+                <button type="button" class="ghost-mini" :disabled="noteSaving[resource.id] || !(noteDrafts[resource.id] || '').trim()" @click="handleSaveNote(resource)">
+                  <Save :size="15" aria-hidden="true" />
+                  {{ noteSaving[resource.id] ? '保存中' : '保存笔记' }}
+                </button>
+              </div>
+            </div>
+
             <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
               <div class="feedback-box__head">
                 <strong>学习反馈</strong>
@@ -1066,12 +1310,27 @@ onBeforeUnmount(() => {
 
       <!-- 步骤 6：学习效果评估看板 -->
       <section class="a3-card">
-        <div class="card-heading">
-          <span class="card-badge">4</span>
-          <div>
-            <span class="card-kicker">Effect</span>
-            <h1>学习效果评估</h1>
+        <div class="card-heading card-heading--with-action">
+          <div class="card-heading__main">
+            <span class="card-badge">4</span>
+            <div>
+              <span class="card-kicker">Effect</span>
+              <h1>学习效果评估</h1>
+            </div>
           </div>
+          <button type="button" class="secondary-action" :disabled="reportLoading" @click="handleLoadReport">
+            <FileText :size="16" aria-hidden="true" />
+            {{ reportLoading ? '生成中' : '生成学情报告' }}
+          </button>
+        </div>
+
+        <p v-if="reportError" class="inline-error">{{ reportError }}</p>
+        <div v-if="learningReport" class="export-box">
+          <div class="export-box__head">
+            <strong>{{ learningReport.fileName }}</strong>
+            <small>可复制/提交的 Markdown 学情报告</small>
+          </div>
+          <textarea readonly :value="learningReport.content" rows="8" />
         </div>
 
         <div v-if="effectLoading" class="empty-state">
@@ -1105,7 +1364,7 @@ onBeforeUnmount(() => {
             </div>
             <article v-for="event in effectSummary.recentEvents.slice(0, 5)" :key="event.id" class="effect-event">
               <span>{{ formatDate(event.occurredAt) }}</span>
-              <strong>{{ event.eventType }}</strong>
+              <strong>{{ eventTypeLabel(event.eventType) }}</strong>
               <small>{{ event.knowledgeName || event.resourceType }}</small>
             </article>
           </div>
@@ -1116,6 +1375,8 @@ onBeforeUnmount(() => {
         </div>
       </section>
     </main>
+
+    <AiAssistant v-model="assistantOpen" :detail="assistantDetail" :is-authenticated="true" />
   </section>
 </template>
 
@@ -1313,6 +1574,10 @@ onBeforeUnmount(() => {
 
 .field-block--wide {
   grid-column: 1 / -1;
+}
+
+.media-prompt-field {
+  flex: 1 1 100%;
 }
 
 .primary-action,

@@ -521,6 +521,10 @@ func resourceTypeLabel(resourceType string) string {
 		return "代码实操案例"
 	case "video_script":
 		return "视频/动画脚本"
+	case "generated_image":
+		return "AI 生成配图"
+	case "generated_video":
+		return "AI 生成短视频"
 	default:
 		return "讲解文档"
 	}
