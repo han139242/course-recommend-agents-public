@@ -43,6 +43,13 @@ export function fetchResourceJob(jobId) {
   return request(`/resources/jobs/${jobId}`)
 }
 
+export function retryResourceJob(jobId, payload = {}) {
+  return request(`/resources/jobs/${jobId}/retry`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 // streamResourceJob 以 SSE 订阅资源生成任务进度，onEvent 会收到每次的任务快照。
 export function streamResourceJob(jobId, { onEvent, signal } = {}) {
   return streamRequest(`/resources/jobs/${jobId}/stream`, {
@@ -78,6 +85,21 @@ export function fetchResourceFeed() {
 
 export function fetchResourceSafetyReport(resourceId) {
   return request(`/resources/${resourceId}/safety-report`)
+}
+
+export function fetchResourceMediaStatus(resourceId) {
+  return request(`/resources/${resourceId}/media-status`)
+}
+
+export function fetchResourceQualityReport(resourceId) {
+  return request(`/resources/${resourceId}/quality-report`)
+}
+
+export function compareResources(resourceIds) {
+  return request('/resources/compare', {
+    method: 'POST',
+    body: { resourceIds },
+  })
 }
 
 export function submitResourceFeedback(resourceId, payload) {

@@ -217,6 +217,63 @@ func (s *Service) GetJob(ctx context.Context, rawJobID string) (*resourcegendto.
 	return &view, nil
 }
 
+// RetryJob starts a fresh generation run from a previous job. It does not
+// mutate the old job, which keeps the audit trail clear for demos and exports.
+func (s *Service) RetryJob(ctx context.Context, rawJobID string, request resourcegendto.RetryJobRequest) (*resourcegendto.GenerateResourcesResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	jobID, err := strconv.ParseInt(strings.TrimSpace(rawJobID), 10, 64)
+	if err != nil || jobID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	job, _, resources, err := s.repo.GetJob(ctx, studentID, jobID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	resourceTypes := normalizeResourceTypes(request.ResourceTypes)
+	if len(request.ResourceTypes) == 0 {
+		resourceTypes = inferResourceTypes(resources)
+	}
+	retryTarget := strings.TrimSpace(request.Target)
+	if retryTarget == "" {
+		retryTarget = firstNonEmpty(job.Target, job.KnowledgeName)
+	}
+
+	response, err := s.Generate(ctx, resourcegendto.GenerateResourcesRequest{
+		KnowledgeID:   job.KnowledgeID,
+		KnowledgeName: firstNonEmpty(job.KnowledgeName, job.KnowledgeID),
+		CourseTitle:   job.CourseTitle,
+		Target:        retryTarget,
+		ResourceTypes: resourceTypes,
+		Difficulty:    request.Difficulty,
+		Images:        request.Images,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if response != nil {
+		s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+			StudentID:     studentID,
+			EventType:     "resource_retry_started",
+			KnowledgeID:   job.KnowledgeID,
+			KnowledgeName: job.KnowledgeName,
+			PayloadJSON: mustEventPayload(map[string]any{
+				"retryOfJobId":  job.ID,
+				"newJobId":      response.Job.ID,
+				"resourceTypes": resourceTypes,
+				"difficulty":    request.Difficulty,
+			}),
+		})
+	}
+	return response, nil
+}
+
 func (s *Service) ListResources(ctx context.Context, query resourcegendto.ResourceQuery) (*resourcegendto.ListResourcesResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {
@@ -894,6 +951,129 @@ func (s *Service) GetSafetyReport(ctx context.Context, rawResourceID string) (*r
 	return &report, nil
 }
 
+func (s *Service) GetMediaStatus(ctx context.Context, rawResourceID string) (*resourcegendto.MediaStatusResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	if resource.Format != "image" && resource.Format != "video" && resource.ResourceType != "generated_image" && resource.ResourceType != "generated_video" {
+		return nil, apperr.ErrBadRequest.WithCause(errors.New("resource is not a generated media artifact"))
+	}
+	status := buildMediaStatus(*resource)
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "media_status_checked",
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"status":         status.Status,
+			"ready":          status.Ready,
+			"providerTaskId": status.ProviderTaskID,
+		}),
+	})
+	return &status, nil
+}
+
+func (s *Service) GetQualityReport(ctx context.Context, rawResourceID string) (*resourcegendto.ResourceQualityReportView, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	feedback, _ := s.repo.ListFeedback(ctx, studentID, 80)
+	report := buildQualityReport(*resource, latestFeedbackForResource(feedback, resource.ID))
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "resource_quality_checked",
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"score": report.Score,
+			"level": report.Level,
+		}),
+	})
+	return &report, nil
+}
+
+func (s *Service) CompareResources(ctx context.Context, request resourcegendto.CompareResourcesRequest) (*resourcegendto.CompareResourcesResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(request.ResourceIDs) < 2 || len(request.ResourceIDs) > 6 {
+		return nil, apperr.ErrBadRequest
+	}
+	feedback, _ := s.repo.ListFeedback(ctx, studentID, 100)
+	items := make([]resourcegendto.ResourceComparisonItemView, 0, len(request.ResourceIDs))
+	seen := map[int64]struct{}{}
+	for _, resourceID := range request.ResourceIDs {
+		if resourceID <= 0 {
+			return nil, apperr.ErrBadRequest
+		}
+		if _, exists := seen[resourceID]; exists {
+			continue
+		}
+		seen[resourceID] = struct{}{}
+		resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+		if errors.Is(err, resourcegenrepo.ErrNotFound) {
+			return nil, apperr.ErrNotFound
+		}
+		if err != nil {
+			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+		}
+		report := buildQualityReport(*resource, latestFeedbackForResource(feedback, resource.ID))
+		items = append(items, resourcegendto.ResourceComparisonItemView{
+			Resource: resourceToView(*resource),
+			Quality:  report,
+			Reason:   comparisonReason(report),
+		})
+	}
+	if len(items) < 2 {
+		return nil, apperr.ErrBadRequest
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		return items[i].Quality.Score > items[j].Quality.Score
+	})
+	winnerID := items[0].Resource.ID
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:   studentID,
+		EventType:   "resource_compared",
+		ResourceID:  winnerID,
+		PayloadJSON: mustEventPayload(map[string]any{"winnerId": winnerID, "count": len(items)}),
+	})
+	return &resourcegendto.CompareResourcesResponse{
+		WinnerID:    winnerID,
+		Summary:     buildComparisonSummary(items),
+		Items:       items,
+		GeneratedAt: time.Now().Format(time.RFC3339),
+	}, nil
+}
+
 func (s *Service) ExportJobMarkdown(ctx context.Context, rawJobID string) (*resourcegendto.ExportJobResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {
@@ -1510,6 +1690,60 @@ func marshalMediaContent(kind string, media ai.MediaResponse, prompt string) str
 	return string(raw)
 }
 
+type mediaContentPayload struct {
+	Kind           string `json:"kind"`
+	URL            string `json:"url"`
+	B64JSON        string `json:"b64Json"`
+	MimeType       string `json:"mimeType"`
+	Prompt         string `json:"prompt"`
+	Provider       string `json:"provider"`
+	Model          string `json:"model"`
+	Status         string `json:"status"`
+	ProviderTaskID string `json:"providerTaskId"`
+	GeneratedAt    string `json:"generatedAt"`
+}
+
+func parseMediaContent(content string) mediaContentPayload {
+	var payload mediaContentPayload
+	if err := json.Unmarshal([]byte(strings.TrimSpace(content)), &payload); err != nil {
+		return mediaContentPayload{URL: strings.TrimSpace(content)}
+	}
+	return payload
+}
+
+func buildMediaStatus(resource resourcegenentity.GeneratedResource) resourcegendto.MediaStatusResponse {
+	payload := parseMediaContent(resource.Content)
+	kind := firstNonEmpty(payload.Kind, resource.Format)
+	if kind == "" && resource.ResourceType == "generated_video" {
+		kind = "video"
+	} else if kind == "" {
+		kind = "image"
+	}
+	ready := payload.URL != "" || payload.B64JSON != ""
+	status := firstNonEmpty(payload.Status, map[bool]string{true: "ready", false: "pending"}[ready])
+	hint := "媒体结果已可预览。"
+	if !ready && payload.ProviderTaskID != "" {
+		hint = "提供商已返回异步任务号，可在模型控制台或后续状态回调中继续跟踪。"
+	} else if !ready {
+		hint = "当前资源尚未包含可播放/可预览地址，建议稍后刷新或重新生成。"
+	}
+	return resourcegendto.MediaStatusResponse{
+		ResourceID:     resource.ID,
+		Kind:           kind,
+		Status:         status,
+		Ready:          ready,
+		URL:            payload.URL,
+		B64JSON:        payload.B64JSON,
+		MimeType:       payload.MimeType,
+		Prompt:         payload.Prompt,
+		Provider:       payload.Provider,
+		Model:          payload.Model,
+		ProviderTaskID: payload.ProviderTaskID,
+		Hint:           hint,
+		CheckedAt:      time.Now().Format(time.RFC3339),
+	}
+}
+
 func normalizeResourceTypes(input []string) []string {
 	defaults := []string{"explanation_doc", "mind_map", "practice_questions", "reading_material", "coding_case"}
 	allowed := map[string]bool{
@@ -1541,6 +1775,22 @@ func normalizeResourceTypes(input []string) []string {
 	}
 	sort.Strings(result)
 	return result
+}
+
+func inferResourceTypes(resources []resourcegenentity.GeneratedResource) []string {
+	if len(resources) == 0 {
+		return normalizeResourceTypes(nil)
+	}
+	types := make([]string, 0, len(resources))
+	for _, resource := range resources {
+		switch resource.ResourceType {
+		case "generated_image", "generated_video":
+			continue
+		default:
+			types = append(types, resource.ResourceType)
+		}
+	}
+	return normalizeResourceTypes(types)
 }
 
 func normalizeDifficulty(value string) string {
@@ -1720,6 +1970,200 @@ func buildRecommendationSummary(profile *profiledto.LearningProfileView, resourc
 		return "已根据当前画像和资源库给出下一步建议；提交学习反馈后会进一步调整推荐顺序。"
 	}
 	return summary.Insight
+}
+
+func latestFeedbackForResource(feedback []resourcegenentity.ResourceFeedback, resourceID int64) *resourcegenentity.ResourceFeedback {
+	for index := range feedback {
+		if feedback[index].ResourceID == resourceID {
+			return &feedback[index]
+		}
+	}
+	return nil
+}
+
+func buildQualityReport(resource resourcegenentity.GeneratedResource, feedback *resourcegenentity.ResourceFeedback) resourcegendto.ResourceQualityReportView {
+	safety := buildSafetyReport(resource)
+	content := strings.TrimSpace(resource.Content)
+	contentLen := len([]rune(content))
+	personalizationScore := 60
+	if strings.TrimSpace(resource.Reason) != "" {
+		personalizationScore += 25
+	}
+	if strings.TrimSpace(resource.KnowledgeName) != "" || strings.TrimSpace(resource.KnowledgeID) != "" {
+		personalizationScore += 10
+	}
+
+	structureScore := 45
+	switch resource.Format {
+	case "mermaid":
+		if strings.Contains(content, "mindmap") || strings.Contains(content, "graph") {
+			structureScore = 92
+		}
+	case "image", "video":
+		status := buildMediaStatus(resource)
+		if status.Ready {
+			structureScore = 94
+		} else if status.ProviderTaskID != "" {
+			structureScore = 76
+		}
+	default:
+		switch {
+		case contentLen >= 1200:
+			structureScore = 92
+		case contentLen >= 500:
+			structureScore = 82
+		case contentLen >= 160:
+			structureScore = 68
+		}
+		if strings.Contains(content, "#") {
+			structureScore += 5
+		}
+	}
+
+	actionScore := 58
+	switch resource.ResourceType {
+	case "practice_questions":
+		if containsAny(content, "答案", "解析", "易错") {
+			actionScore = 90
+		}
+	case "coding_case":
+		if strings.Contains(content, "```") {
+			actionScore = 94
+		}
+	case "mind_map":
+		actionScore = 86
+	case "generated_image", "generated_video":
+		if buildMediaStatus(resource).Ready {
+			actionScore = 88
+		}
+	case "video_script":
+		if containsAny(content, "镜头", "旁白", "时长") {
+			actionScore = 90
+		}
+	default:
+		if containsAny(content, "步骤", "练习", "建议", "总结") {
+			actionScore = 84
+		}
+	}
+
+	feedbackScore := 70
+	if feedback != nil {
+		feedbackScore = feedback.Rating * 18
+		if feedback.Helpful {
+			feedbackScore += 8
+		}
+		if feedback.Completed {
+			feedbackScore += 6
+		}
+		if normalizeDifficulty(feedback.Difficulty) == "hard" {
+			feedbackScore -= 8
+		}
+	}
+
+	metrics := []resourcegendto.QualityMetricView{
+		qualityMetric("personalization", "个性化依据", personalizationScore, "是否绑定知识点、课程目标和生成理由。"),
+		qualityMetric("structure", "结构完整性", structureScore, "是否具备可阅读、可预览或可直接展示的结构。"),
+		qualityMetric("actionability", "学习可执行性", actionScore, "是否包含练习、步骤、代码、分镜或可操作材料。"),
+		qualityMetric("safety", "安全可信", safety.Score, "复用 SafetyReviewerAgent 的事实性、格式和敏感内容审查。"),
+		qualityMetric("feedback", "学习反馈", feedbackScore, "结合学生评分、有帮助和完成状态判断实际学习效果。"),
+	}
+
+	score := 0
+	weights := []int{22, 24, 22, 22, 10}
+	for index, metric := range metrics {
+		score += metric.Score * weights[index]
+	}
+	score = clampScore(score / 100)
+	strengths, improvements := qualityNarratives(metrics, feedback)
+	return resourcegendto.ResourceQualityReportView{
+		ResourceID:   resource.ID,
+		Title:        resource.Title,
+		TypeLabel:    firstNonEmpty(resource.TypeLabel, resourceTypeLabel(resource.ResourceType)),
+		Score:        score,
+		Level:        qualityLevel(score),
+		Metrics:      metrics,
+		Strengths:    strengths,
+		Improvements: improvements,
+		GeneratedAt:  time.Now().Format(time.RFC3339),
+	}
+}
+
+func qualityMetric(key string, label string, score int, reason string) resourcegendto.QualityMetricView {
+	return resourcegendto.QualityMetricView{Key: key, Label: label, Score: clampScore(score), Reason: reason}
+}
+
+func clampScore(score int) int {
+	if score < 0 {
+		return 0
+	}
+	if score > 100 {
+		return 100
+	}
+	return score
+}
+
+func qualityLevel(score int) string {
+	switch {
+	case score >= 90:
+		return "excellent"
+	case score >= 78:
+		return "good"
+	case score >= 62:
+		return "usable"
+	default:
+		return "needs_improvement"
+	}
+}
+
+func qualityNarratives(metrics []resourcegendto.QualityMetricView, feedback *resourcegenentity.ResourceFeedback) ([]string, []string) {
+	strengths := make([]string, 0, 3)
+	improvements := make([]string, 0, 3)
+	for _, metric := range metrics {
+		if metric.Score >= 85 {
+			strengths = append(strengths, metric.Label+"表现较好，可作为答辩展示证据。")
+		} else if metric.Score < 70 {
+			improvements = append(improvements, metric.Label+"仍需加强，建议重新生成或人工补充。")
+		}
+	}
+	if feedback == nil {
+		improvements = append(improvements, "尚缺少学生反馈，建议完成学习后提交评分以校准质量。")
+	}
+	if len(strengths) == 0 {
+		strengths = append(strengths, "资源已进入生成库，可继续结合安全审查和反馈闭环优化。")
+	}
+	if len(improvements) == 0 {
+		improvements = append(improvements, "当前质量稳定，后续可补充来源标注和课堂实测数据。")
+	}
+	return strengths, improvements
+}
+
+func comparisonReason(report resourcegendto.ResourceQualityReportView) string {
+	switch report.Level {
+	case "excellent":
+		return "综合质量优秀，适合作为本轮学习或比赛展示的优先资源。"
+	case "good":
+		return "结构与可信度较好，适合继续学习并收集反馈。"
+	case "usable":
+		return "资源可用，但建议结合改进项补强后再作为核心材料。"
+	default:
+		return "质量分偏低，建议重新生成或人工修订后使用。"
+	}
+}
+
+func buildComparisonSummary(items []resourcegendto.ResourceComparisonItemView) string {
+	if len(items) == 0 {
+		return "暂无可对比资源。"
+	}
+	winner := items[0]
+	if len(items) == 1 {
+		return "当前资源质量为 " + strconv.Itoa(winner.Quality.Score) + " 分。"
+	}
+	second := items[1]
+	gap := winner.Quality.Score - second.Quality.Score
+	if gap <= 3 {
+		return fmt.Sprintf("资源质量接近，优先选择《%s》，同时可吸收第二名资源的补充内容。", winner.Resource.Title)
+	}
+	return fmt.Sprintf("建议优先使用《%s》，综合质量分 %d，比第二名高 %d 分。", winner.Resource.Title, winner.Quality.Score, gap)
 }
 
 func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegendto.SafetyReportView {
@@ -2440,6 +2884,10 @@ func normalizeEventType(eventType string) string {
 		"profile_refreshed":           true,
 		"image_generated":             true,
 		"video_generated":             true,
+		"resource_retry_started":      true,
+		"resource_quality_checked":    true,
+		"resource_compared":           true,
+		"media_status_checked":        true,
 	}
 	key := strings.ToLower(strings.TrimSpace(eventType))
 	if allowed[key] {

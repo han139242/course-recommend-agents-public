@@ -39,6 +39,15 @@ type JobView struct {
 	Resources     []GeneratedResourceView `json:"resources,omitempty"`
 }
 
+// RetryJobRequest starts a new generation job from an existing job context.
+// ResourceTypes and Difficulty may override the inferred values.
+type RetryJobRequest struct {
+	ResourceTypes []string `json:"resourceTypes" binding:"omitempty,max=10"`
+	Difficulty    string   `json:"difficulty" binding:"omitempty,oneof=easier harder normal"`
+	Target        string   `json:"target" binding:"omitempty,max=500"`
+	Images        []string `json:"images" binding:"omitempty,max=4"`
+}
+
 // AgentStepView records a visible multi-agent step.
 type AgentStepView struct {
 	ID        int64  `json:"id"`
@@ -192,6 +201,67 @@ type SafetyReportView struct {
 	Suggestions  []string          `json:"suggestions"`
 	ReviewedAt   string            `json:"reviewedAt"`
 	ReviewerName string            `json:"reviewerName"`
+}
+
+// MediaStatusResponse exposes the normalized state of an image/video resource.
+type MediaStatusResponse struct {
+	ResourceID     int64  `json:"resourceId"`
+	Kind           string `json:"kind"`
+	Status         string `json:"status"`
+	Ready          bool   `json:"ready"`
+	URL            string `json:"url,omitempty"`
+	B64JSON        string `json:"b64Json,omitempty"`
+	MimeType       string `json:"mimeType,omitempty"`
+	Prompt         string `json:"prompt,omitempty"`
+	Provider       string `json:"provider,omitempty"`
+	Model          string `json:"model,omitempty"`
+	ProviderTaskID string `json:"providerTaskId,omitempty"`
+	Hint           string `json:"hint"`
+	CheckedAt      string `json:"checkedAt"`
+}
+
+// QualityMetricView describes one quality dimension in the resource scoring
+// report.
+type QualityMetricView struct {
+	Key    string `json:"key"`
+	Label  string `json:"label"`
+	Score  int    `json:"score"`
+	Reason string `json:"reason"`
+}
+
+// ResourceQualityReportView is a lightweight automatic resource-quality
+// assessment for demo comparison and review.
+type ResourceQualityReportView struct {
+	ResourceID   int64               `json:"resourceId"`
+	Title        string              `json:"title"`
+	TypeLabel    string              `json:"typeLabel"`
+	Score        int                 `json:"score"`
+	Level        string              `json:"level"`
+	Metrics      []QualityMetricView `json:"metrics"`
+	Strengths    []string            `json:"strengths"`
+	Improvements []string            `json:"improvements"`
+	GeneratedAt  string              `json:"generatedAt"`
+}
+
+// CompareResourcesRequest asks the system to compare several generated
+// resources and recommend the best one for the current learning goal.
+type CompareResourcesRequest struct {
+	ResourceIDs []int64 `json:"resourceIds" binding:"required,min=2,max=6"`
+}
+
+// ResourceComparisonItemView is one row in the comparison result.
+type ResourceComparisonItemView struct {
+	Resource GeneratedResourceView     `json:"resource"`
+	Quality  ResourceQualityReportView `json:"quality"`
+	Reason   string                    `json:"reason"`
+}
+
+// CompareResourcesResponse returns a ranked comparison across resources.
+type CompareResourcesResponse struct {
+	WinnerID    int64                        `json:"winnerId"`
+	Summary     string                       `json:"summary"`
+	Items       []ResourceComparisonItemView `json:"items"`
+	GeneratedAt string                       `json:"generatedAt"`
 }
 
 // ExportJobResponse returns an exportable Markdown package.

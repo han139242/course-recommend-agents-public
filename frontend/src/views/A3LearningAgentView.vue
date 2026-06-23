@@ -29,12 +29,15 @@ import {
   fetchResourceDemoScript,
   fetchResourceEffectSummary,
   fetchResourceJob,
+  fetchResourceMediaStatus,
   fetchResourcePresentationOutline,
+  fetchResourceQualityReport,
   fetchResourceSafetyReport,
   generateResourceImage,
   generateResourceVideo,
   generateResources,
   recordLearningEvent,
+  retryResourceJob,
   streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
@@ -118,6 +121,11 @@ const effectLoading = ref(false)
 // 安全审查（防幻觉可信展示）
 const safetyReports = ref({})
 const safetyLoading = ref({})
+const qualityReports = ref({})
+const qualityLoading = ref({})
+const mediaStatuses = ref({})
+const mediaStatusLoading = ref({})
+const retryingJob = ref(false)
 
 // 答辩物料导出
 const outlineLoading = ref(false)
@@ -670,6 +678,37 @@ async function handleGenerateResources() {
   }
 }
 
+async function handleRetryJob() {
+  if (!activeJob.value?.id || retryingJob.value || resourceLoading.value) return
+
+  stopPolling()
+  stopStreaming()
+  retryingJob.value = true
+  resourceError.value = ''
+  generatedResources.value = []
+  try {
+    const payload = await retryResourceJob(activeJob.value.id, {
+      target: resourceForm.value.target.trim() || activeJob.value.target || profileSummary.value,
+      resourceTypes: resourceForm.value.resourceTypes,
+      images: attachedImages.value.map((item) => item.dataUrl),
+    })
+    activeJob.value = payload?.job || null
+    generatedResources.value = payload?.resources || []
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
+      if (finalJob?.status === 'failed') {
+        resourceError.value = finalJob.errorMessage || '重试任务仍然失败，请检查模型配置或稍后再试。'
+      }
+    }
+    initFeedbackDrafts(generatedResources.value)
+    await loadEffectSummary()
+  } catch (err) {
+    resourceError.value = err?.message || '重试任务失败，请稍后再试。'
+  } finally {
+    retryingJob.value = false
+  }
+}
+
 function buildMediaPayload() {
   return {
     knowledgeId: resourceForm.value.knowledgeId.trim(),
@@ -758,10 +797,65 @@ async function handleLoadSafetyReport(resource) {
   }
 }
 
+async function handleLoadQualityReport(resource) {
+  if (!resource?.id) return
+  if (qualityReports.value[resource.id]) {
+    qualityReports.value = { ...qualityReports.value, [resource.id]: null }
+    return
+  }
+  qualityLoading.value = { ...qualityLoading.value, [resource.id]: true }
+  try {
+    qualityReports.value = { ...qualityReports.value, [resource.id]: await fetchResourceQualityReport(resource.id) }
+  } catch (err) {
+    qualityReports.value = {
+      ...qualityReports.value,
+      [resource.id]: {
+        score: 0,
+        level: 'needs_improvement',
+        metrics: [],
+        strengths: [],
+        improvements: [err?.message || '质量报告读取失败。'],
+      },
+    }
+  } finally {
+    qualityLoading.value = { ...qualityLoading.value, [resource.id]: false }
+  }
+}
+
+async function handleLoadMediaStatus(resource) {
+  if (!resource?.id || !isMediaResource(resource)) return
+  mediaStatusLoading.value = { ...mediaStatusLoading.value, [resource.id]: true }
+  try {
+    mediaStatuses.value = { ...mediaStatuses.value, [resource.id]: await fetchResourceMediaStatus(resource.id) }
+  } catch (err) {
+    mediaStatuses.value = {
+      ...mediaStatuses.value,
+      [resource.id]: {
+        status: 'unknown',
+        ready: false,
+        hint: err?.message || '媒体状态读取失败。',
+      },
+    }
+  } finally {
+    mediaStatusLoading.value = { ...mediaStatusLoading.value, [resource.id]: false }
+  }
+}
+
 function safetyStatusLabel(status) {
   if (status === 'passed') return '已通过'
   if (status === 'blocked') return '需阻断'
   return '需关注'
+}
+
+function qualityLevelLabel(level) {
+  if (level === 'excellent') return '优秀'
+  if (level === 'good') return '良好'
+  if (level === 'usable') return '可用'
+  return '需改进'
+}
+
+function isMediaResource(resource) {
+  return resource?.format === 'image' || resource?.format === 'video' || resource?.resourceType === 'generated_image' || resource?.resourceType === 'generated_video'
 }
 
 // speakResource 朗读资源正文；再次点击同一资源会停止朗读。
@@ -1111,6 +1205,10 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="button-row button-row--end export-actions">
+            <button v-if="activeJob.status === 'failed'" type="button" class="secondary-action" :disabled="retryingJob" @click="handleRetryJob">
+              <RefreshCcw :size="16" aria-hidden="true" />
+              {{ retryingJob ? '重试中' : '重试任务' }}
+            </button>
             <button type="button" class="secondary-action" :disabled="outlineLoading || activeJob.status !== 'completed'" @click="handleLoadPresentationOutline">
               <Sparkles :size="16" aria-hidden="true" />
               {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
@@ -1202,10 +1300,53 @@ onBeforeUnmount(() => {
                 <PlayCircle :size="15" aria-hidden="true" />
                 {{ speakingId === `resource-${resource.id}` ? '停止朗读' : '语音朗读' }}
               </button>
+              <button
+                v-if="isMediaResource(resource)"
+                type="button"
+                class="ghost-mini"
+                :disabled="mediaStatusLoading[resource.id]"
+                @click="handleLoadMediaStatus(resource)"
+              >
+                <RefreshCcw :size="15" aria-hidden="true" />
+                {{ mediaStatusLoading[resource.id] ? '刷新中' : '媒体状态' }}
+              </button>
+              <button type="button" class="ghost-mini" :disabled="qualityLoading[resource.id]" @click="handleLoadQualityReport(resource)">
+                <Sparkles :size="15" aria-hidden="true" />
+                {{ qualityReports[resource.id] ? '收起质量' : qualityLoading[resource.id] ? '评分中' : '质量评分' }}
+              </button>
               <button type="button" class="ghost-mini" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="15" aria-hidden="true" />
                 {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
               </button>
+            </div>
+
+            <div v-if="mediaStatuses[resource.id]" class="media-status-box">
+              <strong>{{ mediaStatuses[resource.id].ready ? '媒体已就绪' : '媒体处理中' }}</strong>
+              <span>{{ mediaStatuses[resource.id].status }}</span>
+              <p>{{ mediaStatuses[resource.id].hint }}</p>
+            </div>
+
+            <div v-if="qualityReports[resource.id]" class="quality-report">
+              <div class="quality-report__head">
+                <div>
+                  <span>QualityJudgeAgent</span>
+                  <strong>{{ qualityLevelLabel(qualityReports[resource.id].level) }}</strong>
+                </div>
+                <em>{{ qualityReports[resource.id].score }} 分</em>
+              </div>
+              <div class="quality-metrics">
+                <article v-for="metric in qualityReports[resource.id].metrics || []" :key="metric.key">
+                  <div>
+                    <strong>{{ metric.label }}</strong>
+                    <span>{{ metric.score }} 分</span>
+                  </div>
+                  <p>{{ metric.reason }}</p>
+                </article>
+              </div>
+              <div class="safety-list">
+                <strong>改进项</strong>
+                <p v-for="item in qualityReports[resource.id].improvements || []" :key="item">{{ item }}</p>
+              </div>
             </div>
 
             <div v-if="safetyReports[resource.id]" class="safety-report">
@@ -2185,6 +2326,90 @@ onBeforeUnmount(() => {
 .ghost-mini:disabled {
   cursor: not-allowed;
   opacity: 0.58;
+}
+
+.media-status-box,
+.quality-report {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0.9rem 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #f8fbfd;
+}
+
+.media-status-box {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.media-status-box span {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  color: #176b87;
+  background: rgba(23, 107, 135, 0.1);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.media-status-box p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.quality-report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quality-report__head span,
+.quality-report__head strong {
+  display: block;
+}
+
+.quality-report__head span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.quality-report__head em {
+  color: #176b87;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.quality-metrics {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.quality-metrics article {
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #ffffff;
+}
+
+.quality-metrics div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quality-metrics span {
+  color: #176b87;
+  font-weight: 800;
+}
+
+.quality-metrics p {
+  margin: 0.24rem 0 0;
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .safety-report {

@@ -18,17 +18,22 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, fetchProfileTimeline, refreshLearningProfile, saveLearningProfile } from '../api/profile'
 import {
+  compareResources,
   exportResourceJobMarkdown,
   fetchResourceFeed,
   fetchResourceDemoScript,
   fetchResourceJob,
+  fetchResourceMediaStatus,
   fetchResourceRecommendations,
   fetchResourcePresentationOutline,
+  fetchResourceQualityReport,
   fetchResourceSafetyReport,
   fetchResources,
   generateResourceImage,
   generateResourceVideo,
   generateResources,
+  retryResourceJob,
+  streamResourceJob,
   submitResourceFeedback,
 } from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
@@ -82,6 +87,14 @@ const feedbackError = ref('')
 const routeContextNotice = ref('')
 const safetyReports = ref({})
 const safetyLoading = ref({})
+const qualityReports = ref({})
+const qualityLoading = ref({})
+const mediaStatuses = ref({})
+const mediaStatusLoading = ref({})
+const compareSelected = ref([])
+const compareLoading = ref(false)
+const compareResult = ref(null)
+const retryingJob = ref(false)
 const exportLoading = ref(false)
 const exportPayload = ref(null)
 const exportError = ref('')
@@ -157,6 +170,8 @@ const currentKnowledgeResources = computed(() => {
   if (!knowledgeID) return resourceLibrary.value
   return resourceLibrary.value.filter((resource) => resource.knowledgeId === knowledgeID)
 })
+
+const canCompareResources = computed(() => compareSelected.value.length >= 2)
 
 function dimensionValue(key) {
   return orderedDimensions.value.find((item) => item.key === key)?.value || ''
@@ -301,6 +316,7 @@ function isResourceTypeSelected(type) {
 
 const pollToken = ref(0)
 let pollTimer = null
+let streamController = null
 
 const jobHeadline = computed(() => {
   const job = activeJob.value
@@ -312,9 +328,17 @@ const jobHeadline = computed(() => {
 
 function stopPolling() {
   pollToken.value += 1
+  stopStreaming()
   if (pollTimer) {
     clearTimeout(pollTimer)
     pollTimer = null
+  }
+}
+
+function stopStreaming() {
+  if (streamController) {
+    streamController.abort()
+    streamController = null
   }
 }
 
@@ -349,6 +373,30 @@ async function pollJobUntilDone(jobId) {
   return activeJob.value
 }
 
+// streamJobUntilDone prefers the backend SSE stream and falls back to polling
+// when the browser/proxy interrupts streaming.
+async function streamJobUntilDone(jobId) {
+  stopStreaming()
+  streamController = new AbortController()
+  let finalJob = activeJob.value
+  try {
+    await streamResourceJob(jobId, {
+      signal: streamController.signal,
+      onEvent: (payload) => {
+        if (!payload || payload.error || !payload.id) return
+        activeJob.value = payload
+        finalJob = payload
+        if (payload.resources?.length) generatedResources.value = payload.resources
+      },
+    })
+    return finalJob
+  } catch {
+    return pollJobUntilDone(jobId)
+  } finally {
+    streamController = null
+  }
+}
+
 async function handleGenerateResources() {
   if (!resourceForm.value.resourceTypes.length) {
     resourceError.value = '至少选择一种资源类型。'
@@ -381,7 +429,7 @@ async function handleGenerateResources() {
     generatedResources.value = payload?.resources || []
 
     if (activeJob.value?.id && activeJob.value.status !== 'completed') {
-      const finalJob = await pollJobUntilDone(activeJob.value.id)
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
       if (finalJob?.status === 'failed') {
         resourceError.value = finalJob.errorMessage || '资源生成失败，请稍后重试。'
       }
@@ -484,7 +532,7 @@ async function handleRegenerate(resource, difficulty) {
     generatedResources.value = payload?.resources || []
 
     if (activeJob.value?.id && activeJob.value.status !== 'completed') {
-      const finalJob = await pollJobUntilDone(activeJob.value.id)
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
       if (finalJob?.status === 'failed') {
         resourceError.value = finalJob.errorMessage || '重新生成失败，请稍后重试。'
       }
@@ -498,6 +546,41 @@ async function handleRegenerate(resource, difficulty) {
     resourceError.value = err?.message || '重新生成失败，请稍后重试。'
   } finally {
     regeneratingId.value = null
+  }
+}
+
+async function handleRetryJob() {
+  if (!activeJob.value?.id || retryingJob.value || resourceLoading.value) return
+
+  stopPolling()
+  retryingJob.value = true
+  resourceError.value = ''
+  generatedResources.value = []
+  exportPayload.value = null
+  presentationOutline.value = null
+  demoScript.value = null
+  try {
+    const payload = await retryResourceJob(activeJob.value.id, {
+      target: resourceForm.value.target.trim() || activeJob.value.target || profileSummary.value,
+      resourceTypes: resourceForm.value.resourceTypes,
+      images: attachedImages.value.map((item) => item.dataUrl),
+    })
+    activeJob.value = payload?.job || null
+    generatedResources.value = payload?.resources || []
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      const finalJob = await streamJobUntilDone(activeJob.value.id)
+      if (finalJob?.status === 'failed') {
+        resourceError.value = finalJob.errorMessage || '重试任务仍然失败，请检查模型配置或稍后再试。'
+      }
+    }
+    initFeedbackDrafts(generatedResources.value)
+    await loadResourceLibrary()
+    await loadRecommendations()
+    await loadResourceFeed()
+  } catch (err) {
+    resourceError.value = err?.message || '重试任务失败，请稍后再试。'
+  } finally {
+    retryingJob.value = false
   }
 }
 
@@ -645,6 +728,83 @@ async function handleLoadSafetyReport(resource) {
   }
 }
 
+async function handleLoadQualityReport(resource) {
+  if (!resource?.id) return
+  if (qualityReports.value[resource.id]) {
+    qualityReports.value = { ...qualityReports.value, [resource.id]: null }
+    return
+  }
+
+  qualityLoading.value = { ...qualityLoading.value, [resource.id]: true }
+  try {
+    const payload = await fetchResourceQualityReport(resource.id)
+    qualityReports.value = { ...qualityReports.value, [resource.id]: payload }
+  } catch (err) {
+    qualityReports.value = {
+      ...qualityReports.value,
+      [resource.id]: {
+        score: 0,
+        level: 'needs_improvement',
+        metrics: [],
+        strengths: [],
+        improvements: [err?.message || '质量报告读取失败。'],
+      },
+    }
+  } finally {
+    qualityLoading.value = { ...qualityLoading.value, [resource.id]: false }
+  }
+}
+
+async function handleLoadMediaStatus(resource) {
+  if (!resource?.id || !isMediaResource(resource)) return
+  mediaStatusLoading.value = { ...mediaStatusLoading.value, [resource.id]: true }
+  try {
+    const payload = await fetchResourceMediaStatus(resource.id)
+    mediaStatuses.value = { ...mediaStatuses.value, [resource.id]: payload }
+  } catch (err) {
+    mediaStatuses.value = {
+      ...mediaStatuses.value,
+      [resource.id]: {
+        status: 'unknown',
+        ready: false,
+        hint: err?.message || '媒体状态读取失败。',
+      },
+    }
+  } finally {
+    mediaStatusLoading.value = { ...mediaStatusLoading.value, [resource.id]: false }
+  }
+}
+
+function toggleCompare(resource) {
+  if (!resource?.id) return
+  const id = Number(resource.id)
+  if (compareSelected.value.includes(id)) {
+    compareSelected.value = compareSelected.value.filter((item) => item !== id)
+    return
+  }
+  if (compareSelected.value.length >= 6) {
+    compareSelected.value = compareSelected.value.slice(1)
+  }
+  compareSelected.value = [...compareSelected.value, id]
+  compareResult.value = null
+}
+
+async function handleCompareResources() {
+  if (!canCompareResources.value) return
+  compareLoading.value = true
+  try {
+    compareResult.value = await compareResources(compareSelected.value)
+  } catch (err) {
+    compareResult.value = {
+      winnerId: 0,
+      summary: err?.message || '资源对比失败，请稍后重试。',
+      items: [],
+    }
+  } finally {
+    compareLoading.value = false
+  }
+}
+
 function applyRecommendation(recommendation) {
   resourceForm.value.knowledgeId = recommendation.knowledgeId || ''
   resourceForm.value.knowledgeName = recommendation.knowledgeName || resourceForm.value.knowledgeName
@@ -689,6 +849,17 @@ function safetyStatusLabel(status) {
   if (status === 'passed') return '已通过'
   if (status === 'blocked') return '需阻断'
   return '需关注'
+}
+
+function qualityLevelLabel(level) {
+  if (level === 'excellent') return '优秀'
+  if (level === 'good') return '良好'
+  if (level === 'usable') return '可用'
+  return '需改进'
+}
+
+function isMediaResource(resource) {
+  return resource?.format === 'image' || resource?.format === 'video' || resource?.resourceType === 'generated_image' || resource?.resourceType === 'generated_video'
 }
 
 onMounted(async () => {
@@ -918,6 +1089,10 @@ onBeforeUnmount(stopPolling)
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
           <div class="button-row button-row--end">
+            <button v-if="activeJob.status === 'failed'" type="button" class="secondary-action" :disabled="retryingJob" @click="handleRetryJob">
+              <RefreshCcw :size="16" aria-hidden="true" />
+              {{ retryingJob ? '重试中' : '重试任务' }}
+            </button>
             <button type="button" class="secondary-action" :disabled="outlineLoading || activeJob.status !== 'completed'" @click="handleLoadPresentationOutline">
               <Sparkles :size="16" aria-hidden="true" />
               {{ outlineLoading ? '生成中' : '生成 PPT 大纲' }}
@@ -997,6 +1172,23 @@ onBeforeUnmount(stopPolling)
             <FileText :size="18" aria-hidden="true" />
             <strong>本次生成结果</strong>
           </div>
+          <div class="compare-toolbar">
+            <span>已选择 {{ compareSelected.length }} 项用于质量对比</span>
+            <button type="button" class="secondary-action" :disabled="!canCompareResources || compareLoading" @click="handleCompareResources">
+              <Sparkles :size="16" aria-hidden="true" />
+              {{ compareLoading ? '对比中' : '对比资源' }}
+            </button>
+          </div>
+          <div v-if="compareResult" class="compare-result">
+            <strong>{{ compareResult.summary }}</strong>
+            <article v-for="item in compareResult.items || []" :key="item.resource.id">
+              <span :class="{ 'compare-result__winner': item.resource.id === compareResult.winnerId }">
+                {{ item.resource.title }}
+              </span>
+              <em>{{ item.quality.score }} 分 · {{ qualityLevelLabel(item.quality.level) }}</em>
+              <p>{{ item.reason }}</p>
+            </article>
+          </div>
           <article v-for="resource in generatedResources" :key="resource.id" class="resource-card">
             <div class="resource-card__head">
               <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
@@ -1028,10 +1220,60 @@ onBeforeUnmount(stopPolling)
                 <FileText :size="16" aria-hidden="true" />
                 详情页
               </RouterLink>
+              <button type="button" class="secondary-action" @click="toggleCompare(resource)">
+                <Sparkles :size="16" aria-hidden="true" />
+                {{ compareSelected.includes(resource.id) ? '取消对比' : '加入对比' }}
+              </button>
+              <button
+                v-if="isMediaResource(resource)"
+                type="button"
+                class="secondary-action"
+                :disabled="mediaStatusLoading[resource.id]"
+                @click="handleLoadMediaStatus(resource)"
+              >
+                <RefreshCcw :size="16" aria-hidden="true" />
+                {{ mediaStatusLoading[resource.id] ? '刷新中' : '媒体状态' }}
+              </button>
+              <button type="button" class="secondary-action" :disabled="qualityLoading[resource.id]" @click="handleLoadQualityReport(resource)">
+                <Sparkles :size="16" aria-hidden="true" />
+                {{ qualityReports[resource.id] ? '收起质量报告' : qualityLoading[resource.id] ? '评分中' : '质量评分' }}
+              </button>
               <button type="button" class="secondary-action" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="16" aria-hidden="true" />
                 {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
               </button>
+            </div>
+            <div v-if="mediaStatuses[resource.id]" class="media-status-box">
+              <strong>{{ mediaStatuses[resource.id].ready ? '媒体已就绪' : '媒体处理中' }}</strong>
+              <span>{{ mediaStatuses[resource.id].status }}</span>
+              <p>{{ mediaStatuses[resource.id].hint }}</p>
+              <small v-if="mediaStatuses[resource.id].providerTaskId">任务号：{{ mediaStatuses[resource.id].providerTaskId }}</small>
+            </div>
+            <div v-if="qualityReports[resource.id]" class="quality-report">
+              <div class="quality-report__head">
+                <div>
+                  <span>QualityJudgeAgent</span>
+                  <strong>{{ qualityLevelLabel(qualityReports[resource.id].level) }}</strong>
+                </div>
+                <em>{{ qualityReports[resource.id].score }} 分</em>
+              </div>
+              <div class="quality-metrics">
+                <article v-for="metric in qualityReports[resource.id].metrics || []" :key="metric.key">
+                  <div>
+                    <strong>{{ metric.label }}</strong>
+                    <span>{{ metric.score }} 分</span>
+                  </div>
+                  <p>{{ metric.reason }}</p>
+                </article>
+              </div>
+              <div class="safety-list">
+                <strong>优势</strong>
+                <p v-for="item in qualityReports[resource.id].strengths || []" :key="item">{{ item }}</p>
+              </div>
+              <div class="safety-list">
+                <strong>改进项</strong>
+                <p v-for="item in qualityReports[resource.id].improvements || []" :key="item">{{ item }}</p>
+              </div>
             </div>
             <div v-if="safetyReports[resource.id]" class="safety-report">
               <div class="safety-report__head">
@@ -1984,6 +2226,131 @@ onBeforeUnmount(stopPolling)
 .ghost-mini:disabled {
   cursor: not-allowed;
   opacity: 0.58;
+}
+
+.compare-toolbar,
+.media-status-box,
+.quality-report,
+.compare-result {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.75rem 0.9rem 0;
+  border: 1px solid rgba(33, 95, 154, 0.16);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: #f8fbfd;
+}
+
+.compare-toolbar {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  margin: 0 0 0.75rem;
+}
+
+.compare-toolbar span,
+.media-status-box p,
+.media-status-box small,
+.compare-result p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.compare-result {
+  margin: 0 0 0.75rem;
+}
+
+.compare-result article {
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #ffffff;
+}
+
+.compare-result span,
+.compare-result em {
+  display: block;
+}
+
+.compare-result em {
+  color: #176b87;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.compare-result__winner {
+  color: #1f6f5b;
+  font-weight: 900;
+}
+
+.media-status-box {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.media-status-box span {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  color: #176b87;
+  background: rgba(23, 107, 135, 0.1);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.media-status-box p,
+.media-status-box small {
+  grid-column: 1 / -1;
+}
+
+.quality-report__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quality-report__head span,
+.quality-report__head strong {
+  display: block;
+}
+
+.quality-report__head span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.quality-report__head em {
+  color: #176b87;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.quality-metrics {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.quality-metrics article {
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #ffffff;
+}
+
+.quality-metrics div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.quality-metrics span {
+  color: #176b87;
+  font-weight: 800;
+}
+
+.quality-metrics p {
+  margin: 0.24rem 0 0;
+  color: #64748b;
+  line-height: 1.45;
 }
 
 .safety-report {

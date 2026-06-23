@@ -43,6 +43,20 @@ func (h *Handler) GetJob(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) RetryJob(ctx *gin.Context) {
+	var request resourcegendto.RetryJobRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.RetryJob(ctx.Request.Context(), ctx.Param("jobId"), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 // StreamJob streams generation job progress over SSE so the frontend gets live
 // agent-step and progress updates without polling. Each event is the JSON job
 // view; the stream ends with a [DONE] sentinel once the job completes or fails.
@@ -160,6 +174,38 @@ func (h *Handler) GetResource(ctx *gin.Context) {
 
 func (h *Handler) GetSafetyReport(ctx *gin.Context) {
 	response, err := h.service.GetSafetyReport(ctx.Request.Context(), ctx.Param("resourceId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetMediaStatus(ctx *gin.Context) {
+	response, err := h.service.GetMediaStatus(ctx.Request.Context(), ctx.Param("resourceId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) GetQualityReport(ctx *gin.Context) {
+	response, err := h.service.GetQualityReport(ctx.Request.Context(), ctx.Param("resourceId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) CompareResources(ctx *gin.Context) {
+	var request resourcegendto.CompareResourcesRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.CompareResources(ctx.Request.Context(), request)
 	if err != nil {
 		writeError(ctx, err)
 		return

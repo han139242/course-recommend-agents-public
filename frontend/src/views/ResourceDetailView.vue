@@ -3,7 +3,14 @@ import { ArrowLeft, CheckCircle2, FileText, RefreshCcw, Send, ShieldCheck, Spark
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
-import { fetchResource, fetchResourceSafetyReport, recordLearningEvent, submitResourceFeedback } from '../api/resources'
+import {
+  fetchResource,
+  fetchResourceMediaStatus,
+  fetchResourceQualityReport,
+  fetchResourceSafetyReport,
+  recordLearningEvent,
+  submitResourceFeedback,
+} from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
 
 const route = useRoute()
@@ -13,6 +20,10 @@ const loading = ref(false)
 const error = ref('')
 const safetyReport = ref(null)
 const safetyLoading = ref(false)
+const qualityReport = ref(null)
+const qualityLoading = ref(false)
+const mediaStatus = ref(null)
+const mediaStatusLoading = ref(false)
 const feedbackSaving = ref(false)
 const feedbackNotice = ref('')
 const feedbackError = ref('')
@@ -26,6 +37,7 @@ const feedbackDraft = ref({
 
 const resourceId = computed(() => Number(route.params.resourceId || 0))
 const isVideoScript = computed(() => resource.value?.resourceType === 'video_script')
+const isMediaResource = computed(() => ['image', 'video'].includes(resource.value?.format) || ['generated_image', 'generated_video'].includes(resource.value?.resourceType))
 const evidenceList = computed(() => resource.value?.evidence || [])
 
 const storyboardCards = computed(() => {
@@ -49,6 +61,13 @@ function safetyStatusLabel(status) {
   if (status === 'passed') return '已通过'
   if (status === 'blocked') return '需阻断'
   return '需关注'
+}
+
+function qualityLevelLabel(level) {
+  if (level === 'excellent') return '优秀'
+  if (level === 'good') return '良好'
+  if (level === 'usable') return '可用'
+  return '需改进'
 }
 
 async function loadResource() {
@@ -91,6 +110,40 @@ async function loadSafetyReport() {
   }
 }
 
+async function loadQualityReport() {
+  if (!resourceId.value) return
+  qualityLoading.value = true
+  try {
+    qualityReport.value = await fetchResourceQualityReport(resourceId.value)
+  } catch (err) {
+    qualityReport.value = {
+      score: 0,
+      level: 'needs_improvement',
+      metrics: [],
+      strengths: [],
+      improvements: [err?.message || '质量报告读取失败。'],
+    }
+  } finally {
+    qualityLoading.value = false
+  }
+}
+
+async function loadMediaStatus() {
+  if (!resourceId.value || !isMediaResource.value) return
+  mediaStatusLoading.value = true
+  try {
+    mediaStatus.value = await fetchResourceMediaStatus(resourceId.value)
+  } catch (err) {
+    mediaStatus.value = {
+      status: 'unknown',
+      ready: false,
+      hint: err?.message || '媒体状态读取失败。',
+    }
+  } finally {
+    mediaStatusLoading.value = false
+  }
+}
+
 async function handleSubmitFeedback() {
   if (!resourceId.value) return
   feedbackSaving.value = true
@@ -108,7 +161,7 @@ async function handleSubmitFeedback() {
 
 onMounted(async () => {
   await loadResource()
-  await loadSafetyReport()
+  await Promise.all([loadSafetyReport(), loadQualityReport(), loadMediaStatus()])
 })
 </script>
 
@@ -201,6 +254,52 @@ onMounted(async () => {
               {{ suggestion }}
             </p>
           </div>
+        </section>
+
+        <section class="side-panel">
+          <div class="section-heading">
+            <Sparkles :size="18" aria-hidden="true" />
+            <strong>质量评分</strong>
+          </div>
+          <div v-if="qualityLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>评分中</p>
+          </div>
+          <div v-else-if="qualityReport" class="quality-box">
+            <div class="safety-box__score">
+              <span>QualityJudgeAgent</span>
+              <strong>{{ qualityLevelLabel(qualityReport.level) }}</strong>
+              <em>{{ qualityReport.score }} 分</em>
+            </div>
+            <article v-for="metric in qualityReport.metrics || []" :key="metric.key" class="quality-metric">
+              <strong>{{ metric.label }} · {{ metric.score }} 分</strong>
+              <p>{{ metric.reason }}</p>
+            </article>
+            <p v-for="item in qualityReport.improvements || []" :key="item" class="safety-suggestion">
+              {{ item }}
+            </p>
+          </div>
+        </section>
+
+        <section v-if="isMediaResource" class="side-panel">
+          <div class="section-heading">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <strong>媒体状态</strong>
+          </div>
+          <div v-if="mediaStatusLoading" class="empty-state empty-state--small">
+            <RefreshCcw :size="18" aria-hidden="true" />
+            <p>刷新中</p>
+          </div>
+          <div v-else-if="mediaStatus" class="media-status-box">
+            <strong>{{ mediaStatus.ready ? '媒体已就绪' : '媒体处理中' }}</strong>
+            <span>{{ mediaStatus.status }}</span>
+            <p>{{ mediaStatus.hint }}</p>
+            <small v-if="mediaStatus.providerTaskId">任务号：{{ mediaStatus.providerTaskId }}</small>
+          </div>
+          <button type="button" class="secondary-action" :disabled="mediaStatusLoading" @click="loadMediaStatus">
+            <RefreshCcw :size="16" aria-hidden="true" />
+            {{ mediaStatusLoading ? '刷新中' : '刷新状态' }}
+          </button>
         </section>
 
         <section class="side-panel">
@@ -357,10 +456,39 @@ onMounted(async () => {
 
 .evidence-list,
 .safety-box,
+.quality-box,
+.media-status-box,
 .feedback-form {
   display: grid;
   gap: 0.7rem;
   padding: 0.9rem;
+}
+
+.quality-metric {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(90, 112, 132, 0.14);
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #f8fbfd;
+}
+
+.quality-metric p,
+.media-status-box p,
+.media-status-box small {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.media-status-box span {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  color: #176b87;
+  background: rgba(23, 107, 135, 0.1);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .safety-box__score {
@@ -405,6 +533,7 @@ onMounted(async () => {
 }
 
 .primary-action,
+.secondary-action,
 .ghost-link {
   display: inline-flex;
   align-items: center;
@@ -422,6 +551,12 @@ onMounted(async () => {
 .primary-action {
   color: #ffffff;
   background: #215f9a;
+}
+
+.secondary-action {
+  border: 1px solid rgba(90, 112, 132, 0.22);
+  color: #24415f;
+  background: #f8fbfd;
 }
 
 .ghost-link {
