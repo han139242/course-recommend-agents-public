@@ -4,6 +4,7 @@ import {
   Bot,
   BrainCircuit,
   CheckCircle2,
+  CircleStop,
   FileText,
   ImagePlus,
   PlayCircle,
@@ -18,6 +19,7 @@ import { RouterLink, useRoute } from 'vue-router'
 
 import { extractLearningProfile, fetchLearningProfile, fetchProfileTimeline, refreshLearningProfile, saveLearningProfile } from '../api/profile'
 import {
+  cancelResourceJob,
   compareResources,
   exportResourceJobMarkdown,
   fetchJobEvidencePackage,
@@ -39,11 +41,13 @@ import {
   streamResourceJob,
   fetchStudyChecklist,
   submitResourceFeedback,
+  updateResourceLearningStatus,
 } from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
 import { APP_NAME } from '../constants/appInfo'
 
 const DEFAULT_PROMPT = '我是大二人工智能学生，想做智能体项目，机器学习基础不太稳，希望多一些导图、代码案例和练习题。'
+const RESOURCE_FORM_STORAGE_KEY = 'a3-resource-center-form-v2'
 
 const route = useRoute()
 
@@ -84,8 +88,14 @@ const resourceFeed = ref([])
 const resourceFeedSummary = ref('')
 const resourceFeedLoading = ref(false)
 const recommendationsLoading = ref(false)
+const libraryKeyword = ref('')
+const libraryTypeFilter = ref('')
+const libraryStatusFilter = ref('')
+const librarySort = ref('latest')
+const libraryScope = ref('current')
 const feedbackDrafts = ref({})
 const feedbackSaving = ref({})
+const statusUpdating = ref({})
 const feedbackNotice = ref('')
 const feedbackError = ref('')
 const routeContextNotice = ref('')
@@ -99,6 +109,7 @@ const compareSelected = ref([])
 const compareLoading = ref(false)
 const compareResult = ref(null)
 const retryingJob = ref(false)
+const cancelingJob = ref(false)
 const variantGeneratingId = ref(null)
 const reviewSummaryLoading = ref(false)
 const reviewSummary = ref(null)
@@ -177,10 +188,10 @@ const resourceContextLabel = computed(() => {
   return course ? `${course} · ${name}` : name
 })
 
-const resourceLibraryFilter = computed(() => resourceForm.value.knowledgeId.trim())
+const resourceLibraryFilter = computed(() => (libraryScope.value === 'current' ? resourceForm.value.knowledgeId.trim() : ''))
 
 const currentKnowledgeResources = computed(() => {
-  const knowledgeID = resourceForm.value.knowledgeId.trim()
+  const knowledgeID = resourceLibraryFilter.value
   if (!knowledgeID) return resourceLibrary.value
   return resourceLibrary.value.filter((resource) => resource.knowledgeId === knowledgeID)
 })
@@ -218,6 +229,42 @@ function applyRouteContext() {
     target: target || resourceForm.value.target,
   }
   routeContextNotice.value = '已从知识点页带入生成上下文，资源会自动关联当前知识点。'
+}
+
+function restoreResourcePreferences() {
+  try {
+    const raw = window.localStorage.getItem(RESOURCE_FORM_STORAGE_KEY)
+    if (!raw) return
+    const saved = JSON.parse(raw)
+    if (saved?.form) {
+      resourceForm.value = {
+        ...resourceForm.value,
+        ...saved.form,
+        resourceTypes: Array.isArray(saved.form.resourceTypes) && saved.form.resourceTypes.length
+          ? saved.form.resourceTypes
+          : resourceForm.value.resourceTypes,
+      }
+    }
+    if (typeof saved?.mediaPrompt === 'string') {
+      mediaPrompt.value = saved.mediaPrompt
+    }
+  } catch {
+    window.localStorage.removeItem(RESOURCE_FORM_STORAGE_KEY)
+  }
+}
+
+function persistResourcePreferences() {
+  try {
+    window.localStorage.setItem(RESOURCE_FORM_STORAGE_KEY, JSON.stringify({
+      form: {
+        ...resourceForm.value,
+        resourceTypes: [...resourceForm.value.resourceTypes],
+      },
+      mediaPrompt: mediaPrompt.value,
+    }))
+  } catch {
+    // Ignore storage quota/private-mode failures; generation still works.
+  }
 }
 
 async function loadCurrentProfile() {
@@ -336,7 +383,8 @@ const jobHeadline = computed(() => {
   const job = activeJob.value
   if (!job) return ''
   if (job.status === 'completed') return job.summary || '资源包生成完成，可查看、导出与提交反馈'
-  if (job.status === 'failed') return job.errorMessage || '资源生成失败，请稍后重试'
+  if (job.status === 'canceled') return job.retrySuggestion || '任务已停止，可调整参数后重新发起'
+  if (job.status === 'failed') return job.failureReason || job.errorMessage || '资源生成失败，请稍后重试'
   return `正在执行：${job.currentAgent || '多智能体协同'}`
 })
 
@@ -394,7 +442,7 @@ async function pollJobUntilDone(jobId) {
     if (token !== pollToken.value) return null
     activeJob.value = job
     if (job?.resources?.length) generatedResources.value = job.resources
-    if (job?.status === 'completed' || job?.status === 'failed') return job
+    if (['completed', 'failed', 'canceled'].includes(job?.status)) return job
   }
   return activeJob.value
 }
@@ -636,6 +684,24 @@ async function handleRetryJob() {
   }
 }
 
+async function handleCancelJob() {
+  if (!activeJob.value?.id || cancelingJob.value) return
+
+  cancelingJob.value = true
+  resourceError.value = ''
+  try {
+    const job = await cancelResourceJob(activeJob.value.id)
+    activeJob.value = job
+    if (job?.resources?.length) generatedResources.value = job.resources
+    stopPolling()
+  } catch (err) {
+    resourceError.value = err?.message || '停止任务失败，请稍后重试。'
+  } finally {
+    cancelingJob.value = false
+    resourceLoading.value = false
+  }
+}
+
 async function handleLoadPresentationOutline() {
   if (!activeJob.value?.id) return
 
@@ -723,7 +789,14 @@ async function handleLoadStudyChecklist() {
 async function loadResourceLibrary() {
   libraryLoading.value = true
   try {
-    const payload = await fetchResources({ limit: 30, knowledgeId: resourceLibraryFilter.value })
+    const payload = await fetchResources({
+      limit: 50,
+      knowledgeId: resourceLibraryFilter.value,
+      type: libraryTypeFilter.value,
+      keyword: libraryKeyword.value.trim(),
+      status: libraryStatusFilter.value,
+      sort: librarySort.value,
+    })
     resourceLibrary.value = payload?.list || []
   } catch {
     resourceLibrary.value = []
@@ -786,12 +859,47 @@ async function handleSubmitFeedback(resource) {
   feedbackError.value = ''
   try {
     const payload = await submitResourceFeedback(resource.id, draft)
+    patchResourceLearningStatus(resource.id, {
+      learningStatus: learningStatusFromFeedback(draft),
+      actionText: payload?.nextAction || '',
+    })
     feedbackNotice.value = payload?.nextAction || '反馈已记录，推荐策略已更新。'
     await Promise.all([loadRecommendations(), loadResourceFeed(), handleRefreshProfile()])
   } catch (err) {
     feedbackError.value = err?.message || '反馈提交失败，请稍后重试。'
   } finally {
     feedbackSaving.value = { ...feedbackSaving.value, [resource.id]: false }
+  }
+}
+
+function patchResourceLearningStatus(resourceId, payload) {
+  const applyStatus = (resource) => {
+    if (resource.id !== resourceId) return resource
+    return {
+      ...resource,
+      learningStatus: payload.learningStatus,
+      actionText: payload.actionText,
+    }
+  }
+  generatedResources.value = generatedResources.value.map(applyStatus)
+  resourceLibrary.value = resourceLibrary.value.map(applyStatus)
+}
+
+async function handleUpdateLearningStatus(resource, status) {
+  if (!resource?.id || statusUpdating.value[resource.id]) return
+
+  statusUpdating.value = { ...statusUpdating.value, [resource.id]: status }
+  feedbackNotice.value = ''
+  feedbackError.value = ''
+  try {
+    const payload = await updateResourceLearningStatus(resource.id, { status })
+    patchResourceLearningStatus(resource.id, payload)
+    feedbackNotice.value = `已标记为「${learningStatusLabel(payload.learningStatus)}」。`
+    await Promise.all([loadResourceFeed(), loadRecommendations()])
+  } catch (err) {
+    feedbackError.value = err?.message || '学习状态更新失败，请稍后重试。'
+  } finally {
+    statusUpdating.value = { ...statusUpdating.value, [resource.id]: '' }
   }
 }
 
@@ -952,14 +1060,42 @@ function qualityLevelLabel(level) {
   return '需改进'
 }
 
+function learningStatusLabel(status) {
+  if (status === 'completed') return '已完成'
+  if (status === 'in_progress') return '学习中'
+  if (status === 'needs_review') return '需复习'
+  return '未开始'
+}
+
+function learningStatusFromFeedback(draft) {
+  if (draft?.completed) return 'completed'
+  if (draft?.rating <= 2 || !draft?.helpful || draft?.difficulty === 'hard') return 'needs_review'
+  return 'in_progress'
+}
+
+function canCancelJob(job) {
+  return job?.status === 'pending' || job?.status === 'running'
+}
+
 function isMediaResource(resource) {
   return resource?.format === 'image' || resource?.format === 'video' || resource?.resourceType === 'generated_image' || resource?.resourceType === 'generated_video'
 }
 
 onMounted(async () => {
+  restoreResourcePreferences()
   applyRouteContext()
   await Promise.all([loadCurrentProfile(), loadProfileTimeline(), loadResourceLibrary(), loadRecommendations(), loadResourceFeed()])
 })
+
+watch(
+  () => ({
+    ...resourceForm.value,
+    resourceTypes: [...resourceForm.value.resourceTypes],
+    mediaPrompt: mediaPrompt.value,
+  }),
+  persistResourcePreferences,
+  { deep: true },
+)
 
 watch(
   () => route.query,
@@ -967,6 +1103,11 @@ watch(
     applyRouteContext()
     await loadResourceLibrary()
   },
+)
+
+watch(
+  [libraryTypeFilter, libraryStatusFilter, librarySort, libraryScope],
+  loadResourceLibrary,
 )
 
 onBeforeUnmount(stopPolling)
@@ -1183,9 +1324,17 @@ onBeforeUnmount(stopPolling)
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
           <div class="button-row button-row--end">
+            <button v-if="canCancelJob(activeJob)" type="button" class="secondary-action" :disabled="cancelingJob" @click="handleCancelJob">
+              <CircleStop :size="16" aria-hidden="true" />
+              {{ cancelingJob ? '停止中' : '停止生成' }}
+            </button>
             <button v-if="activeJob.status === 'failed'" type="button" class="secondary-action" :disabled="retryingJob" @click="handleRetryJob">
               <RefreshCcw :size="16" aria-hidden="true" />
               {{ retryingJob ? '重试中' : '重试任务' }}
+            </button>
+            <button v-if="activeJob.status === 'canceled'" type="button" class="secondary-action" :disabled="retryingJob" @click="handleRetryJob">
+              <RefreshCcw :size="16" aria-hidden="true" />
+              {{ retryingJob ? '重试中' : '重新生成' }}
             </button>
             <button type="button" class="secondary-action" :disabled="reviewSummaryLoading || activeJob.status !== 'completed'" @click="handleLoadReviewSummary">
               <CheckCircle2 :size="16" aria-hidden="true" />
@@ -1218,6 +1367,10 @@ onBeforeUnmount(stopPolling)
           <p v-if="reviewSummaryError" class="inline-error">{{ reviewSummaryError }}</p>
           <p v-if="evidenceError" class="inline-error">{{ evidenceError }}</p>
           <p v-if="checklistError" class="inline-error">{{ checklistError }}</p>
+          <div v-if="activeJob.status === 'failed' && (activeJob.failureReason || activeJob.retrySuggestion)" class="failure-box">
+            <strong>{{ activeJob.failureReason || '任务失败' }}</strong>
+            <p>{{ activeJob.retrySuggestion || activeJob.errorMessage }}</p>
+          </div>
           <div v-if="reviewSummary" class="review-box">
             <div class="review-box__head">
               <div>
@@ -1477,6 +1630,30 @@ onBeforeUnmount(stopPolling)
                 <p v-for="suggestion in safetyReports[resource.id].suggestions || []" :key="suggestion">{{ suggestion }}</p>
               </div>
             </div>
+            <div class="learning-status-panel">
+              <div>
+                <strong>学习状态</strong>
+                <small>{{ resource.actionText || learningStatusLabel(resource.learningStatus) }}</small>
+              </div>
+              <div class="status-actions">
+                <button
+                  v-for="item in [
+                    { value: 'pending', label: '未开始' },
+                    { value: 'in_progress', label: '学习中' },
+                    { value: 'completed', label: '已完成' },
+                    { value: 'needs_review', label: '需复习' },
+                  ]"
+                  :key="item.value"
+                  type="button"
+                  class="ghost-mini"
+                  :class="{ 'ghost-mini--active': (resource.learningStatus || 'pending') === item.value }"
+                  :disabled="Boolean(statusUpdating[resource.id])"
+                  @click="handleUpdateLearningStatus(resource, item.value)"
+                >
+                  {{ statusUpdating[resource.id] === item.value ? '更新中' : item.label }}
+                </button>
+              </div>
+            </div>
             <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
               <div class="feedback-box__head">
                 <strong>学习反馈</strong>
@@ -1612,6 +1789,40 @@ onBeforeUnmount(stopPolling)
           <span class="panel-kicker">Library</span>
           <h2>资源库</h2>
         </div>
+        <div class="library-filters">
+          <select v-model="libraryScope" aria-label="资源范围">
+            <option value="current">当前知识点</option>
+            <option value="all">全部资源</option>
+          </select>
+          <input
+            v-model="libraryKeyword"
+            type="search"
+            placeholder="搜索标题/知识点/正文"
+            @keyup.enter="loadResourceLibrary"
+          />
+          <select v-model="libraryTypeFilter" aria-label="资源类型">
+            <option value="">全部类型</option>
+            <option v-for="item in resourceTypeOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
+            <option value="generated_image">AI 生成配图</option>
+            <option value="generated_video">AI 生成短视频</option>
+          </select>
+          <select v-model="libraryStatusFilter" aria-label="学习状态">
+            <option value="">全部状态</option>
+            <option value="pending">未开始</option>
+            <option value="in_progress">学习中</option>
+            <option value="completed">已完成</option>
+            <option value="needs_review">需复习</option>
+          </select>
+          <select v-model="librarySort" aria-label="排序方式">
+            <option value="latest">最新优先</option>
+            <option value="oldest">最早优先</option>
+            <option value="title">按标题</option>
+          </select>
+          <button type="button" class="secondary-action" :disabled="libraryLoading" @click="loadResourceLibrary">
+            <RefreshCcw :size="15" aria-hidden="true" />
+            刷新
+          </button>
+        </div>
         <p v-if="resourceLibraryFilter" class="recommend-summary">
           仅显示「{{ resourceForm.knowledgeName || resourceForm.knowledgeId }}」的资源
         </p>
@@ -1633,7 +1844,7 @@ onBeforeUnmount(stopPolling)
           >
             <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
             <strong>{{ resource.title }}</strong>
-            <small>{{ resource.knowledgeName }} · {{ formatDate(resource.createdAt) }}</small>
+            <small>{{ resource.knowledgeName }} · {{ learningStatusLabel(resource.learningStatus) }} · {{ formatDate(resource.createdAt) }}</small>
           </RouterLink>
         </div>
       </aside>
@@ -2132,6 +2343,10 @@ onBeforeUnmount(stopPolling)
   background: #d97706;
 }
 
+.agent-step__status--canceled {
+  background: #64748b;
+}
+
 .section-title {
   display: flex;
   align-items: center;
@@ -2404,12 +2619,20 @@ onBeforeUnmount(stopPolling)
   opacity: 0.58;
 }
 
+.ghost-mini--active {
+  border-color: rgba(33, 95, 154, 0.55);
+  color: #ffffff;
+  background: #215f9a;
+}
+
 .compare-toolbar,
 .media-status-box,
 .quality-report,
 .compare-result,
 .review-box,
-.checklist-box {
+.checklist-box,
+.failure-box,
+.learning-status-panel {
   display: grid;
   gap: 0.75rem;
   margin: 0.75rem 0.9rem 0;
@@ -2442,6 +2665,40 @@ onBeforeUnmount(stopPolling)
 .checklist-box {
   margin: 0.8rem 0 0;
   background: #ffffff;
+}
+
+.failure-box {
+  margin: 0.8rem 0 0;
+  border-color: rgba(185, 28, 28, 0.18);
+  color: #7f1d1d;
+  background: #fff7f7;
+}
+
+.failure-box p {
+  margin: 0;
+  color: #8f1d1d;
+  line-height: 1.45;
+}
+
+.learning-status-panel {
+  grid-template-columns: minmax(0, 1fr);
+  background: #ffffff;
+}
+
+.learning-status-panel strong,
+.learning-status-panel small {
+  display: block;
+}
+
+.learning-status-panel small {
+  margin-top: 0.2rem;
+  color: #64748b;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .review-box__head {
@@ -2824,6 +3081,35 @@ onBeforeUnmount(stopPolling)
   gap: 0.65rem;
 }
 
+.library-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.library-filters input,
+.library-filters select {
+  min-width: 0;
+  border: 1px solid rgba(90, 112, 132, 0.22);
+  border-radius: 8px;
+  padding: 0.58rem 0.65rem;
+  color: #172033;
+  background: #ffffff;
+  font: inherit;
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.library-filters input {
+  grid-column: 1 / -1;
+}
+
+.library-filters button {
+  min-height: 2.25rem;
+  padding: 0 0.7rem;
+}
+
 .library-item {
   display: grid;
   gap: 0.25rem;
@@ -2862,6 +3148,7 @@ onBeforeUnmount(stopPolling)
   .resource-shell,
   .generation-grid,
   .feedback-grid,
+  .library-filters,
   .resource-types {
     grid-template-columns: 1fr;
   }

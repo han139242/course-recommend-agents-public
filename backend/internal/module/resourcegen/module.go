@@ -35,6 +35,7 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/jobs/:jobId/presentation-outline", m.Handler.GetPresentationOutline)
 	group.GET("/jobs/:jobId/demo-script", m.Handler.GetDemoScript)
 	group.GET("/jobs/:jobId/stream", m.Handler.StreamJob)
+	group.POST("/jobs/:jobId/cancel", m.Handler.CancelJob)
 	group.POST("/jobs/:jobId/retry", m.Handler.RetryJob)
 	group.GET("/jobs/:jobId", m.Handler.GetJob)
 	group.POST("/compare", m.Handler.CompareResources)
@@ -49,6 +50,7 @@ func (m *Module) RegisterRoutes(group *gin.RouterGroup) {
 	group.GET("/:resourceId/safety-report", m.Handler.GetSafetyReport)
 	group.POST("/:resourceId/variant", m.Handler.GenerateVariant)
 	group.POST("/:resourceId/feedback", m.Handler.SubmitFeedback)
+	group.PATCH("/:resourceId/learning-status", m.Handler.UpdateLearningStatus)
 	group.GET("", m.Handler.ListResources)
 	group.GET("/:resourceId", m.Handler.GetResource)
 }

@@ -18,25 +18,30 @@ type GenerateResourcesRequest struct {
 type ResourceQuery struct {
 	KnowledgeID string `form:"knowledgeId" binding:"omitempty,max=128"`
 	Type        string `form:"type" binding:"omitempty,max=64"`
+	Keyword     string `form:"keyword" binding:"omitempty,max=100"`
+	Status      string `form:"status" binding:"omitempty,max=32"`
+	Sort        string `form:"sort" binding:"omitempty,max=32"`
 	Limit       int    `form:"limit" binding:"omitempty,min=1,max=100"`
 }
 
 // JobView describes one generation job.
 type JobView struct {
-	ID            int64                   `json:"id"`
-	StudentID     int64                   `json:"studentId"`
-	KnowledgeID   string                  `json:"knowledgeId"`
-	KnowledgeName string                  `json:"knowledgeName"`
-	CourseTitle   string                  `json:"courseTitle"`
-	Target        string                  `json:"target"`
-	Status        string                  `json:"status"`
-	Progress      int                     `json:"progress"`
-	CurrentAgent  string                  `json:"currentAgent"`
-	ErrorMessage  string                  `json:"errorMessage,omitempty"`
-	CreatedAt     string                  `json:"createdAt"`
-	UpdatedAt     string                  `json:"updatedAt"`
-	Steps         []AgentStepView         `json:"steps,omitempty"`
-	Resources     []GeneratedResourceView `json:"resources,omitempty"`
+	ID              int64                   `json:"id"`
+	StudentID       int64                   `json:"studentId"`
+	KnowledgeID     string                  `json:"knowledgeId"`
+	KnowledgeName   string                  `json:"knowledgeName"`
+	CourseTitle     string                  `json:"courseTitle"`
+	Target          string                  `json:"target"`
+	Status          string                  `json:"status"`
+	Progress        int                     `json:"progress"`
+	CurrentAgent    string                  `json:"currentAgent"`
+	ErrorMessage    string                  `json:"errorMessage,omitempty"`
+	FailureReason   string                  `json:"failureReason,omitempty"`
+	RetrySuggestion string                  `json:"retrySuggestion,omitempty"`
+	CreatedAt       string                  `json:"createdAt"`
+	UpdatedAt       string                  `json:"updatedAt"`
+	Steps           []AgentStepView         `json:"steps,omitempty"`
+	Resources       []GeneratedResourceView `json:"resources,omitempty"`
 }
 
 // RetryJobRequest starts a new generation job from an existing job context.
@@ -62,20 +67,22 @@ type AgentStepView struct {
 
 // GeneratedResourceView describes a generated learning resource.
 type GeneratedResourceView struct {
-	ID            int64                  `json:"id"`
-	JobID         int64                  `json:"jobId"`
-	ResourceType  string                 `json:"resourceType"`
-	TypeLabel     string                 `json:"typeLabel"`
-	Title         string                 `json:"title"`
-	Content       string                 `json:"content"`
-	Format        string                 `json:"format"`
-	KnowledgeID   string                 `json:"knowledgeId"`
-	KnowledgeName string                 `json:"knowledgeName"`
-	CourseTitle   string                 `json:"courseTitle"`
-	Reason        string                 `json:"reason"`
-	Status        string                 `json:"status"`
-	CreatedAt     string                 `json:"createdAt"`
-	Evidence      []ResourceEvidenceView `json:"evidence,omitempty"`
+	ID             int64                  `json:"id"`
+	JobID          int64                  `json:"jobId"`
+	ResourceType   string                 `json:"resourceType"`
+	TypeLabel      string                 `json:"typeLabel"`
+	Title          string                 `json:"title"`
+	Content        string                 `json:"content"`
+	Format         string                 `json:"format"`
+	KnowledgeID    string                 `json:"knowledgeId"`
+	KnowledgeName  string                 `json:"knowledgeName"`
+	CourseTitle    string                 `json:"courseTitle"`
+	Reason         string                 `json:"reason"`
+	Status         string                 `json:"status"`
+	LearningStatus string                 `json:"learningStatus,omitempty"`
+	ActionText     string                 `json:"actionText,omitempty"`
+	CreatedAt      string                 `json:"createdAt"`
+	Evidence       []ResourceEvidenceView `json:"evidence,omitempty"`
 }
 
 // ResourceEvidenceView explains which context grounded a generated resource.
@@ -91,6 +98,22 @@ type SubmitFeedbackRequest struct {
 	Helpful    bool   `json:"helpful"`
 	Completed  bool   `json:"completed"`
 	Comment    string `json:"comment" binding:"omitempty,max=500"`
+}
+
+// UpdateLearningStatusRequest marks resource progress without requiring a
+// rating.
+type UpdateLearningStatusRequest struct {
+	Status string `json:"status" binding:"required,oneof=pending in_progress completed needs_review"`
+	Note   string `json:"note" binding:"omitempty,max=300"`
+}
+
+// ResourceLearningStatusResponse returns the visible learning state after an
+// update.
+type ResourceLearningStatusResponse struct {
+	ResourceID     int64  `json:"resourceId"`
+	LearningStatus string `json:"learningStatus"`
+	ActionText     string `json:"actionText"`
+	UpdatedAt      string `json:"updatedAt"`
 }
 
 // FeedbackView describes one resource feedback record.

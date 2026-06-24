@@ -50,6 +50,12 @@ export function retryResourceJob(jobId, payload = {}) {
   })
 }
 
+export function cancelResourceJob(jobId) {
+  return request(`/resources/jobs/${jobId}/cancel`, {
+    method: 'POST',
+  })
+}
+
 // streamResourceJob 以 SSE 订阅资源生成任务进度，onEvent 会收到每次的任务快照。
 export function streamResourceJob(jobId, { onEvent, signal } = {}) {
   return streamRequest(`/resources/jobs/${jobId}/stream`, {
@@ -128,6 +134,13 @@ export function compareResources(resourceIds) {
 export function submitResourceFeedback(resourceId, payload) {
   return request(`/resources/${resourceId}/feedback`, {
     method: 'POST',
+    body: payload,
+  })
+}
+
+export function updateResourceLearningStatus(resourceId, payload) {
+  return request(`/resources/${resourceId}/learning-status`, {
+    method: 'PATCH',
     body: payload,
   })
 }

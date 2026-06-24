@@ -7,10 +7,12 @@ const (
 	JobStatusRunning   = "running"
 	JobStatusCompleted = "completed"
 	JobStatusFailed    = "failed"
+	JobStatusCanceled  = "canceled"
 
 	StepStatusPending   = "pending"
 	StepStatusRunning   = "running"
 	StepStatusCompleted = "completed"
+	StepStatusCanceled  = "canceled"
 
 	ResourceStatusReady = "ready"
 )

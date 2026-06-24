@@ -57,6 +57,15 @@ func (h *Handler) RetryJob(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+func (h *Handler) CancelJob(ctx *gin.Context) {
+	response, err := h.service.CancelJob(ctx.Request.Context(), ctx.Param("jobId"))
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 // StreamJob streams generation job progress over SSE so the frontend gets live
 // agent-step and progress updates without polling. Each event is the JSON job
 // view; the stream ends with a [DONE] sentinel once the job completes or fails.
@@ -97,7 +106,7 @@ func (h *Handler) StreamJob(ctx *gin.Context) {
 			return true
 		}
 		writeEvent(view)
-		return view.Status == "completed" || view.Status == "failed"
+		return view.Status == "completed" || view.Status == "failed" || view.Status == "canceled"
 	}
 
 	if emit() {
@@ -270,6 +279,20 @@ func (h *Handler) SubmitFeedback(ctx *gin.Context) {
 		return
 	}
 	response, err := h.service.SubmitFeedback(ctx.Request.Context(), ctx.Param("resourceId"), request)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
+func (h *Handler) UpdateLearningStatus(ctx *gin.Context) {
+	var request resourcegendto.UpdateLearningStatusRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.service.UpdateLearningStatus(ctx.Request.Context(), ctx.Param("resourceId"), request)
 	if err != nil {
 		writeError(ctx, err)
 		return

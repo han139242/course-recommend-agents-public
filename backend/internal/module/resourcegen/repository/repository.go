@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/han139242/course-recommend-agents/backend/internal/module/resourcegen/entity"
@@ -105,22 +106,62 @@ func (r *Repository) GetJob(ctx context.Context, studentID int64, jobID int64) (
 	return &job, steps, resources, nil
 }
 
-func (r *Repository) ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]entity.GeneratedResource, error) {
+func (r *Repository) ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, keyword string, status string, sortOrder string, limit int) ([]entity.GeneratedResource, error) {
 	if limit <= 0 {
 		limit = 30
 	}
-	query := r.db.WithContext(ctx).Where("student_id = ?", studentID)
+	query := r.db.WithContext(ctx).Model(&entity.GeneratedResource{}).Select("generated_resources.*").Where("generated_resources.student_id = ?", studentID)
 	if knowledgeID != "" {
-		query = query.Where("knowledge_id = ?", knowledgeID)
+		query = query.Where("generated_resources.knowledge_id = ?", knowledgeID)
 	}
 	if resourceType != "" {
-		query = query.Where("resource_type = ?", resourceType)
+		query = query.Where("generated_resources.resource_type = ?", resourceType)
+	}
+	if keyword != "" {
+		like := "%" + keyword + "%"
+		query = query.Where(
+			"generated_resources.title LIKE ? OR generated_resources.knowledge_name LIKE ? OR generated_resources.course_title LIKE ? OR generated_resources.content LIKE ?",
+			like,
+			like,
+			like,
+			like,
+		)
+	}
+	if status != "" {
+		query = query.Joins("JOIN resource_push_items ON resource_push_items.resource_id = generated_resources.id AND resource_push_items.student_id = generated_resources.student_id").
+			Where("resource_push_items.status = ?", status)
+	}
+	order := "generated_resources.created_at DESC, generated_resources.id DESC"
+	switch strings.ToLower(strings.TrimSpace(sortOrder)) {
+	case "oldest":
+		order = "generated_resources.created_at ASC, generated_resources.id ASC"
+	case "title":
+		order = "generated_resources.title ASC, generated_resources.id DESC"
 	}
 	var resources []entity.GeneratedResource
-	if err := query.Order("created_at DESC, id DESC").Limit(limit).Find(&resources).Error; err != nil {
+	if err := query.Order(order).Limit(limit).Find(&resources).Error; err != nil {
 		return nil, err
 	}
 	return resources, nil
+}
+
+func (r *Repository) ListPushStatuses(ctx context.Context, studentID int64, resourceIDs []int64) (map[int64]string, error) {
+	statuses := map[int64]string{}
+	if len(resourceIDs) == 0 {
+		return statuses, nil
+	}
+	var items []entity.ResourcePushItem
+	if err := r.db.WithContext(ctx).
+		Where("student_id = ? AND resource_id IN ?", studentID, resourceIDs).
+		Find(&items).Error; err != nil {
+		return nil, err
+	}
+	for _, item := range items {
+		if item.ResourceID > 0 && item.Status != "" {
+			statuses[item.ResourceID] = item.Status
+		}
+	}
+	return statuses, nil
 }
 
 func (r *Repository) ListPushItems(ctx context.Context, studentID int64, limit int) ([]entity.ResourcePushItem, []entity.GeneratedResource, error) {

@@ -44,7 +44,8 @@ type repository interface {
 	CreateLearningEvent(ctx context.Context, event *resourcegenentity.LearningEvent) error
 	UpdatePushStatusForResource(ctx context.Context, studentID int64, resourceID int64, status string) error
 	GetJob(ctx context.Context, studentID int64, jobID int64) (*resourcegenentity.GenerationJob, []resourcegenentity.AgentStep, []resourcegenentity.GeneratedResource, error)
-	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, limit int) ([]resourcegenentity.GeneratedResource, error)
+	ListResources(ctx context.Context, studentID int64, knowledgeID string, resourceType string, keyword string, status string, sortOrder string, limit int) ([]resourcegenentity.GeneratedResource, error)
+	ListPushStatuses(ctx context.Context, studentID int64, resourceIDs []int64) (map[int64]string, error)
 	ListPushItems(ctx context.Context, studentID int64, limit int) ([]resourcegenentity.ResourcePushItem, []resourcegenentity.GeneratedResource, error)
 	GetResource(ctx context.Context, studentID int64, resourceID int64) (*resourcegenentity.GeneratedResource, error)
 	UpsertFeedback(ctx context.Context, feedback *resourcegenentity.ResourceFeedback) (*resourcegenentity.ResourceFeedback, error)
@@ -147,6 +148,9 @@ func (s *Service) runGeneration(ctx context.Context, studentID int64, jobID int6
 		return
 	}
 	job = stored
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 
 	stepByKey := make(map[string]*resourcegenentity.AgentStep, len(steps))
 	for index := range steps {
@@ -164,6 +168,9 @@ func (s *Service) runGeneration(ctx context.Context, studentID int64, jobID int6
 	// VisionReaderAgent runs first when images were uploaded, producing a text
 	// digest that grounds every downstream writer agent.
 	if visionStep := stepByKey["vision_reader"]; visionStep != nil {
+		if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+			return
+		}
 		s.bumpJob(ctx, job, 10, "VisionReaderAgent")
 		s.advanceStep(ctx, visionStep, summaries["vision_reader"], resourcegenentity.StepStatusRunning)
 		genCtx.ImageDigest = s.aiImageDigest(ctx, genCtx)
@@ -174,23 +181,41 @@ func (s *Service) runGeneration(ctx context.Context, studentID int64, jobID int6
 		s.advanceStep(ctx, visionStep, doneSummary, resourcegenentity.StepStatusCompleted)
 	}
 
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	s.bumpJob(ctx, job, 14, "ProfileAnalystAgent")
 	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusRunning)
 	s.advanceStep(ctx, stepByKey["profile_analyst"], summaries["profile_analyst"], resourcegenentity.StepStatusCompleted)
 	s.bumpJob(ctx, job, 22, "CoursePlannerAgent")
 
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	s.advanceStep(ctx, stepByKey["course_planner"], summaries["course_planner"], resourcegenentity.StepStatusRunning)
 	s.advanceStep(ctx, stepByKey["course_planner"], summaries["course_planner"], resourcegenentity.StepStatusCompleted)
 	s.bumpJob(ctx, job, 32, "ResourceWriterAgents")
 
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	s.advanceStep(ctx, stepByKey["resource_writer"], summaries["resource_writer"], resourcegenentity.StepStatusRunning)
 	s.generateResourcesIncrementally(ctx, genCtx, jobID, job)
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	s.advanceStep(ctx, stepByKey["resource_writer"], summaries["resource_writer"], resourcegenentity.StepStatusCompleted)
 
 	s.bumpJob(ctx, job, 92, "SafetyReviewerAgent")
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	s.advanceStep(ctx, stepByKey["safety_reviewer"], summaries["safety_reviewer"], resourcegenentity.StepStatusRunning)
 	s.advanceStep(ctx, stepByKey["safety_reviewer"], summaries["safety_reviewer"], resourcegenentity.StepStatusCompleted)
 
+	if s.stopIfJobCanceled(ctx, studentID, jobID, job) {
+		return
+	}
 	job.Status = resourcegenentity.JobStatusCompleted
 	job.Progress = 100
 	job.CurrentAgent = "SafetyReviewerAgent"
@@ -274,16 +299,69 @@ func (s *Service) RetryJob(ctx context.Context, rawJobID string, request resourc
 	return response, nil
 }
 
+func (s *Service) CancelJob(ctx context.Context, rawJobID string) (*resourcegendto.JobView, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	job, steps, resources, err := s.getJobParts(ctx, studentID, rawJobID)
+	if err != nil {
+		return nil, err
+	}
+	if job.Status == resourcegenentity.JobStatusCompleted || job.Status == resourcegenentity.JobStatusFailed || job.Status == resourcegenentity.JobStatusCanceled {
+		view := jobToView(job, steps, resources)
+		return &view, nil
+	}
+
+	job.Status = resourcegenentity.JobStatusCanceled
+	job.CurrentAgent = "已停止"
+	job.ErrorMessage = "用户已停止本次资源生成任务。"
+	if err := s.repo.UpdateJob(ctx, job); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	now := time.Now()
+	for index := range steps {
+		if steps[index].Status == resourcegenentity.StepStatusCompleted {
+			continue
+		}
+		steps[index].Status = resourcegenentity.StepStatusCanceled
+		steps[index].Summary = firstNonEmpty(steps[index].Summary, steps[index].AgentName) + "（已停止）"
+		steps[index].EndedAt = &now
+		_ = s.repo.UpdateStep(ctx, &steps[index])
+	}
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     "resource_generation_canceled",
+		KnowledgeID:   job.KnowledgeID,
+		KnowledgeName: job.KnowledgeName,
+		PayloadJSON:   mustEventPayload(map[string]any{"jobId": job.ID, "progress": job.Progress}),
+	})
+	view := jobToView(job, steps, resources)
+	return &view, nil
+}
+
 func (s *Service) ListResources(ctx context.Context, query resourcegendto.ResourceQuery) (*resourcegendto.ListResourcesResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	resources, err := s.repo.ListResources(ctx, studentID, strings.TrimSpace(query.KnowledgeID), strings.TrimSpace(query.Type), query.Limit)
+	status := normalizeLearningStatus(query.Status)
+	resources, err := s.repo.ListResources(
+		ctx,
+		studentID,
+		strings.TrimSpace(query.KnowledgeID),
+		strings.TrimSpace(query.Type),
+		strings.TrimSpace(query.Keyword),
+		status,
+		normalizeResourceSort(query.Sort),
+		query.Limit,
+	)
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
-	list := resourcesToViews(resources)
+	statuses, _ := s.repo.ListPushStatuses(ctx, studentID, resourceIDs(resources))
+	list := resourcesToViewsWithLearningStatus(resources, statuses)
 	return &resourcegendto.ListResourcesResponse{List: list, Total: len(list)}, nil
 }
 
@@ -363,6 +441,53 @@ func (s *Service) SubmitFeedback(ctx context.Context, rawResourceID string, requ
 	return &view, nil
 }
 
+func (s *Service) UpdateLearningStatus(ctx context.Context, rawResourceID string, request resourcegendto.UpdateLearningStatusRequest) (*resourcegendto.ResourceLearningStatusResponse, error) {
+	studentID, err := currentStudentID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resourceID, err := strconv.ParseInt(strings.TrimSpace(rawResourceID), 10, 64)
+	if err != nil || resourceID <= 0 {
+		return nil, apperr.ErrBadRequest
+	}
+	status := normalizeLearningStatus(request.Status)
+	if status == "" {
+		return nil, apperr.ErrBadRequest
+	}
+	resource, err := s.repo.GetResource(ctx, studentID, resourceID)
+	if errors.Is(err, resourcegenrepo.ErrNotFound) {
+		return nil, apperr.ErrNotFound
+	}
+	if err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	if err := s.repo.UpdatePushStatusForResource(ctx, studentID, resource.ID, status); err != nil {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+	eventType := "resource_status_updated"
+	if status == "completed" {
+		eventType = "resource_completed"
+	}
+	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
+		StudentID:     studentID,
+		EventType:     eventType,
+		KnowledgeID:   resource.KnowledgeID,
+		KnowledgeName: resource.KnowledgeName,
+		ResourceID:    resource.ID,
+		ResourceType:  resource.ResourceType,
+		PayloadJSON: mustEventPayload(map[string]any{
+			"status": status,
+			"note":   strings.TrimSpace(request.Note),
+		}),
+	})
+	return &resourcegendto.ResourceLearningStatusResponse{
+		ResourceID:     resource.ID,
+		LearningStatus: status,
+		ActionText:     pushActionText(resource.ResourceType, status),
+		UpdatedAt:      time.Now().Format(time.RFC3339),
+	}, nil
+}
+
 func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.ResourceRecommendationsResponse, error) {
 	studentID, err := currentStudentID(ctx)
 	if err != nil {
@@ -376,7 +501,7 @@ func (s *Service) GetRecommendations(ctx context.Context) (*resourcegendto.Resou
 		}
 	}
 
-	resources, err := s.repo.ListResources(ctx, studentID, "", "", 12)
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", "", "", "", 12)
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
@@ -420,7 +545,7 @@ func (s *Service) GetLearningReport(ctx context.Context) (*resourcegendto.Learni
 		}
 	}
 
-	resources, err := s.repo.ListResources(ctx, studentID, "", "", 100)
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", "", "", "", 100)
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
@@ -505,7 +630,7 @@ func (s *Service) GetEffectSummary(ctx context.Context) (*resourcegendto.EffectS
 		return nil, err
 	}
 
-	resources, err := s.repo.ListResources(ctx, studentID, "", "", 100)
+	resources, err := s.repo.ListResources(ctx, studentID, "", "", "", "", "", 100)
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
@@ -859,7 +984,7 @@ func (s *Service) GetFeed(ctx context.Context) (*resourcegendto.ResourceFeedResp
 	}
 
 	if len(views) == 0 {
-		fallback, err := s.repo.ListResources(ctx, studentID, "", "", 8)
+		fallback, err := s.repo.ListResources(ctx, studentID, "", "", "", "", "", 8)
 		if err != nil {
 			return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 		}
@@ -1502,6 +1627,9 @@ func (s *Service) advanceStep(ctx context.Context, step *resourcegenentity.Agent
 
 // bumpJob updates the job's progress percentage and currently-active agent.
 func (s *Service) bumpJob(ctx context.Context, job *resourcegenentity.GenerationJob, progress int, currentAgent string) {
+	if s.stopIfJobCanceled(ctx, job.StudentID, job.ID, job) {
+		return
+	}
 	job.Progress = progress
 	if currentAgent != "" {
 		job.CurrentAgent = currentAgent
@@ -1511,9 +1639,32 @@ func (s *Service) bumpJob(ctx context.Context, job *resourcegenentity.Generation
 
 // failJob marks a job as failed with a clamped error message.
 func (s *Service) failJob(ctx context.Context, job *resourcegenentity.GenerationJob, message string) {
+	if s.stopIfJobCanceled(ctx, job.StudentID, job.ID, job) {
+		return
+	}
 	job.Status = resourcegenentity.JobStatusFailed
 	job.ErrorMessage = clampRunes(message, 900)
 	_ = s.repo.UpdateJob(ctx, job)
+}
+
+func (s *Service) stopIfJobCanceled(ctx context.Context, studentID int64, jobID int64, job *resourcegenentity.GenerationJob) bool {
+	if s.isJobCanceled(ctx, studentID, jobID) {
+		if job != nil {
+			job.Status = resourcegenentity.JobStatusCanceled
+			job.CurrentAgent = "已停止"
+			job.ErrorMessage = "用户已停止本次资源生成任务。"
+		}
+		return true
+	}
+	return false
+}
+
+func (s *Service) isJobCanceled(ctx context.Context, studentID int64, jobID int64) bool {
+	if studentID <= 0 || jobID <= 0 {
+		return false
+	}
+	job, _, _, err := s.repo.GetJob(ctx, studentID, jobID)
+	return err == nil && job != nil && job.Status == resourcegenentity.JobStatusCanceled
 }
 
 // generateResourcesIncrementally produces every requested resource concurrently
@@ -1534,10 +1685,16 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 		wg.Add(1)
 		go func(resourceType string) {
 			defer wg.Done()
+			if s.isJobCanceled(ctx, genCtx.StudentID, jobID) {
+				return
+			}
 			label := resourceTypeLabel(resourceType)
 			content := s.aiResourceContent(ctx, resourceType, genCtx)
 			if strings.TrimSpace(content) == "" {
 				content = buildResourceContent(resourceType, genCtx)
+			}
+			if s.isJobCanceled(ctx, genCtx.StudentID, jobID) {
+				return
 			}
 			resource := &resourcegenentity.GeneratedResource{
 				JobID:         jobID,
@@ -1556,6 +1713,9 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 
 			mu.Lock()
 			defer mu.Unlock()
+			if s.isJobCanceled(ctx, genCtx.StudentID, jobID) {
+				return
+			}
 			if err := s.repo.CreateResource(ctx, resource); err != nil {
 				return
 			}
@@ -1984,6 +2144,30 @@ func normalizeDifficulty(value string) string {
 		return "fit"
 	default:
 		return "fit"
+	}
+}
+
+func normalizeLearningStatus(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "pending", "未开始", "待学习":
+		return "pending"
+	case "in_progress", "learning", "学习中", "进行中":
+		return "in_progress"
+	case "completed", "done", "已完成", "完成":
+		return "completed"
+	case "needs_review", "review", "需复习", "需调整":
+		return "needs_review"
+	default:
+		return ""
+	}
+}
+
+func normalizeResourceSort(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "oldest", "title":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return "latest"
 	}
 }
 
@@ -3269,21 +3453,55 @@ func jobToView(job *resourcegenentity.GenerationJob, steps []resourcegenentity.A
 	if job == nil {
 		return resourcegendto.JobView{}
 	}
+	failureReason, retrySuggestion := classifyJobFailure(job)
 	return resourcegendto.JobView{
-		ID:            job.ID,
-		StudentID:     job.StudentID,
-		KnowledgeID:   job.KnowledgeID,
-		KnowledgeName: job.KnowledgeName,
-		CourseTitle:   job.CourseTitle,
-		Target:        job.Target,
-		Status:        job.Status,
-		Progress:      job.Progress,
-		CurrentAgent:  job.CurrentAgent,
-		ErrorMessage:  job.ErrorMessage,
-		CreatedAt:     job.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:     job.UpdatedAt.Format(time.RFC3339),
-		Steps:         stepsToViews(steps),
-		Resources:     resourcesToViews(resources),
+		ID:              job.ID,
+		StudentID:       job.StudentID,
+		KnowledgeID:     job.KnowledgeID,
+		KnowledgeName:   job.KnowledgeName,
+		CourseTitle:     job.CourseTitle,
+		Target:          job.Target,
+		Status:          job.Status,
+		Progress:        job.Progress,
+		CurrentAgent:    job.CurrentAgent,
+		ErrorMessage:    job.ErrorMessage,
+		FailureReason:   failureReason,
+		RetrySuggestion: retrySuggestion,
+		CreatedAt:       job.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       job.UpdatedAt.Format(time.RFC3339),
+		Steps:           stepsToViews(steps),
+		Resources:       resourcesToViews(resources),
+	}
+}
+
+func classifyJobFailure(job *resourcegenentity.GenerationJob) (string, string) {
+	if job == nil {
+		return "", ""
+	}
+	if job.Status == resourcegenentity.JobStatusCanceled {
+		return "任务已手动停止", "确认生成参数后可点击“重试任务”重新发起。"
+	}
+	if job.Status != resourcegenentity.JobStatusFailed {
+		return "", ""
+	}
+	message := strings.ToLower(strings.TrimSpace(job.ErrorMessage))
+	switch {
+	case message == "":
+		return "任务异常结束", "建议重新生成；如果仍失败，请检查后端日志。"
+	case containsAny(message, "api key", "apikey", "unauthorized", "401", "鉴权", "密钥"):
+		return "模型鉴权失败", "检查 DEEPSEEK_API_KEY 或 OpenAI 兼容模型密钥后重试。"
+	case containsAny(message, "not configured", "未配置", "disabled", "media model"):
+		return "模型能力未配置", "补齐对应文本/图片/视频模型环境变量后重试。"
+	case containsAny(message, "timeout", "deadline", "超时"):
+		return "模型响应超时", "缩短生成目标、减少资源类型，或稍后重试。"
+	case containsAny(message, "429", "rate limit", "too many"):
+		return "模型请求限流", "等待上游额度恢复，或切换备用模型后重试。"
+	case containsAny(message, "413", "too large", "payload", "图片", "image"):
+		return "输入内容过大", "压缩图片或减少上传图片数量后重新生成。"
+	case containsAny(message, "video", "视频"):
+		return "视频生成失败", "检查视频模型端点和时长配置，或先生成图片/脚本资源。"
+	default:
+		return "上游模型或依赖异常", "建议重试；若持续失败，请检查模型服务、网络和 Docker 日志。"
 	}
 }
 
@@ -3312,6 +3530,28 @@ func resourcesToViews(resources []resourcegenentity.GeneratedResource) []resourc
 	result := make([]resourcegendto.GeneratedResourceView, 0, len(resources))
 	for _, resource := range resources {
 		result = append(result, resourceToView(resource))
+	}
+	return result
+}
+
+func resourcesToViewsWithLearningStatus(resources []resourcegenentity.GeneratedResource, statuses map[int64]string) []resourcegendto.GeneratedResourceView {
+	result := make([]resourcegendto.GeneratedResourceView, 0, len(resources))
+	for _, resource := range resources {
+		status := firstNonEmpty(statuses[resource.ID], "pending")
+		view := resourceToView(resource)
+		view.LearningStatus = status
+		view.ActionText = pushActionText(resource.ResourceType, status)
+		result = append(result, view)
+	}
+	return result
+}
+
+func resourceIDs(resources []resourcegenentity.GeneratedResource) []int64 {
+	result := make([]int64, 0, len(resources))
+	for _, resource := range resources {
+		if resource.ID > 0 {
+			result = append(result, resource.ID)
+		}
 	}
 	return result
 }
@@ -3367,25 +3607,27 @@ func (s *Service) recordLearningEvent(ctx context.Context, event resourcegenenti
 
 func normalizeEventType(eventType string) string {
 	allowed := map[string]bool{
-		"resource_generation_started": true,
-		"resource_generated":          true,
-		"resource_viewed":             true,
-		"resource_feedback_submitted": true,
-		"resource_completed":          true,
-		"practice_answered":           true,
-		"note_saved":                  true,
-		"profile_refreshed":           true,
-		"image_generated":             true,
-		"video_generated":             true,
-		"resource_retry_started":      true,
-		"resource_quality_checked":    true,
-		"resource_compared":           true,
-		"media_status_checked":        true,
-		"job_review_generated":        true,
-		"evidence_package_exported":   true,
-		"study_checklist_generated":   true,
-		"resource_variant_started":    true,
-		"resource_provenance_viewed":  true,
+		"resource_generation_started":  true,
+		"resource_generated":           true,
+		"resource_viewed":              true,
+		"resource_feedback_submitted":  true,
+		"resource_completed":           true,
+		"practice_answered":            true,
+		"note_saved":                   true,
+		"profile_refreshed":            true,
+		"image_generated":              true,
+		"video_generated":              true,
+		"resource_retry_started":       true,
+		"resource_quality_checked":     true,
+		"resource_compared":            true,
+		"media_status_checked":         true,
+		"job_review_generated":         true,
+		"evidence_package_exported":    true,
+		"study_checklist_generated":    true,
+		"resource_variant_started":     true,
+		"resource_provenance_viewed":   true,
+		"resource_generation_canceled": true,
+		"resource_status_updated":      true,
 	}
 	key := strings.ToLower(strings.TrimSpace(eventType))
 	if allowed[key] {
