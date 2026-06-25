@@ -7,11 +7,13 @@ import {
   Compass,
   FileText,
   ImagePlus,
+  Moon,
   PlayCircle,
   RefreshCcw,
   Save,
   Send,
   Sparkles,
+  Sun,
   Wand2,
 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -49,6 +51,9 @@ import ResourceContent from '../components/ResourceContent.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
 import { useSpeech } from '../composables/useSpeech'
 import { APP_NAME } from '../constants/appInfo'
+import { useThemeStore } from '../stores/themeStore'
+
+const themeStore = useThemeStore()
 
 // 演示主线默认输入，方便评委一键体验完整闭环。
 const DEFAULT_PROMPT =
@@ -942,6 +947,16 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="a3-topbar__actions topbar__actions">
+        <button
+          type="button"
+          class="theme-toggle-btn a3-theme-toggle"
+          :title="themeStore.theme === 'light' ? '切换夜间模式' : '切换白天模式'"
+          @click="themeStore.toggleTheme"
+        >
+          <Moon v-if="themeStore.theme === 'light'" :size="15" aria-hidden="true" />
+          <Sun v-else :size="15" aria-hidden="true" />
+          <span>{{ themeStore.theme === 'light' ? '夜间' : '白天' }}</span>
+        </button>
         <button type="button" class="ghost-link" @click="assistantOpen = true">
           <Bot :size="16" aria-hidden="true" />
           AI 学习助教
@@ -2756,6 +2771,12 @@ onBeforeUnmount(() => {
   box-shadow: none;
 }
 
+.a3-theme-toggle {
+  min-height: 2.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+}
+
 .card-badge {
   background: linear-gradient(135deg, #5eead4, #22c55e);
   color: #03120f;
@@ -2850,9 +2871,9 @@ onBeforeUnmount(() => {
   color: var(--text-primary);
 }
 
-html[data-theme='light'] .field-block input,
-html[data-theme='light'] .field-block select,
-html[data-theme='light'] .field-block textarea {
+:global(html[data-theme='light']) .field-block input,
+:global(html[data-theme='light']) .field-block select,
+:global(html[data-theme='light']) .field-block textarea {
   background: rgba(15, 23, 42, 0.03);
 }
 
@@ -2962,8 +2983,8 @@ html[data-theme='light'] .field-block textarea {
   border-color: var(--border-subtle);
 }
 
-html[data-theme='light'] .resource-card :deep(pre),
-html[data-theme='light'] .export-box textarea {
+:global(html[data-theme='light']) .resource-card :deep(pre),
+:global(html[data-theme='light']) .export-box textarea {
   background: rgba(15, 23, 42, 0.03);
 }
 
@@ -2994,6 +3015,106 @@ html[data-theme='light'] .export-box textarea {
 .effect-difficulty em,
 .plan-stage__items li {
   border: 1px solid rgba(45, 212, 191, 0.16);
+}
+
+:global(html[data-theme='light']) .a3-workbench {
+  background:
+    linear-gradient(180deg, rgba(13, 148, 136, 0.06), transparent 260px),
+    #eef4f7;
+  color: var(--text-primary);
+}
+
+:global(html[data-theme='light']) .a3-topbar,
+:global(html[data-theme='light']) .a3-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.07);
+}
+
+:global(html[data-theme='light']) .a3-brand__icon {
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.18);
+}
+
+:global(html[data-theme='light']) .a3-theme-toggle,
+:global(html[data-theme='light']) .ghost-link,
+:global(html[data-theme='light']) .secondary-action,
+:global(html[data-theme='light']) .ghost-mini {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(15, 23, 42, 0.1);
+  color: var(--text-primary);
+}
+
+:global(html[data-theme='light']) .a3-step,
+:global(html[data-theme='light']) .dimension-card,
+:global(html[data-theme='light']) .plan-stage,
+:global(html[data-theme='light']) .next-step,
+:global(html[data-theme='light']) .type-chip,
+:global(html[data-theme='light']) .agent-step,
+:global(html[data-theme='light']) .resource-card,
+:global(html[data-theme='light']) .outline-slide,
+:global(html[data-theme='light']) .export-box,
+:global(html[data-theme='light']) .check-row,
+:global(html[data-theme='light']) .image-add,
+:global(html[data-theme='light']) .media-status-box,
+:global(html[data-theme='light']) .effect-event,
+:global(html[data-theme='light']) .safety-check,
+:global(html[data-theme='light']) .quality-metrics article {
+  background: rgba(15, 23, 42, 0.035);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+:global(html[data-theme='light']) .profile-summary,
+:global(html[data-theme='light']) .mastery-badge,
+:global(html[data-theme='light']) .agent-progress,
+:global(html[data-theme='light']) .effect-metric,
+:global(html[data-theme='light']) .effect-highlights p,
+:global(html[data-theme='light']) .safety-report,
+:global(html[data-theme='light']) .quality-report,
+:global(html[data-theme='light']) .outline-box,
+:global(html[data-theme='light']) .type-chip--active,
+:global(html[data-theme='light']) .a3-step--active {
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.18);
+  color: #0f766e;
+}
+
+:global(html[data-theme='light']) .dimension-card__head span,
+:global(html[data-theme='light']) .plan-stage__items li,
+:global(html[data-theme='light']) .plan-stage__items em,
+:global(html[data-theme='light']) .evidence-row em,
+:global(html[data-theme='light']) .effect-difficulty em,
+:global(html[data-theme='light']) .outline-box__head span {
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.16);
+}
+
+:global(html[data-theme='light']) .type-chip--active svg,
+:global(html[data-theme='light']) .type-chip--active span,
+:global(html[data-theme='light']) .agent-progress__head em,
+:global(html[data-theme='light']) .outline-slide span,
+:global(html[data-theme='light']) .resource-card__head span,
+:global(html[data-theme='light']) .safety-report__head em,
+:global(html[data-theme='light']) .quality-report__head em {
+  color: #0f766e;
+}
+
+:global(html[data-theme='light']) .progress-bar {
+  background: rgba(13, 148, 136, 0.1);
+}
+
+:global(html[data-theme='light']) .inline-error {
+  color: #b91c1c;
+  background: rgba(254, 226, 226, 0.88);
+  border-color: rgba(248, 113, 113, 0.28);
+}
+
+:global(html[data-theme='light']) .inline-success {
+  color: #047857;
+  background: rgba(220, 252, 231, 0.88);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 @media (max-width: 720px) {
