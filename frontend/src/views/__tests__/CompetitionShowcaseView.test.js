@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 
 import CompetitionShowcaseView from '../CompetitionShowcaseView.vue'
 
@@ -6,6 +7,7 @@ describe('CompetitionShowcaseView', () => {
   it('renders the C4 A-series score alignment and demo evidence', () => {
     const wrapper = mount(CompetitionShowcaseView, {
       global: {
+        plugins: [createPinia()],
         stubs: {
           RouterLink: {
             props: ['to'],
@@ -23,6 +25,6 @@ describe('CompetitionShowcaseView', () => {
     expect(wrapper.text()).toContain('效果')
     expect(wrapper.text()).toContain('5 分钟答辩演示路径')
     expect(wrapper.text()).toContain('scripts/start-demo.ps1')
-    expect(wrapper.text()).toContain('13 个测试文件、49 个用例')
+    expect(wrapper.text()).toContain('17 个测试文件、66 个用例')
   })
 })

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -11,6 +12,64 @@ import (
 	"github.com/han139242/course-recommend-agents/backend/internal/module/auth/repository"
 	"github.com/han139242/course-recommend-agents/backend/pkg/apperr"
 )
+
+// Register creates a public student account and immediately establishes a
+// session. Privileged roles are never accepted through this workflow.
+func (s *AuthService) Register(ctx context.Context, name string, email string, password string) (*dto.LoginResponse, error) {
+	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
+	if normalizedEmail == "" || len(password) < 6 || len(password) > 72 {
+		return nil, apperr.ErrBadRequest
+	}
+	if _, err := s.repo.GetByEmail(ctx, normalizedEmail); err == nil {
+		return nil, apperr.ErrConflict.WithCause(repository.ErrUserAlreadyExists)
+	} else if !errors.Is(err, repository.ErrUserNotFound) {
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	passwordHash, err := s.passwordService.Hash(password)
+	if err != nil {
+		return nil, apperr.ErrInternal.WithCause(err)
+	}
+	displayName := strings.TrimSpace(name)
+	if displayName == "" {
+		displayName = strings.SplitN(normalizedEmail, "@", 2)[0]
+	}
+	if displayName == "" {
+		displayName = "新同学"
+	}
+	user := &entity.User{
+		Name:         displayName,
+		Email:        normalizedEmail,
+		PasswordHash: passwordHash,
+		Role:         "student",
+		Status:       repository.UserStatusActive,
+	}
+	if err := s.repo.CreateStudent(ctx, user); err != nil {
+		if isDuplicateUserError(err) {
+			return nil, apperr.ErrConflict.WithCause(repository.ErrUserAlreadyExists)
+		}
+		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
+	}
+
+	token, expiredAt, err := s.jwtService.Sign(user)
+	if err != nil {
+		return nil, apperr.ErrInternal.WithCause(err)
+	}
+	return &dto.LoginResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   int64(time.Until(expiredAt).Seconds()),
+		User:        buildUserView(user),
+	}, nil
+}
+
+func isDuplicateUserError(err error) bool {
+	if errors.Is(err, repository.ErrUserAlreadyExists) {
+		return true
+	}
+	message := strings.ToLower(fmt.Sprint(err))
+	return strings.Contains(message, "duplicate") || strings.Contains(message, "uk_users_email")
+}
 
 // AuthService 提供认证相关业务能力。
 //

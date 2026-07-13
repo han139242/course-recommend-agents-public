@@ -47,6 +47,7 @@ func New(appCfg config.AppConfig, cfg config.AuthConfig, db *gorm.DB, _ *applogg
 // 这里仅挂载无需预先携带凭证的入口，避免把登录接口错误地放入鉴权链路后形成死循环。
 func (m *Module) RegisterPublicRoutes(group *gin.RouterGroup) {
 	group.POST("/login", m.Handler.Login)
+	group.POST("/register", m.Handler.Register)
 }
 
 // RegisterAuthRoutes 注册需要登录的认证路由。

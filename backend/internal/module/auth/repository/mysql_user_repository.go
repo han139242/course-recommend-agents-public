@@ -24,6 +24,26 @@ func NewMySQLUserRepository(db *gorm.DB) *MySQLUserRepository {
 	return &MySQLUserRepository{db: db}
 }
 
+// CreateStudent persists a public self-registered student account.
+func (r *MySQLUserRepository) CreateStudent(ctx context.Context, user *entity.User) error {
+	record := usermodel.User{
+		Name:         user.Name,
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
+		Role:         "student",
+		Status:       UserStatusActive,
+		Target:       "",
+	}
+	if err := r.db.WithContext(ctx).Create(&record).Error; err != nil {
+		return err
+	}
+	user.ID = record.ID
+	user.Role = record.Role
+	user.Status = record.Status
+	user.CreatedAt = record.CreatedAt
+	return nil
+}
+
 type userWithClass struct {
 	usermodel.User
 	ClassName *string `gorm:"column:class_name"`

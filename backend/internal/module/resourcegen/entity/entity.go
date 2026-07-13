@@ -14,7 +14,10 @@ const (
 	StepStatusCompleted = "completed"
 	StepStatusCanceled  = "canceled"
 
-	ResourceStatusReady = "ready"
+	ResourceStatusReady   = "ready"
+	ResourceStatusPending = "pending"
+	ResourceStatusFailed  = "failed"
+	ResourceStatusBlocked = "blocked"
 )
 
 // GenerationJob stores one resource generation task.

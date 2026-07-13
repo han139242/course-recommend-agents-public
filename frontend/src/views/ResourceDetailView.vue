@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowLeft, CheckCircle2, FileText, RefreshCcw, Send, ShieldCheck, Sparkles } from '@lucide/vue'
+import { ArrowLeft, CheckCircle2, FileText, Moon, RefreshCcw, Send, ShieldCheck, Sparkles, Sun } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
@@ -13,8 +13,10 @@ import {
   submitResourceFeedback,
 } from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
+import { useThemeStore } from '../stores/themeStore'
 
 const route = useRoute()
+const themeStore = useThemeStore()
 
 const resource = ref(null)
 const loading = ref(false)
@@ -186,15 +188,27 @@ onMounted(async () => {
 
 <template>
   <section class="resource-detail">
-    <header class="resource-detail__topbar">
+    <header class="resource-detail__topbar topbar student-topbar">
       <RouterLink class="ghost-link" to="/resources">
         <ArrowLeft :size="16" aria-hidden="true" />
         资源中心
       </RouterLink>
-      <RouterLink class="ghost-link" to="/">
-        <Sparkles :size="16" aria-hidden="true" />
-        知识图谱
-      </RouterLink>
+      <div class="resource-detail__actions">
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          :title="themeStore.theme === 'light' ? '切换夜间模式' : '切换白天模式'"
+          @click="themeStore.toggleTheme"
+        >
+          <Moon v-if="themeStore.theme === 'light'" :size="15" aria-hidden="true" />
+          <Sun v-else :size="15" aria-hidden="true" />
+          <span>{{ themeStore.theme === 'light' ? '夜间' : '白天' }}</span>
+        </button>
+        <RouterLink class="ghost-link" to="/">
+          <Sparkles :size="16" aria-hidden="true" />
+          知识图谱
+        </RouterLink>
+      </div>
     </header>
 
     <main class="resource-detail__shell">
@@ -391,8 +405,10 @@ onMounted(async () => {
 <style scoped>
 .resource-detail {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7fbff 0%, #eef4f7 100%);
-  color: #172033;
+  background:
+    radial-gradient(circle at top left, var(--accent-glow), transparent 30rem),
+    var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .resource-detail__topbar {
@@ -403,9 +419,18 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(90, 112, 132, 0.16);
-  background: rgba(247, 251, 255, 0.9);
+  margin: 12px 12px 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
   backdrop-filter: blur(14px);
+}
+
+.resource-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .resource-detail__shell {
@@ -426,10 +451,10 @@ onMounted(async () => {
 .content-card,
 .side-panel,
 .storyboard-panel {
-  border: 1px solid rgba(90, 112, 132, 0.16);
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 18px 45px rgba(31, 46, 67, 0.08);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
 }
 
 .resource-hero {
@@ -437,7 +462,7 @@ onMounted(async () => {
 }
 
 .resource-hero span {
-  color: #176b87;
+  color: var(--accent);
   font-size: 0.8rem;
   font-weight: 900;
 }
@@ -454,7 +479,7 @@ onMounted(async () => {
 .safety-check p,
 .safety-suggestion {
   margin: 0;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.55;
 }
 
@@ -463,7 +488,7 @@ onMounted(async () => {
   align-items: center;
   gap: 0.45rem;
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(90, 112, 132, 0.12);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .storyboard-grid {
@@ -478,15 +503,15 @@ onMounted(async () => {
 .safety-check {
   display: grid;
   gap: 0.35rem;
-  border: 1px solid rgba(90, 112, 132, 0.14);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.75rem;
-  background: #f8fbfd;
+  background: var(--bg-subtle);
 }
 
 .story-card span,
 .evidence-list span {
-  color: #176b87;
+  color: var(--accent);
   font-size: 0.76rem;
   font-weight: 900;
 }
@@ -508,38 +533,38 @@ onMounted(async () => {
 
 .provenance-box p {
   margin: 0;
-  color: #43536a;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
 .provenance-box article {
   display: grid;
   gap: 0.25rem;
-  border: 1px solid rgba(90, 112, 132, 0.14);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.65rem;
-  background: #f8fbfd;
+  background: var(--bg-subtle);
 }
 
 .provenance-box small {
-  color: #64748b;
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
 .quality-metric {
   display: grid;
   gap: 0.25rem;
-  border: 1px solid rgba(90, 112, 132, 0.14);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.7rem;
-  background: #f8fbfd;
+  background: var(--bg-subtle);
 }
 
 .quality-metric p,
 .media-status-box p,
 .media-status-box small {
   margin: 0;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.45;
 }
 
@@ -547,8 +572,8 @@ onMounted(async () => {
   width: fit-content;
   border-radius: 999px;
   padding: 0.18rem 0.55rem;
-  color: #176b87;
-  background: rgba(23, 107, 135, 0.1);
+  color: var(--accent-light);
+  background: var(--accent-glow);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -558,8 +583,8 @@ onMounted(async () => {
   gap: 0.2rem;
   border-radius: 8px;
   padding: 0.8rem;
-  color: #ffffff;
-  background: #215f9a;
+  color: #07110f;
+  background: var(--accent);
 }
 
 .safety-box__score span,
@@ -574,7 +599,7 @@ onMounted(async () => {
 }
 
 .feedback-form span {
-  color: #43536a;
+  color: var(--text-secondary);
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -582,10 +607,12 @@ onMounted(async () => {
 .feedback-form select,
 .feedback-form textarea {
   width: 100%;
-  border: 1px solid rgba(90, 112, 132, 0.22);
+  border: 1px solid var(--border-medium);
   border-radius: 8px;
   padding: 0.7rem;
   font: inherit;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
 .check-row {
@@ -611,20 +638,26 @@ onMounted(async () => {
 }
 
 .primary-action {
-  color: #ffffff;
-  background: #215f9a;
+  color: #07110f;
+  background: var(--accent);
 }
 
 .secondary-action {
-  border: 1px solid rgba(90, 112, 132, 0.22);
-  color: #24415f;
-  background: #f8fbfd;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
 }
 
 .ghost-link {
-  border: 1px solid rgba(90, 112, 132, 0.18);
-  color: #24415f;
-  background: #ffffff;
+  border: 1px solid var(--border-medium);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.ghost-link:hover,
+.secondary-action:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
 }
 
 .inline-error,
@@ -649,14 +682,18 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   gap: 0.5rem;
-  border: 1px dashed rgba(90, 112, 132, 0.3);
-  color: #64748b;
+  border: 1px dashed var(--border-medium);
+  color: var(--text-muted);
   text-align: center;
 }
 
 @media (max-width: 920px) {
   .resource-detail__shell {
     grid-template-columns: 1fr;
+  }
+
+  .resource-detail__topbar {
+    margin: 8px 8px 0;
   }
 }
 </style>

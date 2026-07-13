@@ -28,6 +28,7 @@ import {
 import {
   exportResourceJobMarkdown,
   fetchLearningReport,
+  fetchResource,
   fetchResourceDemoScript,
   fetchResourceEffectSummary,
   fetchResourceJob,
@@ -37,6 +38,7 @@ import {
   fetchResourceSafetyReport,
   generateResourceImage,
   generateResourceVideo,
+  generateResourceVariant,
   generateResources,
   recordLearningEvent,
   retryResourceJob,
@@ -49,11 +51,26 @@ import AiAssistant from '../components/ai/AiAssistant.vue'
 import QuizPanel from '../components/QuizPanel.vue'
 import ResourceContent from '../components/ResourceContent.vue'
 import ScoreBreakdown from '../components/ScoreBreakdown.vue'
+import { useMediaStatusPolling } from '../composables/useMediaStatusPolling'
 import { useSpeech } from '../composables/useSpeech'
 import { APP_NAME } from '../constants/appInfo'
 import { useThemeStore } from '../stores/themeStore'
 
 const themeStore = useThemeStore()
+
+const DEMO_FALLBACK_SVG = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs><linearGradient id="bg" x1="0" x2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#102a35"/></linearGradient></defs>
+  <rect width="1280" height="720" rx="36" fill="url(#bg)"/>
+  <text x="80" y="110" fill="#99f6e4" font-size="38" font-family="Microsoft YaHei">多智能体个性化资源生成流程</text>
+  <g font-family="Microsoft YaHei" font-size="26" text-anchor="middle">
+    <g fill="#15273a" stroke="#2dd4bf" stroke-width="3"><rect x="70" y="260" width="210" height="120" rx="22"/><rect x="325" y="260" width="210" height="120" rx="22"/><rect x="580" y="260" width="210" height="120" rx="22"/><rect x="835" y="260" width="210" height="120" rx="22"/></g>
+    <g fill="#eef2f7"><text x="175" y="330">画像分析</text><text x="430" y="330">课程规划</text><text x="685" y="330">资源生成</text><text x="940" y="330">安全审查</text></g>
+    <g fill="#2dd4bf" font-size="42"><text x="302" y="332">→</text><text x="557" y="332">→</text><text x="812" y="332">→</text><text x="1085" y="332">→</text></g>
+    <rect x="1080" y="260" width="150" height="120" rx="60" fill="#2dd4bf"/><text x="1155" y="330" fill="#07110f">发布</text>
+  </g>
+  <text x="80" y="610" fill="#94a3b8" font-size="24" font-family="Microsoft YaHei">备用演示资源 · 仅在真实媒体模型暂不可用时展示</text>
+</svg>`)}`
 
 // 演示主线默认输入，方便评委一键体验完整闭环。
 const DEFAULT_PROMPT =
@@ -130,7 +147,15 @@ const qualityReports = ref({})
 const qualityLoading = ref({})
 const mediaStatuses = ref({})
 const mediaStatusLoading = ref({})
+const { poll: pollMediaStatus, stopAll: stopMediaPolling } = useMediaStatusPolling(fetchResourceMediaStatus)
 const retryingJob = ref(false)
+const focusedStage = ref('profile')
+const demoMode = ref(false)
+const showAdvancedGeneration = ref(false)
+const expandedAgentKey = ref('')
+const activeResourceType = ref('all')
+const safetyRegeneratingId = ref(null)
+const copiedResourceId = ref(null)
 
 // 答辩物料导出
 const outlineLoading = ref(false)
@@ -208,6 +233,27 @@ const nextSteps = computed(() => studyPlan.value?.nextSteps || [])
 const hasPlan = computed(() => planStages.value.length > 0)
 const hasResources = computed(() => generatedResources.value.length > 0)
 
+const workflowStages = computed(() => [
+  { key: 'profile', label: '学习画像', complete: hasProfile.value, summary: hasProfile.value ? `${orderedDimensions.value.length} 个维度已生成` : '等待描述学习需求' },
+  { key: 'plan', label: '路径规划', complete: hasPlan.value, summary: hasPlan.value ? `${planStages.value.length} 个学习阶段` : '等待生成学习计划' },
+  { key: 'resource', label: '资源生成', complete: hasResources.value, summary: hasResources.value ? `${generatedResources.value.length} 类成果已生成` : '等待多智能体协作' },
+  { key: 'effect', label: '测验反馈', complete: Boolean(effectSummary.value?.metrics?.length), summary: effectSummary.value?.metrics?.length ? '学习效果已更新' : '等待学习与反馈' },
+])
+
+const availableResourceTypes = computed(() => {
+  const seen = new Set()
+  return generatedResources.value
+    .filter((resource) => resource?.resourceType && !seen.has(resource.resourceType) && seen.add(resource.resourceType))
+    .map((resource) => ({ value: resource.resourceType, label: resource.typeLabel || typeLabel(resource.resourceType) }))
+})
+
+const visibleResources = computed(() => activeResourceType.value === 'all'
+  ? generatedResources.value
+  : generatedResources.value.filter((resource) => resource.resourceType === activeResourceType.value))
+
+const blockedResourceCount = computed(() => generatedResources.value.filter((resource) => resource.status === 'blocked' || safetyReports.value[resource.id]?.status === 'blocked').length)
+const readyResourceCount = computed(() => generatedResources.value.length - blockedResourceCount.value)
+
 // 当前所处步骤，用于顶部进度提示。
 const currentStep = computed(() => {
   if (!hasProfile.value) return 1
@@ -234,6 +280,86 @@ function formatDate(value) {
 
 function typeLabel(type) {
   return resourceTypeLabels[type] || type
+}
+
+function focusStage(stage) {
+  focusedStage.value = stage
+  requestAnimationFrame(() => document.querySelector('.a3-shell')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+}
+
+function toggleDemoMode() {
+  demoMode.value = !demoMode.value
+  if (!demoMode.value) return
+  profilePrompt.value = DEFAULT_PROMPT
+  resourceForm.value = {
+    knowledgeId: '',
+    knowledgeName: '智能体与工具调用',
+    courseTitle: '人工智能导论',
+    target: '理解智能体如何规划任务、调用工具并根据结果完成闭环',
+    resourceTypes: resourceTypeOptions.map((item) => item.value),
+  }
+  mediaPrompt.value = '以现代教学信息图展示画像分析、课程规划、资源生成和安全审查的协作流程'
+  showAdvancedGeneration.value = false
+  activeResourceType.value = 'all'
+  focusStage(hasProfile.value ? (hasPlan.value ? 'resource' : 'plan') : 'profile')
+  profileNotice.value = '比赛演示模式已就绪：示例画像、知识点和五类资源已自动填充。'
+}
+
+function showDemoFallbackMedia() {
+  const fallback = {
+    id: `demo-media-${Date.now()}`,
+    resourceType: 'generated_image',
+    typeLabel: '备用演示配图',
+    title: '多智能体个性化资源生成流程',
+    format: 'image',
+    content: JSON.stringify({
+      kind: 'image',
+      url: DEMO_FALLBACK_SVG,
+      prompt: mediaPrompt.value || '多智能体协作流程',
+      provider: '比赛离线备用资源',
+      status: 'ready',
+    }),
+    reason: '真实媒体模型不可用时的离线备用展示；答辩时会明确标注，不冒充实时模型生成结果。',
+    status: 'ready',
+    demoFallback: true,
+    evidence: [{ label: '资源性质', value: '预生成离线备用，不进入学习效果统计' }],
+  }
+  generatedResources.value = [fallback, ...generatedResources.value.filter((item) => item.id !== fallback.id)]
+  activeResourceType.value = 'generated_image'
+  mediaError.value = ''
+  mediaNotice.value = '已展示离线备用配图；正式演示配置媒体模型后可替换为实时生成结果。'
+}
+
+function resourceSafetyStatus(resource) {
+  if (resource.demoFallback) return 'demo'
+  return safetyReports.value[resource.id]?.status || (resource.status === 'blocked' ? 'blocked' : resource.status === 'ready' ? 'passed' : 'attention_required')
+}
+
+function resourceSafetyLabel(resource) {
+  const status = resourceSafetyStatus(resource)
+  if (status === 'demo') return '离线备用'
+  if (status === 'passed') return '安全通过'
+  if (status === 'blocked') return '已阻断'
+  return '需要复核'
+}
+
+function agentDuration(step) {
+  if (!step?.startedAt || !step?.endedAt) return step?.status === 'running' ? '执行中' : '等待执行'
+  const duration = new Date(step.endedAt).getTime() - new Date(step.startedAt).getTime()
+  if (!Number.isFinite(duration) || duration < 0) return '已完成'
+  return duration < 1000 ? '< 1 秒' : `${Math.round(duration / 100) / 10} 秒`
+}
+
+async function copyResourceContent(resource) {
+  try {
+    await navigator.clipboard.writeText(String(resource?.content || ''))
+    copiedResourceId.value = resource.id
+    setTimeout(() => {
+      if (copiedResourceId.value === resource.id) copiedResourceId.value = null
+    }, 1600)
+  } catch {
+    feedbackError.value = '复制失败，请在资源详情页手动选择内容。'
+  }
 }
 
 // 学习行为事件的中文标签，让效果评估看板更易读。
@@ -319,6 +445,7 @@ async function handleSaveProfile() {
     })
     profilePayload.value = payload
     profileNotice.value = '学习画像已确认，后续计划与资源会优先引用这些维度。'
+    focusStage('plan')
   } catch (err) {
     profileError.value = err?.message || '画像保存失败，请稍后重试。'
   } finally {
@@ -387,6 +514,7 @@ async function handleGeneratePlan() {
     }
     studyPlan.value = payload?.plan || null
     planNotice.value = '已生成基础、核心、应用三阶段学习计划与下一步推荐。'
+    focusStage('resource')
   } catch (err) {
     planError.value = err?.message || '学习计划生成失败，请先确认画像后再试。'
   } finally {
@@ -418,6 +546,7 @@ function selectNextStep(item) {
   if (!resourceForm.value.target) resourceForm.value.target = item.detail || item.title || ''
   resourceError.value = ''
   feedbackNotice.value = `已选择「${item.title}」作为资源生成知识点。`
+  focusStage('resource')
 }
 
 function toggleResourceType(type) {
@@ -675,6 +804,10 @@ async function handleGenerateResources() {
       }
     }
     initFeedbackDrafts(generatedResources.value)
+    activeResourceType.value = 'all'
+    if (generatedResources.value.length) {
+      requestAnimationFrame(() => document.querySelector('.resource-output')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    }
     await loadEffectSummary()
   } catch (err) {
     resourceError.value = err?.message || '资源生成失败，请稍后重试。'
@@ -740,6 +873,7 @@ async function handleGenerateMedia(kind) {
     if (payload?.resource?.id) {
       generatedResources.value = [payload.resource, ...generatedResources.value]
       initFeedbackDrafts(generatedResources.value)
+      if (!payload?.url && !payload?.b64Json) startMediaPolling(payload.resource.id)
     }
     mediaNotice.value = kind === 'video'
       ? '真实文生视频任务已完成或已提交，结果已进入资源库。'
@@ -750,6 +884,22 @@ async function handleGenerateMedia(kind) {
   } finally {
     mediaLoading.value = ''
   }
+}
+
+function startMediaPolling(resourceId) {
+  void pollMediaStatus(resourceId, {
+    onUpdate: (status) => {
+      mediaStatuses.value = { ...mediaStatuses.value, [resourceId]: status }
+    },
+    onReady: async () => {
+      const refreshed = await fetchResource(resourceId)
+      generatedResources.value = generatedResources.value.map((item) => item.id === resourceId ? refreshed : item)
+      mediaNotice.value = '真实媒体已经生成完成，可直接预览。'
+    },
+    onError: (error) => {
+      mediaError.value = error?.message || '媒体状态查询失败。'
+    },
+  })
 }
 
 async function handleSubmitFeedback(resource) {
@@ -763,6 +913,7 @@ async function handleSubmitFeedback(resource) {
     feedbackNotice.value = payload?.nextAction || '反馈已记录，画像与推荐策略已更新。'
     // 反馈后刷新画像与学习效果评估，体现“随学随新”闭环。
     await Promise.all([handleRefreshProfile(), loadEffectSummary()])
+    focusStage('effect')
   } catch (err) {
     feedbackError.value = err?.message || '反馈提交失败，请稍后重试。'
   } finally {
@@ -773,6 +924,7 @@ async function handleSubmitFeedback(resource) {
 // onQuizCompleted 答题后刷新画像、学习效果评估与掌握度，体现测评闭环。
 async function onQuizCompleted() {
   await Promise.all([handleRefreshProfile(), loadEffectSummary(), loadMastery()])
+  focusStage('effect')
 }
 
 // handleLoadSafetyReport 拉取/收起单个资源的安全与防幻觉审查报告。
@@ -799,6 +951,36 @@ async function handleLoadSafetyReport(resource) {
     }
   } finally {
     safetyLoading.value = { ...safetyLoading.value, [resource.id]: false }
+  }
+}
+
+async function handleSafetyRegenerate(resource) {
+  if (!resource?.id || safetyRegeneratingId.value) return
+  safetyRegeneratingId.value = resource.id
+  resourceError.value = ''
+  const previousResources = [...generatedResources.value]
+  const report = safetyReports.value[resource.id]
+  const reviewAdvice = [...(report?.risks || []), ...(report?.suggestions || [])].join('；')
+  try {
+    const payload = await generateResourceVariant(resource.id, {
+      mode: 'simplify',
+      difficulty: 'normal',
+      target: `根据安全审查意见重新生成，修正事实性、来源与表达问题：${reviewAdvice || '补充可核验依据并避免绝对化表述'}`,
+    })
+    activeJob.value = payload?.job || null
+    if (activeJob.value?.id && activeJob.value.status !== 'completed') {
+      await streamJobUntilDone(activeJob.value.id)
+    }
+    const regenerated = generatedResources.value
+    generatedResources.value = [...regenerated, ...previousResources]
+      .filter((item, index, list) => list.findIndex((candidate) => candidate.id === item.id) === index)
+    initFeedbackDrafts(generatedResources.value)
+    feedbackNotice.value = '已按安全审查意见生成修订版本，原资源保留用于审计对比。'
+  } catch (err) {
+    resourceError.value = err?.message || '按审查意见重新生成失败。'
+    generatedResources.value = previousResources
+  } finally {
+    safetyRegeneratingId.value = null
   }
 }
 
@@ -914,6 +1096,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   stopPolling()
   stopStreaming()
+  stopMediaPolling()
 })
 </script>
 
@@ -931,22 +1114,25 @@ onBeforeUnmount(() => {
       </RouterLink>
 
       <nav class="a3-steps" aria-label="演示主线步骤">
-        <span
-          v-for="step in [
-            { id: 1, label: '画像' },
-            { id: 3, label: '计划/推荐' },
-            { id: 4, label: '资源' },
-            { id: 5, label: '反馈' },
-          ]"
-          :key="step.id"
+        <button
+          v-for="step in workflowStages"
+          :key="step.key"
+          type="button"
           class="a3-step"
-          :class="{ 'a3-step--active': currentStep >= step.id }"
+          :class="{ 'a3-step--active': focusedStage === step.key, 'a3-step--complete': step.complete }"
+          :title="step.summary"
+          @click="focusStage(step.key)"
         >
           {{ step.label }}
-        </span>
+          <CheckCircle2 v-if="step.complete" :size="13" aria-hidden="true" />
+        </button>
       </nav>
 
       <div class="a3-topbar__actions topbar__actions">
+        <button type="button" class="demo-mode-btn" :class="{ 'demo-mode-btn--active': demoMode }" @click="toggleDemoMode">
+          <Sparkles :size="15" aria-hidden="true" />
+          {{ demoMode ? '演示模式已开启' : '比赛演示模式' }}
+        </button>
         <button
           type="button"
           class="theme-toggle-btn a3-theme-toggle"
@@ -973,8 +1159,27 @@ onBeforeUnmount(() => {
     </header>
 
     <main class="a3-shell">
+      <section v-if="demoMode" class="demo-banner">
+        <div>
+          <span>Competition Demo</span>
+          <strong>评委演示模式</strong>
+          <p>已预填示例学习需求、知识点与五类资源；高级参数默认收起，按顶部步骤连续演示即可。</p>
+        </div>
+        <button type="button" class="ghost-mini" @click="demoMode = false">退出演示模式</button>
+      </section>
+
+      <section class="workflow-summary" aria-label="当前演示进度">
+        <article v-for="(stage, index) in workflowStages" :key="stage.key" :class="{ 'workflow-summary__item--active': focusedStage === stage.key }">
+          <span>{{ index + 1 }}</span>
+          <div>
+            <strong>{{ stage.label }}</strong>
+            <small>{{ stage.summary }}</small>
+          </div>
+        </article>
+      </section>
+
       <!-- 步骤 1+2：对话式画像与六维展示 -->
-      <section class="a3-card panel-card">
+      <section v-show="focusedStage === 'profile'" class="a3-card panel-card">
         <div class="card-heading">
           <span class="card-badge">1</span>
           <div>
@@ -1045,7 +1250,7 @@ onBeforeUnmount(() => {
       </section>
 
       <!-- 步骤 3+4：学习计划与下一步推荐 -->
-      <section class="a3-card panel-card">
+      <section v-show="focusedStage === 'plan'" class="a3-card panel-card">
         <div class="card-heading">
           <span class="card-badge">2</span>
           <div>
@@ -1111,7 +1316,7 @@ onBeforeUnmount(() => {
       </section>
 
       <!-- 步骤 5：资源生成与反馈 -->
-      <section class="a3-card panel-card">
+      <section v-show="focusedStage === 'resource'" class="a3-card panel-card">
         <div class="card-heading">
           <span class="card-badge">3</span>
           <div>
@@ -1155,37 +1360,52 @@ onBeforeUnmount(() => {
           </button>
         </div>
 
-        <div class="image-upload">
-          <div class="image-upload__head">
-            <span>多模态图片（可选）</span>
-            <small>上传教材页 / 题目截图 / 手写笔记，VisionReaderAgent 会读图作为生成依据</small>
-          </div>
-          <div class="image-upload__list">
-            <div v-for="(image, index) in attachedImages" :key="index" class="image-thumb">
-              <img :src="image.dataUrl" :alt="image.name" />
-              <button type="button" class="image-thumb__remove" aria-label="移除图片" @click="removeImage(index)">×</button>
-            </div>
-            <label v-if="attachedImages.length < 3" class="image-add">
-              <input type="file" accept="image/*" multiple hidden @change="onSelectImages" />
-              <ImagePlus :size="18" aria-hidden="true" />
-              <span>添加图片</span>
-            </label>
-          </div>
-        </div>
+        <button type="button" class="advanced-toggle" @click="showAdvancedGeneration = !showAdvancedGeneration">
+          <ImagePlus :size="16" aria-hidden="true" />
+          {{ showAdvancedGeneration ? '收起多模态与高级设置' : '展开多模态与高级设置' }}
+          <small>图片输入、媒体提示词、真实配图与短视频</small>
+        </button>
 
-        <div class="button-row button-row--end">
+        <div v-if="showAdvancedGeneration" class="advanced-generation">
+          <div class="image-upload">
+            <div class="image-upload__head">
+              <span>多模态图片（可选）</span>
+              <small>上传教材页 / 题目截图 / 手写笔记，VisionReaderAgent 会读图作为生成依据</small>
+            </div>
+            <div class="image-upload__list">
+              <div v-for="(image, index) in attachedImages" :key="index" class="image-thumb">
+                <img :src="image.dataUrl" :alt="image.name" />
+                <button type="button" class="image-thumb__remove" aria-label="移除图片" @click="removeImage(index)">×</button>
+              </div>
+              <label v-if="attachedImages.length < 3" class="image-add">
+                <input type="file" accept="image/*" multiple hidden @change="onSelectImages" />
+                <ImagePlus :size="18" aria-hidden="true" />
+                <span>添加图片</span>
+              </label>
+            </div>
+          </div>
+
           <label class="field-block field-block--wide media-prompt-field">
             <span>图片/视频创意提示（可选）</span>
             <textarea v-model="mediaPrompt" rows="2" placeholder="例如：用可视化流程展示智能体如何调用工具完成任务" />
           </label>
-          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('image')">
-            <ImagePlus :size="16" aria-hidden="true" />
-            {{ mediaLoading === 'image' ? '生成配图中' : '生成教学配图' }}
-          </button>
-          <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('video')">
-            <PlayCircle :size="16" aria-hidden="true" />
-            {{ mediaLoading === 'video' ? '生成视频中' : '生成短视频' }}
-          </button>
+          <div class="button-row button-row--end">
+            <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('image')">
+              <ImagePlus :size="16" aria-hidden="true" />
+              {{ mediaLoading === 'image' ? '生成配图中' : '生成教学配图' }}
+            </button>
+            <button type="button" class="secondary-action" :disabled="!!mediaLoading" @click="handleGenerateMedia('video')">
+              <PlayCircle :size="16" aria-hidden="true" />
+              {{ mediaLoading === 'video' ? '生成视频中' : '生成短视频' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="generation-submit">
+          <div>
+            <strong>生成 {{ resourceForm.resourceTypes.length }} 类个性化资源</strong>
+            <small>默认使用当前画像、推荐路径和知识图谱作为依据</small>
+          </div>
           <button type="button" class="primary-action" :disabled="resourceLoading" @click="handleGenerateResources">
             <Sparkles v-if="!resourceLoading" :size="16" aria-hidden="true" />
             <RefreshCcw v-else :size="16" aria-hidden="true" />
@@ -1193,7 +1413,10 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <p v-if="resourceError" class="inline-error">{{ resourceError }}</p>
-        <p v-if="mediaError" class="inline-error">{{ mediaError }}</p>
+        <div v-if="mediaError" class="inline-error media-error-row">
+          <span>{{ mediaError }}</span>
+          <button v-if="demoMode" type="button" class="ghost-mini" @click="showDemoFallbackMedia">展示离线备用配图</button>
+        </div>
         <p v-if="mediaNotice" class="inline-success">{{ mediaNotice }}</p>
         <p v-if="feedbackError" class="inline-error">{{ feedbackError }}</p>
         <p v-if="feedbackNotice" class="inline-success">{{ feedbackNotice }}</p>
@@ -1209,17 +1432,38 @@ onBeforeUnmount(() => {
           <div class="progress-bar">
             <span :style="{ width: `${activeJob.progress || stepProgress}%` }" />
           </div>
-          <div class="agent-steps">
-            <article v-for="step in activeJob.steps || []" :key="step.id || step.agentKey" class="agent-step">
+          <div class="agent-flow" aria-label="多智能体协作流程">
+            <button
+              v-for="(step, index) in activeJob.steps || []"
+              :key="step.id || step.agentKey"
+              type="button"
+              class="agent-node"
+              :class="[`agent-node--${step.status}`, { 'agent-node--expanded': expandedAgentKey === step.agentKey }]"
+              @click="expandedAgentKey = expandedAgentKey === step.agentKey ? '' : step.agentKey"
+            >
               <span class="agent-step__status" :class="`agent-step__status--${step.status}`" />
               <div>
+                <small>Agent {{ index + 1 }}</small>
                 <strong>{{ step.agentName }}</strong>
-                <p>{{ step.summary }}</p>
+                <em>{{ agentDuration(step) }}</em>
               </div>
-            </article>
+              <span v-if="index < (activeJob.steps || []).length - 1" class="agent-node__arrow">→</span>
+            </button>
           </div>
+          <article v-if="expandedAgentKey" class="agent-evidence">
+            <template v-for="step in activeJob.steps || []" :key="step.agentKey">
+              <div v-if="step.agentKey === expandedAgentKey">
+                <span>{{ step.role }}</span>
+                <strong>{{ step.agentName }} 的本轮产出</strong>
+                <p>{{ step.summary }}</p>
+                <small>状态：{{ step.status }} · 开始：{{ formatDate(step.startedAt) }} · 耗时：{{ agentDuration(step) }}</small>
+              </div>
+            </template>
+          </article>
 
-          <div class="button-row button-row--end export-actions">
+          <details class="technical-details">
+            <summary>技术详情与比赛物料</summary>
+            <div class="button-row button-row--end export-actions">
             <button v-if="activeJob.status === 'failed'" type="button" class="secondary-action" :disabled="retryingJob" @click="handleRetryJob">
               <RefreshCcw :size="16" aria-hidden="true" />
               {{ retryingJob ? '重试中' : '重试任务' }}
@@ -1236,10 +1480,11 @@ onBeforeUnmount(() => {
               <FileText :size="16" aria-hidden="true" />
               {{ exportLoading ? '导出中' : '导出 Markdown' }}
             </button>
-          </div>
-          <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
-          <p v-if="demoScriptError" class="inline-error">{{ demoScriptError }}</p>
-          <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+            </div>
+            <p v-if="outlineError" class="inline-error">{{ outlineError }}</p>
+            <p v-if="demoScriptError" class="inline-error">{{ demoScriptError }}</p>
+            <p v-if="exportError" class="inline-error">{{ exportError }}</p>
+          </details>
 
           <div v-if="presentationOutline" class="outline-box">
             <div class="outline-box__head">
@@ -1293,15 +1538,54 @@ onBeforeUnmount(() => {
         </section>
 
         <section v-if="hasResources" class="resource-output">
-          <div class="section-title">
-            <FileText :size="18" aria-hidden="true" />
-            <strong>本次生成结果</strong>
+          <div class="result-summary">
+            <div>
+              <span>Generation Complete</span>
+              <strong>已生成 {{ generatedResources.length }} 份个性化学习成果</strong>
+              <small>覆盖 {{ availableResourceTypes.length }} 种资源类型，依据画像、路径和知识图谱生成</small>
+            </div>
+            <div class="result-summary__metrics">
+              <article><strong>{{ readyResourceCount }}</strong><span>可学习</span></article>
+              <article :class="{ 'result-summary__metric--danger': blockedResourceCount }"><strong>{{ blockedResourceCount }}</strong><span>已阻断</span></article>
+            </div>
           </div>
-          <article v-for="resource in generatedResources" :key="resource.id" class="resource-card">
+
+          <div class="resource-tabs" role="tablist" aria-label="资源类型">
+            <button type="button" :class="{ 'resource-tab--active': activeResourceType === 'all' }" @click="activeResourceType = 'all'">
+              全部 {{ generatedResources.length }}
+            </button>
+            <button
+              v-for="tab in availableResourceTypes"
+              :key="tab.value"
+              type="button"
+              :class="{ 'resource-tab--active': activeResourceType === tab.value }"
+              @click="activeResourceType = tab.value"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <article v-for="resource in visibleResources" :key="resource.id" class="resource-card" :class="`resource-card--${resourceSafetyStatus(resource)}`">
             <div class="resource-card__head">
-              <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
+              <div class="resource-card__meta">
+                <span>{{ resource.typeLabel || typeLabel(resource.resourceType) }}</span>
+                <em class="safety-pill" :class="`safety-pill--${resourceSafetyStatus(resource)}`">
+                  {{ resourceSafetyLabel(resource) }}
+                </em>
+              </div>
               <strong>{{ resource.title }}</strong>
               <small>{{ resource.reason }}</small>
+            </div>
+            <div v-if="resourceSafetyStatus(resource) === 'blocked'" class="blocked-banner">
+              <CheckCircle2 :size="18" aria-hidden="true" />
+              <div>
+                <strong>该资源已被安全审查阻断</strong>
+                <p>资源保留用于审计对比，但不会进入学习推送。请查看风险原因后生成修订版本。</p>
+              </div>
+              <button type="button" class="secondary-action" :disabled="safetyRegeneratingId === resource.id" @click="handleSafetyRegenerate(resource)">
+                <RefreshCcw :size="15" aria-hidden="true" />
+                {{ safetyRegeneratingId === resource.id ? '修订中' : '按审查意见重新生成' }}
+              </button>
             </div>
             <ResourceContent :content="resource.content" :format="resource.format" />
 
@@ -1311,12 +1595,16 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="resource-card__actions">
+              <button v-if="resource.resourceType === 'coding_case'" type="button" class="ghost-mini" @click="copyResourceContent(resource)">
+                <FileText :size="15" aria-hidden="true" />
+                {{ copiedResourceId === resource.id ? '已复制' : '复制代码案例' }}
+              </button>
               <button v-if="speechSupported" type="button" class="ghost-mini" @click="speakResource(resource)">
                 <PlayCircle :size="15" aria-hidden="true" />
                 {{ speakingId === `resource-${resource.id}` ? '停止朗读' : '语音朗读' }}
               </button>
               <button
-                v-if="isMediaResource(resource)"
+                v-if="isMediaResource(resource) && !resource.demoFallback"
                 type="button"
                 class="ghost-mini"
                 :disabled="mediaStatusLoading[resource.id]"
@@ -1325,13 +1613,23 @@ onBeforeUnmount(() => {
                 <RefreshCcw :size="15" aria-hidden="true" />
                 {{ mediaStatusLoading[resource.id] ? '刷新中' : '媒体状态' }}
               </button>
-              <button type="button" class="ghost-mini" :disabled="qualityLoading[resource.id]" @click="handleLoadQualityReport(resource)">
+              <button v-if="!resource.demoFallback" type="button" class="ghost-mini" :disabled="qualityLoading[resource.id]" @click="handleLoadQualityReport(resource)">
                 <Sparkles :size="15" aria-hidden="true" />
                 {{ qualityReports[resource.id] ? '收起质量' : qualityLoading[resource.id] ? '评分中' : '质量评分' }}
               </button>
-              <button type="button" class="ghost-mini" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
+              <button v-if="!resource.demoFallback" type="button" class="ghost-mini" :disabled="safetyLoading[resource.id]" @click="handleLoadSafetyReport(resource)">
                 <CheckCircle2 :size="15" aria-hidden="true" />
                 {{ safetyReports[resource.id] ? '收起安全报告' : safetyLoading[resource.id] ? '审查中' : '安全审查' }}
+              </button>
+              <button
+                v-if="safetyReports[resource.id]?.status === 'attention_required'"
+                type="button"
+                class="ghost-mini"
+                :disabled="safetyRegeneratingId === resource.id"
+                @click="handleSafetyRegenerate(resource)"
+              >
+                <RefreshCcw :size="15" aria-hidden="true" />
+                按建议修订
               </button>
             </div>
 
@@ -1408,7 +1706,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div v-if="feedbackDrafts[resource.id]" class="feedback-box">
+            <div v-if="feedbackDrafts[resource.id] && resourceSafetyStatus(resource) !== 'blocked'" class="feedback-box">
               <div class="feedback-box__head">
                 <strong>学习反馈</strong>
                 <small>用于更新学习效果评估与下一步推荐</small>
@@ -1455,17 +1753,10 @@ onBeforeUnmount(() => {
           <p>选择知识点并生成资源包后，这里会展示多智能体协作步骤、资源正文与学习反馈入口。</p>
         </div>
 
-        <QuizPanel
-          class="a3-quiz"
-          :knowledge-id="resourceForm.knowledgeId"
-          :knowledge-name="resourceForm.knowledgeName"
-          :course-title="resourceForm.courseTitle"
-          @completed="onQuizCompleted"
-        />
       </section>
 
       <!-- 步骤 6：学习效果评估看板 -->
-      <section class="a3-card panel-card">
+      <section v-show="focusedStage === 'effect'" class="a3-card panel-card">
         <div class="card-heading card-heading--with-action">
           <div class="card-heading__main">
             <span class="card-badge">4</span>
@@ -1478,6 +1769,21 @@ onBeforeUnmount(() => {
             <FileText :size="16" aria-hidden="true" />
             {{ reportLoading ? '生成中' : '生成学情报告' }}
           </button>
+        </div>
+
+        <div class="effect-learning-grid">
+          <QuizPanel
+            class="a3-quiz"
+            :knowledge-id="resourceForm.knowledgeId"
+            :knowledge-name="resourceForm.knowledgeName"
+            :course-title="resourceForm.courseTitle"
+            @completed="onQuizCompleted"
+          />
+          <div class="effect-guide">
+            <span>闭环验证</span>
+            <strong>做题 → 更新掌握度 → 刷新画像 → 调整推荐</strong>
+            <p>完成三道随堂练习后，系统会把正误结果写回学习行为，并更新下方效果指标。</p>
+          </div>
         </div>
 
         <p v-if="reportError" class="inline-error">{{ reportError }}</p>
@@ -3120,6 +3426,498 @@ onBeforeUnmount(() => {
 @media (max-width: 720px) {
   .a3-topbar {
     margin: 8px 8px 0;
+  }
+}
+
+/* Competition-focused progressive workflow */
+.demo-mode-btn,
+.advanced-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  padding: 0 0.85rem;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.demo-mode-btn--active {
+  border-color: var(--accent);
+  color: var(--accent-light);
+  background: var(--accent-glow);
+}
+
+.a3-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.a3-step--complete:not(.a3-step--active) {
+  color: var(--accent-light);
+}
+
+.demo-banner,
+.workflow-summary,
+.result-summary,
+.effect-learning-grid {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-color: var(--accent);
+  background:
+    linear-gradient(110deg, var(--accent-glow), transparent 60%),
+    var(--bg-panel);
+}
+
+.demo-banner div {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.demo-banner span,
+.result-summary > div > span,
+.effect-guide span {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-banner p,
+.effect-guide p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.workflow-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.workflow-summary article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.85rem;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.workflow-summary article:last-child {
+  border-right: 0;
+}
+
+.workflow-summary article > span {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  background: var(--bg-hover);
+  font-weight: 900;
+}
+
+.workflow-summary article div {
+  min-width: 0;
+}
+
+.workflow-summary strong,
+.workflow-summary small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-summary small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.workflow-summary__item--active {
+  background: var(--accent-glow);
+}
+
+.workflow-summary__item--active > span {
+  color: #07110f;
+  background: var(--accent);
+}
+
+.advanced-toggle {
+  width: 100%;
+  justify-content: flex-start;
+  margin: 0.8rem 0;
+  border-style: dashed;
+}
+
+.advanced-toggle small {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.advanced-generation {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem;
+  background: var(--bg-subtle);
+}
+
+.generation-submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem;
+  background: var(--bg-subtle);
+}
+
+.generation-submit strong,
+.generation-submit small {
+  display: block;
+}
+
+.generation-submit small {
+  margin-top: 0.2rem;
+  color: var(--text-muted);
+}
+
+.media-error-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.agent-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+
+.agent-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: start;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.72rem;
+  color: var(--text-primary);
+  background: var(--bg-panel);
+  text-align: left;
+  cursor: pointer;
+}
+
+.agent-node:hover,
+.agent-node--expanded {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.agent-node div,
+.agent-node strong,
+.agent-node small,
+.agent-node em {
+  min-width: 0;
+  display: block;
+}
+
+.agent-node strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-node small,
+.agent-node em {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-style: normal;
+}
+
+.agent-node__arrow {
+  position: absolute;
+  top: 50%;
+  right: -0.57rem;
+  z-index: 2;
+  color: var(--accent);
+  transform: translateY(-50%);
+}
+
+.agent-evidence,
+.technical-details {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.8rem;
+  background: var(--bg-subtle);
+}
+
+.agent-evidence div {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.agent-evidence span,
+.agent-evidence small {
+  color: var(--text-muted);
+}
+
+.agent-evidence p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.technical-details summary {
+  color: var(--text-primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.technical-details[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+.result-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  background:
+    linear-gradient(110deg, var(--accent-glow), transparent 55%),
+    var(--bg-panel);
+}
+
+.result-summary > div > strong,
+.result-summary > div > small {
+  display: block;
+}
+
+.result-summary > div > small {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+}
+
+.result-summary__metrics {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.result-summary__metrics article {
+  min-width: 5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.55rem;
+  background: var(--bg-subtle);
+  text-align: center;
+}
+
+.result-summary__metrics strong,
+.result-summary__metrics span {
+  display: block;
+}
+
+.result-summary__metrics strong {
+  color: var(--accent-light);
+  font-size: 1.2rem;
+}
+
+.result-summary__metric--danger strong {
+  color: var(--danger);
+}
+
+.resource-tabs {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.resource-tabs button {
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 0 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.resource-tabs .resource-tab--active {
+  border-color: var(--accent);
+  color: #07110f;
+  background: var(--accent);
+}
+
+.resource-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.safety-pill {
+  border: 1px solid currentColor;
+  border-radius: var(--radius-full);
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.safety-pill--passed {
+  color: var(--success);
+}
+
+.safety-pill--attention_required {
+  color: var(--warning);
+}
+
+.safety-pill--blocked {
+  color: var(--danger);
+}
+
+.safety-pill--demo {
+  color: var(--info);
+}
+
+.resource-card--blocked {
+  border-color: color-mix(in srgb, var(--danger) 55%, transparent);
+}
+
+.blocked-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  margin: 0.75rem 0.9rem 0;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 9%, transparent);
+}
+
+.blocked-banner p {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+}
+
+.effect-learning-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(15rem, 0.7fr);
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+  padding: 0.8rem;
+}
+
+.effect-guide {
+  display: grid;
+  align-content: center;
+  gap: 0.45rem;
+  border-radius: var(--radius-md);
+  padding: 0.9rem;
+  background: var(--accent-glow);
+}
+
+@media (max-width: 860px) {
+  .workflow-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-summary article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .workflow-summary article:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .effect-learning-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .demo-banner,
+  .generation-submit,
+  .result-summary,
+  .media-error-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workflow-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .workflow-summary article {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .workflow-summary article:last-child {
+    border-bottom: 0;
+  }
+
+  .advanced-toggle small {
+    display: none;
+  }
+
+  .agent-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-node__arrow {
+    display: none;
+  }
+
+  .blocked-banner {
+    grid-template-columns: 1fr;
+  }
+
+  .result-summary__metrics {
+    width: 100%;
+  }
+
+  .result-summary__metrics article {
+    flex: 1;
   }
 }
 </style>

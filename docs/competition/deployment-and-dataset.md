@@ -27,6 +27,8 @@
 | `JWT_SECRET` | 登录令牌密钥 | 是 |
 | `DEEPSEEK_API_KEY` / `BaseURL` / `ChatModel` / `VisionModel` | 主大模型 | 否（未配置时画像/资源/审查走本地模板兜底）|
 | `FallbackBaseURL` / `FallbackChatModel` / `FallbackVisionModel` | 备用大模型 | 否 |
+| `OPENAI_*_MODEL` / `OPENAI_*_ENDPOINT` | 真实图片、视频生成模型及创建任务端点 | 否 |
+| `OPENAI_IMAGE_STATUS_ENDPOINT` / `OPENAI_VIDEO_STATUS_ENDPOINT` | 异步媒体状态查询端点，支持 `{id}` 任务号占位符 | 异步媒体模型必填 |
 
 > 未配置大模型时系统仍可完整演示：画像抽取、资源生成、安全审查、练习出题均有本地模板兜底。
 
@@ -39,6 +41,8 @@ docker compose -f docker/neo4j/docker-compose.yml up -d --build
 # 启动 MySQL、Redis、Neo4j（含种子数据）、Go 后端
 # 健康检查：GET /healthz、GET /readyz
 ```
+
+`docker-compose.yml` 已按 `000001`～`000011` 顺序初始化全部业务表；`scripts/start-demo.ps1` 还会调用 `scripts/apply-migrations.ps1`，为已有 MySQL 数据卷补齐缺失的 A3 迁移。若 8080 被占用，可使用 `-HttpPort 18080` 指定演示端口。
 
 ### 方式 B：本地分别启动
 
@@ -61,7 +65,7 @@ npm run build
 ### 健康检查与登录
 
 - `GET /healthz`、`GET /readyz` 验证服务与依赖可用。
-- 首次使用通过 `/register` 注册学生账号，登录后即可进入 `/a3-agent` 学习智能体工作台。
+- 首次使用可通过 `/register` 自助注册学生账号并自动建立登录会话；公开注册固定创建 `student` 角色，不允许提升为教师或管理员。
 
 ## 四、构建与测试
 
@@ -82,8 +86,9 @@ npm run build                 # 生产构建（含编译期校验）
 2. 输入一段自然语言学习情况 → 生成并确认六维画像。
 3. 一键生成三阶段学习计划与带推荐依据的下一步知识点。
 4. 选知识点（可上传图片）→ 生成个性化资源包（SSE 实时进度 + 多智能体步骤）。
-5. 查看资源依据来源与安全审查；可语音朗读；一键导出 PPT 大纲 / 演示脚本 / Markdown。
-6. 做随堂练习 → 回写画像易错点与真实掌握度 → 提交反馈 → 学习效果评估更新 → 按最新掌握度重新规划。
+5. 查看资源依据来源与安全审查；被判定为 `blocked` 的资源不会进入推送流；可语音朗读；一键导出 PPT 大纲 / 演示脚本 / Markdown。
+6. 图片/视频模型若返回异步任务号，前端自动轮询后端，后端向模型提供商查询状态并把最终 URL/Base64 结果回写资源库。
+7. 做随堂练习 → 回写画像易错点与真实掌握度 → 提交反馈 → 学习效果评估更新 → 按最新掌握度重新规划。
 
 ## 六、数据集说明
 

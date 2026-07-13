@@ -44,6 +44,21 @@ func (h *Handler) Login(ctx *gin.Context) {
 	result.Success(ctx, response)
 }
 
+// Register creates a student account and returns the initial login session.
+func (h *Handler) Register(ctx *gin.Context) {
+	var request dto.RegisterRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		result.Error(ctx, apperr.ErrBadRequest.HTTPStatus, apperr.ErrBadRequest.Code, apperr.ErrBadRequest.Message)
+		return
+	}
+	response, err := h.authService.Register(ctx.Request.Context(), request.Name, request.Email, request.Password)
+	if err != nil {
+		h.writeError(ctx, err)
+		return
+	}
+	result.Success(ctx, response)
+}
+
 // Me 返回当前登录用户信息。
 //
 // 当前用户标识必须由鉴权中间件提前写入上下文；若缺失，说明请求未正确经过受保护链路，

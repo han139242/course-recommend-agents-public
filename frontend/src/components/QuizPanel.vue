@@ -166,10 +166,10 @@ defineExpose({ reset })
 .quiz-panel {
   display: grid;
   gap: 0.75rem;
-  border: 1px solid rgba(33, 95, 154, 0.16);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.9rem;
-  background: #f8fbfd;
+  background: var(--bg-subtle);
 }
 
 .quiz-panel__head {
@@ -185,7 +185,7 @@ defineExpose({ reset })
 }
 
 .quiz-panel__head small {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .quiz-btn {
@@ -202,8 +202,8 @@ defineExpose({ reset })
 }
 
 .quiz-btn--primary {
-  color: #ffffff;
-  background: #215f9a;
+  color: #07110f;
+  background: var(--accent);
 }
 
 .quiz-btn:disabled {
@@ -227,10 +227,10 @@ defineExpose({ reset })
 .quiz-item {
   display: grid;
   gap: 0.5rem;
-  border: 1px solid rgba(90, 112, 132, 0.14);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.75rem;
-  background: #ffffff;
+  background: var(--bg-panel);
 }
 
 .quiz-stem {
@@ -250,11 +250,11 @@ defineExpose({ reset })
   align-items: center;
   gap: 0.55rem;
   width: 100%;
-  border: 1px solid rgba(90, 112, 132, 0.2);
+  border: 1px solid var(--border-medium);
   border-radius: 8px;
   padding: 0.55rem 0.65rem;
-  color: #334155;
-  background: #ffffff;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -271,15 +271,15 @@ defineExpose({ reset })
   height: 1.4rem;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #eef6fb;
-  color: #176b87;
+  background: var(--accent-glow);
+  color: var(--accent-light);
   font-size: 0.8rem;
   font-weight: 800;
 }
 
 .quiz-option--picked {
-  border-color: rgba(33, 95, 154, 0.55);
-  background: #eff8ff;
+  border-color: var(--accent);
+  background: var(--accent-glow);
 }
 
 .quiz-option--correct {
@@ -297,7 +297,7 @@ defineExpose({ reset })
   align-items: flex-start;
   gap: 0.35rem;
   margin: 0;
-  color: #176b87;
+  color: var(--accent-light);
   font-size: 0.85rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
@@ -311,13 +311,13 @@ defineExpose({ reset })
 .quiz-score {
   margin: 0;
   font-weight: 800;
-  color: #176b87;
+  color: var(--accent-light);
 }
 
 .quiz-score span {
   display: block;
   margin-top: 0.2rem;
-  color: #64748b;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 </style>

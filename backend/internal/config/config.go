@@ -177,14 +177,16 @@ func buildAIConfig() AIConfig {
 	deepseekKey := strings.TrimSpace(os.Getenv("DEEPSEEK_API_KEY"))
 
 	openAIProvider := AIProviderConfig{
-		APIKey:        openAIKey,
-		BaseURL:       strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")),
-		ChatModel:     strings.TrimSpace(os.Getenv("OPENAI_MODEL")),
-		VisionModel:   strings.TrimSpace(os.Getenv("OPENAI_VISION_MODEL")),
-		ImageModel:    strings.TrimSpace(os.Getenv("OPENAI_IMAGE_MODEL")),
-		ImageEndpoint: strings.TrimSpace(os.Getenv("OPENAI_IMAGE_ENDPOINT")),
-		VideoModel:    strings.TrimSpace(os.Getenv("OPENAI_VIDEO_MODEL")),
-		VideoEndpoint: strings.TrimSpace(os.Getenv("OPENAI_VIDEO_ENDPOINT")),
+		APIKey:              openAIKey,
+		BaseURL:             strings.TrimSpace(os.Getenv("OPENAI_BASE_URL")),
+		ChatModel:           strings.TrimSpace(os.Getenv("OPENAI_MODEL")),
+		VisionModel:         strings.TrimSpace(os.Getenv("OPENAI_VISION_MODEL")),
+		ImageModel:          strings.TrimSpace(os.Getenv("OPENAI_IMAGE_MODEL")),
+		ImageEndpoint:       strings.TrimSpace(os.Getenv("OPENAI_IMAGE_ENDPOINT")),
+		ImageStatusEndpoint: strings.TrimSpace(os.Getenv("OPENAI_IMAGE_STATUS_ENDPOINT")),
+		VideoModel:          strings.TrimSpace(os.Getenv("OPENAI_VIDEO_MODEL")),
+		VideoEndpoint:       strings.TrimSpace(os.Getenv("OPENAI_VIDEO_ENDPOINT")),
+		VideoStatusEndpoint: strings.TrimSpace(os.Getenv("OPENAI_VIDEO_STATUS_ENDPOINT")),
 	}
 	if openAIProvider.BaseURL == "" && openAIProvider.APIKey != "" {
 		openAIProvider.BaseURL = "https://api.openai.com"
@@ -197,14 +199,16 @@ func buildAIConfig() AIConfig {
 	}
 
 	deepseekProvider := AIProviderConfig{
-		APIKey:        deepseekKey,
-		BaseURL:       strings.TrimSpace(os.Getenv("DEEPSEEK_BASE_URL")),
-		ChatModel:     strings.TrimSpace(os.Getenv("DEEPSEEK_MODEL")),
-		VisionModel:   strings.TrimSpace(os.Getenv("DEEPSEEK_VISION_MODEL")),
-		ImageModel:    strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_MODEL")),
-		ImageEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_ENDPOINT")),
-		VideoModel:    strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_MODEL")),
-		VideoEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_ENDPOINT")),
+		APIKey:              deepseekKey,
+		BaseURL:             strings.TrimSpace(os.Getenv("DEEPSEEK_BASE_URL")),
+		ChatModel:           strings.TrimSpace(os.Getenv("DEEPSEEK_MODEL")),
+		VisionModel:         strings.TrimSpace(os.Getenv("DEEPSEEK_VISION_MODEL")),
+		ImageModel:          strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_MODEL")),
+		ImageEndpoint:       strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_ENDPOINT")),
+		ImageStatusEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_IMAGE_STATUS_ENDPOINT")),
+		VideoModel:          strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_MODEL")),
+		VideoEndpoint:       strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_ENDPOINT")),
+		VideoStatusEndpoint: strings.TrimSpace(os.Getenv("DEEPSEEK_VIDEO_STATUS_ENDPOINT")),
 	}
 	if deepseekProvider.BaseURL == "" && deepseekProvider.APIKey != "" {
 		deepseekProvider.BaseURL = "https://api.deepseek.com"
@@ -220,22 +224,26 @@ func buildAIConfig() AIConfig {
 	)
 
 	return AIConfig{
-		APIKey:                primary.APIKey,
-		BaseURL:               primary.BaseURL,
-		ChatModel:             primary.ChatModel,
-		VisionModel:           primary.VisionModel,
-		ImageModel:            primary.ImageModel,
-		ImageEndpoint:         primary.ImageEndpoint,
-		VideoModel:            primary.VideoModel,
-		VideoEndpoint:         primary.VideoEndpoint,
-		FallbackAPIKey:        fallback.APIKey,
-		FallbackBaseURL:       fallback.BaseURL,
-		FallbackChatModel:     fallback.ChatModel,
-		FallbackVisionModel:   fallback.VisionModel,
-		FallbackImageModel:    fallback.ImageModel,
-		FallbackImageEndpoint: fallback.ImageEndpoint,
-		FallbackVideoModel:    fallback.VideoModel,
-		FallbackVideoEndpoint: fallback.VideoEndpoint,
+		APIKey:                      primary.APIKey,
+		BaseURL:                     primary.BaseURL,
+		ChatModel:                   primary.ChatModel,
+		VisionModel:                 primary.VisionModel,
+		ImageModel:                  primary.ImageModel,
+		ImageEndpoint:               primary.ImageEndpoint,
+		ImageStatusEndpoint:         primary.ImageStatusEndpoint,
+		VideoModel:                  primary.VideoModel,
+		VideoEndpoint:               primary.VideoEndpoint,
+		VideoStatusEndpoint:         primary.VideoStatusEndpoint,
+		FallbackAPIKey:              fallback.APIKey,
+		FallbackBaseURL:             fallback.BaseURL,
+		FallbackChatModel:           fallback.ChatModel,
+		FallbackVisionModel:         fallback.VisionModel,
+		FallbackImageModel:          fallback.ImageModel,
+		FallbackImageEndpoint:       fallback.ImageEndpoint,
+		FallbackImageStatusEndpoint: fallback.ImageStatusEndpoint,
+		FallbackVideoModel:          fallback.VideoModel,
+		FallbackVideoEndpoint:       fallback.VideoEndpoint,
+		FallbackVideoStatusEndpoint: fallback.VideoStatusEndpoint,
 	}
 }
 
@@ -273,7 +281,7 @@ func resolveAIProviderOrder(priority string, openAIProvider AIProviderConfig, de
 	selected := make([]AIProviderConfig, 0, 2)
 	for _, name := range order {
 		provider := providers[name]
-		if !provider.Enabled() {
+		if !provider.Enabled() && !provider.ImageEnabled() && !provider.VideoEnabled() {
 			continue
 		}
 		selected = append(selected, provider)

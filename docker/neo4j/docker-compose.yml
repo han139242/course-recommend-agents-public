@@ -21,7 +21,12 @@ services:
       - ../../backend/migrations/000004_create_question_options.sql:/docker-entrypoint-initdb.d/000004.sql:ro
       - ../../backend/migrations/000005_create_student_answers.sql:/docker-entrypoint-initdb.d/000005.sql:ro
       - ../../backend/migrations/000006_create_learning_progress.sql:/docker-entrypoint-initdb.d/000006.sql:ro
-      - ./mysql/init/000007_seed_test_data.sql:/docker-entrypoint-initdb.d/000007.sql:ro
+      - ../../backend/migrations/000007_create_student_study_plan.sql:/docker-entrypoint-initdb.d/000007.sql:ro
+      - ../../backend/migrations/000008_create_learning_profiles.sql:/docker-entrypoint-initdb.d/000008.sql:ro
+      - ../../backend/migrations/000009_create_generated_resources.sql:/docker-entrypoint-initdb.d/000009.sql:ro
+      - ../../backend/migrations/000010_create_resource_feedbacks.sql:/docker-entrypoint-initdb.d/000010.sql:ro
+      - ../../backend/migrations/000011_create_learning_events_and_resource_push_items.sql:/docker-entrypoint-initdb.d/000011.sql:ro
+      - ./mysql/init/000007_seed_test_data.sql:/docker-entrypoint-initdb.d/000012_seed_test_data.sql:ro
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

@@ -7,16 +7,21 @@ import {
   GitBranch,
   Layers3,
   MonitorCheck,
+  Moon,
   Network,
   Presentation,
   Route,
   ShieldCheck,
   Sparkles,
+  Sun,
   Target,
 } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 
 import { APP_NAME } from '../constants/appInfo'
+import { useThemeStore } from '../stores/themeStore'
+
+const themeStore = useThemeStore()
 
 const scoreCards = [
   {
@@ -109,7 +114,7 @@ const demoSteps = [
 const evidenceItems = [
   '固定访问入口：http://127.0.0.1:8080/',
   '一键演示脚本：scripts/start-demo.ps1',
-  '前端测试：13 个测试文件、49 个用例覆盖核心交互和数据转换',
+  '前端测试：17 个测试文件、66 个用例覆盖核心交互和数据转换',
   '生产构建：frontend 构建产物自动输出到 backend/web/dist',
   '健康检查：/healthz 与 /readyz 可验证后端、MySQL、Redis、Neo4j 状态',
 ]
@@ -125,6 +130,16 @@ const evidenceItems = [
           面向 C4 网络技术挑战赛 A 系列作品评分标准，把创新性、技术深度、应用闭环、界面设计和运行效果集中展示给评委。
         </p>
         <div class="showcase-hero__actions">
+          <button
+            type="button"
+            class="theme-toggle-btn"
+            :title="themeStore.theme === 'light' ? '切换夜间模式' : '切换白天模式'"
+            @click="themeStore.toggleTheme"
+          >
+            <Moon v-if="themeStore.theme === 'light'" :size="15" aria-hidden="true" />
+            <Sun v-else :size="15" aria-hidden="true" />
+            <span>{{ themeStore.theme === 'light' ? '夜间' : '白天' }}</span>
+          </button>
           <RouterLink class="primary-btn" to="/">
             <Presentation :size="16" aria-hidden="true" />
             开始现场演示

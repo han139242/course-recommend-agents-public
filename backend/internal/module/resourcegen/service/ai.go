@@ -175,10 +175,11 @@ func (s *Service) aiSafetyReport(reqCtx context.Context, resource resourcegenent
 		return resourcegendto.SafetyReportView{}, false
 	}
 
-	system := "你是多智能体资源生成系统中的 SafetyReviewerAgent，负责审查生成内容的事实性、防幻觉、敏感合规和教学适配性。" +
+	system := "你是多智能体资源生成系统中的 SafetyReviewerAgent，负责审查生成内容的事实性、防幻觉、来源可追溯、敏感合规和教学适配性。" +
 		"只输出 JSON，结构为 {\"status\":\"passed|attention_required|blocked\",\"score\":0-100," +
 		"\"checks\":[{\"key\":\"\",\"name\":\"\",\"status\":\"passed|warning|blocked\",\"conclusion\":\"\"}]," +
-		"\"risks\":[\"\"],\"suggestions\":[\"\"]}。检查项至少覆盖事实性与防幻觉、敏感与违规过滤、格式完整性、教学适配性。使用简体中文。"
+		"\"risks\":[\"\"],\"suggestions\":[\"\"]}。检查项至少覆盖事实性与防幻觉、来源可追溯、敏感与违规过滤、格式完整性、教学适配性。" +
+		"出现伪造来源、明显错误事实、危险代码或无法验证的具体论文/链接时必须 blocked；缺少来源时至少 warning。使用简体中文。"
 	user := "请审查以下学习资源内容：\n\n类型：" + resource.TypeLabel + "\n标题：" + resource.Title +
 		"\n\n正文：\n" + clampRunes(resource.Content, 3000)
 
@@ -216,10 +217,16 @@ func (s *Service) aiSafetyReport(reqCtx context.Context, resource resourcegenent
 		score = 100
 	}
 
+	status := normalizeSafetyStatus(parsed.Status, score)
+	for _, check := range parsed.Checks {
+		if strings.EqualFold(check.Status, "blocked") {
+			status = "blocked"
+		}
+	}
 	return resourcegendto.SafetyReportView{
 		ResourceID:   resource.ID,
 		Title:        resource.Title,
-		Status:       normalizeSafetyStatus(parsed.Status, score),
+		Status:       status,
 		Score:        score,
 		Checks:       parsed.Checks,
 		Risks:        parsed.Risks,

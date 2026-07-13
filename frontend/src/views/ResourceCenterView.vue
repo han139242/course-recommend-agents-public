@@ -7,11 +7,13 @@ import {
   CircleStop,
   FileText,
   ImagePlus,
+  Moon,
   PlayCircle,
   RefreshCcw,
   Save,
   Send,
   Sparkles,
+  Sun,
   Wand2,
 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -24,6 +26,7 @@ import {
   exportResourceJobMarkdown,
   fetchJobEvidencePackage,
   fetchJobReviewSummary,
+  fetchResource,
   fetchResourceFeed,
   fetchResourceDemoScript,
   fetchResourceJob,
@@ -44,12 +47,15 @@ import {
   updateResourceLearningStatus,
 } from '../api/resources'
 import ResourceContent from '../components/ResourceContent.vue'
+import { useMediaStatusPolling } from '../composables/useMediaStatusPolling'
 import { APP_NAME } from '../constants/appInfo'
+import { useThemeStore } from '../stores/themeStore'
 
 const DEFAULT_PROMPT = '我是大二人工智能学生，想做智能体项目，机器学习基础不太稳，希望多一些导图、代码案例和练习题。'
 const RESOURCE_FORM_STORAGE_KEY = 'a3-resource-center-form-v2'
 
 const route = useRoute()
+const themeStore = useThemeStore()
 
 const profilePrompt = ref(DEFAULT_PROMPT)
 const profilePayload = ref(null)
@@ -105,6 +111,7 @@ const qualityReports = ref({})
 const qualityLoading = ref({})
 const mediaStatuses = ref({})
 const mediaStatusLoading = ref({})
+const { poll: pollMediaStatus, stopAll: stopMediaPolling } = useMediaStatusPolling(fetchResourceMediaStatus)
 const compareSelected = ref([])
 const compareLoading = ref(false)
 const compareResult = ref(null)
@@ -544,6 +551,7 @@ async function handleGenerateMedia(kind) {
     if (payload?.resource?.id) {
       generatedResources.value = [payload.resource, ...generatedResources.value]
       initFeedbackDrafts(generatedResources.value)
+      if (!payload?.url && !payload?.b64Json) startMediaPolling(payload.resource.id)
     }
     mediaNotice.value = kind === 'video'
       ? '真实文生视频任务已完成或已提交，结果已进入资源库。'
@@ -556,6 +564,23 @@ async function handleGenerateMedia(kind) {
   } finally {
     mediaLoading.value = ''
   }
+}
+
+function startMediaPolling(resourceId) {
+  void pollMediaStatus(resourceId, {
+    onUpdate: (status) => {
+      mediaStatuses.value = { ...mediaStatuses.value, [resourceId]: status }
+    },
+    onReady: async () => {
+      const refreshed = await fetchResource(resourceId)
+      generatedResources.value = generatedResources.value.map((item) => item.id === resourceId ? refreshed : item)
+      mediaNotice.value = '真实媒体已经生成完成，可直接预览。'
+      await loadResourceLibrary()
+    },
+    onError: (error) => {
+      mediaError.value = error?.message || '媒体状态查询失败。'
+    },
+  })
 }
 
 function onSelectImages(event) {
@@ -1110,14 +1135,17 @@ watch(
   loadResourceLibrary,
 )
 
-onBeforeUnmount(stopPolling)
+onBeforeUnmount(() => {
+  stopPolling()
+  stopMediaPolling()
+})
 </script>
 
 <template>
   <section class="resource-center student-workspace">
-    <header class="resource-topbar">
-      <RouterLink class="resource-brand" to="/">
-        <span class="resource-brand__icon">
+    <header class="resource-topbar topbar student-topbar">
+      <RouterLink class="resource-brand topbar__brand" to="/">
+        <span class="resource-brand__icon topbar__logo">
           <BrainCircuit :size="22" aria-hidden="true" />
         </span>
         <span>
@@ -1127,6 +1155,16 @@ onBeforeUnmount(stopPolling)
       </RouterLink>
 
       <div class="resource-topbar__actions">
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          :title="themeStore.theme === 'light' ? '切换夜间模式' : '切换白天模式'"
+          @click="themeStore.toggleTheme"
+        >
+          <Moon v-if="themeStore.theme === 'light'" :size="15" aria-hidden="true" />
+          <Sun v-else :size="15" aria-hidden="true" />
+          <span>{{ themeStore.theme === 'light' ? '夜间' : '白天' }}</span>
+        </button>
         <RouterLink class="ghost-link" to="/">
           <BookOpen :size="16" aria-hidden="true" />
           知识图谱
@@ -3126,6 +3164,170 @@ onBeforeUnmount(stopPolling)
 
 .library-item--link:hover {
   border-color: rgba(33, 95, 154, 0.42);
+}
+
+/* Match the main knowledge-map workspace and follow its global theme tokens. */
+.resource-center {
+  background:
+    radial-gradient(circle at top left, var(--accent-glow), transparent 30rem),
+    var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.resource-topbar {
+  margin: 12px 12px 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.resource-brand,
+.profile-summary strong,
+.dimension-card p,
+.resource-card strong,
+.library-item strong,
+.agent-step strong,
+.outline-slide strong,
+.review-box strong,
+.checklist-box strong,
+.recommend-item strong {
+  color: var(--text-primary);
+}
+
+.resource-brand small,
+.profile-summary span,
+.profile-summary small,
+.dimension-card small,
+.resource-card small,
+.library-item small,
+.agent-step p,
+.outline-slide p,
+.outline-slide small,
+.recommend-summary,
+.recommend-item small,
+.media-status-box p,
+.media-status-box small,
+.safety-check p,
+.safety-list p,
+.quality-metrics p {
+  color: var(--text-secondary);
+}
+
+.profile-panel,
+.generation-panel,
+.library-panel,
+.dimension-card,
+.timeline-item,
+.type-chip,
+.agent-step,
+.resource-card,
+.export-box,
+.outline-slide,
+.review-box,
+.checklist-box,
+.learning-status-panel,
+.safety-check,
+.feedback-box,
+.recommend-item,
+.library-item,
+.quality-metrics article,
+.compare-result article {
+  border-color: var(--border-subtle);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-summary,
+.agent-progress,
+.outline-box,
+.compare-toolbar,
+.media-status-box,
+.quality-report,
+.compare-result,
+.checklist-box article,
+.failure-box,
+.safety-report,
+.feedback-summary,
+.check-row,
+.image-add {
+  border-color: var(--border-medium);
+  background: var(--bg-subtle);
+}
+
+.field-block span,
+.feedback-form span,
+.regen-actions span {
+  color: var(--text-secondary);
+}
+
+.field-block input,
+.field-block select,
+.field-block textarea,
+.library-filters input,
+.library-filters select,
+.export-box textarea {
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.ghost-link,
+.secondary-action,
+.ghost-mini {
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.ghost-link:hover,
+.secondary-action:hover,
+.ghost-mini:hover,
+.type-chip:hover,
+.library-item--link:hover,
+.recommend-item--link:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.primary-action,
+.resource-brand__icon,
+.ghost-mini--active {
+  color: #07110f;
+  background: var(--accent);
+}
+
+.panel-kicker,
+.dimension-card__head span,
+.resource-card__head span,
+.library-item span,
+.recommend-item span,
+.feedback-summary strong,
+.agent-progress__head em,
+.quality-report__head em,
+.safety-report__head em {
+  color: var(--accent);
+}
+
+.type-chip--active,
+.dimension-card__head span,
+.recommend-item__types em,
+.media-status-box span {
+  border-color: var(--accent-glow);
+  color: var(--accent-light);
+  background: var(--accent-glow);
+}
+
+.resource-card pre,
+.export-box textarea {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+@media (max-width: 860px) {
+  .resource-topbar {
+    margin: 8px 8px 0;
+  }
 }
 
 @media (max-width: 1180px) {

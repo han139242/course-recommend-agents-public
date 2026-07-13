@@ -2,10 +2,28 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/han139242/course-recommend-agents/backend/internal/module/auth/entity"
 )
+
+// CreateStudent adds a student to the in-memory repository.
+func (r *MemoryUserRepository) CreateStudent(_ context.Context, user *entity.User) error {
+	for _, existing := range r.users {
+		if strings.EqualFold(existing.Email, user.Email) {
+			return ErrUserAlreadyExists
+		}
+	}
+	copyUser := *user
+	copyUser.ID = int64(len(r.users) + 1)
+	copyUser.Role = "student"
+	copyUser.Status = UserStatusActive
+	copyUser.CreatedAt = time.Now()
+	r.users = append(r.users, &copyUser)
+	*user = copyUser
+	return nil
+}
 
 // MemoryUserRepository 提供当前阶段的内存用户实现，后续可替换为 MySQL。
 //

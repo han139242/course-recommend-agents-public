@@ -55,6 +55,11 @@ func (r *Repository) CreateResource(ctx context.Context, resource *entity.Genera
 	return r.db.WithContext(ctx).Create(resource).Error
 }
 
+func (r *Repository) UpdateResource(ctx context.Context, resource *entity.GeneratedResource) error {
+	resource.UpdatedAt = time.Now()
+	return r.db.WithContext(ctx).Save(resource).Error
+}
+
 func (r *Repository) CreatePushItem(ctx context.Context, item *entity.ResourcePushItem) error {
 	now := time.Now()
 	item.CreatedAt = now

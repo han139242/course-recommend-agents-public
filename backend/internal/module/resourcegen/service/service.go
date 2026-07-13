@@ -40,6 +40,7 @@ type repository interface {
 	UpdateStep(ctx context.Context, step *resourcegenentity.AgentStep) error
 	CreateResources(ctx context.Context, resources []resourcegenentity.GeneratedResource) error
 	CreateResource(ctx context.Context, resource *resourcegenentity.GeneratedResource) error
+	UpdateResource(ctx context.Context, resource *resourcegenentity.GeneratedResource) error
 	CreatePushItem(ctx context.Context, item *resourcegenentity.ResourcePushItem) error
 	CreateLearningEvent(ctx context.Context, event *resourcegenentity.LearningEvent) error
 	UpdatePushStatusForResource(ctx context.Context, studentID int64, resourceID int64, status string) error
@@ -849,6 +850,13 @@ func (s *Service) generateMedia(ctx context.Context, kind string, request resour
 	if err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
+	mediaReady := media.URL != "" || media.B64JSON != ""
+	jobStatus := resourcegenentity.JobStatusCompleted
+	jobProgress := 100
+	if !mediaReady && media.ProviderTaskID != "" {
+		jobStatus = resourcegenentity.JobStatusRunning
+		jobProgress = 70
+	}
 
 	job := &resourcegenentity.GenerationJob{
 		StudentID:     studentID,
@@ -856,8 +864,8 @@ func (s *Service) generateMedia(ctx context.Context, kind string, request resour
 		KnowledgeName: genCtx.KnowledgeName,
 		CourseTitle:   genCtx.CourseTitle,
 		Target:        genCtx.Target,
-		Status:        resourcegenentity.JobStatusCompleted,
-		Progress:      100,
+		Status:        jobStatus,
+		Progress:      jobProgress,
 		CurrentAgent:  mediaAgentName(kind),
 	}
 	if err := s.repo.CreateJob(ctx, job); err != nil {
@@ -865,22 +873,32 @@ func (s *Service) generateMedia(ctx context.Context, kind string, request resour
 	}
 
 	now := time.Now()
+	stepStatus := resourcegenentity.StepStatusCompleted
+	var endedAt *time.Time = &now
+	if !mediaReady && media.ProviderTaskID != "" {
+		stepStatus = resourcegenentity.StepStatusRunning
+		endedAt = nil
+	}
 	step := &resourcegenentity.AgentStep{
 		JobID:     job.ID,
 		StudentID: studentID,
 		AgentKey:  mediaAgentKey(kind),
 		AgentName: mediaAgentName(kind),
 		Role:      mediaAgentRole(kind),
-		Status:    resourcegenentity.StepStatusCompleted,
+		Status:    stepStatus,
 		Summary:   mediaStepSummary(kind, media),
 		StartedAt: now,
-		EndedAt:   &now,
+		EndedAt:   endedAt,
 	}
 	if err := s.repo.CreateStep(ctx, step); err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
 	}
 
 	content := marshalMediaContent(kind, media, prompt)
+	resourceStatus := resourcegenentity.ResourceStatusReady
+	if !mediaReady {
+		resourceStatus = resourcegenentity.ResourceStatusPending
+	}
 	resource := &resourcegenentity.GeneratedResource{
 		JobID:         job.ID,
 		StudentID:     studentID,
@@ -893,7 +911,7 @@ func (s *Service) generateMedia(ctx context.Context, kind string, request resour
 		KnowledgeName: genCtx.KnowledgeName,
 		CourseTitle:   genCtx.CourseTitle,
 		Reason:        mediaResourceReason(kind, media),
-		Status:        resourcegenentity.ResourceStatusReady,
+		Status:        resourceStatus,
 	}
 	if err := s.repo.CreateResource(ctx, resource); err != nil {
 		return nil, apperr.ErrDependencyUnavailable.WithCause(err)
@@ -1096,6 +1114,26 @@ func (s *Service) GetMediaStatus(ctx context.Context, rawResourceID string) (*re
 		return nil, apperr.ErrBadRequest.WithCause(errors.New("resource is not a generated media artifact"))
 	}
 	status := buildMediaStatus(*resource)
+	if !status.Ready && status.ProviderTaskID != "" && s.aiClient != nil {
+		if latest, pollErr := s.aiClient.GetMediaStatus(ctx, status.Kind, status.ProviderTaskID); pollErr == nil {
+			latest.Prompt = status.Prompt
+			if latest.Provider == "" {
+				latest.Provider = status.Provider
+			}
+			if latest.Model == "" {
+				latest.Model = status.Model
+			}
+			resource.Content = marshalMediaContent(status.Kind, latest, status.Prompt)
+			if latest.URL != "" || latest.B64JSON != "" {
+				resource.Status = resourcegenentity.ResourceStatusReady
+			} else if mediaStatusFailed(latest.Status) {
+				resource.Status = resourcegenentity.ResourceStatusFailed
+			}
+			_ = s.repo.UpdateResource(ctx, resource)
+			s.syncMediaJob(ctx, resource, latest)
+			status = buildMediaStatus(*resource)
+		}
+	}
 	s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
 		StudentID:     studentID,
 		EventType:     "media_status_checked",
@@ -1110,6 +1148,42 @@ func (s *Service) GetMediaStatus(ctx context.Context, rawResourceID string) (*re
 		}),
 	})
 	return &status, nil
+}
+
+func (s *Service) syncMediaJob(ctx context.Context, resource *resourcegenentity.GeneratedResource, media ai.MediaResponse) {
+	job, steps, _, err := s.repo.GetJob(ctx, resource.StudentID, resource.JobID)
+	if err != nil {
+		return
+	}
+	ready := media.URL != "" || media.B64JSON != ""
+	if ready {
+		job.Status = resourcegenentity.JobStatusCompleted
+		job.Progress = 100
+	} else if mediaStatusFailed(media.Status) {
+		job.Status = resourcegenentity.JobStatusFailed
+		job.ErrorMessage = "媒体提供商返回失败状态：" + media.Status
+	} else {
+		job.Status = resourcegenentity.JobStatusRunning
+		job.Progress = 80
+	}
+	_ = s.repo.UpdateJob(ctx, job)
+	for index := range steps {
+		if ready {
+			steps[index].Status = resourcegenentity.StepStatusCompleted
+			now := time.Now()
+			steps[index].EndedAt = &now
+			steps[index].Summary = "真实媒体已生成并可在资源详情页预览。"
+		} else if mediaStatusFailed(media.Status) {
+			steps[index].Status = resourcegenentity.StepStatusCanceled
+			steps[index].Summary = "媒体提供商返回失败状态：" + media.Status
+		}
+		_ = s.repo.UpdateStep(ctx, &steps[index])
+	}
+}
+
+func mediaStatusFailed(status string) bool {
+	status = strings.ToLower(strings.TrimSpace(status))
+	return status == "failed" || status == "error" || status == "canceled" || status == "cancelled"
 }
 
 func (s *Service) GetQualityReport(ctx context.Context, rawResourceID string) (*resourcegendto.ResourceQualityReportView, error) {
@@ -1693,6 +1767,7 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 			if strings.TrimSpace(content) == "" {
 				content = buildResourceContent(resourceType, genCtx)
 			}
+			content = appendGroundingEvidence(resourceType, content, genCtx)
 			if s.isJobCanceled(ctx, genCtx.StudentID, jobID) {
 				return
 			}
@@ -1710,6 +1785,13 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 				Reason:        buildResourceReason(resourceType, genCtx),
 				Status:        resourcegenentity.ResourceStatusReady,
 			}
+			safety, modelReviewed := s.aiSafetyReport(ctx, *resource)
+			if !modelReviewed {
+				safety = buildSafetyReport(*resource)
+			}
+			if safety.Status == "blocked" {
+				resource.Status = resourcegenentity.ResourceStatusBlocked
+			}
 
 			mu.Lock()
 			defer mu.Unlock()
@@ -1719,7 +1801,9 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 			if err := s.repo.CreateResource(ctx, resource); err != nil {
 				return
 			}
-			_ = s.repo.CreatePushItem(ctx, buildPushItem(resource, genCtx))
+			if resource.Status != resourcegenentity.ResourceStatusBlocked {
+				_ = s.repo.CreatePushItem(ctx, buildPushItem(resource, genCtx))
+			}
 			s.recordLearningEvent(ctx, resourcegenentity.LearningEvent{
 				StudentID:     genCtx.StudentID,
 				EventType:     "resource_generated",
@@ -1728,10 +1812,13 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 				ResourceID:    resource.ID,
 				ResourceType:  resource.ResourceType,
 				PayloadJSON: mustEventPayload(map[string]any{
-					"title":       resource.Title,
-					"typeLabel":   resource.TypeLabel,
-					"reason":      resource.Reason,
-					"courseTitle": resource.CourseTitle,
+					"title":         resource.Title,
+					"typeLabel":     resource.TypeLabel,
+					"reason":        resource.Reason,
+					"courseTitle":   resource.CourseTitle,
+					"safetyStatus":  safety.Status,
+					"safetyScore":   safety.Score,
+					"modelReviewed": modelReviewed,
 				}),
 			})
 			completed++
@@ -1739,6 +1826,35 @@ func (s *Service) generateResourcesIncrementally(ctx context.Context, genCtx gen
 		}(resourceType)
 	}
 	wg.Wait()
+}
+
+// appendGroundingEvidence adds auditable graph/curation references to text
+// artifacts. Mermaid remains syntax-only so it can still render correctly.
+func appendGroundingEvidence(resourceType string, content string, ctx generationContext) string {
+	if resourceType == "mind_map" || strings.TrimSpace(content) == "" {
+		return content
+	}
+	if strings.Contains(content, "## 依据与核验") {
+		return content
+	}
+	lines := []string{"", "## 依据与核验"}
+	if ctx.KnowledgeDetail != nil {
+		detail := ctx.KnowledgeDetail
+		lines = append(lines, "- 知识图谱节点："+firstNonEmpty(detail.CanonicalName, detail.Name, ctx.KnowledgeName)+"（ID："+firstNonEmpty(detail.RouteKnowledgeID, detail.ID, ctx.KnowledgeID)+"）")
+		if source := firstNonEmpty(detail.CuratedSource, detail.SourcePath); source != "" {
+			lines = append(lines, "- 课程资料来源："+source)
+		}
+		if len(detail.Prerequisites) > 0 {
+			lines = append(lines, "- 图谱先修依据："+strings.Join(detail.Prerequisites, "、"))
+		}
+	} else {
+		lines = append(lines, "- 知识点："+ctx.KnowledgeName+"（当前未取得图谱详情，事实性内容需人工复核）")
+	}
+	if len(ctx.Path) > 0 {
+		lines = append(lines, "- 个性化路径依据："+pathSummary(ctx.Path))
+	}
+	lines = append(lines, "- 生成边界：未被上述课程资料或知识图谱支持的具体数字、论文、链接与结论，应在使用前再次核验。")
+	return strings.TrimSpace(content) + "\n" + strings.Join(lines, "\n")
 }
 
 // writerAgentName maps a resource type to the multi-agent writer responsible for
@@ -2845,16 +2961,20 @@ func variantResourceType(resourceType string, mode string) string {
 
 func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegendto.SafetyReportView {
 	content := strings.TrimSpace(resource.Content)
+	isMedia := resource.Format == "image" || resource.Format == "video"
+	isMindMap := resource.Format == "mermaid" || resource.ResourceType == "mind_map"
+	hasGrounding := isMedia || isMindMap || strings.Contains(content, "## 依据与核验")
 	structured := content != ""
 	if resource.Format == "markdown" || resource.Format == "mermaid" {
 		structured = strings.Contains(content, "#") || strings.Contains(content, "mindmap")
 	}
 	checks := []resourcegendto.SafetyCheckView{
 		buildSafetyCheck("factuality", "事实性与防幻觉", !containsAny(content, "保证", "绝对正确", "100%", "唯一答案"), "未发现绝对化或不可验证承诺，建议保留人工复核。"),
+		buildSafetyCheck("grounding", "来源可追溯", hasGrounding, "资源包含知识图谱、课程资料或生成模型依据。"),
 		buildSafetyCheck("sensitive", "敏感与违规过滤", !containsAny(content, "违法", "攻击", "绕过", "作弊"), "未发现明显敏感违规表达。"),
 		buildSafetyCheck("structure", "格式完整性", structured, "资源包含可展示内容，可直接在资源详情页预览。"),
 		buildSafetyCheck("pedagogy", "教学适配性", strings.TrimSpace(resource.Reason) != "", "资源保留了生成理由，能够解释个性化依据。"),
-		buildSafetyCheck("license", "开源与 AI 工具说明", true, "当前资源为系统生成内容；若后续接入外部材料，需要补充来源与协议。"),
+		buildSafetyCheck("license", "开源与 AI 工具说明", !containsUnverifiedExternalLink(content), "未发现未标注的外部链接；引用外部材料时仍需确认协议。"),
 	}
 
 	risks := make([]string, 0, 3)
@@ -2900,6 +3020,14 @@ func buildSafetyReport(resource resourcegenentity.GeneratedResource) resourcegen
 		ReviewedAt:   time.Now().Format(time.RFC3339),
 		ReviewerName: "SafetyReviewerAgent",
 	}
+}
+
+func containsUnverifiedExternalLink(content string) bool {
+	lower := strings.ToLower(content)
+	if !strings.Contains(lower, "http://") && !strings.Contains(lower, "https://") {
+		return false
+	}
+	return !strings.Contains(content, "来源") && !strings.Contains(content, "参考") && !strings.Contains(content, "依据")
 }
 
 func buildSafetyCheck(key string, name string, passed bool, conclusion string) resourcegendto.SafetyCheckView {

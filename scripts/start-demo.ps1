@@ -1,5 +1,7 @@
 param(
-  [switch]$SkipDocker
+  [switch]$SkipDocker,
+  [ValidateRange(1, 65535)]
+  [int]$HttpPort = 8080
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,6 +11,7 @@ $Logs = Join-Path $Root "artifacts/logs"
 $FrontendDir = Join-Path $Root "frontend"
 $BackendDir = Join-Path $Root "backend"
 $ComposeFile = Join-Path $Root "docker/neo4j/docker-compose.yml"
+$AppBaseUrl = "http://127.0.0.1:$HttpPort"
 
 New-Item -ItemType Directory -Force -Path $Logs | Out-Null
 
@@ -37,8 +40,14 @@ function Wait-HttpOk {
 }
 
 function Start-DockerDesktop {
-  docker info *> $null
-  if ($LASTEXITCODE -eq 0) { return }
+  $dockerReady = $false
+  try {
+    docker info *> $null
+    $dockerReady = $LASTEXITCODE -eq 0
+  } catch {
+    $dockerReady = $false
+  }
+  if ($dockerReady) { return }
 
   $candidates = @(
     "$env:ProgramFiles/Docker/Docker/Docker Desktop.exe",
@@ -51,8 +60,12 @@ function Start-DockerDesktop {
 
   Start-Process -FilePath $dockerDesktop -WindowStyle Hidden
   for ($i = 1; $i -le 36; $i += 1) {
-    docker info *> $null
-    if ($LASTEXITCODE -eq 0) { return }
+    try {
+      docker info *> $null
+      if ($LASTEXITCODE -eq 0) { return }
+    } catch {
+      # Docker Desktop is still starting; retry until the bounded deadline.
+    }
     Start-Sleep -Seconds 5
   }
   throw "Docker engine did not become ready in time."
@@ -69,18 +82,24 @@ function Wait-ContainersHealthy {
 }
 
 function Start-Backend {
-  if (Test-HttpOk "http://127.0.0.1:8080/healthz") { return }
+  if (Test-HttpOk "$AppBaseUrl/healthz") { return }
 
   $stdout = Join-Path $Logs "backend.out.log"
   $stderr = Join-Path $Logs "backend.err.log"
-  Start-Process -FilePath "go" `
-    -ArgumentList @("run", "./cmd/server") `
-    -WorkingDirectory $BackendDir `
-    -WindowStyle Hidden `
-    -RedirectStandardOutput $stdout `
-    -RedirectStandardError $stderr
+  $previousPort = $env:HTTP_PORT
+  try {
+    $env:HTTP_PORT = [string]$HttpPort
+    Start-Process -FilePath "go" `
+      -ArgumentList @("run", "./cmd/server") `
+      -WorkingDirectory $BackendDir `
+      -WindowStyle Hidden `
+      -RedirectStandardOutput $stdout `
+      -RedirectStandardError $stderr
+  } finally {
+    $env:HTTP_PORT = $previousPort
+  }
 
-  if (-not (Wait-HttpOk "http://127.0.0.1:8080/healthz" 40 2)) {
+  if (-not (Wait-HttpOk "$AppBaseUrl/healthz" 40 2)) {
     throw "Backend did not become healthy. See $stderr"
   }
 }
@@ -102,20 +121,21 @@ if (-not $SkipDocker) {
   Start-DockerDesktop
   docker compose -f $ComposeFile up -d mysql redis neo4j
   Wait-ContainersHealthy
+  & (Join-Path $PSScriptRoot "apply-migrations.ps1")
 }
 
 Build-Frontend
 Start-Backend
 
-$ready = Wait-HttpOk "http://127.0.0.1:8080/readyz" 10 2
+$ready = Wait-HttpOk "$AppBaseUrl/readyz" 10 2
 if (-not $ready) {
   throw "Backend /readyz is not ready."
 }
 
 Write-Host ""
 Write-Host "Demo environment is ready."
-Write-Host "App:    http://127.0.0.1:8080/"
-Write-Host "Show:   http://127.0.0.1:8080/showcase"
-Write-Host "Health: http://127.0.0.1:8080/healthz"
-Write-Host "Ready:  http://127.0.0.1:8080/readyz"
+Write-Host "App:    $AppBaseUrl/"
+Write-Host "Show:   $AppBaseUrl/showcase"
+Write-Host "Health: $AppBaseUrl/healthz"
+Write-Host "Ready:  $AppBaseUrl/readyz"
 Write-Host "Logs: $Logs"

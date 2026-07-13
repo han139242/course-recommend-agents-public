@@ -192,6 +192,75 @@ func (c *Client) GenerateVideo(ctx context.Context, req MediaRequest) (MediaResp
 	return MediaResponse{}, lastErr
 }
 
+// GetMediaStatus resolves an asynchronous media task using the configured
+// provider status endpoint. The endpoint may contain an {id} placeholder; when
+// omitted, the task id is appended as the final path segment.
+func (c *Client) GetMediaStatus(ctx context.Context, kind string, taskID string) (MediaResponse, error) {
+	if c == nil || strings.TrimSpace(taskID) == "" {
+		return MediaResponse{}, errors.New("media task id is missing")
+	}
+	kind = strings.ToLower(strings.TrimSpace(kind))
+	var lastErr error
+	for _, provider := range c.cfg.MediaProviders() {
+		endpoint := provider.ImageStatusEndpoint
+		model := provider.ImageModel
+		if kind == "video" {
+			endpoint = provider.VideoStatusEndpoint
+			model = provider.VideoModel
+		}
+		if strings.TrimSpace(endpoint) == "" {
+			continue
+		}
+		response, err := c.getMediaStatusWithProvider(ctx, provider, kind, taskID, endpoint)
+		if err == nil {
+			response.Provider = providerName(provider.BaseURL)
+			response.Model = model
+			response.ProviderTaskID = taskID
+			return response, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = errors.New("media status endpoint is not configured")
+	}
+	return MediaResponse{}, lastErr
+}
+
+func (c *Client) getMediaStatusWithProvider(ctx context.Context, provider config.AIProviderConfig, kind string, taskID string, endpoint string) (MediaResponse, error) {
+	endpoint = strings.TrimSpace(endpoint)
+	if strings.Contains(endpoint, "{id}") {
+		endpoint = strings.ReplaceAll(endpoint, "{id}", taskID)
+	} else {
+		endpoint = strings.TrimRight(endpoint, "/") + "/" + taskID
+	}
+	requestCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	httpReq, err := http.NewRequestWithContext(requestCtx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	httpReq.Header.Set("Authorization", "Bearer "+provider.APIKey)
+	response, err := c.doWithRetry(httpReq, 1)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	defer response.Body.Close()
+	raw, err := io.ReadAll(response.Body)
+	if err != nil {
+		return MediaResponse{}, err
+	}
+	if response.StatusCode >= http.StatusBadRequest {
+		return MediaResponse{}, fmt.Errorf("media status returned HTTP %d: %s", response.StatusCode, strings.TrimSpace(string(raw)))
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return MediaResponse{}, err
+	}
+	result := normalizeMediaResponse(kind, payload)
+	result.Kind = kind
+	return result, nil
+}
+
 func (c *Client) generateMediaWithProvider(ctx context.Context, provider config.AIProviderConfig, kind string, req MediaRequest) (MediaResponse, error) {
 	model := strings.TrimSpace(provider.ImageModel)
 	endpoint := strings.TrimSpace(provider.ImageEndpoint)
@@ -462,6 +531,10 @@ func normalizeMediaResponse(kind string, payload map[string]any) MediaResponse {
 			nested := normalizeMediaResponse(kind, first)
 			response = mergeMediaResponse(response, nested)
 		}
+	}
+	if output, ok := payload["output"].(map[string]any); ok {
+		nested := normalizeMediaResponse(kind, output)
+		response = mergeMediaResponse(response, nested)
 	}
 	if result, ok := payload["result"].(map[string]any); ok {
 		nested := normalizeMediaResponse(kind, result)
