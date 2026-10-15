@@ -17,43 +17,9 @@
 
 ## 本地开发
 
-### 0. 队友复现同款效果
+### 0. 公开版初始化
 
-当前 GitHub 上 `main` 和 `前端修改1` 已同步到同一个提交。队友只需要拉取其中任一分支，即可看到和本机一致的前端构建产物与功能效果。
-
-```bash
-git fetch origin
-git checkout main
-git pull --ff-only origin main
-```
-
-如果队友习惯使用前端分支，也可以：
-
-```bash
-git fetch origin
-git checkout 前端修改1
-git pull --ff-only origin 前端修改1
-```
-
-推荐统一使用一键脚本启动演示环境：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/start-demo.ps1
-```
-
-浏览器统一打开：
-
-```text
-http://127.0.0.1:8080
-```
-
-比赛展示中心统一打开：
-
-```text
-http://127.0.0.1:8080/showcase
-```
-
-说明：演示和队友验收都不要打开 `5173`。项目的统一效果以 Go 后端托管的 `backend/web/dist` 为准，入口固定为 `8080`。
+公开版从源码和演示种子数据初始化，不提供原私有环境的快照。按下方步骤创建本地配置与数据库。
 
 ### 1. 准备环境变量
 
@@ -370,25 +336,10 @@ python main.py --max-per-category 5
 
 详细用法参考 `pipelines/frontier-scraper/README.md` 和 `docs/frontier-knowledge-pipeline.md`。
 
-## 中间版本交付
+---
 
-如果你要把当前项目作为“中间版本”完整发给别人，尤其包含 MySQL / Neo4j 数据快照，参考：
+## 公开版本说明
 
-- `MID_VERSION_HANDOFF.md`
-- `scripts/export_handoff_bundle.ps1`
+项目围绕人工智能课程知识图谱、先修关系和学习路径推荐开展实践。公开内容保留代码、可公开的说明与明确的演示数据；个人申请材料、教材附件、真实环境配置和数据库运行快照留在私有备份中。
 
-## 私有仓库完整恢复
-
-如果你需要把另一个人的环境恢复到当前这份私有仓库对应的运行状态，请直接参考：
-
-- `PRIVATE_RESTORE.md`
-- `scripts/restore_private_snapshot.ps1`
-
-IMPORTANT:
-- Plain `docker compose up` only starts the infrastructure containers and does not import any graph snapshot.
-- For the exact private environment snapshot, including the full Neo4j graph, run `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
-
-Exact restore note:
-- `docker compose -f docker/neo4j/docker-compose.yml up -d --build` now starts infrastructure only and does not import any fallback Neo4j graph.
-- The historical smaller bootstrap seed graph has been removed from this repo.
-- To reproduce the same graph as the current private environment, always use `powershell -ExecutionPolicy Bypass -File .\scripts\restore_private_snapshot.ps1`.
+首次部署按 `.env.example` 和启动说明创建本地配置，并自行初始化数据库。外部服务凭据由使用者在自己的环境中提供。公开版不包含原私有环境的运行快照。
